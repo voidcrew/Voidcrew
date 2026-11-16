@@ -25,6 +25,10 @@
 	var/obj/docking_port/mobile/voidcrew/shuttle
 	///The map template the shuttle was spawned from, if it was indeed created from a template. CAN BE NULL (ex. custom-built ships).
 	var/datum/map_template/shuttle/voidcrew/source_template
+	/// The crew roster this hull was set up with, as job definitions. Ship saves keep it.
+	var/list/job_definitions
+	/// A password is being paid for, so a double click can't charge twice.
+	var/buying_join_password = FALSE
 
 	/**
 	 * Ship states and deletion.
@@ -725,6 +729,7 @@
 		var/list/slot_ids = selected_theme?.upgrade_slot_ids || source_template.upgrade_slot_ids
 		job_slot_definitions += get_module_job_definitions(source_template.type, upgrade_selections, slot_ids, selected_theme?.id)
 
+	job_definitions = job_slot_definitions
 	job_slots = assemble_job_slots_from_list(job_slot_definitions)
 	for(var/datum/job/crew_job as anything in job_slots)
 		crew_job.crew_ship_ref = WEAKREF(src)
@@ -1344,6 +1349,29 @@
 	return TRUE
 
 /**
+ * What the captain's panel calls. A new password costs ship parts; clearing it or entering the
+ * current one again is free. set_join_password() itself stays free. Sleeps on the database.
+ */
+/obj/structure/overmap/ship/proc/buy_join_password(new_password, mob/user)
+	new_password = trim("[new_password || ""]", SHIP_JOIN_PASSWORD_MAX_LEN + 1)
+	// A fleet hull is refused in there, before anything is charged.
+	if(!length(new_password) || !can_have_join_password() || (join_password && check_join_password(new_password)))
+		return set_join_password(new_password, user)
+	var/player_ckey = user?.ckey
+	if(!player_ckey || buying_join_password)
+		return FALSE
+	buying_join_password = TRUE
+	var/list/plan = GLOB.ship_economy_db.spend_any_parts(player_ckey, SHIP_PASSWORD_PRICE)
+	buying_join_password = FALSE
+	if(!plan)
+		to_chat(user, span_warning("You need [SHIP_PASSWORD_PRICE] ship parts."))
+		return FALSE
+	if(QDELETED(src) || !is_ship_captain(user) || !set_join_password(new_password, user))
+		GLOB.ship_economy_db.refund_parts(player_ckey, plan)
+		return FALSE
+	return TRUE
+
+/**
  * Revokes remembered passwords, invitations, and application approvals without
  * removing anyone from the crew roster. Authorization is the caller's responsibility.
  */
@@ -1571,6 +1599,7 @@
 /// Otherwise its unexpected-deletion stack trace aborts callers inside try/catch,
 /// leaving a hull-less overmap ship behind that continues to pin its landing site.
 /obj/structure/overmap/ship/proc/detach_shuttle()
+	roundend_note_departed_ship(src) // keeps its row in the round-end report, voidcrew/modules/roundend
 	ship_metric_removed(src) // the last moment the hull still has its metrics id
 	var/obj/docking_port/mobile/voidcrew/owned_shuttle = shuttle
 	shuttle = null
@@ -3110,7 +3139,7 @@
 	// The first custom name is free and quiet; changing an established identity is
 	// broadcast galaxy-wide so a rename can't quietly shed a reputation.
 	if(renamed_once)
-		priority_announce("The vessel formerly registered as [old_name] has been renamed to [new_name].", "Galactic Registry")
+		priority_announce("The vessel formerly registered as [old_name] has been renamed to [new_name].", sender_override = "Galactic Registry")
 	renamed_once = TRUE
 
 	ship_notify("Vessel registry updated: [old_name] is now registered as [new_name].", "SHIP SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)

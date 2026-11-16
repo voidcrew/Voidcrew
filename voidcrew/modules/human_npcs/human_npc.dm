@@ -99,6 +99,12 @@
 	/// D3: its kit is locked to its body. Prisoners turn this off (owner ruling OC-11): their jumpsuits,
 	/// contraband and shivs are ordinary items that shakedowns and confiscation work on.
 	var/npc_gear_locked = TRUE
+	/**
+	 * How it fights stun weapons (human_npc_combat_sense.dm): its family's /datum/npc_combat_sense typepath,
+	 * or null for none. Only armed hostiles set it, never civilians, townsfolk or prisoners. Its controller
+	 * must list /datum/ai_planning_subtree/npc_combat_sense.
+	 */
+	var/datum/npc_combat_sense/npc_combat_sense
 
 	/// The HUMAN_NPC_SITE_* flags it was dressed for
 	var/npc_site = NONE
@@ -157,6 +163,8 @@
 		ai_controller.set_blackboard_key(BB_TARGET_MINIMUM_STAT, npc_target_stat)
 	AddElement(/datum/element/human_npc_body)
 	AddElement(/datum/element/human_npc_reactions)
+	if(ispath(npc_combat_sense, /datum/npc_combat_sense))
+		AddComponent(/datum/component/npc_combat_sense, npc_combat_sense)
 
 /mob/living/carbon/human/npc/Destroy()
 	SShuman_npcs?.forget_corpse(src)

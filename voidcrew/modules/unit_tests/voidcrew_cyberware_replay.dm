@@ -1,0 +1,1477 @@
+/**
+ * # The replay after a Sandevistan slow-mo
+ *
+ * voidcrew/modules/cyberware/ware_sandy_replay.dm. A slow-mo that runs out, or that its user ends, is shown again
+ * from frame 0 on the real things, drawn at their recorded spots without being moved, and every one of them ends
+ * exactly as it really was. A slow-mo another player cut short doesn't replay.
+ *
+ * Unit-test files compile before voidcrew/_DEFINES/, so literals stand in for the module's defines: the replay's
+ * states are 1 recording, 2 about to play, 3 playing, and its trait source is "sandy_replay".
+ */
+/datum/unit_test/voidcrew_cyberware_timestop/replay
+	abstract_type = /datum/unit_test/voidcrew_cyberware_timestop/replay
+
+/// Opens `user`'s slow-mo and returns its recording
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/start_recording(mob/living/carbon/human/user)
+	surge(user)
+	sleep(0.1 SECONDS) // the field starts async
+	var/datum/sandy_replay/replay = GLOB.sandy_replays[user]
+	TEST_ASSERT_NOTNULL(replay, "The slow-mo isn't being recorded")
+	TEST_ASSERT_EQUAL(replay.state, 1, "The recording didn't start in its recording state")
+	return replay
+
+/// Ends `user`'s slow-mo the way a second press of the surge does
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/press_again(mob/living/carbon/human/user)
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+
+/// Waits up to `limit` for `user`'s replay to be over
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/wait_over(mob/living/carbon/human/user, limit = 5 SECONDS)
+	var/until = world.time + limit
+	while(GLOB.sandy_replays[user] && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT_NULL(GLOB.sandy_replays[user], "The replay never ended")
+
+/// Whether the replay holds `body` (AI pause or input lock)
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/held(mob/living/body)
+	return HAS_TRAIT_FROM(body, TRAIT_AI_PAUSED, "sandy_replay") || HAS_TRAIT_FROM(body, TRAIT_IMMOBILIZED, "sandy_replay") || HAS_TRAIT_FROM(body, TRAIT_INCAPACITATED, "sandy_replay")
+
+/// `thing`'s own look while its replay waits to start: without the replay's hide (sandy_replay_pending_hide), which is
+/// the replay's, not the thing's
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/real_look(atom/movable/thing)
+	if(!thing.filter_data?["sandy_replay_pending_hide"])
+		return thing.appearance
+	var/mutable_appearance/look = new(thing)
+	look.filters = null
+	for(var/name in thing.filter_data)
+		if(name == "sandy_replay_pending_hide")
+			continue
+		var/list/arguments = thing.filter_data[name]
+		arguments = arguments.Copy()
+		arguments -= "priority"
+		look.filters += filter(arglist(arguments))
+	return look.appearance
+
+/// Names what differs between `thing`'s look now and the appearance `was`
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/look_difference(atom/movable/thing, was)
+	var/mutable_appearance/now = new(thing)
+	var/mutable_appearance/before = new(was)
+	var/list/found = list()
+	for(var/name in list("icon", "icon_state", "pixel_x", "pixel_y", "pixel_w", "pixel_z", "alpha", "layer", "plane", "invisibility", "mouse_opacity", "appearance_flags", "blend_mode", "name"))
+		if(now.vars[name] != before.vars[name])
+			found += "[name] [before.vars[name]] -> [now.vars[name]]"
+	if(!(now.color ~= before.color))
+		found += "color"
+	if(!(now.transform ~= before.transform))
+		found += "transform"
+	if(length(now.overlays) != length(before.overlays))
+		found += "overlays [length(before.overlays)] -> [length(now.overlays)]"
+	if(length(now.underlays) != length(before.underlays))
+		found += "underlays [length(before.underlays)] -> [length(now.underlays)]"
+	if(length(now.filters) != length(before.filters))
+		var/list/had = list()
+		for(var/dm_filter/filter as anything in before.filters)
+			had += "[filter.type]"
+		var/list/has = list()
+		for(var/dm_filter/filter as anything in now.filters)
+			has += "[filter.type]"
+		found += "filters [length(before.filters)] ([had.Join("/")]) -> [length(now.filters)] ([has.Join("/")]), filter names now: [jointext(assoc_to_keys(thing.filter_data), "/")]"
+	return length(found) ? found.Join(", ") : "nothing in the vars compared"
+
+/// A slow-mo the user ends replays from frame 0 on the real things, without moving them, and every one of them
+/// ends exactly as it really was. Changes made to them mid-replay land on their real look.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/plays_and_restores
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/plays_and_restores/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayuser")
+	set_window(user, 3 SECONDS)
+	var/mob/living/carbon/human/npc/raider = allocate(/mob/living/carbon/human/npc, spot(2, 0))
+	var/mob/living/carbon/human/npc/bleeder = allocate(/mob/living/carbon/human/npc, spot(4, 0))
+	var/mob/living/carbon/human/npc/victim = allocate(/mob/living/carbon/human/npc, spot(4, 2))
+	var/obj/item/wrench/wrench = allocate(/obj/item/wrench, spot(1, 1))
+	var/obj/item/crowbar/still = allocate(/obj/item/crowbar, spot(1, 2))
+	var/obj/structure/table/table = allocate(/obj/structure/table, spot(3, 2))
+	var/datum/sandy_replay/replay = start_recording(user)
+	TEST_ASSERT(replay.tracks[raider] && replay.tracks[wrench] && replay.tracks[table] && replay.tracks[user], "The recording missed things in the field")
+
+	// The window: the user steps, an NPC is moved, one bleeds, one loses its head and dies, a thing is made, one is made and deleted.
+	sleep(0.6 SECONDS)
+	user.Move(spot(0, 1), NORTH)
+	raider.forceMove(spot(3, 0))
+	wrench.forceMove(spot(2, 2))
+	bleeder.cause_wound_of_type_and_severity(WOUND_SLASH, bleeder.get_bodypart(BODY_ZONE_CHEST), WOUND_SEVERITY_SEVERE)
+	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
+	head.dismember()
+	victim.death()
+	var/obj/item/screwdriver/made = allocate(/obj/item/screwdriver, spot(3, 1))
+	var/obj/item/pen/spent = new(spot(1, 0))
+	playsound(spot(2, 1), 'sound/items/weapons/genhit1.ogg', 50, FALSE)
+	sleep(0.6 SECONDS)
+	qdel(spent)
+	sleep(0.3 SECONDS)
+	TEST_ASSERT(replay.tracks[made], "Something made mid-window wasn't recorded")
+
+	// The second press: the slow-mo's looks come off, and that is everything's real final state.
+	press_again(user)
+	TEST_ASSERT_EQUAL(replay.state, 2, "Ending the slow-mo didn't queue the replay")
+	TEST_ASSERT(!user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't wait for the replay")
+	var/list/things = list(user, raider, bleeder, victim, wrench, still, table, made)
+	// A head still flying (a throw, or hyperviolence's tumble) really lands during the replay, and its roll on landing
+	// moves its pixel_x 6 px (hv_vis_roll() in hyperviolence/visuals/flying_gore.dm): a real change, not the replay's.
+	var/head_in_flight = !QDELETED(head) && (!!head.throwing || !!head.GetComponent(/datum/component/hv_tumble))
+	var/head_x = QDELETED(head) ? null : head.pixel_x
+	if(!QDELETED(head) && !head_in_flight)
+		things += head
+	log_test("replay/plays_and_restores: severed head [QDELETED(head) ? "gone" : (head_in_flight ? "still in flight at the release, left out of the exact check" : "at rest, checked")]")
+	var/list/real = list()
+	var/list/real_spot = list()
+	var/list/real_dir = list()
+	for(var/atom/movable/thing as anything in things)
+		real[thing] = real_look(thing)
+		real_spot[thing] = thing.loc
+		real_dir[thing] = thing.dir
+	var/raider_overlays = length(raider.overlays)
+	// Not in the slow-mo, but near the user: it holds still for the replay too.
+	var/mob/living/carbon/human/npc/outsider = allocate(/mob/living/carbon/human/npc, spot(5, 1))
+
+	replay.begin()
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	// Frame 0: drawn back where they started, standing on the tiles they ended on.
+	for(var/atom/movable/thing as anything in things)
+		TEST_ASSERT_EQUAL(thing.loc, real_spot[thing], "The replay moved [thing] for real")
+	TEST_ASSERT(GLOB.sandy_replay_masked[user] && GLOB.sandy_replay_masked[raider] && GLOB.sandy_replay_masked[wrench] && GLOB.sandy_replay_masked[victim], "Things that changed aren't replayed")
+	TEST_ASSERT(!GLOB.sandy_replay_masked[still] && !GLOB.sandy_replay_masked[table], "Things that never changed are replayed (the slow-mo's tint wasn't taken out of the recording cleanly)")
+	TEST_ASSERT_EQUAL(user.pixel_z, -32, "The user isn't drawn back on their first tile")
+	TEST_ASSERT_EQUAL(raider.pixel_w, -32, "The NPC isn't drawn back on its first tile")
+	TEST_ASSERT_EQUAL(wrench.pixel_w - initial(wrench.pixel_w), -32, "The item isn't drawn back on its first tile")
+	TEST_ASSERT_EQUAL(made.alpha, 0, "Something made mid-window shows at frame 0")
+	var/datum/sandy_replay_track/victim_track = replay.tracks[victim]
+	TEST_ASSERT(victim.appearance != real[victim], "The corpse's first frame is its last")
+	TEST_ASSERT(length(victim_track.frames) > 6, "The corpse has one frame")
+	TEST_ASSERT(length(replay.standins) >= 1, "Something deleted mid-window has no stand-in")
+	TEST_ASSERT(HAS_TRAIT_FROM(user, TRAIT_IMMOBILIZED, "sandy_replay") && HAS_TRAIT_FROM(user, TRAIT_INCAPACITATED, "sandy_replay"), "The user can act during the replay")
+	TEST_ASSERT(HAS_TRAIT_FROM(raider, TRAIT_AI_PAUSED, "sandy_replay"), "The NPC's AI runs during the replay")
+	TEST_ASSERT(HAS_TRAIT_FROM(outsider, TRAIT_AI_PAUSED, "sandy_replay"), "An NPC near the user but outside the slow-mo acts during the replay")
+	TEST_ASSERT(!raider.IsStun() && !user.IsStun(), "The replay stunned someone")
+	TEST_ASSERT(!user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash started during the replay")
+
+	// Mid-replay: the game changes puppets. Through wrapped procs (an overlay, a lying turn) and by a plain var write.
+	sleep(0.1 SECONDS)
+	var/mutable_appearance/mark = mutable_appearance('icons/effects/effects.dmi', "shield-old")
+	raider.add_overlay(mark)
+	raider.set_lying_angle(90)
+	wrench.alpha = 128
+	TEST_ASSERT(GLOB.sandy_replay_masked[raider], "A change to a puppet ended its replay")
+
+	wait_over(user)
+	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["played"], TRUE, "The replay didn't play")
+	TEST_ASSERT_EQUAL(length(GLOB.sandy_replay_masked), 0, "Puppets are left after the replay")
+	for(var/atom/movable/thing as anything in things)
+		TEST_ASSERT_EQUAL(thing.loc, real_spot[thing], "[thing] isn't where it really ended")
+		TEST_ASSERT_EQUAL(thing.dir, real_dir[thing], "[thing] isn't facing the way it really ended")
+		if(thing == raider || thing == wrench || thing == user) // changed mid-replay below; the user wears the crash now
+			continue
+		TEST_ASSERT(thing.appearance == real[thing], "[thing] doesn't look exactly as it really ended: [look_difference(thing, real[thing])]")
+	// The changes made mid-replay are on the real looks, and nothing else is.
+	TEST_ASSERT_EQUAL(length(raider.overlays), raider_overlays + 1, "An overlay added mid-replay was lost, or others were")
+	TEST_ASSERT_EQUAL(raider.lying_angle, 90, "The lying turn didn't hold")
+	var/mutable_appearance/raider_was = new(real[raider])
+	var/matrix/upright = matrix(raider_was.transform)
+	TEST_ASSERT(!(raider.transform ~= upright), "A lying turn made mid-replay isn't on the real body")
+	TEST_ASSERT_EQUAL(raider.pixel_w, raider_was.pixel_w, "The NPC is left drawn off its tile")
+	TEST_ASSERT(user.pixel_w == 0 && user.pixel_z == 0 && user.alpha == 255, "The user is left drawn off their tile or hidden")
+	TEST_ASSERT(user.transform ~= matrix(), "The user is left turned or scaled")
+	TEST_ASSERT_EQUAL(user.mouse_opacity, initial(user.mouse_opacity), "The user can't be clicked after the replay")
+	TEST_ASSERT_EQUAL(wrench.alpha, 128, "A var written mid-replay was lost")
+	TEST_ASSERT_EQUAL(wrench.pixel_w, initial(wrench.pixel_w), "The item is left drawn off its tile")
+	TEST_ASSERT_EQUAL(wrench.mouse_opacity, initial(wrench.mouse_opacity), "The item can't be clicked after the replay")
+	// The wrench's alpha is one change no wrapper sees. A head still tumbling at the release lands mid-replay, and its
+	// bounce and roll (hv_vis_roll(), flying_gore.dm) write its pixel offsets directly: that may be another. Nothing
+	// else may be.
+	var/list/folded = GLOB.sandy_replay_last["folded"]
+	log_test("replay/plays_and_restores: head pixel_x [head_x] at the release, [QDELETED(head) ? "gone" : head.pixel_x] after; changes no wrapper saw: [folded.Join("; ")]")
+	var/wrench_changes = 0
+	for(var/change in folded)
+		if(findtext(change, "[/obj/item/wrench]:") == 1)
+			wrench_changes++
+		else
+			TEST_ASSERT(head_in_flight && findtext(change, "[/obj/item/bodypart/head]") == 1, "A puppet read as changed when nothing changed it: [change]")
+	TEST_ASSERT_EQUAL(wrench_changes, 1, "The var written on the wrench mid-replay wasn't seen once")
+	TEST_ASSERT(!held(user) && !held(raider) && !held(bleeder) && !held(outsider), "Someone is still held after the replay")
+	TEST_ASSERT(!(locate(/obj/effect/abstract/sandy_replay_standin) in range(9, user)), "A stand-in outlived the replay")
+	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't land when the replay ended")
+	// It looks and sounds like a surge: the user's step left an afterimage, and the sound made in the field played again.
+	TEST_ASSERT(GLOB.sandy_replay_last["afterimages"] >= 1, "The user's step in the replay left no afterimage")
+	TEST_ASSERT(GLOB.sandy_replay_last["sounds"] >= 1, "A sound made in the field wasn't recorded")
+	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["sounds_played"], GLOB.sandy_replay_last["sounds"], "The recorded sounds didn't all play in the replay")
+
+/// A slow-mo that runs out replays by itself, and the watchdog ends a replay whose frames stopped coming
+/datum/unit_test/voidcrew_cyberware_timestop/replay/watchdog
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/watchdog/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaywatch")
+	set_window(user, 1 SECONDS)
+	var/mob/living/carbon/human/npc/raider = allocate(/mob/living/carbon/human/npc, spot(2, 0))
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.4 SECONDS)
+	raider.forceMove(spot(3, 0))
+	var/until = world.time + 3 SECONDS
+	while(replay.state != 3 && !QDELETED(replay) && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(replay.state, 3, "A slow-mo that ran out didn't replay")
+	TEST_ASSERT(GLOB.sandy_replay_masked[raider], "The NPC that moved isn't replayed")
+	var/datum/sandy_replay_track/raider_track = replay.tracks[raider]
+	var/mutable_appearance/real = new(raider_track.saved_look)
+	deltimer(replay.play_timer) // the frames stop coming
+	replay.play_timer = null
+	var/stalled_at = world.time
+	wait_over(user)
+	TEST_ASSERT(world.time - stalled_at >= 1 SECONDS, "The stalled replay ended before the watchdog could have ended it")
+	TEST_ASSERT(!held(user) && !held(raider), "Someone is still held after the watchdog ended the replay")
+	TEST_ASSERT_EQUAL(raider.pixel_w, real.pixel_w, "The NPC is left drawn off its tile")
+	TEST_ASSERT_EQUAL(length(GLOB.sandy_replay_masked), 0, "Puppets are left after the watchdog ended the replay")
+	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't land when the watchdog ended the replay")
+
+/// A player who isn't crew coming near ends the replay at once
+/datum/unit_test/voidcrew_cyberware_timestop/replay/player_arrives
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/player_arrives/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayalone")
+	set_window(user, 3 SECONDS)
+	var/mob/living/carbon/human/npc/raider = allocate(/mob/living/carbon/human/npc, spot(2, 0))
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(1 SECONDS)
+	raider.forceMove(spot(3, 0))
+	sleep(0.5 SECONDS)
+	press_again(user)
+	var/real = real_look(raider)
+	replay.begin()
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	TEST_ASSERT_EQUAL(raider.pixel_w, -32, "The NPC isn't replayed")
+	var/mob/living/carbon/human/stranger = allocate(/mob/living/carbon/human/consistent, spot(1, 2))
+	stranger.key = "sandyreplaystranger"
+	replay.play_frame()
+	TEST_ASSERT_NULL(GLOB.sandy_replays[user], "The replay went on with another player near")
+	TEST_ASSERT(raider.appearance == real, "The NPC didn't snap back to its real look: [look_difference(raider, real)]")
+	TEST_ASSERT(!held(user) && !held(raider), "Someone is still held after a player ended the replay")
+	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't land when a player ended the replay")
+
+/// A slow-mo another player cut short doesn't replay
+/datum/unit_test/voidcrew_cyberware_timestop/replay/not_when_cut_short
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/not_when_cut_short/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaycut")
+	set_window(user, 1.5 SECONDS)
+	var/mob/living/carbon/human/npc/raider = allocate(/mob/living/carbon/human/npc, spot(2, 0))
+	start_recording(user)
+	raider.forceMove(spot(3, 0))
+	var/mob/living/carbon/human/stranger = allocate(/mob/living/carbon/human/consistent, spot(1, 2))
+	stranger.key = "sandyreplaycutter"
+	sleep(0.5 SECONDS) // the field's next tick sees them
+	TEST_ASSERT_NULL(GLOB.sandy_replays[user], "A slow-mo cut short by a player kept its recording")
+	sleep(1.5 SECONDS) // past the end of the window
+	TEST_ASSERT(!user.has_status_effect(/datum/status_effect/cyberware_cascade_window), "Test fixture: the window should be over")
+	TEST_ASSERT_NULL(GLOB.sandy_replays[user], "A slow-mo cut short by a player replayed")
+	TEST_ASSERT_EQUAL(length(GLOB.sandy_replay_masked), 0, "A slow-mo cut short by a player made puppets")
+	TEST_ASSERT(!held(user) && !held(raider), "Someone is held with no replay")
+	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't land at the end of the window")
+
+/// The user dying in the window is replayed too: their body isn't locked, and no crash follows
+/datum/unit_test/voidcrew_cyberware_timestop/replay/user_dies
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/user_dies/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaydead")
+	set_window(user, 3 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.5 SECONDS)
+	user.Move(spot(0, 1), NORTH)
+	sleep(0.5 SECONDS)
+	user.death() // ends the slow-mo there and then; the replay starts a tick later
+	TEST_ASSERT_EQUAL(replay.state, 2, "The slow-mo of a user who died didn't end at death with its replay queued")
+	deltimer(replay.begin_timer)
+	var/real = user.appearance
+	replay.begin()
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay of a user who died didn't start")
+	TEST_ASSERT(GLOB.sandy_replay_masked[user], "The dead user's body isn't replayed")
+	TEST_ASSERT_EQUAL(user.pixel_z, -32, "The dead user isn't drawn back on their first tile")
+	TEST_ASSERT(user.appearance != real, "The dead user isn't drawn alive at frame 0")
+	TEST_ASSERT(!held(user), "A dead user was input-locked")
+	wait_over(user)
+	TEST_ASSERT(user.appearance == real, "The dead user's body doesn't look as it really ended")
+	TEST_ASSERT(!user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "A dead user crashed")
+
+/// A user who goes into crit in the window is replayed upright from their first tile and goes down at the frame they
+/// went down, and after the replay is exactly as they really are: still down, still in crit, not held
+/datum/unit_test/voidcrew_cyberware_timestop/replay/user_crit
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/user_crit/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaycrit")
+	set_window(user, 3 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.5 SECONDS)
+	user.Move(spot(0, 1), NORTH)
+	sleep(0.5 SECONDS)
+	user.apply_damage(user.health - user.crit_threshold + 10, BRUTE, BODY_ZONE_CHEST)
+	TEST_ASSERT_EQUAL(user.stat, SOFT_CRIT, "Test fixture: the user should be in soft crit")
+	TEST_ASSERT_EQUAL(user.body_position, LYING_DOWN, "Test fixture: a user in crit should be lying down")
+	sleep(0.3 SECONDS)
+	TEST_ASSERT_EQUAL(replay.state, 1, "Crit ended the slow-mo")
+	press_again(user)
+	deltimer(replay.begin_timer)
+	var/real = user.appearance
+	var/real_angle = user.lying_angle
+	var/matrix/real_turn = matrix(user.transform)
+	TEST_ASSERT(!(real_turn ~= matrix()), "Test fixture: a user lying in crit should be turned")
+	replay.begin()
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay of a user in crit didn't start")
+	TEST_ASSERT(GLOB.sandy_replay_masked[user], "The user in crit isn't replayed")
+	TEST_ASSERT_EQUAL(user.pixel_z, -32, "The user in crit isn't drawn back on their first tile")
+	TEST_ASSERT(user.transform ~= matrix(), "The user in crit isn't drawn upright at frame 0")
+	var/down_at = 0
+	var/until = world.time + 5 SECONDS
+	while(GLOB.sandy_replays[user] && world.time < until)
+		if(!down_at && !(user.transform ~= matrix()))
+			down_at = world.time
+		sleep(world.tick_lag)
+	TEST_ASSERT_NULL(GLOB.sandy_replays[user], "The replay never ended")
+	TEST_ASSERT(down_at > replay.play_started, "The user in crit never goes down in their replay, or is down from its first frame")
+	// the crash lands when the replay ends and plays its node looks, so the whole appearance can't match; compare the
+	// parts the replay drew over
+	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "Test fixture: the crash should land on a user in crit")
+	var/difference = look_difference(user, real)
+	TEST_ASSERT(difference == "nothing in the vars compared", "The user in crit doesn't look as they really are after the replay: [difference]")
+	TEST_ASSERT(user.transform ~= real_turn, "The user in crit isn't turned as they really lie after the replay")
+	TEST_ASSERT_EQUAL(user.stat, SOFT_CRIT, "The replay changed the user's stat")
+	TEST_ASSERT_EQUAL(user.body_position, LYING_DOWN, "The user in crit stood up after the replay")
+	TEST_ASSERT_EQUAL(user.lying_angle, real_angle, "The user in crit's lying angle changed over the replay")
+	TEST_ASSERT(!held(user), "The user in crit is still held after the replay")
+
+/// A user knocked down in the window whose knockdown wears off during the replay gets up once it ends: the replay's
+/// input lock fails tg's get-up while it plays
+/datum/unit_test/voidcrew_cyberware_timestop/replay/gets_up_after
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/gets_up_after/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayknock")
+	set_window(user, 3 SECONDS)
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = locate() in user.organs
+	lattice.crash_stamina = 0 // the crash's stamina dump would floor them again
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.5 SECONDS)
+	user.Paralyze(20 SECONDS)
+	TEST_ASSERT_EQUAL(user.body_position, LYING_DOWN, "Test fixture: a paralyzed user should be lying down")
+	sleep(0.3 SECONDS)
+	press_again(user)
+	deltimer(replay.begin_timer)
+	replay.begin()
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	user.SetParalyzed(0) // wears off mid-replay
+	TEST_ASSERT_EQUAL(user.body_position, LYING_DOWN, "Test fixture: the replay's lock should keep the user from getting up while it plays")
+	wait_over(user)
+	var/until = world.time + 3 SECONDS
+	while(user.body_position == LYING_DOWN && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(user.body_position, STANDING_UP, "A user whose knockdown wore off during the replay never got up after it")
+	TEST_ASSERT_EQUAL(user.lying_angle, 0, "The user got up but is still turned")
+
+/// A crit body for an execution to be done on, `dx`, `dy` from the room's corner
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/make_victim(dx, dy)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent, spot(dx, dy))
+	victim.adjustOxyLoss(120)
+	TEST_ASSERT(victim.hv_is_helpless(), "Test fixture: the victim isn't down")
+	return victim
+
+/// The user's own look on a replay frame: never hidden. A finisher rig's hide only while a stand-in of one of the
+/// rig's pictures is drawn in their place.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/check_seen(mob/living/user, datum/sandy_replay/replay)
+	var/datum/sandy_replay_track/track = replay.tracks[user]
+	if(!track || track.cursor < 0 || !GLOB.sandy_replay_masked[user])
+		return
+	TEST_ASSERT(user.alpha > 0 && user.invisibility < INVISIBILITY_ABSTRACT, "The user is drawn hidden on replay frame [track.frames[track.cursor + 1]]")
+	if(!user.filter_data?["chrome_rig_hide"] && !user.filter_data?["mantis_rig_hide"])
+		return
+	var/pictures = 0
+	for(var/datum/sandy_replay_track/standin_track as anything in replay.standins)
+		if(standin_track.standin?.loc && length(standin_track.events))
+			pictures++
+	TEST_ASSERT(pictures, "The user's puppet wears a rig's hide with no rig picture drawn for it on replay frame [track.frames[track.cursor + 1]]")
+
+/// No progress bar is drawn while a replay plays (owner, 2026-11-12): no execution bar near the user, and no do_after
+/// bar image on the user's screen.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/check_no_bars(mob/living/user)
+	var/datum/sandy_replay/replay = GLOB.sandy_replays[user]
+	if(!replay || replay.state != 3)
+		return
+	for(var/obj/effect/abstract/hv_exec_bar/bar as anything in GLOB.hv_exec_bars)
+		TEST_ASSERT(bar.invisibility >= INVISIBILITY_ABSTRACT || get_dist(bar, user) > 11, "An execution bar shows during the replay")
+	for(var/target in user.progressbars)
+		for(var/datum/progressbar/progress as anything in user.progressbars[target])
+			TEST_ASSERT(!progress.user_client || !(progress.bar in progress.user_client.images), "A progress bar shows on the user's screen during the replay")
+
+/// Whether `user` sees the surge's own screen colour
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/surge_tinted(mob/living/user)
+	return !!user.get_client_colour("cyberware_cascade_window")
+
+/// `user`'s surge window
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/window_of(mob/living/user)
+	return user.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+
+/**
+ * A gun execution in its wind-up when the slow-mo is asked to end (its time is up, or a second press; playtest bug
+ * 2026-11-12): the slow-mo holds, with the user's edge glow on, until the shot goes off for real, then ends and
+ * replays. Nobody is held while it holds. The user is never hidden in the replay, sees no surge colour during or
+ * after it, and is left exactly where and as they really are; the crash lands after.
+ */
+/datum/unit_test/voidcrew_cyberware_timestop/replay/execution_running_at_end
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/execution_running_at_end/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 1), "sandyreplayexec")
+	set_window(user, 4 SECONDS)
+	var/mob/living/carbon/human/victim = make_victim(1, 0)
+	// An execution round goes through tg's hit-zone roll (projectile.dm, ran_zone at 93% a tile away): about one in
+	// fifteen lands on another limb and does nothing to the head. That is the execution's own problem, not the slow-mo's.
+	ADD_TRAIT(victim, TRAIT_DESIGNATED_TARGET, "sandy_replay_test")
+	var/obj/item/gun/ballistic/automatic/pistol/pistol = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	TEST_ASSERT(user.put_in_active_hand(pistol), "Test fixture: the pistol wouldn't go in the user's hand")
+	user.zone_selected = BODY_ZONE_HEAD
+	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
+	var/head_brute = head.brute_dam
+	var/datum/sandy_replay/replay = start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
+	sleep(0.6 SECONDS)
+	user.Move(spot(0, 0), SOUTH) // off the tile the replay starts on: its puppet is drawn a tile up
+	sleep(0.3 SECONDS)
+	user.face_atom(victim)
+	INVOKE_ASYNC(pistol, TYPE_PROC_REF(/obj/item/gun, hv_start_execution), user, victim, null)
+	sleep(0.4 SECONDS)
+	TEST_ASSERT(sandy_replay_mid_move(user), "The wind-up isn't seen as a move in progress")
+
+	var/asked = world.time
+	window.slowmo_time_up() // what its time running out and a second press both do
+	sleep(world.tick_lag)
+	TEST_ASSERT_NOTNULL(window.time_stop, "The slow-mo ended in the middle of the user's execution")
+	TEST_ASSERT(window.hold_until, "The slow-mo isn't holding for the execution")
+	TEST_ASSERT(user.filter_data?["sandy_time_stop_outline"], "The user's edge glow went off while the slow-mo holds")
+	TEST_ASSERT_EQUAL(replay.state, 1, "The recording stopped while the slow-mo holds")
+	TEST_ASSERT(!held(user), "The user is held while their execution plays out")
+	TEST_ASSERT(!surge_tinted(user), "The surge's colour is on the user's screen in the slow-mo")
+	var/until = world.time + 7 SECONDS
+	while(replay.state == 1 && !QDELETED(replay) && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT(!QDELETED(replay) && replay.state >= 2, "The slow-mo never ended after the execution, or nothing replayed")
+	TEST_ASSERT(world.time - asked <= 6.5 SECONDS, "The hold ran past its cap")
+	TEST_ASSERT(!sandy_replay_mid_move(user), "The slow-mo ended before the execution did")
+	head = victim.get_bodypart(BODY_ZONE_HEAD)
+	TEST_ASSERT(!head || head.brute_dam > head_brute, "The execution didn't go off")
+	TEST_ASSERT(!window_of(user), "The surge window outlived the slow-mo it held")
+	TEST_ASSERT(!user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't wait for the replay")
+	while(replay.state != 3 && GLOB.sandy_replays[user] && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay never played after the execution")
+	// Frame 0 has the user a tile up, never hidden. Then every frame to the end, with no surge colour.
+	TEST_ASSERT_EQUAL(user.pixel_z, 32, "The user isn't drawn back on their first tile")
+	while(GLOB.sandy_replays[user] && world.time < until + 8 SECONDS)
+		check_seen(user, replay)
+		TEST_ASSERT(!surge_tinted(user), "The surge's colour is on the user's screen during the replay")
+		check_no_bars(user)
+		sleep(world.tick_lag)
+	wait_over(user)
+	TEST_ASSERT(!surge_tinted(user), "The surge's colour is on the user's screen after the replay")
+	TEST_ASSERT(user.pixel_w == user.base_pixel_w && user.pixel_z == user.base_pixel_z, "The user is left drawn off their tile: [user.pixel_w],[user.pixel_z]")
+	TEST_ASSERT(user.pixel_x == user.base_pixel_x && user.pixel_y == user.base_pixel_y, "The user is left shifted: [user.pixel_x],[user.pixel_y]")
+	TEST_ASSERT(user.alpha == 255 && user.invisibility == initial(user.invisibility), "The user is left hidden")
+	TEST_ASSERT(user.transform ~= matrix(), "The user is left turned or scaled")
+	TEST_ASSERT(!held(user), "The user is still held after the replay")
+	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't land when the replay ended")
+
+/**
+ * A move still going when the hold's cap runs out: the slow-mo ends without a replay (the replay's hold would cut the
+ * move short), the move isn't touched, and the crash lands. Asking again while it holds changes nothing.
+ */
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hold_capped
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hold_capped/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaycap")
+	set_window(user, 3 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
+	// A rig's hide is what marks a move in progress that has no status of its own (the impale, the slam)
+	user.add_filter("chrome_rig_hide", 1, color_matrix_filter(list(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)))
+	TEST_ASSERT(sandy_replay_mid_move(user), "Test fixture: the user isn't mid-move")
+	var/asked = world.time
+	window.slowmo_time_up()
+	TEST_ASSERT(window.hold_until, "The slow-mo isn't holding for the move")
+	TEST_ASSERT(window.hold_until - asked <= 6 SECONDS, "The hold's cap is [window.hold_until - asked] ds")
+	window.slowmo_time_up() // asked again (a second press) while holding: still holding
+	TEST_ASSERT_NOTNULL(window.time_stop, "A second ask ended a holding slow-mo")
+	var/until = world.time + 8 SECONDS
+	while(window_of(user) && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT(!window_of(user), "The hold never ended")
+	TEST_ASSERT(world.time - asked >= 6 SECONDS - world.tick_lag, "The hold ended before its cap with the move still going")
+	TEST_ASSERT(world.time - asked <= 6.5 SECONDS, "The hold ran past its cap")
+	TEST_ASSERT(QDELETED(replay) && !GLOB.sandy_replays[user], "A slow-mo that ended on its cap replayed")
+	TEST_ASSERT(user.filter_data?["chrome_rig_hide"], "Ending the slow-mo touched the move")
+	TEST_ASSERT(user.has_status_effect(/datum/status_effect/cyberware_cascade_crash), "The crash didn't land")
+	TEST_ASSERT(!surge_tinted(user), "The surge's colour stayed on the user's screen")
+	user.remove_filter("chrome_rig_hide")
+
+/**
+ * A rig move done inside the slow-mo is replayed: its posed pictures are recorded and drawn as stand-ins, with the
+ * animations that posed them played again, and the user's puppet wears the rig's hide only while they are. In the
+ * slow-mo the user's pictures carry the edge glow. And tg's offsets set on a puppet mid-replay (a finisher letting
+ * go, a grab) land on the real body, not on the puppet's shift: nothing is left drawn off its tile.
+ */
+/datum/unit_test/voidcrew_cyberware_timestop/replay/rig_move_inside
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/rig_move_inside/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 1), "sandyreplayrig")
+	set_window(user, 3 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
+	sleep(0.6 SECONDS)
+	user.Move(spot(0, 0), SOUTH)
+	var/datum/chrome_rig/rig = new(user, EAST)
+	TEST_ASSERT(rig.snapshot(), "Test fixture: the rig couldn't picture the user")
+	rig.rig_arms()
+	rig.conceal()
+	TEST_ASSERT(user.filter_data?["chrome_rig_hide"], "Test fixture: the rig didn't hide the user")
+	TEST_ASSERT(sandy_replay_mid_move(user), "A rigged body isn't seen as mid-move")
+	var/side = rig.near_side()
+	var/obj/effect/abstract/chrome_puppet/arm = rig.puppet("arm_[side]") // the rig keys its arms "arm_l" and "arm_r" (rig_arms())
+	TEST_ASSERT_NOTNULL(arm, "Test fixture: the rig has no arm")
+	TEST_ASSERT(replay.tracks[arm], "The rig's picture isn't recorded")
+	TEST_ASSERT(locate(/obj/effect/abstract/sandy_rig_glow) in arm.vis_contents, "The user's rig picture has no edge glow in the slow-mo")
+	var/journaled = replay.journaled
+	rig.swing_arm(side, 90, 0.4 SECONDS)
+	TEST_ASSERT(replay.journaled > journaled, "The rig's swing wasn't journaled for the replay")
+	sleep(0.5 SECONDS)
+	qdel(rig)
+	sleep(0.3 SECONDS)
+	window.slowmo_time_up()
+	TEST_ASSERT_EQUAL(replay.state, 2, "A finished move held the slow-mo")
+	replay.begin()
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	TEST_ASSERT_EQUAL(user.pixel_z, 32, "The user isn't drawn back on their first tile")
+	// tg's offsets on the puppet (a finisher's lean, then letting go), as a cut-short move would
+	user.add_offsets("sandy_replay_test", null, 6, 4)
+	sleep(world.tick_lag)
+	user.remove_offsets("sandy_replay_test")
+	var/saw_swing = FALSE
+	var/until = world.time + 5 SECONDS
+	while(GLOB.sandy_replays[user] && world.time < until)
+		check_seen(user, replay)
+		for(var/datum/sandy_replay_track/track as anything in replay.standins)
+			if(track.standin?.loc && track.event_at > 1)
+				saw_swing = TRUE
+		sleep(world.tick_lag)
+	wait_over(user)
+	TEST_ASSERT(saw_swing, "The rig's pictures and their swing weren't played in the replay")
+	TEST_ASSERT(user.pixel_w == user.base_pixel_w && user.pixel_z == user.base_pixel_z, "Offsets set mid-replay left the user drawn off their tile: [user.pixel_w],[user.pixel_z]")
+	TEST_ASSERT(user.pixel_x == user.base_pixel_x && user.pixel_y == user.base_pixel_y, "Offsets set mid-replay left the user shifted: [user.pixel_x],[user.pixel_y]")
+	TEST_ASSERT(!user.filter_data?["chrome_rig_hide"] && user.alpha == 255, "The user is left hidden")
+
+/**
+ * An execution early in the slow-mo, then more happens in it (owner, 2026-11-12: "if an execution isn't the same
+ * speed, we won't get the whole replay if something happens after"). The slow-mo doesn't hold for a move that's over,
+ * the recording runs on at the slow-mo's own rate after the move, the replay shows what came after the move after
+ * the move's frames, ends on its own well before its watchdog, holds the user for exactly its length, and leaves
+ * everything as it really is.
+ */
+/datum/unit_test/voidcrew_cyberware_timestop/replay/after_execution
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/after_execution/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayafter")
+	set_window(user, 5 SECONDS)
+	var/mob/living/carbon/human/victim = make_victim(1, 0)
+	var/mob/living/carbon/human/bystander = allocate(/mob/living/carbon/human/consistent, spot(3, 0))
+	var/obj/item/gun/ballistic/automatic/pistol/pistol = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	TEST_ASSERT(user.put_in_active_hand(pistol), "Test fixture: the pistol wouldn't go in the user's hand")
+	user.zone_selected = BODY_ZONE_HEAD
+	var/datum/sandy_replay/replay = start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
+	user.face_atom(victim)
+	INVOKE_ASYNC(pistol, TYPE_PROC_REF(/obj/item/gun, hv_start_execution), user, victim, null)
+	sleep(world.tick_lag)
+	TEST_ASSERT(sandy_replay_mid_move(user), "The wind-up isn't seen as a move in progress")
+	var/until = world.time + 4 SECONDS
+	while(sandy_replay_mid_move(user) && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT(!sandy_replay_mid_move(user), "The execution never ended")
+	TEST_ASSERT_EQUAL(replay.state, 1, "The recording stopped when the execution ended")
+	TEST_ASSERT(window_of(user) && !window.hold_until, "The slow-mo ended, or held, for an execution that was already over")
+	var/move_over = replay.frame_now()
+	sleep(0.5 SECONDS)
+	TEST_ASSERT(bystander.Move(spot(3, 1), NORTH), "Test fixture: the bystander couldn't step")
+	sleep(0.5 SECONDS)
+	TEST_ASSERT(replay.frame_now() - move_over <= round(1 SECONDS / replay.interval) + 2, "The recording didn't go back to the slow-mo's rate after the execution")
+	until = world.time + 6 SECONDS
+	while(replay.state == 1 && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT(replay.state >= 2, "The slow-mo never ended")
+	TEST_ASSERT(!window.hold_until, "The slow-mo held at its end with no move going")
+	// The bystander's step is in the recording, after the execution's frames.
+	var/datum/sandy_replay_track/track = replay.tracks[bystander]
+	TEST_ASSERT_NOTNULL(track, "The bystander wasn't recorded")
+	var/stepped_at = -1
+	var/turf/stepped_to = spot(3, 1)
+	for(var/i in 1 to length(track.frames) step 6)
+		if(track.frames[i + 2] == stepped_to.x && track.frames[i + 3] == stepped_to.y)
+			stepped_at = track.frames[i]
+			break
+	TEST_ASSERT(stepped_at > move_over, "The step after the execution isn't in the recording after it (frame [stepped_at], move over at [move_over])")
+	while(replay.state != 3 && GLOB.sandy_replays[user] && world.time < until + 1 SECONDS)
+		sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay never played")
+	var/play_started = world.time
+	var/total = replay.total
+	TEST_ASSERT(held(user), "The user isn't held for the replay")
+	while(GLOB.sandy_replays[user] && world.time < play_started + 15 SECONDS)
+		if(world.time - play_started < (total - 1) * world.tick_lag)
+			TEST_ASSERT(held(user), "The user was let go before the replay was over")
+		check_no_bars(user)
+		sleep(world.tick_lag)
+	TEST_ASSERT_NULL(GLOB.sandy_replays[user], "The replay never ended")
+	TEST_ASSERT(world.time - play_started <= (total + 2) * world.tick_lag + 0.2 SECONDS, "The replay was ended by its watchdog, not by playing out ([world.time - play_started] for [total] frames)")
+	TEST_ASSERT(GLOB.sandy_replay_last["played"], "Nothing replayed")
+	TEST_ASSERT(!held(user), "The user is still held after the replay")
+	TEST_ASSERT_EQUAL(get_turf(bystander), stepped_to, "The bystander isn't where they really are")
+	TEST_ASSERT(bystander.pixel_w == bystander.base_pixel_w && bystander.pixel_z == bystander.base_pixel_z, "The bystander is left drawn off their tile")
+	TEST_ASSERT(bystander.alpha == 255, "The bystander is left hidden")
+	TEST_ASSERT(user.pixel_w == user.base_pixel_w && user.pixel_z == user.base_pixel_z && user.alpha == 255, "The user is left drawn off their tile or hidden")
+
+/// Fires a harmless bullet from `from` at `target`, by `firer`
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/fire_shot(turf/from, mob/living/firer, atom/target)
+	var/obj/projectile/bullet/shot = new(from)
+	shot.damage = 0
+	shot.stamina = 0
+	shot.firer = firer
+	shot.fired_from = firer
+	shot.aim_projectile(target, from)
+	shot.fire()
+	return shot
+
+/// Whether a replay stand-in is anywhere near `user`
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/standin_near(mob/living/user)
+	for(var/obj/effect/abstract/sandy_replay_standin/standin in range(8, user))
+		return TRUE
+	return FALSE
+
+/// The user's shot, fired and spent inside the slow-mo, is in the replay from the muzzle to the spot it hit, along its
+/// path, and gone after it: nothing is left behind.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/shot_spent_inside
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/shot_spent_inside/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayshot")
+	set_window(user, 4 SECONDS)
+	var/mob/living/carbon/human/npc/target = allocate(/mob/living/carbon/human/npc, spot(2, 0))
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.2 SECONDS)
+	var/obj/projectile/shot = fire_shot(spot(0, 0), user, target)
+	var/datum/sandy_replay_track/track = replay.tracks[shot]
+	TEST_ASSERT_NOTNULL(track, "The shot wasn't recorded")
+	TEST_ASSERT(track.flier, "The shot wasn't recorded as a shot")
+	var/until = world.time + 3.5 SECONDS
+	while(!QDELETED(shot) && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT(QDELETED(shot), "The shot never hit in the slow-mo")
+	TEST_ASSERT(track in replay.gone, "The spent shot isn't kept to be drawn")
+	var/list/frames = track.frames
+	var/count = length(frames) / 6
+	TEST_ASSERT(count >= 3, "The shot's flight has [count] frames")
+	TEST_ASSERT(track.last > frames[length(frames) - 5], "The spot the shot hit is never shown (last [track.last])")
+	var/prev = -INFINITY
+	for(var/i = 1, i <= length(frames), i += 6)
+		var/mutable_appearance/look = new(frames[i + 1])
+		var/at = frames[i + 2] * 32 + look.pixel_x
+		TEST_ASSERT(at >= prev, "The shot goes back on itself at frame [frames[i]]: [prev] -> [at]")
+		TEST_ASSERT(look.alpha > 0, "The shot is drawn invisible at frame [frames[i]]")
+		prev = at
+	TEST_ASSERT_EQUAL(frames[length(frames) - 3], target.x, "The shot's last frame isn't on the tile it hit")
+	press_again(user)
+	until = world.time + 2 SECONDS
+	while(replay.state != 3 && !QDELETED(replay) && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	var/drawn = 0
+	var/drawn_after = 0
+	while(!QDELETED(replay) && replay.state == 3)
+		var/frame = round((world.time - replay.play_started) / world.tick_lag)
+		if(track.standin?.loc)
+			drawn++
+			if(frame > track.last)
+				drawn_after++
+		sleep(world.tick_lag)
+	log_test("replay/shot_spent_inside: [count] frames, first [track.first], last [track.last], drawn [drawn] ticks")
+	TEST_ASSERT(drawn >= count - 1, "The shot was drawn for [drawn] ticks of its [count] frames")
+	TEST_ASSERT_EQUAL(drawn_after, 0, "The shot was drawn after the frame it hit in")
+	wait_over(user)
+	TEST_ASSERT(!standin_near(user), "A stand-in is left after the replay")
+	TEST_ASSERT_EQUAL(length(GLOB.sandy_replay_masked), 0, "Puppets are left after the replay")
+
+/// A shot still flying when the slow-mo ends is drawn by itself (one shot, never two), held where the recording left
+/// it while the replay plays, and flies on from there after, with its own look back.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/shot_flying_at_end
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/shot_flying_at_end/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayflying")
+	set_window(user, 4 SECONDS)
+	var/mob/living/carbon/human/npc/gunman = allocate(/mob/living/carbon/human/npc, spot(1, 2))
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.2 SECONDS)
+	var/obj/projectile/shot = fire_shot(spot(1, 2), gunman, spot(6, 2))
+	var/turf/fired_at = get_turf(shot)
+	sleep(0.8 SECONDS)
+	TEST_ASSERT(!QDELETED(shot), "The shot was gone before the slow-mo ended")
+	TEST_ASSERT(replay.tracks[shot], "The shot wasn't recorded")
+	press_again(user)
+	var/until = world.time + 2 SECONDS
+	while(replay.state != 3 && !QDELETED(replay) && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	TEST_ASSERT(!QDELETED(shot), "The shot was gone before the replay")
+	var/datum/sandy_replay_track/track = replay.tracks[shot]
+	var/list/frames = track.frames
+	var/turf/held_at = get_turf(shot)
+	var/mutable_appearance/real_look = new(track.saved_look) // the shot is drawn from the recording now: its real look is kept aside
+	var/real_x = real_look.pixel_x
+	TEST_ASSERT(shot.paused && (shot in replay.held_shots), "The shot flies on while the replay plays")
+	TEST_ASSERT(GLOB.sandy_replay_masked[shot], "The shot isn't drawn from the recording")
+	TEST_ASSERT(held_at != fired_at, "The shot never moved in the slow-mo")
+	TEST_ASSERT(frames[length(frames) - 3] == held_at.x && frames[length(frames) - 2] == held_at.y, "The recording's last frame isn't where the shot is held")
+	var/standins = 0
+	while(!QDELETED(replay) && replay.state == 3)
+		TEST_ASSERT_EQUAL(get_turf(shot), held_at, "The shot moved during the replay")
+		if(standin_near(user))
+			standins++
+		sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(standins, 0, "A second shot was drawn beside the real one")
+	wait_over(user)
+	TEST_ASSERT(!QDELETED(shot), "The shot was gone after the replay")
+	TEST_ASSERT(!shot.paused, "The shot is still held after the replay")
+	TEST_ASSERT(!GLOB.sandy_replay_masked[shot], "The shot is still drawn from the recording")
+	// Back on its real spot when the replay let it go; it may have flown on east since (it is not held any more), but
+	// never sits behind where it was held (a recorded frame left on it).
+	var/real_spot = held_at.x * ICON_SIZE_X + real_x
+	var/now_spot = shot.x * ICON_SIZE_X + shot.pixel_x
+	TEST_ASSERT(now_spot >= real_spot, "The shot isn't back on its real spot ([now_spot - real_spot] px)")
+	TEST_ASSERT(shot.pixel_w == 0 && shot.pixel_z == 0 && shot.alpha > 0, "The shot is left drawn off its spot, or hidden")
+	sleep(0.3 SECONDS)
+	TEST_ASSERT(QDELETED(shot) || get_turf(shot) != held_at, "The shot didn't fly on after the replay")
+	if(!QDELETED(shot))
+		qdel(shot)
+
+/**
+ * A finisher leaves a pose on a body past the slow-mo (the backbreaker's broken back) and cracks in the floor. While
+ * the replay plays, the pose left on the floor isn't drawn (the replay draws the move from its start), and as it ends
+ * the pose and the cracks are there again as they really are: the cracks still at their full strength.
+ */
+/datum/unit_test/voidcrew_cyberware_timestop/replay/pose_left_and_cracks
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/pose_left_and_cracks/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaypose")
+	var/mob/living/carbon/human/victim = make_victim(1, 0)
+	set_window(user, 3 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
+	sleep(0.4 SECONDS)
+	var/datum/chrome_rig/rig = new(victim, SOUTH)
+	TEST_ASSERT(rig.snapshot(), "Test fixture: the rig couldn't picture the victim")
+	var/obj/effect/abstract/chrome_puppet/pose = rig.add_puppet("pose", rig.cut_without_arms())
+	rig.conceal()
+	TEST_ASSERT(replay.tracks[pose], "The rig's picture isn't recorded")
+	// Handed over as the backbreaker does: a pose that lasts, not a move the slow-mo waits for
+	victim.AddComponent(/datum/component/gorilla_fold, rig, 1)
+	var/turf/open/floor/cracked = spot(1, 1)
+	TEST_ASSERT(isfloorturf(cracked), "Test fixture: no floor to crack")
+	var/obj/effect/temp_visual/cyberware_impact_cracks/cracks = new(cracked, "damaged1", 255)
+	TEST_ASSERT(!QDELETED(cracks) && replay.tracks[cracks], "The cracks aren't recorded")
+	sleep(0.3 SECONDS)
+	window.slowmo_time_up()
+	TEST_ASSERT_EQUAL(replay.state, 2, "A pose left on a body held the slow-mo")
+	replay.begin()
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	TEST_ASSERT(pose.invisibility >= INVISIBILITY_ABSTRACT, "The pose left on the body is drawn while the replay plays the move again")
+	wait_over(user)
+	TEST_ASSERT(!QDELETED(pose) && pose.invisibility == 0, "The pose left on the body isn't drawn again after the replay")
+	TEST_ASSERT(!QDELETED(cracks), "Test fixture: the cracks ran out before the replay ended")
+	// Their alpha var holds the end of the fade they are playing (0), so what can be checked is that the replay took the
+	// strength they were made with, which is what they are drawn at again when it ends
+	TEST_ASSERT_EQUAL(cracks.sandy_peak_alpha, 255, "The replay didn't take the strength the cracks were made with")
+	qdel(victim.GetComponent(/datum/component/gorilla_fold))
+
+/// A gun's muzzle flash (tg's, made inside the shooter and shown in their vis_contents) is recorded on the shooter's
+/// tile from the frame it was made in, so a replayed shot has its flash with it.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/muzzle_flash_recorded
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/muzzle_flash_recorded/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayflash")
+	set_window(user, 4 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.2 SECONDS)
+	var/obj/effect/temp_visual/dir_setting/firing_effect/flash = new(user, EAST)
+	var/datum/sandy_replay_track/track = replay.tracks[flash]
+	TEST_ASSERT_NOTNULL(track, "The muzzle flash wasn't recorded")
+	TEST_ASSERT(track.oneshot, "The muzzle flash wasn't recorded as a one-shot effect")
+	var/list/frames = track.frames
+	TEST_ASSERT(length(frames) >= 6, "The muzzle flash has no frame")
+	TEST_ASSERT_EQUAL(frames[1], track.first, "The muzzle flash's first frame isn't the frame it was made in")
+	TEST_ASSERT_EQUAL(frames[3], user.x, "The muzzle flash isn't drawn on the shooter's tile (x)")
+	TEST_ASSERT_EQUAL(frames[4], user.y, "The muzzle flash isn't drawn on the shooter's tile (y)")
+	TEST_ASSERT_EQUAL(frames[6], EAST, "The muzzle flash lost the way the shot went")
+	press_again(user)
+	wait_over(user)
+
+/// The plume a powder gun throws along the shot (made inside the shooter, turned to the shot's own angle) is recorded
+/// too, turned as it was: a replayed diagonal shot keeps it.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/muzzle_plume_recorded
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/muzzle_plume_recorded/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayplume")
+	set_window(user, 4 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.2 SECONDS)
+	var/obj/effect/temp_visual/gun_feel_muzzle_flash/plume = new(user, 135)
+	var/datum/sandy_replay_track/track = replay.tracks[plume]
+	TEST_ASSERT_NOTNULL(track, "The plume of a shot wasn't recorded")
+	var/list/frames = track.frames
+	TEST_ASSERT(length(frames) >= 6, "The plume has no frame")
+	TEST_ASSERT_EQUAL(frames[3], user.x, "The plume isn't drawn on the shooter's tile (x)")
+	TEST_ASSERT_EQUAL(frames[4], user.y, "The plume isn't drawn on the shooter's tile (y)")
+	var/mutable_appearance/look = new(frames[2])
+	var/matrix/turned = matrix()
+	turned.Turn(135)
+	TEST_ASSERT(gun_feel_same_matrix(look.transform, turned), "The recorded plume isn't turned along a south-east shot")
+	press_again(user)
+	wait_over(user)
+
+/// The slash a chrome weapon draws over someone hit lives only in that body's vis_contents: it is recorded on the
+/// body's tile, as a stand-in on the floor can draw it, and stays long enough in the replay to play through.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hit_picture_recorded
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hit_picture_recorded/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayslash")
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 0))
+	set_window(user, 4 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.2 SECONDS)
+	var/obj/effect/abstract/cyberware_anim/slash = cyberware_play_impact(user, victim, "impact_mantis")
+	TEST_ASSERT_NOTNULL(slash, "Test fixture: no slash was drawn over the victim")
+	sleep(0.2 SECONDS)
+	var/datum/sandy_replay_track/track = replay.tracks[slash] || replay.gone[slash]
+	TEST_ASSERT_NOTNULL(track, "The slash over someone hit wasn't recorded")
+	TEST_ASSERT(track.oneshot, "The slash wasn't recorded as a one-shot effect")
+	TEST_ASSERT(track.plays_out > 0, "The slash over someone hit isn't left to play through")
+	var/list/frames = track.frames
+	TEST_ASSERT(length(frames) >= 6, "The slash has no frame")
+	TEST_ASSERT_EQUAL(frames[length(frames) - 3], victim.x, "The slash isn't drawn on the tile of the one hit (x)")
+	TEST_ASSERT_EQUAL(frames[length(frames) - 2], victim.y, "The slash isn't drawn on the tile of the one hit (y)")
+	var/mutable_appearance/look = new(frames[length(frames) - 4])
+	TEST_ASSERT_EQUAL(look.plane, victim.plane, "The recorded slash isn't on the plane of the one hit")
+	TEST_ASSERT_EQUAL(look.layer, ABOVE_MOB_LAYER, "The recorded slash would sort under the body")
+	press_again(user)
+	wait_over(user)
+
+/// tg's blood splash is handed to the recording as it is put down, before it has turned the way the blow went and set
+/// off: it is taken again once it has, turned and with its flight, so a replayed hit has its splash.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/blood_splash_recorded
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/blood_splash_recorded/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaysplash")
+	set_window(user, 4 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.2 SECONDS)
+	var/obj/effect/temp_visual/dir_setting/bloodsplatter/splash = new(spot(1, 0), EAST)
+	var/datum/sandy_replay_track/track = replay.tracks[splash]
+	TEST_ASSERT_NOTNULL(track, "Test fixture: the field didn't hand the blood splash to the recording")
+	var/list/frames = track.frames
+	TEST_ASSERT_EQUAL(frames[6], EAST, "The recorded splash isn't turned the way the blow went")
+	TEST_ASSERT(length(track.events) >= 2, "The recorded splash has no flight: it would replay as nothing")
+	var/list/flight = track.events[2]
+	var/list/steps = flight[4]
+	var/list/step = steps[1]
+	TEST_ASSERT_EQUAL(step["pixel_x"], 16, "The recorded splash doesn't fly the way the blow went")
+	TEST_ASSERT_EQUAL(step["alpha"], 0, "The recorded splash doesn't fade as it flies")
+	press_again(user)
+	wait_over(user)
+
+/// A one-shot effect that only fades (a muzzle flash), compressed past two frames, is held whole for a frame by a step
+/// that changes nothing and then faded: never by a `delay`, through which the client draws it already faded out.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/oneshot_fade_held
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/oneshot_fade_held/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayfade")
+	var/datum/sandy_replay/replay = start_recording(user)
+	var/obj/effect/abstract/sandy_replay_standin/standin = allocate(/obj/effect/abstract/sandy_replay_standin, spot(1, 0))
+	standin.alpha = 255
+	var/list/fade = list(standin)
+	fade["alpha"] = 0
+	fade["time"] = world.tick_lag / 2
+	var/list/chain = list(fade)
+	replay.stretch_oneshot(chain)
+	TEST_ASSERT_EQUAL(length(chain), 2, "The fade wasn't given a frame held whole first")
+	var/list/hold = chain[1]
+	var/list/rest = chain[2]
+	TEST_ASSERT_EQUAL(hold[1], standin, "The held step isn't on the stand-in")
+	TEST_ASSERT_EQUAL(hold["alpha"], 255, "The held step changes the flash")
+	TEST_ASSERT_EQUAL(hold["time"], world.tick_lag, "The flash isn't held for a frame")
+	TEST_ASSERT_NULL(hold["delay"], "The flash is held by a delay")
+	TEST_ASSERT_NULL(rest["delay"], "The fade waits on a delay")
+	TEST_ASSERT_EQUAL(rest["alpha"], 0, "The flash doesn't fade after its held frame")
+	TEST_ASSERT(rest[1] != standin, "The fade starts a new animation instead of following the held frame")
+	press_again(user)
+	wait_over(user)
+
+/// A shot is put on the floor before fire() turns it the way it flies: its first frame is taken once it is fired, so the
+/// replay never draws it unturned on the shooter. One spent before it flew (point blank) isn't drawn at all.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/shot_first_frame_turned
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/shot_first_frame_turned/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayturn")
+	set_window(user, 4 SECONDS)
+	var/mob/living/carbon/human/npc/target = allocate(/mob/living/carbon/human/npc, spot(3, 0))
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.2 SECONDS)
+	var/obj/projectile/bullet/shot = new(spot(0, 0))
+	shot.damage = 0
+	shot.stamina = 0
+	shot.firer = user
+	shot.fired_from = user
+	var/datum/sandy_replay_track/track = replay.tracks[shot]
+	TEST_ASSERT_NOTNULL(track, "The shot wasn't recorded")
+	TEST_ASSERT_EQUAL(length(track.frames), 0, "The shot has a frame before it was fired")
+	shot.aim_projectile(target, spot(0, 0))
+	shot.fire()
+	TEST_ASSERT(length(track.frames) >= 6, "The shot has no frame once fired")
+	var/mutable_appearance/look = new(track.frames[2])
+	TEST_ASSERT_EQUAL(track.frames[1], track.first, "The shot's first frame isn't the frame it was seen in")
+	TEST_ASSERT(!(look.transform ~= matrix()), "The shot's first frame isn't turned the way it flies")
+	var/obj/projectile/bullet/blank = new(spot(0, 0))
+	var/datum/sandy_replay_track/blank_track = replay.tracks[blank]
+	TEST_ASSERT_NOTNULL(blank_track, "The point-blank shot wasn't recorded")
+	qdel(blank)
+	TEST_ASSERT_EQUAL(length(blank_track.frames), 0, "A shot spent before it flew is drawn")
+	press_again(user)
+	wait_over(user)
+
+/// A shooter's muzzle flash and bullet are recorded on the tile it stands on for real: a replayed step onto that tile is
+/// over by the frame its shot is drawn in, so the flash is drawn at the gun, not ahead of a body still gliding there.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/step_lands_before_shot
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/step_lands_before_shot/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaystepshot")
+	set_window(user, 4 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.2 SECONDS)
+	var/datum/sandy_replay_track/user_track = replay.tracks[user]
+	TEST_ASSERT_NOTNULL(user_track, "The user isn't recorded")
+	var/obj/effect/temp_visual/dir_setting/firing_effect/flash = new(user, EAST)
+	var/datum/sandy_replay_track/flash_track = replay.tracks[flash]
+	TEST_ASSERT_NOTNULL(flash_track, "The muzzle flash wasn't recorded")
+	TEST_ASSERT_EQUAL(length(user_track.shot_frames), 1, "The muzzle flash isn't recorded as the user's shot")
+	var/list/shot = user_track.shot_frames[1]
+	TEST_ASSERT_EQUAL(shot[1], flash_track.first, "The user's shot isn't at the frame its flash is drawn in")
+	TEST_ASSERT_EQUAL(shot[2], user.x, "The user's shot isn't on the tile it was fired from (x)")
+	TEST_ASSERT_EQUAL(shot[3], user.y, "The user's shot isn't on the tile it was fired from (y)")
+	// Played back: two tiles east in frame 10, a shot from there in frame 11, the next step not until frame 20.
+	var/look = user.appearance
+	var/datum/sandy_replay_track/walker = new
+	walker.frames = list(0, look, user.x - 2, user.y, user.z, EAST, 10, look, user.x, user.y, user.z, EAST, 20, look, user.x - 2, user.y, user.z, WEST)
+	walker.cursor = 0
+	TEST_ASSERT(replay.advance(walker, 10), "The step wasn't played")
+	TEST_ASSERT(walker.glide_time > world.tick_lag, "Without a shot the step doesn't glide on toward the next, as a walk does")
+	walker.shot_frames = list(list(11, user.x, user.y))
+	walker.cursor = 0
+	walker.glide_until = 0
+	TEST_ASSERT(replay.advance(walker, 10), "The step wasn't played")
+	TEST_ASSERT(walker.glide_until - world.time <= world.tick_lag, "The step is still gliding when the shot fired from its tile is drawn")
+	// A shot fired from the tile it stepped off, in the frame of the step, doesn't hurry the step.
+	walker.shot_frames = list(list(10, user.x - 2, user.y))
+	walker.cursor = 0
+	walker.glide_until = 0
+	TEST_ASSERT(replay.advance(walker, 10), "The step wasn't played")
+	TEST_ASSERT(walker.glide_time > world.tick_lag, "A shot fired before the step cuts the step's glide short")
+	press_again(user)
+	wait_over(user)
+
+/// The replay's hold is a pause: an NPC's clocks (its next click, a blackboard deadline) and a held mech's have as long
+/// left when the replay ends as when it began, instead of running out during it, even one due a tick into the hold.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hold_pauses_clocks
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hold_pauses_clocks/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayclocks")
+	set_window(user, 3 SECONDS)
+	var/mob/living/carbon/human/npc/gunner = allocate(/mob/living/carbon/human/npc, spot(5, 0))
+	var/obj/vehicle/sealed/mecha/ripley/mech = allocate(/obj/vehicle/sealed/mecha/ripley, spot(2, 3))
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.6 SECONDS)
+	gunner.forceMove(spot(5, 1))
+	sleep(0.6 SECONDS)
+	press_again(user)
+	TEST_ASSERT_EQUAL(replay.state, 2, "Ending the slow-mo didn't queue the replay")
+	TEST_ASSERT_NOTNULL(gunner.ai_controller, "The NPC has no AI")
+	gunner.next_move = world.time + 1 // due before the hold is over
+	gunner.ai_controller.set_blackboard_key("human_npc_next_shot", world.time + 12) // BB_HUMAN_NPC_NEXT_SHOT
+	mech.cooldown_vehicle_move = world.time + 10
+	replay.begin()
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	replay.hold_mech(mech)
+	var/began = world.time
+	wait_over(user)
+	var/held_for = world.time - began
+	TEST_ASSERT(held_for >= 3 * world.tick_lag, "The replay was over too fast to test anything ([held_for] ds)")
+	// At most one tick has run since the replay let go (wait_over()'s poll).
+	var/move_left = gunner.next_move - world.time
+	var/shot_left = gunner.ai_controller.blackboard["human_npc_next_shot"] - world.time
+	var/mech_left = mech.cooldown_vehicle_move - world.time
+	log_test("replay/hold_pauses_clocks: held [held_for] ds; left after: next_move [move_left], next shot [shot_left], mech move [mech_left]")
+	TEST_ASSERT(move_left <= 1 && move_left >= 1 - world.tick_lag - 0.01, "The NPC's next click had 1 ds left when the replay began and [move_left] when it ended")
+	TEST_ASSERT(shot_left <= 12 && shot_left >= 12 - world.tick_lag - 0.01, "The NPC's next shot had 12 ds left when the replay began and [shot_left] when it ended")
+	TEST_ASSERT(mech_left <= 10 && mech_left >= 10 - world.tick_lag - 0.01, "The mech's move cooldown had 10 ds left when the replay began and [mech_left] when it ended")
+	TEST_ASSERT(!GLOB.sandy_replay_stopped_clocks[gunner] && !GLOB.sandy_replay_stopped_clocks[mech], "The replay left a stopped clock behind")
+
+/// A turret that counts every target it is handed and shoots none, switched off so only the test drives it
+/obj/machinery/porta_turret/sandy_replay_test_probe
+	var/aimed = 0
+
+/obj/machinery/porta_turret/sandy_replay_test_probe/target(atom/movable/target)
+	aimed++
+	return FALSE
+
+/// The hold pauses the machines the slow-mo slows: a turret near the user takes no aim during it and has as long to
+/// its next shot after it, and a lit grenade's fuse has as long left, instead of going off while everyone is held.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hold_pauses_turrets
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hold_pauses_turrets/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayturret")
+	set_window(user, 3 SECONDS)
+	var/obj/machinery/porta_turret/sandy_replay_test_probe/turret = allocate(/obj/machinery/porta_turret/sandy_replay_test_probe, spot(3, 0))
+	turret.on = FALSE
+	turret.check_should_process()
+	turret.raised = TRUE
+	var/obj/item/grenade/bomb = allocate(/obj/item/grenade, spot(2, 2))
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(1.2 SECONDS)
+	press_again(user)
+	TEST_ASSERT_EQUAL(replay.state, 2, "Ending the slow-mo didn't queue the replay")
+	turret.last_fired = world.time + 1 - turret.shot_delay // next shot due before the hold is over
+	bomb.arm_grenade(null, 1, msg = FALSE) // due before the hold is over
+	replay.begin()
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	TEST_ASSERT(replay.held_machines[turret], "The replay didn't hold a turret in reach")
+	TEST_ASSERT(replay.held_machines[bomb], "The replay didn't hold a lit grenade in reach")
+	var/began = world.time
+	var/until = world.time + 5 SECONDS
+	while(GLOB.sandy_replays[user] && world.time < until)
+		turret.tryToShootAt(list(user))
+		sleep(world.tick_lag)
+	TEST_ASSERT_NULL(GLOB.sandy_replays[user], "The replay never ended")
+	var/held_for = world.time - began
+	TEST_ASSERT(held_for >= 3 * world.tick_lag, "The replay was over too fast to test anything ([held_for] ds)")
+	TEST_ASSERT_EQUAL(turret.aimed, 0, "A held turret took aim during the replay")
+	var/shot_left = turret.last_fired + turret.shot_delay - world.time
+	var/fuse_left = bomb.cyberware_fuse_at - world.time
+	log_test("replay/hold_pauses_turrets: held [held_for] ds; left after: turret shot [shot_left], fuse [fuse_left]")
+	TEST_ASSERT(!(bomb.dud_flags & GRENADE_USED), "A held grenade went off during the replay")
+	TEST_ASSERT(shot_left <= 1 && shot_left >= 1 - world.tick_lag - 0.01, "The turret's next shot had 1 ds left when the replay began and [shot_left] when it ended")
+	TEST_ASSERT(fuse_left <= 1 && fuse_left >= 1 - world.tick_lag - 0.01, "The grenade's fuse had 1 ds left when the replay began and [fuse_left] when it ended")
+	TEST_ASSERT(!GLOB.sandy_replay_stopped_clocks[turret] && !GLOB.sandy_replay_stopped_clocks[bomb], "The replay left a stopped clock behind")
+	bomb.cyberware_fuse_at = 0 // don't let it go off after the test
+	turret.tryToShootAt(list(user))
+	TEST_ASSERT_EQUAL(turret.aimed, 1, "The turret still won't take aim after the replay")
+
+/// Two replays holding one NPC at once push its clocks once, so it has the same time left when the last lets go, and
+/// a player's clocks are never stopped.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/overlapping_holds_push_once
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/overlapping_holds_push_once/Run()
+	var/mob/living/carbon/human/npc/npc = allocate(/mob/living/carbon/human/npc, spot(0, 0))
+	var/mob/living/carbon/human/player = allocate(/mob/living/carbon/human/consistent, spot(2, 0))
+	player.key = "sandyreplayplayerclock"
+	ADD_TRAIT(npc, TRAIT_AI_PAUSED, TRAIT_SOURCE_UNIT_TESTS) // it would go for the player
+	var/began = world.time
+	npc.next_move = began + 20
+	player.next_move = began + 20
+	sandy_replay_clock_stop(npc)
+	sandy_replay_clock_stop(player)
+	sleep(0.3 SECONDS)
+	sandy_replay_clock_stop(npc) // a second replay takes it
+	sleep(0.3 SECONDS)
+	sandy_replay_clock_start(npc) // the first lets go: the second still holds it
+	TEST_ASSERT_EQUAL(npc.next_move - world.time, 20, "An NPC's clock ran while another replay still held it")
+	sleep(0.3 SECONDS)
+	sandy_replay_clock_start(npc)
+	sandy_replay_clock_start(player)
+	TEST_ASSERT_EQUAL(npc.next_move - world.time, 20, "An NPC held by two replays at once didn't get exactly its held time back")
+	TEST_ASSERT_EQUAL(player.next_move, began + 20, "A player's clock was pushed by the replay's hold")
+	TEST_ASSERT(!GLOB.sandy_replay_stopped_clocks[npc] && !GLOB.sandy_replay_stopped_clocks[player], "A stopped clock was left behind")
+
+/// The sounds the replay played to `listener` of `file`, as /sound datums
+/datum/unit_test/voidcrew_cyberware_timestop/replay/proc/heard_by(mob/listener, file)
+	. = list()
+	for(var/list/entry as anything in GLOB.sandy_replay_heard)
+		var/sound/heard = entry[2]
+		if(entry[1] == listener && heard.file == file)
+			. += heard
+
+/// A user who ends the slow-mo away from where a sound was made hears it in the replay from where their view is (their
+/// replayed self), not from where their body stands
+/datum/unit_test/voidcrew_cyberware_timestop/replay/sound_from_view
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/sound_from_view/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaysoundview")
+	set_window(user, 2 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	GLOB.sandy_replay_heard.Cut()
+	playsound(spot(0, 1), 'sound/items/weapons/genhit1.ogg', 80, FALSE)
+	sleep(0.3 SECONDS)
+	user.forceMove(spot(2, 0))
+	user.forceMove(spot(4, 0))
+	user.forceMove(spot(5, 0))
+	sleep(0.3 SECONDS)
+	press_again(user)
+	TEST_ASSERT_EQUAL(replay.state, 2, "The replay isn't about to play")
+	// What follow() does for a user with a client: the view stands on the replayed self, here still where it started.
+	replay.eye = new /obj/effect/abstract/sandy_replay_eye(spot(0, 0))
+	wait_over(user)
+	var/list/heard = heard_by(user, 'sound/items/weapons/genhit1.ogg')
+	TEST_ASSERT_EQUAL(length(heard), 1, "The user wasn't played the recorded sound once")
+	var/sound/sound = heard[1]
+	TEST_ASSERT(sound.x == 0 && sound.z == 1, "The sound was placed from the real body ([sound.x], [sound.z]), not from the view (0, 1)")
+	TEST_ASSERT(abs(sound.volume - 48) < 0.5, "The sound played at [sound.volume], not at its recorded volume under the surge (48)")
+
+/// A busy room filling the recording doesn't crowd out the user's own sounds
+/datum/unit_test/voidcrew_cyberware_timestop/replay/sound_cap_keeps_own
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/sound_cap_keeps_own/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaysoundcap")
+	set_window(user, 2 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	for(var/i in 1 to 200)
+		replay.sounds += list(list(0, spot(4, 4), 'sound/items/weapons/genhit.ogg', 50, FALSE, 0, 6, 0, TRUE, TRUE, 1, TRUE, null))
+	playsound(spot(4, 3), 'sound/items/weapons/genhit1.ogg', 50, FALSE)
+	TEST_ASSERT_EQUAL(length(replay.sounds), 200, "The world's sounds went past their cap")
+	playsound(spot(1, 0), 'sound/items/weapons/genhit2.ogg', 50, FALSE)
+	TEST_ASSERT_EQUAL(length(replay.sounds), 201, "A blow on the user's next tile wasn't kept past the world's cap")
+	replay.hear(spot(4, 2), list('sound/items/weapons/genhit3.ogg', 50, FALSE, 0, 6, 0, TRUE, TRUE, 1, TRUE, null), user)
+	TEST_ASSERT_EQUAL(length(replay.sounds), 202, "A sound the user set off wasn't kept past the world's cap")
+	replay.sounds.Cut()
+	press_again(user)
+	wait_over(user)
+
+/// The same sound starting many times at once in the replay is heard once; a different one still plays
+/datum/unit_test/voidcrew_cyberware_timestop/replay/sound_pileup_thinned
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/sound_pileup_thinned/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaysoundpile")
+	set_window(user, 2 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	GLOB.sandy_replay_heard.Cut()
+	for(var/dx in 1 to 4)
+		playsound(spot(dx, 1), 'sound/items/weapons/genhit1.ogg', 50, FALSE)
+	playsound(spot(0, 0), 'sound/items/weapons/genhit2.ogg', 50, FALSE)
+	TEST_ASSERT_EQUAL(length(replay.sounds), 5, "The sounds weren't all recorded")
+	sleep(0.3 SECONDS)
+	press_again(user)
+	wait_over(user)
+	TEST_ASSERT_EQUAL(length(heard_by(user, 'sound/items/weapons/genhit1.ogg')), 1, "Four starts of one sound in the same moment weren't heard as one")
+	TEST_ASSERT_EQUAL(length(heard_by(user, 'sound/items/weapons/genhit2.ogg')), 1, "A different sound in the same moment was thinned out")
+
+/// The replay drags the user's trail behind his walk at the replay's speed, and none of it outlives the replay
+/datum/unit_test/voidcrew_cyberware_timestop/replay/trail
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/trail/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaytrail")
+	set_window(user, 6 SECONDS)
+	start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
+	var/length = window.trail_length
+	window.last_step_at = world.time // already walking: no first step's guessed pace
+	// A step or two a recorded frame (one frame is 0.5 s of the slow-mo): the replay sees each step, not a back and
+	// forth folded into one.
+	walk_trail(user, 16, 0.3 SECONDS)
+	var/peak = 0
+	var/list/off = list()
+	var/until = world.time + 8 SECONDS
+	while(world.time < until && (GLOB.sandy_replays[user] || window_of(user)))
+		peak = max(peak, count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade/replay))
+		off += off_colour_trail(user, /obj/effect/temp_visual/decoy/fading/cascade/replay)
+		sleep(world.tick_lag)
+	TEST_ASSERT_NULL(GLOB.sandy_replays[user], "The replay never ended")
+	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["played"], TRUE, "The replay didn't play")
+	log_test("replay/trail: [GLOB.sandy_replay_last["afterimages"]] afterimages laid, at most [peak] at once (trail [length])")
+	TEST_ASSERT(GLOB.sandy_replay_last["afterimages"] >= length, "The replay laid [GLOB.sandy_replay_last["afterimages"]] afterimages for a 16-tile walk")
+	TEST_ASSERT(!length(off), "Replayed afterimages not coloured by age: [jointext(off.Copy(1, min(length(off), 4) + 1), "; ")]")
+	TEST_ASSERT(peak >= length / 2, "At most [peak] afterimages at once behind the replayed walk, not about [length]")
+	sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade), 0, "An afterimage outlived the replay")
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/// A surger who crosses more tiles between two recorded moments than a walk does (a sprint into a lunge) has not
+/// teleported: the replay lays his trail over them
+/datum/unit_test/voidcrew_cyberware_timestop/replay/trail_dash
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/trail_dash/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaydash")
+	set_window(user, 3 SECONDS)
+	start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
+	window.last_step_at = world.time
+	sleep(0.6 SECONDS) // a recorded moment standing still
+	for(var/i in 1 to 4) // four tiles inside one recorded moment (half a second of the slow-mo)
+		TEST_ASSERT(user.Move(get_step(user, EAST), EAST), "Test fixture: the surger couldn't step")
+	sleep(0.6 SECONDS)
+	press_again(user)
+	wait_over(user)
+	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["played"], TRUE, "The replay didn't play")
+	TEST_ASSERT(GLOB.sandy_replay_last["afterimages"] >= 4, "The replay laid [GLOB.sandy_replay_last["afterimages"]] afterimages for a four-tile dash")
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/// A corner turned inside one recorded moment is replayed round the corner: the trail is laid on the tile he turned
+/// on, not along the diagonal between the two samples.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/trail_corner
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/trail_corner/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaycorner")
+	set_window(user, 3 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
+	window.last_step_at = world.time
+	sleep(0.6 SECONDS) // a recorded moment standing still
+	var/turf/corner = spot(1, 0)
+	TEST_ASSERT(user.Move(corner, EAST), "Test fixture: the surger couldn't step east")
+	TEST_ASSERT(user.Move(get_step(corner, NORTH), NORTH), "Test fixture: the surger couldn't step north")
+	sleep(0.6 SECONDS)
+	var/datum/sandy_replay_track/track = replay.tracks[user]
+	TEST_ASSERT_NOTNULL(track, "Test fixture: the surger isn't recorded")
+	TEST_ASSERT_EQUAL(length(track.ways), 1, "The two steps taken inside one recorded moment weren't kept")
+	var/list/kept = track.ways[track.ways[1]]
+	TEST_ASSERT_EQUAL(length(kept), 4, "The steps kept for the corner aren't two tiles")
+	TEST_ASSERT(kept[1] == corner.x && kept[2] == corner.y, "The corner tile isn't the first step kept")
+	press_again(user)
+	wait_over(user)
+	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["played"], TRUE, "The replay didn't play")
+	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["ways_followed"], 1, "The replay didn't lay the trail round the corner the surger turned")
+	TEST_ASSERT(GLOB.sandy_replay_last["afterimages"] >= 2, "The replay laid [GLOB.sandy_replay_last["afterimages"]] afterimages for two steps round a corner")
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/// Blood still painting in when the recording ended carries on, when the replay hands it back, from where the replay's
+/// last frame had it: its keyframes move on by the time the replay took.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/paint_carries_on
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/paint_carries_on/Run()
+	var/obj/effect/decal/cleanable/blood/hv_spray/spray = allocate(/obj/effect/decal/cleanable/blood/hv_spray, spot(1, 1))
+	var/matrix/full = matrix(spray.transform)
+	spray.hv_vis_paint(list(list(matrix(full), 0, 0, LINEAR_EASING), list(full, 255, 2 SECONDS, LINEAR_EASING)))
+	TEST_ASSERT_EQUAL(length(spray.hv_vis_painting), 2, "Test fixture: the spray isn't painting in")
+	var/list/last = spray.hv_vis_painting[2]
+	var/done_at = last[3]
+	sleep(0.5 SECONDS) // the replay plays: the paint runs on unseen
+	var/list/ahead = spray.sandy_replay_paint_now()
+	TEST_ASSERT(ahead && ahead[2] > 40, "Test fixture: the paint didn't run on (alpha [ahead ? ahead[2] : "none"])")
+	spray.sandy_replay_resume(0.5 SECONDS)
+	last = spray.hv_vis_painting[2]
+	TEST_ASSERT_EQUAL(last[3], done_at + 0.5 SECONDS, "The paint's keyframes didn't move on by the time the replay took")
+	var/list/shown = spray.sandy_replay_paint_now()
+	TEST_ASSERT(shown && shown[2] < 10, "The paint didn't carry on from where the recording ended (alpha [shown ? shown[2] : "none"])")
+	spray.sandy_replay_resume()
+	last = spray.hv_vis_painting[2]
+	TEST_ASSERT_EQUAL(last[3], done_at + 0.5 SECONDS, "A hand-back with no replay behind it moved the paint")
+	// Timed for a slow-mo that then ended sooner: what is left takes its own time, not ten times it
+	var/list/first = spray.hv_vis_painting[1]
+	last[3] = first[3] + 20 SECONDS
+	var/left = spray.sandy_replay_paint_carry(0.1 SECONDS)
+	TEST_ASSERT(left > 1.5 SECONDS && left <= 2 SECONDS, "A paint stretched by the slow-mo has [left] ds left once it is over, not what is left of its own 2 seconds")
+	last = spray.hv_vis_painting[2]
+	TEST_ASSERT(abs(last[3] - (world.time + left)) < 0.01, "The stretched paint's last keyframe isn't where it now ends")
+
+/// The replay's hold hands an AI back as it took it: one that was running by hand where tg would have it off (or the
+/// other way round) isn't left in the status tg works out afresh when the pause lifts.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hold_keeps_ai_status
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/hold_keeps_ai_status/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayaistatus")
+	var/mob/living/carbon/human/npc/raider = allocate(/mob/living/carbon/human/npc, spot(3, 0))
+	var/datum/ai_controller/brain = raider.ai_controller
+	TEST_ASSERT_NOTNULL(brain, "Test fixture: the NPC has no AI controller")
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(0.5 SECONDS)
+	TEST_ASSERT(brain.get_expected_ai_status() != AI_STATUS_ON, "Test fixture: tg already expects this AI on")
+	brain.set_ai_status(AI_STATUS_ON) // by hand: nobody is on the level, so tg itself would keep it off
+	press_again(user)
+	sleep(0.2 SECONDS)
+	TEST_ASSERT(held(raider), "Test fixture: the replay doesn't hold the NPC")
+	var/list/before = replay.ai_before[raider]
+	TEST_ASSERT_EQUAL(before?[1], AI_STATUS_ON, "Test fixture: the AI wasn't on any more when the hold began")
+	wait_over(user)
+	TEST_ASSERT(!held(raider), "The NPC is still held after the replay")
+	TEST_ASSERT_EQUAL(brain.ai_status, AI_STATUS_ON, "An AI that was running when the replay's hold began was left switched off after it")
+	brain.set_ai_status(AI_STATUS_OFF)
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/// A body knocked flying as the slow-mo ends hangs in the air for the replay and flies on after it: it is never drawn
+/// where the recording last saw it while it really lands somewhere else.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/thrown_body_held
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/thrown_body_held/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplaythrown")
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 2))
+	var/datum/sandy_replay/replay = start_recording(user)
+	sleep(1 SECONDS)
+	TEST_ASSERT_NOTNULL(replay.tracks[victim], "Test fixture: the body isn't recorded")
+	victim.throw_at(spot(5, 2), 4, 1)
+	sleep(world.tick_lag)
+	var/datum/thrownthing/flight = victim.throwing
+	TEST_ASSERT_NOTNULL(flight, "Test fixture: the body isn't in flight")
+	press_again(user)
+	TEST_ASSERT(flight.paused, "A body in flight as the slow-mo ended wasn't held for the replay")
+	var/turf/hung = get_turf(victim)
+	sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(get_turf(victim), hung, "A body in flight flew on under the replay")
+	wait_over(user)
+	var/until = world.time + 3 SECONDS
+	while(victim.throwing && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT_NULL(victim.throwing, "The body never landed after the replay")
+	TEST_ASSERT(get_turf(victim) != hung, "The body didn't fly on once the replay let it go")
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/// What happens inside the first frame's half-second span (steps, a drawn weapon, a wound, spilled blood) isn't
+/// folded into frame 0: the replay opens where the user stood when the slow-mo began, with the Cascade's spine already
+/// lit, and replays those first steps with their trail.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/first
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/first/Run()
+	var/mob/living/carbon/human/user = make_user(spot(0, 0), "sandyreplayfirst")
+	set_window(user, 3 SECONDS)
+	var/mob/living/carbon/human/npc/victim = allocate(/mob/living/carbon/human/npc, spot(2, 1))
+	var/obj/item/crowbar/still = allocate(/obj/item/crowbar, spot(0, 2))
+	var/obj/item/wrench/wrench = allocate(/obj/item/wrench, spot(3, 3))
+	var/datum/sandy_replay/replay = start_recording(user)
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = locate() in user.organs
+	var/datum/sandy_replay_track/user_track = replay.tracks[user]
+	TEST_ASSERT_NOTNULL(user_track, "Test fixture: the user isn't recorded")
+	TEST_ASSERT(findtext(lattice.node_look, "boot") == 1, "Test fixture: the Cascade's spine isn't still booting ([lattice.node_look])")
+	TEST_ASSERT(user_track.frames[2] != replay.clean_look(user), "Frame 0 kept the Cascade's half-lit boot spine")
+	var/old = lattice.node_look
+	lattice.node_look = "lit"
+	user.update_body_parts()
+	TEST_ASSERT_EQUAL(user_track.frames[2], replay.clean_look(user), "Frame 0 didn't open with the Cascade's lit spine")
+	lattice.node_look = old
+	user.update_body_parts()
+
+	// Still inside frame 0's span: step round a corner, take a weapon in hand, wound a body and spill blood.
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
+	window.last_step_at = world.time
+	TEST_ASSERT(user.Move(spot(1, 0), EAST), "Test fixture: the surger couldn't step east")
+	TEST_ASSERT(user.Move(spot(1, 1), NORTH), "Test fixture: the surger couldn't step north")
+	TEST_ASSERT(user.put_in_active_hand(wrench), "Test fixture: the weapon wouldn't go in the user's hand")
+	victim.cause_wound_of_type_and_severity(WOUND_SLASH, victim.get_bodypart(BODY_ZONE_CHEST), WOUND_SEVERITY_SEVERE)
+	var/obj/effect/decal/cleanable/blood/blood = allocate(/obj/effect/decal/cleanable/blood, spot(2, 0))
+	TEST_ASSERT_EQUAL(replay.frame_now(), 0, "Test fixture: the first frame's span was already over")
+
+	sleep(0.6 SECONDS)
+	var/datum/sandy_replay_track/track = replay.tracks[blood]
+	TEST_ASSERT_NOTNULL(track, "Blood spilled in the first half second wasn't recorded")
+	TEST_ASSERT(track.first >= 1, "Blood spilled in the first half second was given frame 0 ([track.first])")
+	TEST_ASSERT(user_track.frames[3] == spot(0, 0).x && user_track.frames[4] == spot(0, 0).y, "Frame 0 moved off the tile the slow-mo began on")
+	TEST_ASSERT_EQUAL(length(user_track.ways), 1, "The corner turned in the first half second wasn't kept")
+
+	press_again(user)
+	deltimer(replay.begin_timer)
+	var/real = real_look(user)
+	var/was = real_look(victim)
+	replay.begin()
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	TEST_ASSERT(!GLOB.sandy_replay_masked[still], "An untouched prop was replayed")
+	TEST_ASSERT(user.pixel_w == -32 && user.pixel_z == -32, "Frame 0 doesn't draw the user back on the tile the slow-mo began on ([user.pixel_w],[user.pixel_z])")
+	var/mutable_appearance/now = new(user)
+	var/mutable_appearance/before = new(real)
+	TEST_ASSERT(length(now.overlays) < length(before.overlays), "Frame 0 already shows what the user put in their hand in the first half second")
+	TEST_ASSERT(victim.appearance != was, "A body hurt in the first half second opens the replay already hurt")
+	TEST_ASSERT_EQUAL(blood.alpha, 0, "Blood spilled in the first half second shows at frame 0")
+
+	wait_over(user)
+	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["played"], TRUE, "The replay didn't play")
+	TEST_ASSERT_EQUAL(GLOB.sandy_replay_last["ways_followed"], 1, "The replay didn't follow the corner turned in the first half second")
+	TEST_ASSERT(GLOB.sandy_replay_last["afterimages"] >= 2, "The first half second's steps left [GLOB.sandy_replay_last["afterimages"]] afterimages")
+	TEST_ASSERT(victim.appearance == was, "The hurt body didn't end the replay as it really was")
+	TEST_ASSERT_EQUAL(blood.alpha, 255, "Blood spilled in the first half second stayed hidden after the replay")
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+/// No trail afterimage is ever laid on a tile the replayed user has not left yet, on a straight dash or round a corner,
+/// and waiting for the tick he leaves it keeps each copy's colour age and life ending when they would have.
+/datum/unit_test/voidcrew_cyberware_timestop/replay/ahead
+
+/datum/unit_test/voidcrew_cyberware_timestop/replay/ahead/Run()
+	var/turf/start = spot(0, 0)
+	var/mob/living/carbon/human/user = make_user(start, "sandyreplayahead")
+	set_window(user, 5 SECONDS)
+	var/datum/sandy_replay/replay = start_recording(user)
+	var/datum/status_effect/cyberware_cascade_window/window = window_of(user)
+	window.last_step_at = world.time
+	sleep(0.5 SECONDS) // a three-tile straight dash inside one recorded frame (the test room is five tiles wide)
+	for(var/i in 1 to 3)
+		TEST_ASSERT(user.Move(get_step(user, EAST), EAST), "Test fixture: the surger couldn't dash east")
+	sleep(0.5 SECONDS) // next frame: a corner turn inside one frame
+	var/turf/corner = spot(4, 0)
+	TEST_ASSERT(user.Move(corner, EAST), "Test fixture: the surger couldn't step onto the corner")
+	TEST_ASSERT(user.Move(get_step(corner, NORTH), NORTH), "Test fixture: the surger couldn't turn north")
+	sleep(0.5 SECONDS) // next frame: another step north, so the corner glides over a single tick
+	TEST_ASSERT(user.Move(spot(4, 2), NORTH), "Test fixture: the surger couldn't step north again")
+	sleep(1.5 SECONDS) // room for the dash's copies to finish their own life inside the replay
+
+	press_again(user)
+	var/until = world.time + 2 SECONDS
+	while(replay.state != 3 && !QDELETED(replay) && world.time < until)
+		sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(replay.state, 3, "The replay didn't start")
+	var/datum/sandy_replay_track/user_track = replay.tracks[user]
+	var/list/frames = user_track.frames
+	var/drawn = 0
+	var/began = 0
+	var/done_at = 0
+	var/stalled_at = 0
+	var/peak = 0
+	var/list/ahead = list()
+	var/list/off = list()
+	until = world.time + 5 SECONDS
+	while(!QDELETED(replay) && replay.state == 3 && world.time < until)
+		for(var/waited in 1 to 2)
+			if(QDELETED(replay) || replay.state != 3)
+				break
+			var/at = user_track.cursor
+			if(at >= 0)
+				var/left = user_track.glide_until - world.time
+				var/list/still = (left > 0 && user_track.glide_time > 0) ? replay.glide_at(user_track, left) : list(0, 0)
+				var/now_spot = (frames[at + 3] - start.x) * 32 + still[1] + (frames[at + 4] - start.y) * 32 + still[2]
+				if(left > 0 && user_track.glide_way)
+					var/list/steps = replay.glide_legs(user_track, left)
+					if(left == user_track.glide_time && length(steps) != 2)
+						ahead += "corner glide had [length(steps)] legs"
+					drawn++
+				for(var/obj/effect/temp_visual/decoy/fading/cascade/replay/image as anything in replay.trail_copies)
+					if(QDELETED(image) || !isturf(image.loc))
+						continue
+					var/real_spot = (image.x - start.x) * 32 + (image.y - start.y) * 32
+					if(real_spot > now_spot + 0.01)
+						ahead += "tile ([image.x - start.x],[image.y - start.y]) at [real_spot] px while puppet is at [now_spot] px"
+					if(!began && image.x == start.x && image.y == start.y && !image.pixel_w && !image.pixel_z)
+						began = world.time
+						done_at = world.time + image.duration
+					if(!stalled_at && image.x == start.x + 1 && image.y == start.y && !image.pixel_w && !image.pixel_z)
+						stalled_at = world.time
+						peak = world.time + image.duration
+				off += off_colour_trail(user, /obj/effect/temp_visual/decoy/fading/cascade/replay)
+			if(waited == 1)
+				sleep(0)
+		sleep(world.tick_lag)
+	wait_over(user)
+	TEST_ASSERT(!length(ahead), "Afterimages showed ahead of the puppet: [jointext(ahead.Copy(1, min(length(ahead), 4) + 1), "; ")]")
+	TEST_ASSERT(drawn >= 1, "The corner's glide never played")
+	TEST_ASSERT(began > 0 && stalled_at >= began + world.tick_lag, "The dash's second tile didn't wait for the next tick ([began] -> [stalled_at])")
+	TEST_ASSERT(peak > done_at && peak - done_at < world.tick_lag, "Waiting a tick shifted when the delayed copy's life ends ([done_at] -> [peak])")
+	TEST_ASSERT(!length(off), "Delayed afterimages not coloured by age: [jointext(off.Copy(1, min(length(off), 4) + 1), "; ")]")
+	TEST_ASSERT(GLOB.sandy_replay_last["ways_followed"] >= 1, "The replay didn't follow the way the surger went (the dash and the corner are each one)")
+	TEST_ASSERT(GLOB.sandy_replay_last["afterimages"] >= 6, "The replay laid [GLOB.sandy_replay_last["afterimages"]] afterimages across the dash and corner")
+	sleep(world.tick_lag)
+	TEST_ASSERT_EQUAL(count_trail(user, /obj/effect/temp_visual/decoy/fading/cascade), 0, "An afterimage outlived the replay")
+	user.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)

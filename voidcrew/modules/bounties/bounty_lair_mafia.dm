@@ -157,7 +157,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
  */
 /proc/bounty_mafia_room_crew(area_type)
 	var/type_text = "[area_type]"
-	var/static/marker = "/mafia_club/"
+	var/marker = "/mafia_club/"
 	var/at = findtext(type_text, marker)
 	if(!at)
 		return null
@@ -471,7 +471,9 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	var/mafia_volley = BOUNTY_MOBSTER_PISTOL_VOLLEY
 	var/mafia_volley_gap = BOUNTY_MOBSTER_PISTOL_VOLLEY_GAP
 	/// From the end of one volley to the start of the next
-	var/mafia_cooldown = BOUNTY_MOBSTER_PISTOL_COOLDOWN
+	var/mafia_cooldown = BOUNTY_MOBSTER_PISTOL_STRING_PAUSE
+	/// Its gun is set to single shots with its own fire selector before it fires (a pistol: a string of single shots)
+	var/mafia_single_fire = FALSE
 	/// What it says as it reloads ("[voice]_[context]"), how often, and the sound of its hand going for a magazine
 	var/mafia_reload_context = "reload"
 	var/mafia_reload_chance = 35
@@ -777,6 +779,8 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 /mob/living/carbon/human/npc/bounty_mafia/proc/mafia_target_ok(mob/living/target)
 	if(!bounty_mafia_may_hurt(target) || faction_check_atom(target))
 		return FALSE
+	if(cyberware_camo_hides(target, src)) // optical camo (cyberware_stealth.dm)
+		return FALSE
 	var/turf/spot = get_turf(target)
 	return spot && spot.z == z && get_dist(src, spot) <= BOUNTY_MOBSTER_CHASE
 
@@ -894,11 +898,12 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	if(mafia_reload_context && prob(mafia_reload_chance))
 		mafia_bark(mafia_reload_context)
 
-/// A gunman with a Stechkin
+/// A gunman with a Stechkin, fired a single shot at a time
 /mob/living/carbon/human/npc/bounty_mafia/pistol
 	npc_name = "mobster gunman"
 	npc_look = /obj/effect/mob_spawn/corpse/human/bounty_mafia/pistol
 	npc_outfit = /datum/outfit/bounty_mafia_goon/pistol/armed
+	mafia_single_fire = TRUE
 
 /// An enforcer with an Uzi that spins up before each volley
 /mob/living/carbon/human/npc/bounty_mafia/smg
@@ -1785,6 +1790,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	rocket.rocket_area_ref = mech_home_ref
 	rocket.firer = src
 	rocket.fired_from = src
+	rocket.npc_shot_hits_allies = TRUE
 	rocket.range = get_dist(start, spot) + 3
 	rocket.maximum_range = rocket.range
 	rocket.aim_projectile(spot, src)
@@ -1857,6 +1863,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 			bullet.maximum_range = max_range
 		bullet.firer = src
 		bullet.fired_from = src
+		bullet.npc_shot_hits_allies = TRUE
 		bullet.spread = spread
 		bullet.aim_projectile(target, src, null, weapon.shot_spread())
 		if(QDELETED(bullet))
@@ -2015,7 +2022,8 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	mafia_windup_sound = 'sound/items/weapons/gun/pistol/rack_small.ogg'
 	mafia_volley = BOUNTY_DON_VOLLEY
 	mafia_volley_gap = BOUNTY_DON_VOLLEY_GAP
-	mafia_cooldown = BOUNTY_DON_COOLDOWN
+	mafia_cooldown = BOUNTY_DON_STRING_PAUSE
+	mafia_single_fire = TRUE
 	mafia_reload_chance = 50
 	/// The wreck he hides behind (/obj/structure/bounty_mafia_wreck)
 	var/datum/weakref/don_wreck_ref
@@ -2259,6 +2267,8 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 		return AI_BEHAVIOR_DELAY
 	if(!human_npc_ready_item(shooter, gun))
 		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+	if(shooter.mafia_single_fire)
+		bounty_gun_single_fire(shooter, gun)
 	shooter.zone_selected = human_npc_pick_aim_zone()
 	controller.ai_interact(target = target, combat_mode = TRUE)
 	shooter.mafia_volley_left--
@@ -2490,3 +2500,19 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	return SUBTREE_RETURN_FINISH_PLANNING
 
 #undef BOUNTY_MAFIA_BUSY_TRAIT
+
+// A slow-mo field pushes their own clocks back with the rest of their deadlines (ware_sandy_timestop.dm, push_deadlines())
+/mob/living/carbon/human/npc/bounty_mafia/cyberware_push_clocks(push)
+	. = ..()
+	var/now = world.time
+	if(mafia_ready_at > now)
+		mafia_ready_at += push
+	if(mafia_aim_until > now)
+		mafia_aim_until += push
+	if(mafia_next_pull_at > now)
+		mafia_next_pull_at += push
+
+/mob/living/carbon/human/npc/bounty_mafia/don/cyberware_push_clocks(push)
+	. = ..()
+	if(don_dazed_until > world.time)
+		don_dazed_until += push

@@ -124,3 +124,40 @@
 #define BB_HUMAN_NPC_NEXT_TREAT "human_npc_next_treat"
 /// The turf it is walking out to (npc_walk_out()).
 #define BB_HUMAN_NPC_EXIT "human_npc_exit"
+
+// ===== Combat sense (human_npc_combat_sense.dm) =====
+// Armed hostile NPCs that opt in (npc_combat_sense) inject a stimulant they carry when they tire, and
+// stop standing in the open when they are hit by stun fire. Defaults for /datum/npc_combat_sense.
+
+/// Stamina loss, as a share of what stamcrits the body, at which it reaches for a stimulant it carries.
+#define HUMAN_NPC_SENSE_STIM_SHARE 0.5
+/// How long after its last stun hit it keeps reacting to stun fire.
+#define HUMAN_NPC_SENSE_REACT_TIME (8 SECONDS)
+/// The furthest it walks to cover, in steps.
+#define HUMAN_NPC_SENSE_COVER_STEPS 4
+/// How long it keeps its head down in cover before it looks out again.
+#define HUMAN_NPC_SENSE_PEEK_AFTER (2.5 SECONDS)
+/// The longest it stays in cover while it is winded (stamina loss past the stimulant share).
+#define HUMAN_NPC_SENSE_MAX_HOLD (10 SECONDS)
+/// How many times it runs for cover in one exchange of fire before it stands and fights.
+#define HUMAN_NPC_SENSE_COVER_MOVES 3
+/// A fighter that hits from this many tiles or fewer closes in on a stun shooter instead of taking cover.
+#define HUMAN_NPC_SENSE_CLOSE_IN_REACH 3
+/// It gives up on reaching its cover after this long per step of the way, plus a second.
+#define HUMAN_NPC_SENSE_COVER_STEP_TIME (0.6 SECONDS)
+/// How long it leaves its stimulants alone after a try that got nowhere (no hand free, the pen gone).
+#define HUMAN_NPC_SENSE_STIM_RETRY (5 SECONDS)
+
+/// Blackboard: the cover turf it is walking to.
+#define BB_HUMAN_NPC_COVER "human_npc_cover"
+/// Blackboard: the stimulant pen it is using on itself.
+#define BB_HUMAN_NPC_STIM_ITEM "human_npc_stim_item"
+/// Blackboard: whoever shot it with stun fire, for the close-in.
+#define BB_HUMAN_NPC_STUN_SHOOTER "human_npc_stun_shooter"
+
+/// Bark kind: it injects a stimulant it carries (faction pirate voices already have emotes for it).
+#define HUMAN_NPC_BARK_STIMULANT "stimulant"
+/// Bark kind: it runs for cover from stun fire.
+#define HUMAN_NPC_BARK_TAKE_COVER "take_cover"
+/// Bark kind: it charges whoever shot it with stun fire.
+#define HUMAN_NPC_BARK_CHARGE "charge"

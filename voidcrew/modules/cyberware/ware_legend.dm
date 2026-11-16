@@ -19,13 +19,34 @@
 #define CYBERWARE_CASCADE_WINDOW (8 SECONDS)
 /// The price.
 #define CYBERWARE_CASCADE_CRASH (6 SECONDS)
-/// Ranged dodge chance while moving during the window (shared arbiter;
-/// highest-wins with Slipwire's 15, never additive).
-#define CYBERWARE_CASCADE_DODGE_CHANCE 40
+/// Dodge chance during the window (shared arbiter; highest-wins with
+/// Slipwire's 15, never additive): ranged fire while moving, blows any time.
+#define CYBERWARE_CASCADE_DODGE_CHANCE 60
+/// Crit roll bonus for the bearer's own aimed hits during the window (crit_roll.dm).
+#define CYBERWARE_CASCADE_CRIT_BONUS 18
 /// Stamina dumped by the crash.
 #define CYBERWARE_CASCADE_CRASH_STAMINA 80
-/// Degrees the afterimage hue moves per step of the trail.
-#define CYBERWARE_CASCADE_HUE_STEP 25
+/// Melee-cooldown multiplier during the window (lower is faster).
+#define CYBERWARE_CASCADE_MELEE_MULT 0.5
+// The trail. Not undefined at the end of this file: the replay draws the same trail (ware_sandy_replay.dm).
+/// Starting opacity of a trail afterimage (the newest); each older one is fainter, down to nothing at the tail.
+#define CYBERWARE_CASCADE_AFTERIMAGE_ALPHA 230
+/// Afterimages on screen at once behind a Cascade bearer who keeps moving.
+#define CYBERWARE_CASCADE_TRAIL_LENGTH 20
+/// Afterimages the Cascade leaves per tile walked: one on the tile left, the rest spread along the step.
+#define CYBERWARE_CASCADE_TRAIL_PER_TILE 2
+/// The longest one step counts for in a trail's life (the first step, or one after a pause).
+#define CYBERWARE_CASCADE_TRAIL_STEP_MAX (0.4 SECONDS)
+// The trail's colours by an afterimage's age, newest to oldest: each one starts on the first and runs through them to the
+// last as it fades, so a whole trail reads first to last from the bearer's heels (cyberware_cascade_trail_tints()).
+/// The newest afterimage: the Sandevistan's own green.
+#define CYBERWARE_CASCADE_TRAIL_COLOR_NEWEST "#5AFF96"
+/// A third of the way through its life.
+#define CYBERWARE_CASCADE_TRAIL_COLOR_YOUNG "#3C8CFF"
+/// Two thirds of the way.
+#define CYBERWARE_CASCADE_TRAIL_COLOR_OLD "#A050FF"
+/// The oldest, just before it is gone.
+#define CYBERWARE_CASCADE_TRAIL_COLOR_OLDEST "#FF5AC8"
 
 /**
  * # Cascade Lattice (T4, chest, OS slot, load 12)
@@ -33,18 +54,24 @@
  * The sandevistan-class flagship. Eight seconds where the world happens at
  * your speed: a full -1 gait (with reagent-modifier immunity for the
  * duration, no meth stacking, no sub-tick movement), melee cooldowns
- * halved, and 40% ranged dodge while moving through the shared arbiter in
- * ware_pro_combat.dm. Everyone nearby sees it: afterimages peel off every
+ * halved, 60% dodge through the shared arbiter in ware_pro_combat.dm (ranged
+ * fire while moving, blows whether moving or not), and +18 on the crit roll
+ * for the bearer's own aimed hits (crit_roll.dm). Everyone nearby sees it: afterimages peel off every
  * step, your victim's screen never had a chance, and the activation is an
  * audible time-tear.
  *
  * Then the heat bill: six seconds of crash, heavy stamina dump, leaden
  * slowdown, zero dodge. An EMP during the window skips straight to the
  * crash and re-arms the full sixty-second cooldown.
+ *
+ * Every number the window and the crash run on is a var here, so the lesser
+ * models in ware_line_sandy.dm retune by setting vars and swapping the action
+ * for a slower one. The status effects copy the numbers off the organ when the
+ * button is pressed and hold no reference back to it.
  */
 /obj/item/organ/cyberimp/cyberware/cascade
 	name = "\improper Cascade lattice"
-	desc = "A full-spine lattice of superconducting myelin, a real sandevistan, not one of the knockoffs. For eight seconds at a time you move and nobody else really does. Then all the heat it just made has to go somewhere, and it goes into you."
+	desc = "A full-spine lattice of superconducting myelin, the real thing, not one of the knockoffs. The bill comes afterward."
 	icon_state = "cascade"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_OS
@@ -54,6 +81,46 @@
 	aug_overlay = "cascade"
 	emissive_overlay = TRUE
 	actions_types = list(/datum/action/cooldown/cyberware/cascade_surge)
+	/// How long the window lasts.
+	var/window_duration = CYBERWARE_CASCADE_WINDOW
+	/// How long the crash lasts once the window ends.
+	var/crash_duration = CYBERWARE_CASCADE_CRASH
+	/// Stamina dumped on the bearer by the crash.
+	var/crash_stamina = CYBERWARE_CASCADE_CRASH_STAMINA
+	/// Dodge chance during the window: ranged fire while moving, blows any time.
+	var/window_dodge = CYBERWARE_CASCADE_DODGE_CHANCE
+	/// Crit roll bonus for the bearer's own aimed hits during the window.
+	var/window_crit_bonus = CYBERWARE_CASCADE_CRIT_BONUS
+	/// The gait the window grants.
+	var/datum/movespeed_modifier/window_speed = /datum/movespeed_modifier/cyberware_cascade
+	/// Melee-cooldown multiplier during the window (lower is faster).
+	var/window_melee_mult = CYBERWARE_CASCADE_MELEE_MULT
+	/// The bearer's screen tint during the window.
+	var/datum/client_colour/window_colour = /datum/client_colour/cyberware_cascade
+	/// Afterimages on screen at once behind a bearer who keeps moving.
+	var/trail_length = CYBERWARE_CASCADE_TRAIL_LENGTH
+	/// Afterimages left per tile walked.
+	var/trail_per_tile = CYBERWARE_CASCADE_TRAIL_PER_TILE
+	/// Starting opacity of a trail afterimage.
+	var/afterimage_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA
+	/// The status alert shown while the window runs.
+	var/window_alert = /atom/movable/screen/alert/status_effect/cyberware_cascade
+	/// What the bearer reads on activation.
+	var/online_message = "CASCADE ONLINE."
+	/// The bearer's balloons as the window opens and as the crash lands, and what they call the part in chat.
+	var/online_balloon = "cascade online"
+	var/crash_balloon = "cascade crash!"
+	var/part_word = "lattice"
+	/// What the bearer's balloons call the part ("cascade online", "rig still cycling!"). Read through sandy_part_balloon_word().
+	var/balloon_word = "cascade"
+	/// How long the window lasts when it slows the world (no other player near, ware_sandy_timestop.dm). A plain
+	/// surge, or one that a player cuts short, lasts window_duration.
+	var/slowmo_duration = 13 SECONDS
+	/// How fast the world runs through the window when no other player is near (ware_sandy_timestop.dm).
+	var/dilation_scale = 0.1
+	/// How much faster than normal the bearer runs in the window. A surging mob in someone else's field runs at its
+	/// multiplier over theirs.
+	var/time_multiplier = 10
 
 /obj/item/organ/cyberimp/cyberware/cascade/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -76,28 +143,64 @@
 	var/datum/status_effect/cyberware_cascade_window/window = owner.has_status_effect(/datum/status_effect/cyberware_cascade_window)
 	if(!window)
 		return
-	to_chat(owner, span_userdanger("The pulse rips through the lattice mid-cascade, everything slams back to real time!"))
+	to_chat(owner, span_userdanger("The pulse rips through the [part_word] mid-surge, everything slams back to real time!"))
 	owner.remove_status_effect(/datum/status_effect/cyberware_cascade_window) // on_remove applies the crash
 	for(var/datum/action/cooldown/cyberware/cascade_surge/surge in actions)
 		surge.StartCooldown()
 
+/// What `user`'s balloons call their reflex part: "cascade" on the top model, "lattice" on the service model, "rig" on the street model.
+/proc/sandy_part_balloon_word(mob/living/user)
+	var/mob/living/carbon/carbon_user = user
+	var/obj/item/organ/cyberimp/cyberware/cascade/part = iscarbon(carbon_user) ? (locate(/obj/item/organ/cyberimp/cyberware/cascade) in carbon_user.organs) : null
+	return part?.balloon_word || "cascade"
+
 /datum/action/cooldown/cyberware/cascade_surge
 	name = "Cascade Surge"
-	desc = "Eight seconds of overwhelming speed: melee cooldowns halved, 40% chance to dodge ranged fire while moving. Then six seconds of crash. An EMP mid-window crashes you instantly."
+	desc = "Eight seconds of overwhelming speed: melee cooldowns halved, hits land harder, and a 60% chance to dodge blows, or ranged fire on the move. Then six seconds of crash."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_cascade"
 	cooldown_time = 60 SECONDS
 	click_to_activate = FALSE
 
+/// Whether a press now would end a running window: a player's own press only. An NPC's AI never turns its surge off.
+/datum/action/cooldown/cyberware/cascade_surge/proc/can_cut_short()
+	if(!isliving(owner))
+		return FALSE
+	var/mob/living/surger = owner
+	return !!surger.ckey && !!surger.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+
+/// The cooldown starts as the window opens, so pressing again to end the window early looks past it.
+/datum/action/cooldown/cyberware/cascade_surge/IsAvailable(feedback = FALSE)
+	// Not while a replay holds him: a surge fired under it would run through it
+	if(isliving(owner) && (HAS_TRAIT_FROM(owner, TRAIT_INCAPACITATED, "sandy_replay") || sandy_replay_showing(owner)))
+		return FALSE
+	if(!can_cut_short())
+		return ..()
+	var/cooldown_end = next_use_time
+	next_use_time = 0
+	. = ..()
+	next_use_time = cooldown_end
+
 /datum/action/cooldown/cyberware/cascade_surge/Activate(atom/target)
 	if(!isliving(owner))
 		return FALSE
 	var/mob/living/surger = owner
-	if(surger.has_status_effect(/datum/status_effect/cyberware_cascade_window) || surger.has_status_effect(/datum/status_effect/cyberware_cascade_crash))
-		surger.balloon_alert(surger, "lattice still cycling!")
+	if(HAS_TRAIT_FROM(surger, TRAIT_INCAPACITATED, "sandy_replay") || sandy_replay_showing(surger))
+		return FALSE
+	if(can_cut_short()) // the second press: back to real time, and the crash
+		var/datum/status_effect/cyberware_cascade_window/window = surger.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+		if(window.time_stop)
+			window.slowmo_time_up() // a slow-mo waits for an execution in progress (ware_sandy_timestop.dm)
+		else
+			qdel(window)
+		return TRUE
+	// A member of a shared slow-mo whose time is out waits for its crash too (ware_sandy_timestop_shared.dm).
+	if(surger.has_status_effect(/datum/status_effect/cyberware_cascade_window) || surger.has_status_effect(/datum/status_effect/cyberware_cascade_crash) || GLOB.sandy_session_of[surger])
+		surger.balloon_alert(surger, "[sandy_part_balloon_word(surger)] still cycling!")
 		return FALSE
 	StartCooldown()
-	surger.apply_status_effect(/datum/status_effect/cyberware_cascade_window)
+	// The lattice hands the window its numbers (an organ-less call falls back to the T4 defaults).
+	surger.apply_status_effect(/datum/status_effect/cyberware_cascade_window, organ)
 	return TRUE
 
 /**
@@ -110,67 +213,203 @@
 	duration = CYBERWARE_CASCADE_WINDOW
 	tick_interval = STATUS_EFFECT_NO_TICK
 	alert_type = /atom/movable/screen/alert/status_effect/cyberware_cascade
-	/// Hue of the next afterimage, in degrees. Starts random so no two surges match.
-	var/trail_hue = 0
+	// The numbers below default to the T4 lattice and are overwritten from the
+	// organ that opened the window (see on_creation). Copied, never referenced.
+	/// Dodge chance while the window lives: ranged fire while moving, blows any time.
+	var/dodge_chance = CYBERWARE_CASCADE_DODGE_CHANCE
+	/// Crit roll bonus for the bearer's own aimed hits while the window lives.
+	var/crit_bonus = CYBERWARE_CASCADE_CRIT_BONUS
+	/// The gait the window grants.
+	var/datum/movespeed_modifier/speed_type = /datum/movespeed_modifier/cyberware_cascade
+	/// Melee-cooldown multiplier (lower is faster).
+	var/melee_mult = CYBERWARE_CASCADE_MELEE_MULT
+	/// The bearer's screen tint.
+	var/datum/client_colour/colour_type = /datum/client_colour/cyberware_cascade
+	/// Afterimages on screen at once behind a bearer who keeps moving, and how many a tile walked leaves.
+	var/trail_length = CYBERWARE_CASCADE_TRAIL_LENGTH
+	var/trail_per_tile = CYBERWARE_CASCADE_TRAIL_PER_TILE
+	/// The tile his last step left, for the afterimages spread back along that step (on_move()).
+	var/turf/trail_prev
+	/// Starting opacity of a trail afterimage.
+	var/afterimage_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA
+	/// world.time of the bearer's last step, to time the next one: the trail's life is counted in steps.
+	var/last_step_at = 0
+	/// What the bearer reads on activation.
+	var/online_message = "CASCADE ONLINE."
+	var/online_balloon = "cascade online"
+	/// The crash this window rolls into.
+	var/crash_duration = CYBERWARE_CASCADE_CRASH
+	var/crash_stamina = CYBERWARE_CASCADE_CRASH_STAMINA
+	/// Whether the surge's own speed, quicker blows, crit and dodge are on now (refresh_perks()).
+	var/perks_on = FALSE
+	/// Quicker blows stay on while a slow-mo carries the surger, apart from the other perks (decisions 22, 2026-11-12):
+	/// melee, unarmed and chrome strikes come at the window's own rate. Gun fire delay is not a click cooldown.
+	var/slowmo_quick_blows = TRUE
+
+/// Optional second argument: the lattice whose numbers this window runs on.
+/datum/status_effect/cyberware_cascade_window/on_creation(mob/living/new_owner, obj/item/organ/cyberimp/cyberware/cascade/lattice)
+	if(istype(lattice))
+		duration = lattice.window_duration
+		alert_type = lattice.window_alert
+		dodge_chance = lattice.window_dodge
+		crit_bonus = lattice.window_crit_bonus
+		speed_type = lattice.window_speed
+		melee_mult = lattice.window_melee_mult
+		colour_type = lattice.window_colour
+		trail_length = lattice.trail_length
+		trail_per_tile = lattice.trail_per_tile
+		afterimage_alpha = lattice.afterimage_alpha
+		online_message = lattice.online_message
+		online_balloon = lattice.online_balloon
+		crash_duration = lattice.crash_duration
+		crash_stamina = lattice.crash_stamina
+		dilation_scale = lattice.dilation_scale
+		time_multiplier = lattice.time_multiplier
+		slowmo_duration = lattice.slowmo_duration
+	return ..()
 
 /datum/status_effect/cyberware_cascade_window/on_apply()
-	trail_hue = rand(0, 359)
-	owner.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade)
 	owner.add_movespeed_mod_immunities(id, /datum/movespeed_modifier/reagent)
-	cyberware_register_dodge_source(owner, id, CALLBACK(src, PROC_REF(get_dodge_chance)))
+	cyberware_register_dodge_source(owner, id, CALLBACK(src, PROC_REF(get_dodge_chance)), melee = TRUE)
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_move))
-	owner.add_client_colour(/datum/client_colour/cyberware_cascade, id)
-	playsound(owner, 'sound/effects/magic/timeparadox2.ogg', 70, TRUE)
+	RegisterSignal(owner, COMSIG_LIVING_DEATH, PROC_REF(on_death))
+	owner.add_client_colour(colour_type, id)
+	sandy_surge_sounds() // ware_sandy_sound.dm
 	owner.visible_message(
 		span_boldwarning("[owner] fractures into afterimages. Something under [owner.p_their()] skin is running far too fast!"),
-		span_boldnotice("CASCADE ONLINE. Eight seconds."),
+		span_boldnotice(online_message),
 	)
-	owner.balloon_alert(owner, "cascade online")
+	owner.balloon_alert(owner, online_balloon)
+	cyberware_cascade_window_fx(owner)
+	try_time_stop() // ware_sandy_timestop.dm
+	refresh_perks()
 	return TRUE
 
 /datum/status_effect/cyberware_cascade_window/on_remove()
-	owner.remove_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade)
+	end_time_stop()
+	sandy_sound_sync(off = TRUE, quiet = QDELETED(owner) || owner.stat == DEAD) // ware_sandy_sound.dm
+	set_perks(FALSE)
 	owner.remove_movespeed_mod_immunities(id, /datum/movespeed_modifier/reagent)
 	cyberware_unregister_dodge_source(owner, id)
-	UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
+	UnregisterSignal(owner, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_DEATH))
 	owner.remove_client_colour(id)
-	if(!QDELETED(owner) && owner.stat != DEAD)
-		owner.apply_status_effect(/datum/status_effect/cyberware_cascade_crash)
+	// A slow-mo that ran to its end replays first, and the crash lands when the replay is over (ware_sandy_replay.dm).
+	if(!QDELETED(owner) && owner.stat != DEAD && !sandy_replay_defer_crash(owner, crash_duration, crash_stamina))
+		owner.apply_status_effect(/datum/status_effect/cyberware_cascade_crash, crash_duration, crash_stamina)
+	if(!QDELETED(owner))
+		cyberware_cascade_window_end_fx(owner)
 	return ..()
 
-/// Melee cooldowns halved for the window (changeNext_move multiplies these in).
+/// Signal proc for [COMSIG_LIVING_DEATH]: the bearer's slow-mo ends with them (its replay still plays).
+/datum/status_effect/cyberware_cascade_window/proc/on_death(mob/living/source, gibbed)
+	SIGNAL_HANDLER
+	end_time_stop() // ware_sandy_timestop.dm
+
+/// Melee cooldowns scaled for the window (changeNext_move multiplies these in).
 /datum/status_effect/cyberware_cascade_window/nextmove_modifier()
-	return 0.5
+	return (perks_on || slowmo_quick_blows) ? melee_mult : 1
 
-/// Dodge-source callback for the shared arbiter: flat 40 while the window
-/// lives (the arbiter itself enforces moving-only and point-blank rules).
+/**
+ * The surge's own edge (speed, crit, dodge) is off while a slow-mo carries the surger: its own
+ * (ware_sandy_timestop.dm), or someone else's that runs it at its relative rate. There it moves at normal speed
+ * and only the world around it is slowed; its quicker blows stay (slowmo_quick_blows). Call whenever either changes.
+ */
+/datum/status_effect/cyberware_cascade_window/proc/refresh_perks()
+	set_perks(!time_stop && !cyberware_surge_in_field(owner))
+
+/datum/status_effect/cyberware_cascade_window/proc/set_perks(on)
+	if(on == perks_on)
+		return
+	perks_on = on
+	if(on)
+		owner.add_movespeed_modifier(speed_type)
+		owner.hv_crit_set_attacker_bonus(id, crit_bonus)
+	else
+		owner.remove_movespeed_modifier(speed_type)
+		owner.hv_crit_set_attacker_bonus(id, null)
+
+/// Dodge-source callback for the shared arbiter: flat chance while the window
+/// lives (the arbiter itself enforces the moving-only and point-blank rules
+/// for shots, and the pinned rules for blows).
 /datum/status_effect/cyberware_cascade_window/proc/get_dodge_chance()
-	return CYBERWARE_CASCADE_DODGE_CHANCE
+	return perks_on ? dodge_chance : 0
 
-/// Signal proc for [COMSIG_MOVABLE_MOVED]: one afterimage per step, the
-/// telegraph everyone in the fight can read. Each step shifts the hue, so the
-/// trail reads as one rolling colour gradient.
+/**
+ * Signal proc for [COMSIG_MOVABLE_MOVED]: the trail, the telegraph everyone in the fight can read. Each step lays
+ * trail_per_tile afterimages along the way it came (the tile left, then evenly toward the tile reached), and each fades
+ * out over the time the bearer takes to walk trail_length of them, measured on his last step. So a bearer who keeps
+ * moving drags trail_length afterimages, newest strongest, at any speed; when he stops, the trail fades out behind him
+ * in that time. Each one's colour goes by its age (green newest, pink oldest), so the trail reads as one gradient, in
+ * his own slow-mo too.
+ */
 /datum/status_effect/cyberware_cascade_window/proc/on_move(atom/movable/source, atom/old_loc, dir, forced)
 	SIGNAL_HANDLER
-	if(!isturf(old_loc))
+	if(!isturf(old_loc) || owner.stat == DEAD) // a body knocked across the floor is not surging
 		return
-	new /obj/effect/temp_visual/decoy/fading/cascade(old_loc, owner, trail_hue)
-	trail_hue = (trail_hue + CYBERWARE_CASCADE_HUE_STEP) % 360
+	var/turf/here = get_turf(owner)
+	var/step_time = world.time - last_step_at
+	last_step_at = world.time
+	sandy_step_sounds(step_time, forced) // ware_sandy_sound.dm
+	var/paused = step_time > CYBERWARE_CASCADE_TRAIL_STEP_MAX
+	if(paused) // the first step, or one after a pause: as long as a step takes him now
+		step_time = owner.cached_multiplicative_slowdown
+	step_time = clamp(step_time, world.tick_lag, CYBERWARE_CASCADE_TRAIL_STEP_MAX)
+	var/per_tile = max(1, trail_per_tile)
+	// One step longer than trail_length of them take to walk: each is laid a step behind him, on ground already crossed
+	var/life = step_time * (max(1, trail_length) / per_tile + 1)
+	var/cap = life
+	if(time_stop) // the slow-mo's trail is gone when it is: the replay draws its own
+		cap = max(duration - world.time, world.tick_lag)
+	// One on the tile he leaves, and the rest spread back along the step he took before this one. Never along the step
+	// he is taking now: he is still gliding off the tile, and they stood ahead of him. A jump, a z change or the first
+	// step after a pause leaves the one.
+	var/along = here && here.z == old_loc.z && get_dist(here, old_loc) == 1
+	var/turf/before = (along && !paused && trail_prev && trail_prev.z == old_loc.z && get_dist(trail_prev, old_loc) == 1) ? trail_prev : null
+	trail_prev = along ? old_loc : null
+	var/count = before ? per_tile : 1
+	for(var/i in 0 to count - 1)
+		var/fraction = i / per_tile
+		var/left = life - (1 + fraction) * step_time // it was passed this long ago
+		if(left <= 0)
+			continue
+		var/start_alpha = afterimage_alpha * left / life
+		var/shift_x = before ? round((before.x - old_loc.x) * fraction * ICON_SIZE_X) : 0
+		var/shift_y = before ? round((before.y - old_loc.y) * fraction * ICON_SIZE_Y) : 0
+		var/age = 1 - left / life
+		// The slow-mo's own kind keeps its colours while the world is tinted (ware_sandy_timestop.dm)
+		var/kind = time_stop ? /obj/effect/temp_visual/decoy/fading/cascade/stopped : /obj/effect/temp_visual/decoy/fading/cascade
+		new kind(old_loc, owner, age, start_alpha, min(left, cap), shift_x, shift_y, left)
 
-/// One afterimage in the Cascade trail, washed in a single hue.
-/obj/effect/temp_visual/decoy/fading/cascade
-	duration = 8
+/// The trail's colour matrices by age, newest first (the CYBERWARE_CASCADE_TRAIL_COLOR_* defines). Shared: never edit them.
+/proc/cyberware_cascade_trail_tints()
+	var/static/list/tints
+	if(!tints)
+		tints = list()
+		for(var/colour in list(CYBERWARE_CASCADE_TRAIL_COLOR_NEWEST, CYBERWARE_CASCADE_TRAIL_COLOR_YOUNG, CYBERWARE_CASCADE_TRAIL_COLOR_OLD, CYBERWARE_CASCADE_TRAIL_COLOR_OLDEST))
+			tints += list(cyberware_cascade_tint(colour))
+	return tints
 
-/obj/effect/temp_visual/decoy/fading/cascade/Initialize(mapload, atom/mimiced_atom, hue = 0)
-	. = ..()
-	alpha = 200
-	color = cascade_tint_matrix(hue)
-	animate(src, alpha = 0, time = duration) // restart the parent's fade from the new alpha
+/// The trail's colour matrix for an afterimage `age` (0 newest, 1 oldest) of the way through its life: between two of
+/// the trail's colours, as the client tweens it.
+/proc/cyberware_cascade_tint_at(age)
+	var/list/tints = cyberware_cascade_trail_tints()
+	var/spans = length(tints) - 1
+	var/at = clamp(age, 0, 1) * spans
+	var/index = min(round(at), spans - 1)
+	var/list/from = tints[index + 1]
+	var/list/to_tint = tints[index + 2]
+	var/blend = at - index
+	if(blend <= 0)
+		return from
+	var/list/mixed = new(length(from))
+	for(var/i in 1 to length(from))
+		mixed[i] = from[i] + (to_tint[i] - from[i]) * blend
+	return mixed
 
-/// Colour matrix that flattens the copy to luminance and paints it one hue,
+/// Colour matrix that flattens a sprite to luminance and paints it `colour`,
 /// with a lift so dark clothes still glow instead of going black.
-/obj/effect/temp_visual/decoy/fading/cascade/proc/cascade_tint_matrix(hue)
-	var/list/tint = rgb2num(rgb(hue, 100, 100, space = COLORSPACE_HSV))
+/proc/cyberware_cascade_tint(colour)
+	var/list/tint = rgb2num(colour)
 	var/red = tint[1] / 255
 	var/green = tint[2] / 255
 	var/blue = tint[3] / 255
@@ -183,10 +422,75 @@
 		lift * red, lift * green, lift * blue,
 	)
 
+/**
+ * One afterimage in the Cascade trail, washed in one colour by its age: `age` (0 to 1) of the way through its life
+ * when laid, and `age_time` until it is oldest (its natural life left; defaults to `life`). Fades from `start_alpha`
+ * over `life`, shifted `shift_x`, `shift_y` pixels. Drawn on the floor, under everyone standing: a trail lies behind its
+ * bearer, never over him (on the game plane one a row nearer the camera would sort over him).
+ */
+/obj/effect/temp_visual/decoy/fading/cascade
+	duration = 8
+	/// The colour matrices it was given and aged through, laid colour first (for tests: the client's tween isn't readable).
+	var/list/aged_through
+
+/obj/effect/temp_visual/decoy/fading/cascade/Initialize(mapload, atom/mimiced_atom, age = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA, life, shift_x = 0, shift_y = 0, age_time)
+	if(life)
+		duration = life // before the parent's timer and fade read it
+	. = ..()
+	// The whole look goes on in one assignment, then the fade starts on it (as the replay's afterimage does): a var set
+	// under a running fade is not drawn until the fade ends.
+	var/mutable_appearance/copy = new(src)
+	copy.pixel_w += shift_x // along the step, toward the tile reached
+	copy.pixel_z += shift_y
+	copy.alpha = start_alpha
+	copy.color = cyberware_cascade_tint_at(age)
+	copy.filters = null // the bearer's outline and tints are his, not the trail's
+	copy.appearance_flags |= KEEP_TOGETHER // the colour must reach every overlay
+	SET_PLANE_EXPLICIT(copy, FLOOR_PLANE, src)
+	copy.layer = CLEANABLE_FLOOR_OBJECT_LAYER
+	animate(src)
+	appearance = copy.appearance
+	animate(src, alpha = 0, time = duration)
+	age_colours(age, age_time || duration)
+
+/**
+ * Runs the copy's colour from the one for `age` through the trail's later colours to the oldest, reached in `age_time`,
+ * beside its fade (one parallel animate chain). Call it after the fade starts, on a look already given
+ * cyberware_cascade_tint_at(age).
+ */
+/obj/effect/temp_visual/decoy/fading/cascade/proc/age_colours(age, age_time)
+	var/list/tints = cyberware_cascade_trail_tints()
+	var/spans = length(tints) - 1
+	age = clamp(age, 0, 1)
+	aged_through = list(cyberware_cascade_tint_at(age))
+	if(age >= 1 || age_time <= 0)
+		return
+	var/per_age = age_time / (1 - age) // time per whole life
+	var/at = age
+	var/first = TRUE
+	for(var/stop in 1 to spans)
+		var/stop_age = stop / spans
+		if(stop_age <= at)
+			continue
+		var/list/tint = tints[stop + 1]
+		var/step_time = max((stop_age - at) * per_age, world.tick_lag / 10)
+		if(first)
+			animate(src, color = tint, time = step_time, flags = ANIMATION_PARALLEL)
+			first = FALSE
+		else
+			animate(color = tint, time = step_time)
+		aged_through += list(tint)
+		at = stop_age
+
 /atom/movable/screen/alert/status_effect/cyberware_cascade
 	name = "Cascade Window"
-	desc = "The lattice has the world in slow motion. Make it count. Six seconds of crash follows either way."
+	desc = "The lattice has the world in slow motion. Make it count."
 	icon_state = "radiation_shield"
+
+/// The lesser models' alert (ware_line_sandy.dm), with no crash timer in the text.
+/atom/movable/screen/alert/status_effect/cyberware_cascade/aftermarket
+	name = "Reflex Window"
+	desc = "The rig has the world in slow motion. Make it count."
 
 /// The bill. No dodge source, no speed, the opposite of all of it.
 /datum/status_effect/cyberware_cascade_crash
@@ -194,24 +498,37 @@
 	duration = CYBERWARE_CASCADE_CRASH
 	tick_interval = STATUS_EFFECT_NO_TICK
 	alert_type = null
+	/// Stamina dumped on the bearer when the crash lands.
+	var/crash_stamina = CYBERWARE_CASCADE_CRASH_STAMINA
+
+/// Optional arguments: crash length and stamina dump, from the window that ended.
+/datum/status_effect/cyberware_cascade_crash/on_creation(mob/living/new_owner, crash_duration, stamina_dump)
+	if(isnum(crash_duration))
+		duration = crash_duration
+	if(isnum(stamina_dump))
+		crash_stamina = stamina_dump
+	return ..()
 
 /datum/status_effect/cyberware_cascade_crash/on_apply()
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade_crash)
-	owner.adjustStaminaLoss(CYBERWARE_CASCADE_CRASH_STAMINA)
-	owner.add_client_colour(/datum/client_colour/cyberware_cascade_crash, id)
-	playsound(owner, 'sound/machines/warning-buzzer.ogg', 50, TRUE)
+	owner.adjustStaminaLoss(crash_stamina)
+	var/mob/living/carbon/carbon_owner = owner
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = iscarbon(owner) ? (locate(/obj/item/organ/cyberimp/cyberware/cascade) in carbon_owner.organs) : null
+	playsound(owner, 'sound/machines/defib/defib_failed.ogg', 50, FALSE)
 	owner.visible_message(
 		span_warning("[owner] staggers, every movement suddenly leaden."),
-		span_userdanger("The lattice dumps its heat. Your whole body seizes up and everything slows to a crawl."),
+		span_userdanger("The [lattice?.part_word || "lattice"] dumps its heat. Your whole body seizes up and everything slows to a crawl."),
 	)
-	owner.balloon_alert(owner, "cascade crash!")
+	owner.balloon_alert(owner, lattice?.crash_balloon || "cascade crash!")
+	cyberware_cascade_crash_fx(owner)
 	return TRUE
 
 /datum/status_effect/cyberware_cascade_crash/on_remove()
 	owner.remove_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade_crash)
-	owner.remove_client_colour(id)
 	if(!QDELETED(owner) && owner.stat != DEAD)
 		owner.balloon_alert(owner, "systems restabilized")
+	if(!QDELETED(owner))
+		cyberware_cascade_crash_end_fx(owner)
 	return ..()
 
 /datum/movespeed_modifier/cyberware_cascade
@@ -226,13 +543,6 @@
 	color = list(1.1, 0, 0.08, 0.05, 1.05, 0.1, 0.1, 0, 1.2)
 	fade_in = 3
 	fade_out = 3
-
-/// The crash's screen: drained and gray-brown.
-/datum/client_colour/cyberware_cascade_crash
-	priority = CLIENT_COLOR_ORGAN_PRIORITY
-	color = list(0.55, 0.3, 0.25, 0.35, 0.55, 0.25, 0.25, 0.25, 0.5)
-	fade_in = 3
-	fade_out = 5
 
 // =========================================================================
 // REDLINE CORE
@@ -250,6 +560,8 @@
 #define CYBERWARE_REDLINE_CRASH_STAMINA 100
 /// Crash slowdown duration.
 #define CYBERWARE_REDLINE_CRASH (5 SECONDS)
+/// The outline a bearer wears through the window.
+#define CYBERWARE_REDLINE_OUTLINE_COLOR "#ff2a2a"
 
 /**
  * # Redline Core (T4, chest, OS slot, load 10)
@@ -271,7 +583,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/redline
 	name = "\improper Redline core"
-	desc = "A combat governor rebuilt to fail open. Twelve seconds with every safety limit switched off at once, announced by a chest speaker nobody told you was in there."
+	desc = "A combat governor rebuilt to fail open, announced by a chest speaker nobody told you was in there."
 	icon_state = "redline"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_OS
@@ -281,6 +593,29 @@
 	aug_overlay = "redline"
 	emissive_overlay = TRUE
 	actions_types = list(/datum/action/cooldown/cyberware/redline_burn)
+	// The burn's tuning lives on the organ so a cheaper or rougher model (see
+	// ware_line_berserk.dm) retunes it by setting vars. The defaults below ARE
+	// the Redline core's numbers. The defines stay as those defaults.
+	/// Length of the burn window.
+	var/burn_window = CYBERWARE_REDLINE_WINDOW
+	/// Incoming brute/burn multiplier during the window.
+	var/burn_damage_mult = CYBERWARE_REDLINE_DAMAGE_MULT
+	/// Flat bonus to unarmed strikes during the window.
+	var/burn_melee_bonus = CYBERWARE_REDLINE_MELEE_BONUS
+	/// Whether the window grants stun and baton immunity.
+	var/burn_stun_immune = TRUE
+	/// Roar reach in tiles. 0 keeps the announcement but staggers nobody.
+	var/burn_roar_range = CYBERWARE_REDLINE_ROAR_RANGE
+	/// Crash slowdown duration.
+	var/burn_crash = CYBERWARE_REDLINE_CRASH
+	/// Stamina dumped by the crash.
+	var/burn_crash_stamina = CYBERWARE_REDLINE_CRASH_STAMINA
+	/// Cooldown on the Redline Burn button.
+	var/burn_cooldown = 90 SECONDS
+	/// Button tooltip. Null keeps the Redline Burn action's own text.
+	var/burn_action_desc
+	/// Status alert text while the window is open. Null keeps the alert's own text.
+	var/burn_alert_desc
 
 /obj/item/organ/cyberimp/cyberware/redline/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -312,11 +647,21 @@
 
 /datum/action/cooldown/cyberware/redline_burn
 	name = "Redline Burn"
-	desc = "Twelve seconds of stun immunity, 40% damage resistance and harder fists, opened with a staggering roar. Ends in a stamina collapse. An EMP mid-window collapses you instantly."
+	desc = "Twelve seconds of stun immunity, 40% damage resistance and harder fists, opened with a staggering roar. Ends in a collapse."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_redline"
 	cooldown_time = 90 SECONDS
 	click_to_activate = FALSE
+
+/datum/action/cooldown/cyberware/redline_burn/New(Target, original = TRUE)
+	. = ..()
+	// The core this button belongs to sets its own cooldown and tooltip.
+	var/obj/item/organ/cyberimp/cyberware/redline/core = organ
+	if(!istype(core))
+		return
+	cooldown_time = core.burn_cooldown
+	if(core.burn_action_desc)
+		desc = core.burn_action_desc
 
 /datum/action/cooldown/cyberware/redline_burn/Activate(atom/target)
 	if(!isliving(owner))
@@ -326,7 +671,7 @@
 		burner.balloon_alert(burner, "core still venting!")
 		return FALSE
 	StartCooldown()
-	burner.apply_status_effect(/datum/status_effect/cyberware_redline_window)
+	burner.apply_status_effect(/datum/status_effect/cyberware_redline_window, organ)
 	return TRUE
 
 /**
@@ -382,47 +727,93 @@
 	/// roll, so the next arming is skipped. See suppress_topup() for why this
 	/// can't just clear the armed state.
 	var/topup_suppressed = FALSE
+	// Tuning. The defaults are the Redline core's own numbers; on_creation()
+	// replaces them with the installed core's when one is passed in.
+	/// Incoming brute/burn multiplier.
+	var/damage_mult = CYBERWARE_REDLINE_DAMAGE_MULT
+	/// Flat bonus to unarmed strikes.
+	var/melee_bonus = CYBERWARE_REDLINE_MELEE_BONUS
+	/// Whether the window grants stun and baton immunity.
+	var/stun_immune = TRUE
+	/// Roar reach in tiles, 0 for the announcement only.
+	var/roar_range = CYBERWARE_REDLINE_ROAR_RANGE
+	/// Handed to the crash this window rolls into.
+	var/crash_duration = CYBERWARE_REDLINE_CRASH
+	var/crash_stamina = CYBERWARE_REDLINE_CRASH_STAMINA
+	/// Replaces the alert's description, if set.
+	var/alert_desc
+
+/// Pass the core whose numbers this burn runs on. Without one the window uses
+/// the Redline core's own.
+/datum/status_effect/cyberware_redline_window/on_creation(mob/living/new_owner, obj/item/organ/cyberimp/cyberware/redline/core)
+	if(istype(core))
+		duration = core.burn_window
+		damage_mult = core.burn_damage_mult
+		melee_bonus = core.burn_melee_bonus
+		stun_immune = core.burn_stun_immune
+		roar_range = core.burn_roar_range
+		crash_duration = core.burn_crash
+		crash_stamina = core.burn_crash_stamina
+		alert_desc = core.burn_alert_desc
+	. = ..()
+	if(. && linked_alert && alert_desc)
+		linked_alert.desc = alert_desc
 
 /datum/status_effect/cyberware_redline_window/on_apply()
 	// The anti-stun implant's buff pattern: traits plus damage-slowdown immunity.
-	owner.add_traits(list(TRAIT_STUNIMMUNE, TRAIT_BATON_RESISTANCE), id)
+	if(stun_immune)
+		owner.add_traits(list(TRAIT_STUNIMMUNE, TRAIT_BATON_RESISTANCE), id)
 	owner.add_movespeed_mod_immunities(id, /datum/movespeed_modifier/damage_slowdown)
 	if(ishuman(owner))
 		var/mob/living/carbon/human/human_owner = owner
-		human_owner.physiology.brute_mod *= CYBERWARE_REDLINE_DAMAGE_MULT
-		human_owner.physiology.burn_mod *= CYBERWARE_REDLINE_DAMAGE_MULT
+		human_owner.physiology.brute_mod *= damage_mult
+		human_owner.physiology.burn_mod *= damage_mult
 	if(iscarbon(owner))
 		var/mob/living/carbon/carbon_owner = owner
 		for(var/obj/item/bodypart/arm/limb in carbon_owner.bodyparts)
-			limb.unarmed_damage_low += CYBERWARE_REDLINE_MELEE_BONUS
-			limb.unarmed_damage_high += CYBERWARE_REDLINE_MELEE_BONUS
+			limb.unarmed_damage_low += melee_bonus
+			limb.unarmed_damage_high += melee_bonus
 			buffed_parts += limb
 	RegisterSignal(owner, COMSIG_LIVING_EARLY_UNARMED_ATTACK, PROC_REF(on_early_unarmed_attack))
 	RegisterSignal(owner, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_unarmed_attack))
 	owner.add_client_colour(/datum/client_colour/cyberware_redline, id)
+	// Everyone can see a bearer is burning: a red outline for the whole window, gone when it ends or they die
+	owner.add_filter(id, 2, outline_filter(1, CYBERWARE_REDLINE_OUTLINE_COLOR))
+	RegisterSignal(owner, COMSIG_LIVING_DEATH, PROC_REF(on_bearer_death))
 	owner.balloon_alert(owner, "REDLINE")
 	INVOKE_ASYNC(src, PROC_REF(roar))
+	// Red-hot nodes, red eyes, a red light (cyberware_anim2.dm).
+	cyberware_redline_window_fx(owner)
 	return TRUE
 
+/// The burn's outline goes out with its bearer
+/datum/status_effect/cyberware_redline_window/proc/on_bearer_death(mob/living/source, gibbed)
+	SIGNAL_HANDLER
+	source.remove_filter(id)
+
 /datum/status_effect/cyberware_redline_window/on_remove()
-	owner.remove_traits(list(TRAIT_STUNIMMUNE, TRAIT_BATON_RESISTANCE), id)
+	if(stun_immune)
+		owner.remove_traits(list(TRAIT_STUNIMMUNE, TRAIT_BATON_RESISTANCE), id)
 	owner.remove_movespeed_mod_immunities(id, /datum/movespeed_modifier/damage_slowdown)
 	if(ishuman(owner))
 		var/mob/living/carbon/human/human_owner = owner
-		human_owner.physiology.brute_mod /= CYBERWARE_REDLINE_DAMAGE_MULT
-		human_owner.physiology.burn_mod /= CYBERWARE_REDLINE_DAMAGE_MULT
+		human_owner.physiology.brute_mod /= damage_mult
+		human_owner.physiology.burn_mod /= damage_mult
 	for(var/obj/item/bodypart/arm/limb as anything in buffed_parts)
 		if(QDELETED(limb))
 			continue
-		limb.unarmed_damage_low -= CYBERWARE_REDLINE_MELEE_BONUS
-		limb.unarmed_damage_high -= CYBERWARE_REDLINE_MELEE_BONUS
+		limb.unarmed_damage_low -= melee_bonus
+		limb.unarmed_damage_high -= melee_bonus
 	buffed_parts.Cut()
-	UnregisterSignal(owner, list(COMSIG_LIVING_EARLY_UNARMED_ATTACK, COMSIG_LIVING_UNARMED_ATTACK))
+	UnregisterSignal(owner, list(COMSIG_LIVING_EARLY_UNARMED_ATTACK, COMSIG_LIVING_UNARMED_ATTACK, COMSIG_LIVING_DEATH))
+	owner.remove_filter(id)
 	bypassed_victim = null
 	bypassed_penetration = 0
 	owner.remove_client_colour(id)
 	if(!QDELETED(owner) && owner.stat != DEAD)
-		owner.apply_status_effect(/datum/status_effect/cyberware_redline_crash)
+		owner.apply_status_effect(/datum/status_effect/cyberware_redline_crash, crash_duration, crash_stamina)
+	if(!QDELETED(owner))
+		cyberware_redline_window_end_fx(owner)
 	return ..()
 
 /**
@@ -436,11 +827,19 @@
 		return
 	playsound(owner, 'sound/effects/magic/demon_attack1.ogg', 90, TRUE)
 	playsound(owner, 'sound/effects/magic/repulse.ogg', 60, TRUE)
+	if(roar_range <= 0)
+		// A core with no roar behind it still announces itself, just doesn't shake anything.
+		owner.visible_message(
+			span_boldwarning("[owner]'s eyes flood red and the speaker in [owner.p_their()] chest blares!"),
+			span_boldwarning("Your chest speaker blares."),
+		)
+		return
 	owner.visible_message(
 		span_boldwarning("[owner]'s eyes flood red and a speaker-drone ROAR shakes the deck!"),
 		span_boldwarning("You ROAR."),
 	)
-	for(var/mob/living/victim in oview(CYBERWARE_REDLINE_ROAR_RANGE, owner))
+	cyberware_redline_roar_fx(owner, roar_range)
+	for(var/mob/living/victim in oview(roar_range, owner))
 		if(victim.stat == DEAD)
 			continue
 		if(cyberware_is_ally(owner, victim))
@@ -551,7 +950,7 @@
 		return
 	var/target_zone = victim.get_random_valid_zone(owner.zone_selected)
 	victim.apply_damage(
-		CYBERWARE_REDLINE_MELEE_BONUS,
+		melee_bonus,
 		BRUTE,
 		target_zone,
 		victim.run_armor_check(target_zone, MELEE, armour_penetration = penetration, silent = TRUE),
@@ -561,7 +960,7 @@
 
 /atom/movable/screen/alert/status_effect/cyberware_redline
 	name = "Redline Burn"
-	desc = "Every safety limit off at once. Stuns don't land, hits don't hurt much, and your fists hit a great deal harder. You collapse when it ends."
+	desc = "Every safety limit is off at once."
 	icon_state = "radiation_shield"
 
 /datum/status_effect/cyberware_redline_crash
@@ -569,23 +968,36 @@
 	duration = CYBERWARE_REDLINE_CRASH
 	tick_interval = STATUS_EFFECT_NO_TICK
 	alert_type = null
+	/// Stamina dumped on apply.
+	var/stamina_dump = CYBERWARE_REDLINE_CRASH_STAMINA
+
+/// The window hands over its core's crash length and stamina dump. Without
+/// them the crash is the Redline core's own.
+/datum/status_effect/cyberware_redline_crash/on_creation(mob/living/new_owner, new_duration, new_stamina_dump)
+	if(!isnull(new_duration))
+		duration = new_duration
+	if(!isnull(new_stamina_dump))
+		stamina_dump = new_stamina_dump
+	return ..()
 
 /datum/status_effect/cyberware_redline_crash/on_apply()
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_redline_crash)
-	owner.adjustStaminaLoss(CYBERWARE_REDLINE_CRASH_STAMINA)
-	owner.add_client_colour(/datum/client_colour/cyberware_redline_crash, id)
+	owner.adjustStaminaLoss(stamina_dump)
 	owner.visible_message(
 		span_warning("[owner] sags as the red drains out of [owner.p_their()] eyes."),
 		span_userdanger("The core slams shut and your legs go out from under you."),
 	)
 	owner.balloon_alert(owner, "redline collapse!")
+	// The outline gutters out, the charge earths through the deck, the nodes cool, the body slumps (cyberware_anim2.dm).
+	cyberware_redline_crash_fx(owner)
 	return TRUE
 
 /datum/status_effect/cyberware_redline_crash/on_remove()
 	owner.remove_movespeed_modifier(/datum/movespeed_modifier/cyberware_redline_crash)
-	owner.remove_client_colour(id)
 	if(!QDELETED(owner) && owner.stat != DEAD)
 		owner.balloon_alert(owner, "core recovered")
+	if(!QDELETED(owner))
+		cyberware_redline_crash_end_fx(owner)
 	return ..()
 
 /datum/movespeed_modifier/cyberware_redline_crash
@@ -597,13 +1009,6 @@
 	color = list(1, 0, 0, 0.55, 0.5, 0, 0.55, 0, 0.5)
 	fade_in = 2
 	fade_out = 10
-
-/// The crash's screen: burnt out, brown-gray.
-/datum/client_colour/cyberware_redline_crash
-	priority = CLIENT_COLOR_ORGAN_PRIORITY
-	color = list(0.6, 0.35, 0.3, 0.3, 0.5, 0.25, 0.25, 0.25, 0.45)
-	fade_in = 3
-	fade_out = 5
 
 // =========================================================================
 // GOVERNOR DELETE
@@ -684,7 +1089,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/piledriver
 	name = "\improper Meteor Piledriver frame"
-	desc = "Prototype launch pistons sleeved over both legs, running into a gyroscopic landing computer that aims you at the floor. It wants an open lane to throw you down, and everyone underneath gets a shadow to look at before you get there."
+	desc = "Prototype launch pistons sleeved over both legs, running into a gyroscopic landing computer that aims you at the floor."
 	icon_state = "piledriver"
 	zone = BODY_ZONE_L_LEG
 	slot = ORGAN_SLOT_CYBERWARE_LEGS
@@ -706,7 +1111,9 @@
 	desc = "Something very heavy is about to land on this exact spot."
 	icon = 'icons/mob/telegraphing/telegraph_96x96.dmi'
 	icon_state = "target_largebox"
-	layer = BELOW_MOB_LAYER
+	// Painted on the floor: under whoever stands in it, on every row it covers.
+	plane = FLOOR_PLANE
+	layer = LOWER_RUNE_LAYER
 	pixel_x = -32
 	pixel_y = -32
 	alpha = 0
@@ -718,11 +1125,13 @@
 
 /datum/action/cooldown/cyberware/piledriver_leap
 	name = "Meteor Leap"
-	desc = "Launch onto any tile you can see with a clear arc to it, or onto somebody standing on one. Walls, windows and shut doors stop the jump. A shadow warns everyone underneath first. A direct hit crushes whoever is still there: heavy brute, broken bones, flat on the deck. Everything within two tiles is knocked flat and thrown."
+	desc = "Launch onto a tile you can see, or onto somebody standing on one. A direct hit crushes whoever is still there, and everything within two tiles is knocked flat."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_piledriver"
 	cooldown_time = 60 SECONDS
 	click_to_activate = TRUE
+	// A stunned, paralysed or bound body does not get to leap out of it.
+	check_flags = AB_CHECK_CONSCIOUS | AB_CHECK_INCAPACITATED | AB_CHECK_IMMOBILE
 
 /datum/action/cooldown/cyberware/piledriver_leap/Activate(atom/target)
 	if(!isliving(owner))
@@ -731,6 +1140,10 @@
 	var/turf/destination = get_turf(target)
 	var/turf/here = get_turf(jumper)
 	if(isnull(destination) || isnull(here) || destination == here)
+		return FALSE
+	// The landing crushes whoever is under it, so it is not for a pacifist.
+	if(HAS_TRAIT(jumper, TRAIT_PACIFISM))
+		to_chat(jumper, span_warning("You don't want to harm other living beings!"))
 		return FALSE
 	if(jumper.buckled || !isturf(jumper.loc))
 		jumper.balloon_alert(jumper, "can't launch from here!")
@@ -749,6 +1162,8 @@
 	if(arc_blocker(here, destination))
 		jumper.balloon_alert(jumper, "no room for the arc!")
 		return FALSE
+	// The shadow goes down and the landing hurts someone.
+	cyberware_camo_drop(jumper)
 	StartCooldown()
 	// Liftoff: locked in for the whole arc, committed, like everything
 	// with this much telegraph. The TILE is what gets locked, never the mob,
@@ -757,15 +1172,15 @@
 	jumper.face_atom(destination)
 	var/launch_message = "You launch. The landing computer handles the rest."
 	if(isliving(target))
-		launch_message = "You launch. The landing computer locks the tile [target] is standing on, if [target.p_they()] move[target.p_s()], you come down on empty deck."
+		launch_message = "You launch. The landing computer locks onto [target]."
 	jumper.visible_message(
 		span_boldwarning("[jumper]'s leg pistons CRACK the deck and [jumper.p_they()] launch[jumper.p_es()] skyward!"),
 		span_warning(launch_message),
 	)
 	playsound(here, 'sound/effects/gravhit.ogg', 70, TRUE)
-	new /obj/effect/temp_visual/mook_dust(here)
 	new /obj/effect/temp_visual/cyberware_piledriver_shadow(destination)
-	animate(jumper, pixel_z = 64, time = CYBERWARE_PILEDRIVER_AIRTIME * 0.5, flags = ANIMATION_RELATIVE, easing = QUAD_EASING|EASE_OUT)
+	// Up off the deck and over to the mark; the body stays on its tile until it lands (cyberware_anim2.dm).
+	cyberware_leap_takeoff_fx(jumper, here, destination, CYBERWARE_PILEDRIVER_AIRTIME, 64, 64)
 	addtimer(CALLBACK(src, PROC_REF(land), destination), CYBERWARE_PILEDRIVER_AIRTIME)
 	return TRUE
 
@@ -783,7 +1198,7 @@
 	if(QDELETED(jumper))
 		return
 	jumper.remove_traits(list(TRAIT_IMMOBILIZED, TRAIT_HANDS_BLOCKED), REF(src))
-	animate(jumper, pixel_z = -64, time = 0.1 SECONDS, flags = ANIMATION_RELATIVE)
+	cyberware_leap_touchdown_fx(jumper)
 	if(jumper.stat == DEAD)
 		return
 	// The marked tile can stop existing mid-flight (someone blows the floor out
@@ -812,7 +1227,8 @@
 		crushed += pinned
 	jumper.forceMove(final)
 	playsound(final, 'sound/effects/meteorimpact.ogg', 90, TRUE)
-	new /obj/effect/temp_visual/mook_dust(final)
+	cyberware_grey_dust(final)
+	cyberware_piledriver_impact_fx(final, CYBERWARE_PILEDRIVER_IMPACT_RANGE)
 	for(var/mob/living/victim as anything in crushed)
 		crush_victim(jumper, victim)
 	for(var/mob/living/victim in oview(CYBERWARE_PILEDRIVER_IMPACT_RANGE, final))
@@ -892,13 +1308,17 @@
 #undef CYBERWARE_CASCADE_CRASH
 #undef CYBERWARE_CASCADE_DODGE_CHANCE
 #undef CYBERWARE_CASCADE_CRASH_STAMINA
-#undef CYBERWARE_CASCADE_HUE_STEP
+#undef CYBERWARE_CASCADE_TRAIL_COLOR_NEWEST
+#undef CYBERWARE_CASCADE_TRAIL_COLOR_YOUNG
+#undef CYBERWARE_CASCADE_TRAIL_COLOR_OLD
+#undef CYBERWARE_CASCADE_TRAIL_COLOR_OLDEST
 #undef CYBERWARE_REDLINE_WINDOW
 #undef CYBERWARE_REDLINE_DAMAGE_MULT
 #undef CYBERWARE_REDLINE_MELEE_BONUS
 #undef CYBERWARE_REDLINE_ROAR_RANGE
 #undef CYBERWARE_REDLINE_CRASH_STAMINA
 #undef CYBERWARE_REDLINE_CRASH
+#undef CYBERWARE_REDLINE_OUTLINE_COLOR
 #undef CYBERWARE_PILEDRIVER_RANGE
 #undef CYBERWARE_PILEDRIVER_AIRTIME
 #undef CYBERWARE_PILEDRIVER_IMPACT_RANGE

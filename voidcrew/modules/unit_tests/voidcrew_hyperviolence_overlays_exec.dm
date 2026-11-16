@@ -14,6 +14,11 @@
 	for(var/prefix in prefixes)
 		for(var/part in list("blood", "bone"))
 			TEST_ASSERT(icon_exists(gore_icon, "[prefix]_[part]"), "Gore sheet is missing [prefix]_[part]")
+	// The neck the garrote cuts swaps in the wire's own stump (hyperviolence/wire/wire_seams.dm).
+	var/wire_icon = 'voidcrew/modules/hyperviolence/wire/icons/wire_gore.dmi' // WIRE_GORE_ICON
+	for(var/zone in GLOB.hv_wire_stump_zones)
+		for(var/part in list("blood", "bone"))
+			TEST_ASSERT(icon_exists(wire_icon, "stump_[zone]_wire_[part]"), "Wire sheet is missing stump_[zone]_wire_[part]")
 
 /// A torn-off limb leaves a wet stump, a clean removal a healed one, and a limb put back clears it.
 /datum/unit_test/hv_stump_overlays
@@ -47,6 +52,24 @@
 	var/obj/item/bodypart/head = dummy.get_bodypart(BODY_ZONE_HEAD)
 	TEST_ASSERT(head.dismember(), "The head would not come off")
 	TEST_ASSERT("stump_head_blood" in dummy.hv_gore_states(), "Decapitation drew no neck stump")
+	TEST_ASSERT(!LAZYACCESS(dummy.hv_stump_wire_cut, BODY_ZONE_HEAD), "A head torn off without the wire drew the wire's stump")
+
+	// A head the wire takes (the garrote) leaves the wire's clean cut, seared dark by a hot wire.
+	var/mob/living/carbon/human/consistent/garroted = allocate(/mob/living/carbon/human/consistent)
+	TEST_ASSERT(hv_wire_take_part(garroted.get_bodypart(BODY_ZONE_HEAD)), "The wire would not take the head")
+	var/list/neck = garroted.hv_gore_states()
+	TEST_ASSERT("stump_head_wire_blood" in neck, "A head the wire took drew no wire stump: [english_list(neck)]")
+	TEST_ASSERT("stump_head_wire_bone" in neck, "A head the wire took drew no bone in its stump")
+	TEST_ASSERT(!("stump_head_blood" in neck), "A head the wire took drew the ragged stump too")
+	LAZYSET(garroted.hv_stump_burnt, BODY_ZONE_HEAD, TRUE)
+	garroted.hv_gore_key = null
+	garroted.hv_update_gore_overlays()
+	var/image/neck_blood
+	for(var/image/gore_image as anything in garroted.hv_gore_overlays)
+		if(gore_image.icon_state == "stump_head_wire_blood")
+			neck_blood = gore_image
+	TEST_ASSERT_NOTNULL(neck_blood, "A seared wire stump lost its picture")
+	TEST_ASSERT_EQUAL(neck_blood.color, "#2a1b15", "A seared wire stump wasn't charred") // WIRE_BURNT_STUMP_COLOR
 
 /// One heavy hit opens a skull wound, more damage widens it, healing closes it; small hits never open one.
 /datum/unit_test/hv_skull_wound
@@ -231,3 +254,55 @@
 	TEST_ASSERT_EQUAL(body.pixel_w, pixel_before, "The death throes left the body [body.pixel_w - pixel_before] pixels aside")
 	var/matrix/after = body.transform
 	TEST_ASSERT(abs(after.a - lying.a) < 0.01 && abs(after.b - lying.b) < 0.01 && abs(after.d - lying.d) < 0.01 && abs(after.e - lying.e) < 0.01, "The death throes left the body turned differently from how tg laid it down")
+
+/// How many fresh victims the aimed-part tests below strike. At tg's odds a miss turns up in nearly every run.
+#define HV_AIMED_PART_TRIES 60
+
+/// An execution round from a tile away strikes the head every time: tg's zone roll for the shot never
+/// sends it to another part. No TRAIT_DESIGNATED_TARGET here, unlike the tests above (which shoot from
+/// the victim's own tile, where tg never rolls a miss).
+/datum/unit_test/hv_gun_execution_hits_head
+
+/datum/unit_test/hv_gun_execution_hits_head/Run()
+	var/mob/living/carbon/human/consistent/gunner = allocate(/mob/living/carbon/human/consistent)
+	gunner.zone_selected = BODY_ZONE_HEAD
+	var/turf/beside = get_step(run_loc_floor_bottom_left, EAST)
+	var/misses = 0
+	for(var/i in 1 to HV_AIMED_PART_TRIES)
+		var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, beside)
+		ADD_TRAIT(victim, TRAIT_PIERCEIMMUNE, INNATE_TRAIT) // no stray shrapnel
+		victim.Knockdown(30 SECONDS)
+		var/obj/item/gun/ballistic/automatic/pistol/gun = allocate(/obj/item/gun/ballistic/automatic/pistol)
+		gun.can_misfire = FALSE
+		gunner.put_in_active_hand(gun, forced = TRUE)
+		gun.chambered.loaded_projectile.damage = 10 // doubled at the muzzle: 20, nowhere near the burst line
+		var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
+		TEST_ASSERT(gun.hv_fire_execution(gunner, victim, null), "The execution shot did not fire")
+		if(head.brute_dam <= 0)
+			misses++
+		qdel(gun)
+		qdel(victim)
+	TEST_ASSERT_EQUAL(misses, 0, "[misses] of [HV_AIMED_PART_TRIES] execution rounds struck another part than the head")
+
+/// A finisher's real blow lands on the part it is aimed at every time, past tg's zone roll for a melee hit.
+/datum/unit_test/hv_finisher_blow_hits_aimed_part
+
+/datum/unit_test/hv_finisher_blow_hits_aimed_part/Run()
+	var/mob/living/carbon/human/consistent/attacker = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/storage/toolbox/toolbox = allocate(/obj/item/storage/toolbox)
+	attacker.put_in_active_hand(toolbox, forced = TRUE)
+	var/turf/beside = get_step(run_loc_floor_bottom_left, EAST)
+	var/misses = 0
+	for(var/i in 1 to HV_AIMED_PART_TRIES)
+		var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, beside)
+		victim.Knockdown(30 SECONDS)
+		var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
+		var/datum/hv_finisher/finisher = new(attacker, victim)
+		TEST_ASSERT(finisher.real_blow(BODY_ZONE_HEAD), "The finisher's blow didn't swing")
+		if(head.brute_dam <= 0)
+			misses++
+		qdel(finisher)
+		qdel(victim)
+	TEST_ASSERT_EQUAL(misses, 0, "[misses] of [HV_AIMED_PART_TRIES] finisher blows struck another part than the head")
+
+#undef HV_AIMED_PART_TRIES

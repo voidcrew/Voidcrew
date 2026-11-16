@@ -6,6 +6,7 @@ import { type BooleanLike, classes } from 'tgui-core/react';
 
 import { resolveAsset } from '../../tgui/assets';
 import { useBackend } from '../backend';
+import { TutorialFocus } from '../components/TutorialFocus';
 import { Window } from '../layouts';
 import {
   BROWNOUT_COLOR,
@@ -131,6 +132,7 @@ type Data = {
   ink: Ink | null;
   groups: Group[];
   tray_count: number;
+  tutorial_focus?: string | null;
 };
 
 const TIER_NAMES: Record<number, string> = {
@@ -309,7 +311,9 @@ const LoadRail = () => {
               className="Cradle__loadCell"
               style={{
                 width: `${(segment.load / scale) * 100}%`,
-                backgroundColor: brownout ? BROWNOUT_COLOR : segmentColor(segment),
+                backgroundColor: brownout
+                  ? BROWNOUT_COLOR
+                  : segmentColor(segment),
               }}
             />
           </Tooltip>
@@ -369,12 +373,7 @@ const Rack = () => {
   const { groups, has_occupant } = data;
 
   if (!has_occupant) {
-    return (
-      <div className="Cradle__empty">
-        The rack is dark. Drag yourself onto the slab to lie back and it wakes
-        up.
-      </div>
-    );
+    return <div className="Cradle__empty">The rack is dark.</div>;
   }
 
   return (
@@ -428,6 +427,13 @@ const Tile = (props: { ware: Ware }) => {
   const { act, data } = useBackend<Data>();
   const picked = data.selected === ware.ref;
   const fault = faultLabel(ware);
+  // The tutorial points at the first part that fits until one is picked. Set on the button by hand:
+  // the Tooltip clones its child, so a TutorialFocus wrapper there would swallow its hover props.
+  const tutorialPulse =
+    data.tutorial_focus === 'cradle_install' &&
+    !!data.occupant_is_user &&
+    !data.selected &&
+    firstFittingRef(data.groups) === ware.ref;
 
   return (
     <Tooltip content={<TileCard ware={ware} />} position="right">
@@ -438,6 +444,7 @@ const Tile = (props: { ware: Ware }) => {
           !!ware.installed && 'Cradle__tile--installed',
           picked && 'Cradle__tile--picked',
           !ware.installed && !ware.fits && 'Cradle__tile--nofit',
+          tutorialPulse && 'TutorialFocus',
         ])}
         style={{ borderColor: tierColor(ware.tier) }}
         onClick={() => act('select', { ref: ware.ref })}
@@ -458,6 +465,16 @@ const Tile = (props: { ware: Ware }) => {
   );
 };
 
+/** The first part not yet installed that fits, in rack order, or null. */
+function firstFittingRef(groups: Group[]): string | null {
+  for (const group of groups) {
+    for (const ware of group.ware) {
+      if (!ware.installed && ware.fits) return ware.ref;
+    }
+  }
+  return null;
+}
+
 /**
  * What a tile says on hover: the whole card without having to commit a click.
  * Clicking is what puts the piece on the body, so hovering has to be enough to
@@ -477,7 +494,7 @@ const TileCard = (props: { ware: Ware }) => {
       </div>
       <div className="Cradle__hoverMeta">
         <span style={{ color: accent }}>
-          T{ware.tier} {TIER_NAMES[ware.tier] || 'CHROME'}
+          {TIER_NAMES[ware.tier] || 'CHROME'}
         </span>
         <span>load {ware.load}</span>
         {ware.capacity_bonus > 0 && <span>+{ware.capacity_bonus} cap</span>}
@@ -519,12 +536,7 @@ const Detail = () => {
     .find((entry) => entry.ref === selected);
 
   if (!ware) {
-    return (
-      <div className="Cradle__empty">
-        Pick a piece from the rack. Anything you own shows up on the body before
-        the rig touches you.
-      </div>
-    );
+    return <div className="Cradle__empty">Nothing selected.</div>;
   }
 
   // Only the occupant, conscious and unrestrained, may order work on their own
@@ -548,7 +560,7 @@ const Detail = () => {
           </div>
           <div className="Cradle__detailTier">
             <span style={{ color: accent }}>
-              TIER {ware.tier} · {TIER_NAMES[ware.tier] || 'CHROME'}
+              {TIER_NAMES[ware.tier] || 'CHROME'}
             </span>
             <span className="Cradle__detailWhere">
               {ware.state === 'installed'
@@ -603,7 +615,7 @@ const Detail = () => {
           )}
           {!!overCapacity && (
             <div className="Cradle__evicts Cradle__evicts--bad">
-              No neural headroom. Shed load or find a Governor.
+              No neural headroom.
             </div>
           )}
         </div>
@@ -614,24 +626,21 @@ const Detail = () => {
           <ActionButton
             tone="bad"
             disabled={!mayOperate}
-            hint="Three-second extraction. The ware comes back out intact."
             onClick={() => act('remove', { ref: ware.ref })}
           >
             EXTRACT
           </ActionButton>
         ) : (
-          <ActionButton
-            tone="good"
-            disabled={!mayOperate || !ware.fits}
-            hint={
-              ware.fits
-                ? 'Four-second install. You will be briefly sedated.'
-                : 'Will not fit the current load budget.'
-            }
-            onClick={() => act('install', { ref: ware.ref })}
-          >
-            INSTALL
-          </ActionButton>
+          <TutorialFocus id={data.occupant_is_user ? 'cradle_install' : ''}>
+            <ActionButton
+              tone="good"
+              disabled={!mayOperate || !ware.fits}
+              hint={ware.fits ? undefined : 'No neural headroom.'}
+              onClick={() => act('install', { ref: ware.ref })}
+            >
+              INSTALL
+            </ActionButton>
+          </TutorialFocus>
         )}
       </div>
 
@@ -719,9 +728,10 @@ const ActionButton = (props: {
   disabled?: boolean;
   hint?: string;
   onClick: () => void;
+  className?: string;
   children;
 }) => {
-  const { tone, disabled, hint, onClick, children } = props;
+  const { tone, disabled, hint, onClick, className, children } = props;
   return (
     <button
       type="button"
@@ -731,6 +741,7 @@ const ActionButton = (props: {
         'Cradle__action',
         `Cradle__action--${tone}`,
         disabled && 'Cradle__action--off',
+        className,
       ])}
       onClick={() => !disabled && onClick()}
     >
@@ -776,10 +787,7 @@ const StatusDeck = () => {
             style={{ width: `${progress * 100}%` }}
           />
         </div>
-        <div className="Cradle__note">
-          Hold still. Leaving the slab cancels the cycle. Nothing is lost, the
-          ware goes to the tray.
-        </div>
+        <div className="Cradle__note">Hold still.</div>
       </div>
     );
   }
@@ -789,19 +797,13 @@ const StatusDeck = () => {
     notes.push('Trade embargo. The rig will not work on you.');
   }
   if (!has_occupant) {
-    notes.push('The slab is empty. Drag yourself onto it to lie back.');
+    notes.push('The slab is empty.');
   } else if (!occupant_is_user) {
-    notes.push(
-      `${occupant_name} is on the slab. The rig takes orders from its occupant only. You can still pop the parts tray.`,
-    );
+    notes.push(`${occupant_name} is on the slab.`);
   } else if (!can_operate) {
-    notes.push(
-      'The rig refuses: you have to be conscious and unrestrained to consent to chrome work.',
-    );
+    notes.push('The rig needs you awake and free to say yes.');
   } else {
-    notes.push(
-      'Rig idle. Highlight a piece in the rack, check it on the body, then commit.',
-    );
+    notes.push('Rig idle.');
   }
   if (tray_count > 0) {
     notes.push(
@@ -841,10 +843,7 @@ const Controls = () => {
       <ActionButton
         tone="cool"
         disabled={!mayOperate || !!tuneup_denial}
-        hint={
-          tuneup_denial ||
-          `Clears EMP scramble and repairs all installed chrome. ${tuneup_fee} cr.`
-        }
+        hint={tuneup_denial || undefined}
         onClick={() => act('tuneup')}
       >
         {`TUNE-UP · ${tuneup_fee} CR`}
@@ -852,7 +851,6 @@ const Controls = () => {
       <ActionButton
         tone="plain"
         disabled={tray_count === 0}
-        hint="Anyone adjacent can pop the tray. Evicted chrome is never held hostage."
         onClick={() => act('eject_tray')}
       >
         {`EJECT TRAY${tray_count > 0 ? ` · ${tray_count}` : ''}`}
@@ -860,7 +858,6 @@ const Controls = () => {
       <ActionButton
         tone="plain"
         disabled={loaded_credits <= 0 || !!busy}
-        hint="Returns the slab's loaded cash as a holochip."
         onClick={() => act('eject_cash')}
       >
         EJECT CASH
@@ -868,7 +865,6 @@ const Controls = () => {
       <ActionButton
         tone="plain"
         disabled={!has_occupant}
-        hint="Gets the patient off the slab. Cancels any running cycle, the ware goes to the tray."
         onClick={() => act('get_up')}
       >
         {occupant_is_user ? 'GET UP' : 'UNBUCKLE'}

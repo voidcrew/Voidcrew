@@ -247,7 +247,10 @@
 			if(25)
 				S.pixel_y = 7
 				S.forceMove(get_turf(src))
-		sleep(0.7 SECONDS)
+		// VOIDCREW EDIT CHANGE START - songs started by outpost autoplay (voidcrew/modules/trade/outpost_jukebox.dm) skip the spin-up
+		if(!autoplay_song)
+			sleep(0.7 SECONDS)
+		// VOIDCREW EDIT CHANGE END
 	for(var/s in sparkles)
 		var/obj/effect/overlay/sparkles/reveal = s
 		reveal.alpha = 255

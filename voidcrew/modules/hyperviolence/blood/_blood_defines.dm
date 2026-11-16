@@ -15,6 +15,11 @@
 #define HV_BLOOD_FAN_STRENGTH 3
 /// Tiles a spray reaches when a limb comes off.
 #define HV_BLOOD_DISMEMBER_STRENGTH 3
+/// Most a run of cast-off drops sits off the middle of its line, in pixels, straight and diagonal.
+#define HV_BLOOD_DROPS_DRIFT 4
+#define HV_BLOOD_DROPS_DRIFT_DIAGONAL 2
+/// Most a tile of cast-off drops is turned off the line, in degrees either way.
+#define HV_BLOOD_DROPS_TURN 7
 
 /// Each unit of blood a standing bleeder loses adds this much to the pool under them.
 #define HV_BLOOD_POOL_PER_UNIT 1

@@ -47,6 +47,8 @@ GLOBAL_LIST_INIT(bounty_species_weights, list(
  *
  * - No archetype: rolled from the tier (spec section 2).
  * - A mini-boss is never placed at a trader outpost (D-A8): there it becomes a normal criminal.
+ * - A trader-outpost fugitive fights only in a style whose weapon it can hide while it passes as a
+ *   customer (bounty_roll_style()).
  * - At a trader outpost the record also gets an old look for its mugshot (make_old_look(), AR-C1).
  * - `species` forces a species (tests, admins); otherwise it is rolled from the pool.
  *
@@ -70,9 +72,12 @@ GLOBAL_LIST_INIT(bounty_species_weights, list(
 		if(BOUNTY_ARCHETYPE_MEEK)
 			record.style = BOUNTY_STYLE_HOLDOUT
 		if(BOUNTY_ARCHETYPE_NORMAL)
-			record.style = bounty_roll_style()
+			record.style = bounty_roll_style(concealed = (placement_kind == BOUNTY_PLACEMENT_TRADER_OUTPOST))
 		if(BOUNTY_ARCHETYPE_BOSS)
 			record.kit = bounty_roll_kit()
+	// C0 chrome (bounty_chrome.dm): rolled once, so the same criminal always carries the same chrome. The kingpin carries none.
+	if(placement_kind != BOUNTY_PLACEMENT_KINGPIN)
+		record.chrome = bounty_chrome_roll(tier, archetype, record.style, record.kit, bounty_chrome_kit_organs(record.kit))
 	record.alias = bounty_roll_alias(record)
 	record.crime = bounty_roll_crime(tier)
 	record.features = bounty_roll_features(record)
@@ -90,17 +95,29 @@ GLOBAL_LIST_INIT(bounty_species_weights, list(
 			return prob(BOUNTY_WANTED_MEEK_CHANCE) ? BOUNTY_ARCHETYPE_MEEK : BOUNTY_ARCHETYPE_NORMAL
 	return prob(BOUNTY_PETTY_MEEK_CHANCE) ? BOUNTY_ARCHETYPE_MEEK : BOUNTY_ARCHETYPE_NORMAL
 
-/// A fighting style for a normal criminal, weighted
-/proc/bounty_roll_style()
+/**
+ * A fighting style for a normal criminal, weighted. `concealed`: only the styles whose weapon nobody sees
+ * while it is carried (the style's concealable), for a fugitive passing as a customer at a trader outpost.
+ */
+/proc/bounty_roll_style(concealed = FALSE)
 	var/static/list/weights = list(
-		BOUNTY_STYLE_BRAWLER = 20,
-		BOUNTY_STYLE_PISTOL = 20,
-		BOUNTY_STYLE_KNIFE = 18,
-		BOUNTY_STYLE_CLUB = 15,
-		BOUNTY_STYLE_BOTTLE = 15,
-		BOUNTY_STYLE_SHOTGUN = 12,
+		BOUNTY_STYLE_BRAWLER = 18,
+		BOUNTY_STYLE_PISTOL = 14,
+		BOUNTY_STYLE_KNIFE = 16,
+		BOUNTY_STYLE_CLUB = 14,
+		BOUNTY_STYLE_BOTTLE = 12,
+		BOUNTY_STYLE_SHOTGUN = 10,
+		BOUNTY_STYLE_SMG = 8,
+		BOUNTY_STYLE_REVOLVER = 8,
 	)
-	return pick_weight(weights)
+	if(!concealed)
+		return pick_weight(weights)
+	var/list/hidden = list()
+	for(var/key in weights)
+		var/datum/bounty_style/style = GLOB.bounty_styles[key]
+		if(style?.concealable)
+			hidden[key] = weights[key]
+	return length(hidden) ? pick_weight(hidden) : BOUNTY_STYLE_BRAWLER
 
 /// A mini-boss kit, weighted
 /proc/bounty_roll_kit()
@@ -110,6 +127,8 @@ GLOBAL_LIST_INIT(bounty_species_weights, list(
 		BOUNTY_KIT_PYROMANIAC = 20,
 		BOUNTY_KIT_DEMOLITIONIST = 18,
 		BOUNTY_KIT_GHOST = 18,
+		// The rarest: its kit is its chrome (chrome/bounty_cyberpsycho.dm)
+		BOUNTY_KIT_CYBERPSYCHO = 8,
 	)
 	return pick_weight(weights)
 

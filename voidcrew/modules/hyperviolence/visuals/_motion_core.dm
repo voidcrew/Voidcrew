@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 // Hyperviolence visuals: the animation pass over the gore. Bodies flinch, snap, lurch and limp when
 // hit, fall away from the killing blow and twitch after, severed parts and brains tumble through
 // the air, blood paints in, drips, spreads and floats, guts slither, and executions and
@@ -32,6 +35,8 @@
 	var/hv_vis_hit_damage = 0
 	/// Weak reference to whoever landed it, for the hit-stop.
 	var/datum/weakref/hv_vis_hit_by
+	/// Whether it was a shot, which rocks a shooter back, rather than a blow, which they lean into.
+	var/hv_vis_hit_ranged = FALSE
 	/// How many hits are being resolved on this mob right now, and the tick that count is for.
 	var/hv_vis_resolving = 0
 	var/hv_vis_resolving_time = -1
@@ -117,6 +122,9 @@
 		hv_vis_hit_damage = 0
 		hv_vis_hit_dir = 0
 		hv_vis_hit_by = null
+		hv_vis_hit_ranged = FALSE
+	if(isprojectile(attacking_item))
+		hv_vis_hit_ranged = TRUE
 	// A baton or disabler hit makes a body jerk, but less than a bullet.
 	hv_vis_hit_damage += damagetype == STAMINA ? damage * 0.5 : damage
 	if(attack_direction)
@@ -197,12 +205,20 @@
 /atom/proc/hv_vis_play(tag, list/steps, loop = 1)
 	if(!length(steps))
 		return
+	// In a Sandevistan field (cyberware/ware_sandy_timestop.dm) it plays at the field's pace.
+	var/list/times = list()
+	for(var/list/step as anything in steps)
+		times += step[4]
+	var/list/real = cyberware_dilated_steps(src, times, loop, tag)
+	var/started = FALSE
 	for(var/i in 1 to length(steps))
 		var/list/step = steps[i]
-		if(i == 1)
-			animate(src, pixel_w = step[1], pixel_z = step[2], transform = step[3], time = step[4], easing = step[5], loop = loop, tag = tag)
+		var/time = real ? real[i] : step[4]
+		if(!started)
+			animate(src, pixel_w = step[1], pixel_z = step[2], transform = step[3], time = time, easing = step[5], loop = loop, tag = tag)
+			started = TRUE
 		else
-			animate(pixel_w = step[1], pixel_z = step[2], transform = step[3], time = step[4], easing = step[5])
+			animate(pixel_w = step[1], pixel_z = step[2], transform = step[3], time = time, easing = step[5])
 
 /**
  * Plays steps that take over this atom's whole animation: each step is list(pixel_y, transform, time,
@@ -213,15 +229,24 @@
 /atom/proc/hv_vis_play_over(list/steps)
 	if(!length(steps))
 		return
+	// Slowed like hv_vis_play() in a Sandevistan field.
+	var/list/times = list()
+	for(var/list/step as anything in steps)
+		times += step[3]
+	var/list/real = cyberware_dilated_steps(src, times)
+	var/started = FALSE
 	for(var/i in 1 to length(steps))
 		var/list/step = steps[i]
-		if(i == 1)
-			animate(src, pixel_y = step[1], transform = step[2], time = step[3], easing = step[4])
+		var/time = real ? real[i] : step[3]
+		if(!started)
+			animate(src, pixel_y = step[1], transform = step[2], time = time, easing = step[4])
+			started = TRUE
 		else
-			animate(pixel_y = step[1], transform = step[2], time = step[3], easing = step[4])
+			animate(pixel_y = step[1], transform = step[2], time = time, easing = step[4])
 
 /// Eases a named sequence back to where the atom really is over `time`, from wherever it has got to.
 /atom/proc/hv_vis_release(tag, time = 2)
+	time = cyberware_dilated_time(src, time)
 	animate(src, pixel_w = pixel_w, pixel_z = pixel_z, transform = transform, time = time, easing = SINE_EASING, tag = tag)
 
 /// Stops named sequences at once.
@@ -230,14 +255,14 @@
 		animate(src, tag = tag)
 
 /// A copy of `base` turned `angle` degrees clockwise about a point `pivot_y` pixels above (or below)
-/// the middle of the icon, as drawn.
-/proc/hv_vis_turned(matrix/base, angle, pivot_y = 0)
+/// and `pivot_x` pixels right (or left) of the middle of the icon, as drawn.
+/proc/hv_vis_turned(matrix/base, angle, pivot_y = 0, pivot_x = 0)
 	var/matrix/turned = matrix(base)
 	if(!angle)
 		return turned
-	turned.Translate(0, -pivot_y)
+	turned.Translate(-pivot_x, -pivot_y)
 	turned.Turn(angle)
-	turned.Translate(0, pivot_y)
+	turned.Translate(pivot_x, pivot_y)
 	return turned
 
 /// `base` with a change made in the body's own frame first: scaled, then moved, then turned, before
@@ -274,27 +299,42 @@
 		attacker = hv_vis_hit_by?.resolve()
 	if(!attacker || attacker == src || QDELETED(attacker) || attacker.z != z || get_dist(attacker, src) > 9)
 		return
-	attacker.hv_vis_hold_blow(src)
+	attacker.hv_vis_hold_blow(src, hv_vis_hit_time == world.time && hv_vis_hit_ranged)
 
 /// A pale flash over the body for the frames of a hit-stop. A colour filter, gone again half a second later.
 /mob/living/proc/hv_vis_flash()
+	// A body a finisher rig hides has nothing to flash: its puppets flash (chrome_rig/flash()). A colour animated on the
+	// hidden body was drawn by the client through its hide filter, a near-white corpse until the rig let it go.
+	if(sandy_rig_hidden(src))
+		return
+	var/list/times = hv_vis_flash_times()
+	if(cyberware_time_flash(src, list(0.6,0,0, 0,0.6,0, 0,0,0.6, 0.4,0.4,0.4), times))
+		return // in a Sandevistan slow-mo the flash plays through the slow-mo's tint filter (ware_sandy_timestop.dm)
 	if(!get_filter(HV_VIS_FLASH_FILTER))
 		add_filter(HV_VIS_FLASH_FILTER, 10, color_matrix_filter(list(1,0,0, 0,1,0, 0,0,1, 0,0,0)))
 	var/flash = get_filter(HV_VIS_FLASH_FILTER)
 	if(!flash)
 		return
-	animate(flash, color = list(0.6,0,0, 0,0.6,0, 0,0,0.6, 0.4,0.4,0.4), time = 0.5, easing = LINEAR_EASING)
-	animate(color = list(0.6,0,0, 0,0.6,0, 0,0,0.6, 0.4,0.4,0.4), time = HV_VIS_HITSTOP_TIME, easing = LINEAR_EASING)
-	animate(color = list(1,0,0, 0,1,0, 0,0,1, 0,0,0), time = 1, easing = LINEAR_EASING)
+	animate(flash, color = list(0.6,0,0, 0,0.6,0, 0,0,0.6, 0.4,0.4,0.4), time = times[1], easing = LINEAR_EASING)
+	animate(color = list(0.6,0,0, 0,0.6,0, 0,0,0.6, 0.4,0.4,0.4), time = times[2], easing = LINEAR_EASING)
+	animate(color = list(1,0,0, 0,1,0, 0,0,1, 0,0,0), time = times[3], easing = LINEAR_EASING)
 	addtimer(CALLBACK(src, TYPE_PROC_REF(/datum, remove_filter), HV_VIS_FLASH_FILTER), 0.5 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_DELETE_ME)
 
+/**
+ * The hit flash's steps (in, hold, out). Never slowed by a Sandevistan slow-mo: the flash is a screen effect, like the
+ * user's afterimages, not part of the slowed world. Stretched by the slow-mo, a flash on a body in it lasted seconds and
+ * read as a glowing corpse.
+ */
+/mob/living/proc/hv_vis_flash_times()
+	return list(0.5, HV_VIS_HITSTOP_TIME, 1)
+
 /// The attacker's side of a hit-stop: the blow sticks for a few frames. A melee attacker stays leaned
-/// into the victim, a shooter stays rocked back.
-/mob/living/proc/hv_vis_hold_blow(atom/victim)
+/// into the victim; a shooter stays rocked back, even with the barrel against them (`shot`).
+/mob/living/proc/hv_vis_hold_blow(atom/victim, shot = FALSE)
 	if(!isturf(loc))
 		return
 	var/toward = get_dir(src, victim)
-	var/lean = get_dist(src, victim) <= 1 ? 3 : -2
+	var/lean = (shot || get_dist(src, victim) > 1) ? -2 : 3
 	var/dx = HV_VIS_DX(toward) * lean
 	var/dy = HV_VIS_DY(toward) * lean
 	var/matrix/base = matrix(transform)
@@ -363,11 +403,14 @@
 	else if(new_position == LYING_DOWN && (end_flags & HV_VIS_END_LIE))
 		release()
 
-/// Stops the held sequences and goes.
+/// Lets the held sequences go and leaves. Each eases back to where the body really is from wherever it
+/// has got to: a corpse that slid a few pixels as it died, or curled up, does not jump back when it is
+/// dragged off.
 /datum/component/hv_motion_hold/proc/release()
 	var/atom/holder = parent
 	if(!QDELETED(holder))
-		holder.hv_vis_stop(tags)
+		for(var/tag in tags)
+			holder.hv_vis_release(tag, HV_VIS_POSE_RELEASE)
 	qdel(src)
 
 /// The hold ran its course: the sequences already ended themselves.
@@ -377,3 +420,5 @@
 /// Holds this mob's named sequences until one of `end_flags` happens or `duration` passes.
 /mob/living/proc/hv_vis_hold(list/tags, end_flags, duration)
 	AddComponent(/datum/component/hv_motion_hold, tags, end_flags, duration)
+
+#undef animate

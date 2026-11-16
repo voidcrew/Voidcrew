@@ -557,7 +557,8 @@
 			if(!shuttle)
 				balloon_alert(usr, "not linked!")
 				return TRUE
-			var/area_name = params["name"]
+			// VOIDCREW EDIT CHANGE - port of tgstation/tgstation#98413: area names are player HTML
+			var/area_name = html_encode(params["name"])
 			if(!area_name)
 				balloon_alert(usr, "no name given!")
 				return TRUE
@@ -650,7 +651,8 @@
 			if(current_area == default_area)
 				balloon_alert(usr, "can't rename default area!")
 				return TRUE
-			var/new_name = params["name"]
+			// VOIDCREW EDIT CHANGE - port of tgstation/tgstation#98413: area names are player HTML
+			var/new_name = html_encode(params["name"])
 			if(!new_name)
 				balloon_alert(usr, "no name given!")
 				return TRUE

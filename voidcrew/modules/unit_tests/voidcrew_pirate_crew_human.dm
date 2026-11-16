@@ -405,6 +405,9 @@
 	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(2, 1))
 	victim.adjustToxLoss(110) // awake in soft crit; 50 oxygen damage would knock them out
 	TEST_ASSERT_EQUAL(victim.stat, SOFT_CRIT, "Test fixture: the victim isn't down")
+	// The toolbox blow below can roll a caved-in skull (/datum/hv_crit/skull), which kills them and ends the
+	// finisher before the boss is hurt. What that roll gives depends on the tests run before this one.
+	ADD_TRAIT(victim, TRAIT_HEAD_INJURY_BLOCKED, TRAIT_SOURCE_UNIT_TESTS)
 	var/datum/hv_finisher/robust_one/finisher = new(robust, victim)
 	TEST_ASSERT(finisher.real_hits, "A human boss's finisher isn't done with real hits")
 	TEST_ASSERT(finisher.start(), "The Robust One's finisher wouldn't start on someone down beside it")

@@ -35,6 +35,10 @@
 #define HV_EXECUTION_POINT_BLANK_MULT 2
 /// Damage an execution round must deal to the head (after armour) to burst it instead of holing it.
 #define HV_EXECUTION_BURST_DAMAGE 50
+/// Colour of the scorched rim round a laser execution's hole through the skull.
+#define HV_BURN_HOLE_COLOR "#2a1b15"
+/// The headshot art a burn hole is drawn with: a hole in and a hole out, no spatter.
+#define HV_BURN_HOLE_STATE "medium_headshot"
 /// A chambered round must deal at least this much to count as an execution round.
 #define HV_EXECUTION_MIN_DAMAGE 10
 /// do_after interaction key for an execution wind-up.
@@ -84,6 +88,8 @@
 #define HV_GUT_TETHER_RANGE 3
 /// How far apart the guts and their owner can get before the tether tears.
 #define HV_GUT_TETHER_SNAP_RANGE 7
+/// How long guts dragged in on the tether take to cross a tile.
+#define HV_GUT_DRAG_STEP (0.1 SECONDS)
 /// Minimum time between the pain of two tugs on the tether.
 #define HV_GUT_YANK_COOLDOWN (2 SECONDS)
 /// Brute damage to the chest from one tug on the tether.

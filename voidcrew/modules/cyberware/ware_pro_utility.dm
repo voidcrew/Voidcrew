@@ -189,7 +189,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/icepick
 	name = "\improper Icepick Jack"
-	desc = "A slim data spike folded into the wrist, tipped in monocrystal. Turret IFF buses and door motor controllers all run the same handful of protocols, and the spike knows every one of them. Outpost security hardware is the one exception; nobody has cracked that firmware."
+	desc = "A slim data spike folded into the wrist, tipped in monocrystal. Turrets and door motors both talk to it a little too easily."
 	icon_state = "icepick"
 	chrome_load = 3
 	tier = CYBERWARE_TIER_2
@@ -229,7 +229,7 @@
 
 /datum/action/cooldown/cyberware/icepick/suppress
 	name = "Icepick: Suppress"
-	desc = "Spike a hostile turret in line of sight to knock it offline for a while, or slowly force open a bolted or unpowered door you're standing at."
+	desc = "Spike a hostile turret in sight to knock it offline, or force open a bolted or unpowered door."
 	// Both channels are on the same spike, so both need their own face on the
 	// HUD: two identical buttons is a misclick waiting to happen.
 	button_icon_state = "act_icepick_suppress"
@@ -346,7 +346,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/skyhook
 	name = "\improper Skyhook wrist winch"
-	desc = "A barbed anchor over a spooled monofilament winch, built through the wrist bones. Fire it into anything solid within seven tiles and hold on."
+	desc = "A barbed anchor over a spooled monofilament winch, built through the wrist bones. It goes into anything solid and reels you in after it."
 	icon_state = "skyhook"
 	chrome_load = 3
 	tier = CYBERWARE_TIER_2
@@ -359,6 +359,8 @@
 	button_icon_state = "skyhook"
 	cooldown_time = 8 SECONDS
 	click_to_activate = TRUE
+	// A stunned, paralysed or bound body, or one with its hands tied, does not winch itself out.
+	check_flags = AB_CHECK_CONSCIOUS | AB_CHECK_INCAPACITATED | AB_CHECK_IMMOBILE | AB_CHECK_HANDS_BLOCKED
 	/// The zipline visual for the current pull.
 	var/datum/beam/zipline
 	/// Traits worn for the duration of the pull, per the grapple gun.
@@ -431,7 +433,7 @@
  */
 /obj/item/organ/eyes/robotic/cyberware/prospector
 	name = "\improper Prospector Suite optics"
-	desc = "Amber-ringed surveyor eyes. Blink the command and they thump out a resonance pulse: ore veins light up straight through the rock, and any cache transponders in range echo back with them. The handheld scanner needs line of sight. These don't."
+	desc = "Amber-ringed surveyor eyes that can see ore through solid rock. The pulse that does it makes your skull hum."
 	icon_state = "prospector"
 	eye_color_left = "#b8860b"
 	eye_color_right = "#b8860b"
@@ -442,6 +444,12 @@
 		/datum/action/cooldown/cyberware/prospector_pulse,
 		/datum/action/cooldown/cyberware/chrome_read,
 	)
+	optics_zoom = 1.5
+	zoom_walk_penalty = 0.5
+	/// How far the resonance pulse reaches, through rock, in tiles.
+	var/pulse_range = CYBERWARE_PROSPECTOR_RANGE
+	/// Whether the pulse also flags zone loot caches.
+	var/pulse_marks_caches = TRUE
 	/// Cache marks the last pulse raised, so pulling the optics takes them out
 	/// with it instead of leaving blips on a client that no longer owns them.
 	var/list/hud_marks = list()
@@ -472,10 +480,14 @@
 	var/mob/living/carbon/bearer = organ.owner
 	var/obj/item/organ/eyes/robotic/cyberware/prospector/optics = organ
 	var/list/marks = istype(optics) ? optics.hud_marks : null
-	mineral_scan_pulse(get_turf(bearer), CYBERWARE_PROSPECTOR_RANGE, scanner = bearer)
+	var/pulse_range = istype(optics) ? optics.pulse_range : CYBERWARE_PROSPECTOR_RANGE
+	mineral_scan_pulse(get_turf(bearer), pulse_range, scanner = bearer)
 	playsound(bearer, 'sound/machines/sonar-ping.ogg', 25, TRUE)
+	if(istype(optics) && !optics.pulse_marks_caches)
+		StartCooldown()
+		return TRUE
 	var/caches = 0
-	for(var/obj/structure/closet/crate/zone_loot/cache in range(CYBERWARE_PROSPECTOR_RANGE, bearer))
+	for(var/obj/structure/closet/crate/zone_loot/cache in range(pulse_range, bearer))
 		// Marks go up through the rock the same way the ore reveal does, a
 		// cache you can already see was never the thing worth pinging for.
 		cyberware_hud_mark(bearer, cache, "#ffb347", 6 SECONDS, registry = marks)
@@ -498,7 +510,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/hemoglass
 	name = "\improper Hemoglass filter"
-	desc = "A dialysis loop in borosilicate, teed into the vena cava. It strips poisons, chems and radiation out of your blood a little faster than most things can put them in. Party mode tells it to leave the recreational chems alone."
+	desc = "A dialysis loop in borosilicate, teed into the vena cava. It cleans your blood faster than most things can foul it. There's a switch for evenings when you'd rather it didn't."
 	icon_state = "hemoglass"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_FILTER
@@ -513,7 +525,7 @@
 
 /obj/item/organ/cyberimp/cyberware/hemoglass/ui_action_click()
 	party_mode = !party_mode
-	owner.balloon_alert(owner, party_mode ? "party mode, recreational channels open" : "filter scrubbing everything")
+	owner.balloon_alert(owner, party_mode ? "party mode" : "scrubbing everything")
 
 /obj/item/organ/cyberimp/cyberware/hemoglass/on_life(seconds_per_tick, times_fired)
 	. = ..()
@@ -542,13 +554,17 @@
  *
  * Circulating coolant woven through the torso: heat exposure damage is
  * trait-gated off, burns hit at half strength, and open flame on you gets
- * starved down fast. Deliberately NOT fireproof, enough flamer fuel still
- * wins, which keeps the buyable MOD flamethrower an honest counter. Sits
+ * starved down fast. In practice that makes a human bearer fireproof: fire
+ * stacks only hurt a human through body heat (fire_stacks.dm harm_human()),
+ * and TRAIT_RESISTHEAT gates that damage off (_species.dm), so a burning
+ * bearer loses clothes, not skin. The cheap Heat-sink lining
+ * (ware_models_b.dm) carries the same trait. Burn damage dealt outright
+ * (a laser, say) still lands, halved here. Sits
  * on the seal ladder above Second Wind: pick your climate.
  */
 /obj/item/organ/cyberimp/cyberware/coolant
 	name = "\improper Coolant Loop lattice"
-	desc = "Kilometres of microbore coolant line threaded between muscle and skin: a full climate system for your body. You can work in lava country and walk out of fires that would cook anyone else. It eats a lot of chrome load to run."
+	desc = "Kilometres of microbore coolant line threaded between muscle and skin, which makes you a climate system with a pulse."
 	icon_state = "coolant"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_SEAL
@@ -556,6 +572,9 @@
 	chrome_load = 3
 	tier = CYBERWARE_TIER_2
 	organ_traits = list(TRAIT_RESISTHEAT)
+	/// Multiplier on the bearer's burn damage while running. 1 leaves burns alone
+	/// and applies no physiology mod at all.
+	var/burn_mult = 0.5
 	/// TRUE while the burn-halving physiology mod is applied. Guards the
 	/// failing-gated passive hooks against double multiply/divide.
 	var/coolant_mod_applied = FALSE
@@ -567,11 +586,11 @@
 // Physiology persists across species changes (physiology.dm:1).
 /obj/item/organ/cyberimp/cyberware/coolant/chrome_passives_on(mob/living/carbon/bearer)
 	. = ..()
-	if(coolant_mod_applied || !ishuman(bearer))
+	if(coolant_mod_applied || !ishuman(bearer) || burn_mult == 1)
 		return
 	coolant_mod_applied = TRUE
 	var/mob/living/carbon/human/human_bearer = bearer
-	human_bearer.physiology.burn_mod *= 0.5
+	human_bearer.physiology.burn_mod *= burn_mult
 
 /obj/item/organ/cyberimp/cyberware/coolant/chrome_passives_off(mob/living/carbon/bearer)
 	. = ..()
@@ -581,7 +600,7 @@
 	if(!ishuman(bearer) || QDELETED(bearer))
 		return
 	var/mob/living/carbon/human/human_bearer = bearer
-	human_bearer.physiology.burn_mod /= 0.5
+	human_bearer.physiology.burn_mod /= burn_mult
 
 /obj/item/organ/cyberimp/cyberware/coolant/on_life(seconds_per_tick, times_fired)
 	. = ..()
@@ -615,7 +634,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/doppler
 	name = "\improper Heartbeat Doppler"
-	desc = "A sonar transceiver socketed into the bone behind your ear. Anything alive and moving within nine tiles shows up through walls; anything holding still doesn't register at all. The ping is quiet, but it's out loud, so you're not the only one who knows it's running."
+	desc = "A sonar transceiver socketed into the bone behind your ear. It paints whatever is moving nearby, walls or no walls, and the ping is louder than the brochure said."
 	icon_state = "doppler"
 	zone = BODY_ZONE_HEAD
 	slot = ORGAN_SLOT_CYBERWARE_EARS
@@ -625,6 +644,12 @@
 	actions_types = list(/datum/action/item_action/organ_action/toggle)
 	/// Whether the sonar is running.
 	var/active = FALSE
+	/// How far the sonar reaches, in tiles.
+	var/sonar_range = CYBERWARE_DOPPLER_RANGE
+	/// How long a contact stays painted after its last step.
+	var/contact_fade = CYBERWARE_DOPPLER_FADE
+	/// Added to the ping's volume, on top of the distance falloff.
+	var/ping_volume_bonus = 0
 	/// Living things in range we hold movement and death hooks on. Assoc for
 	/// the O(1) membership test; the values are dummies.
 	var/list/watched = list()
@@ -694,7 +719,7 @@
 		return
 	next_sweep = world.time + CYBERWARE_DOPPLER_SWEEP
 	var/list/in_range = list()
-	for(var/mob/living/contact in range(CYBERWARE_DOPPLER_RANGE, owner))
+	for(var/mob/living/contact in range(sonar_range, owner))
 		if(contact == owner || contact.stat == DEAD)
 			continue
 		in_range[contact] = TRUE
@@ -742,14 +767,14 @@
 /obj/item/organ/cyberimp/cyberware/doppler/proc/paint_contact(mob/living/contact)
 	if(!active || (organ_flags & ORGAN_FAILING) || QDELETED(owner) || QDELETED(contact))
 		return
-	if(contact.stat == DEAD || get_dist(owner, contact) > CYBERWARE_DOPPLER_RANGE || contact.z != owner.z)
+	if(contact.stat == DEAD || get_dist(owner, contact) > sonar_range || contact.z != owner.z)
 		unwatch_contact(contact)
 		return
 	var/datum/cyberware_hud_mark/blip = contacts[contact]
 	if(blip)
-		blip.refresh(CYBERWARE_DOPPLER_FADE)
+		blip.refresh(contact_fade)
 		return
-	cyberware_hud_mark(owner, contact, "#9fd8ff", CYBERWARE_DOPPLER_FADE, "sonar_ping_small", contacts, contact)
+	cyberware_hud_mark(owner, contact, "#9fd8ff", contact_fade, "sonar_ping_small", contacts, contact)
 
 /// Signal proc for [COMSIG_MOVABLE_MOVED] on the bearer: the set of things
 /// close enough to hook changed. The blips re-aim themselves.
@@ -792,7 +817,7 @@
 	if(nearest_mover == INFINITY)
 		return
 	// Louder as they close; audible around you either way. That's the deal.
-	var/ping_volume = clamp(45 - nearest_mover * 3, 15, 45)
+	var/ping_volume = clamp(45 - nearest_mover * 3, 15, 45) + ping_volume_bonus
 	playsound(owner, 'sound/machines/sonar-ping.ogg', ping_volume, TRUE)
 	if(nearest_mover <= 3) // close contact: the beep doubles up
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), owner, 'sound/machines/sonar-ping.ogg', ping_volume, TRUE), 0.4 SECONDS)
@@ -812,7 +837,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/graverobber
 	name = "\improper Graverobber's Jack"
-	desc = "An arm-mounted data spike that reads intel out of dead bodies. Spend three seconds on an adjacent corpse and nearby loot caches and hostile patrols get marked on your HUD."
+	desc = "An arm-mounted data spike for going through the implants of the recently dead."
 	icon_state = "graverobber"
 	chrome_load = 2
 	tier = CYBERWARE_TIER_2
@@ -820,12 +845,6 @@
 	/// Intel marks the last read raised, so pulling the spike takes them out
 	/// with it instead of leaving blips on a client that no longer owns them.
 	var/list/hud_marks = list()
-
-/obj/item/organ/cyberimp/arm/toolkit/cyberware/graverobber/examine(mob/user)
-	. = ..()
-	. += span_notice("Once installed, use the Data-Spike the Dead ability on a dead body next to you. The read takes 3 seconds. It marks loot caches within [CYBERWARE_GRAVEROBBER_SWEEP_RANGE] tiles in amber and hostile patrols in red on your HUD for a few seconds.")
-	. += span_notice("Occasionally a read recovers a vault phrase, marking caches within [CYBERWARE_GRAVEROBBER_DEEP_SWEEP_RANGE] tiles instead.")
-	. += span_notice("Each body can only be read once, and the spike takes 20 seconds to recharge between reads.")
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/graverobber/on_mob_remove(mob/living/carbon/arm_owner, special = FALSE, movement_flags)
 	clear_marks()
@@ -912,7 +931,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/angler
 	name = "\improper Harpoon Spool"
-	desc = "A forearm winch spooled with monofilament under a barbed head. Fired, it drags loose gear and small creatures to you from six tiles out, anything heavier drags you instead."
+	desc = "A forearm winch spooled with monofilament under a barbed head. It reels in whatever it hits, or you toward it, depending on who's heavier."
 	icon_state = "angler"
 	chrome_load = 2
 	tier = CYBERWARE_TIER_2
@@ -920,7 +939,7 @@
 
 /datum/action/cooldown/cyberware/harpoon
 	name = "Harpoon Barb"
-	desc = "Fire the barb up to six tiles: loose items and small creatures come to you. Anything heavier drags you a tile toward it instead."
+	desc = "Fire the barb up to six tiles. Loose items and small creatures come to you; anything heavier pulls you toward it."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "angler"
 	cooldown_time = 8 SECONDS
@@ -928,7 +947,8 @@
 
 /datum/action/cooldown/cyberware/harpoon/Activate(atom/target)
 	var/mob/living/carbon/bearer = organ.owner
-	if(isturf(target) || QDELETED(target))
+	// Clicking yourself fires the barb at nothing: a line from the bearer to the bearer.
+	if(isturf(target) || QDELETED(target) || target == bearer)
 		bearer.balloon_alert(bearer, "barb skitters off!")
 		return FALSE
 	if(get_dist(bearer, target) > CYBERWARE_ANGLER_RANGE || !(target in view(CYBERWARE_ANGLER_RANGE, bearer)))

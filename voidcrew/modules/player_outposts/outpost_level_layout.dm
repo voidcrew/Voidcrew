@@ -302,6 +302,9 @@
 /proc/outpost_zone_teleport_refused(turf/origin, turf/destination, turf/wanted)
 	if(!destination)
 		return FALSE
+	// A trader outpost's hidden shipyard copy sits in a reservation of its own (outpost_shipyard.dm).
+	if(in_shipyard_copy(destination) || in_shipyard_copy(wanted))
+		return TRUE
 	var/obj/structure/overmap/dynamic/player_outpost/home = player_outpost_on_level(destination.z)
 	if(!home)
 		return FALSE

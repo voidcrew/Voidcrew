@@ -208,8 +208,10 @@
 		playsound(src, fire_sound, fire_sound_volume, vary_fire_sound)
 
 /obj/item/gun/proc/shoot_live_shot(mob/living/user, pointblank = FALSE, atom/pbtarget = null, message = TRUE)
-	if(recoil && !tk_firing(user))
-		shake_camera(user, recoil + 1, recoil)
+	// VOIDCREW EDIT REMOVAL START - gun_feel: voidcrew/modules/gun_feel kicks the camera away from the shot instead of shaking it at random
+	// if(recoil && !tk_firing(user))
+	// 	shake_camera(user, recoil + 1, recoil)
+	// VOIDCREW EDIT REMOVAL END
 	fire_sounds()
 	if(suppressed || !message)
 		return FALSE
@@ -245,7 +247,7 @@
 	else if(!tk_firing(user))
 		user.visible_message(
 			span_danger("[user] fires [src]!"),
-			span_danger("You fire [src]!"),
+			null, // VOIDCREW EDIT CHANGE - gun_feel: no chat line to the shooter on every shot (voidcrew/modules/gun_feel). ORIGINAL: span_danger("You fire [src]!"),
 			span_hear("You hear a gunshot!"),
 			vision_distance = COMBAT_MESSAGE_RANGE,
 			ignored_mobs = user,
@@ -378,7 +380,7 @@
 
 	// VOIDCREW EDIT ADDITION START: a point-blank head shot at someone helpless is an execution (voidcrew/modules/hyperviolence/overlays_exec/executions.dm)
 	if(flag && hv_try_head_execution(user, target, params))
-		return
+		return TRUE // handled: without this the click fell through to a gun-bash on the body once the execution was over
 	// VOIDCREW EDIT ADDITION END
 
 	if(!can_shoot()) //Just because you can pull the trigger doesn't mean it can shoot.
@@ -446,6 +448,12 @@
 	if(!user || !firing_burst)
 		firing_burst = FALSE
 		return FALSE
+	// VOIDCREW EDIT ADDITION START - cyberware time dilation (voidcrew/modules/cyberware/ware_sandy_timestop.dm): each burst shot waits for the shooter's own clock, so a burst slows or stops with them
+	var/dilation_wait = cyberware_burst_wait(user, cyberware_burst_start, cyberware_burst_gap, iteration - 1)
+	if(dilation_wait > 0)
+		addtimer(CALLBACK(src, PROC_REF(process_burst), user, target, message, params, zone_override, random_spread, burst_spread_mult, iteration), dilation_wait)
+		return TRUE
+	// VOIDCREW EDIT ADDITION END
 	if(!issilicon(user))
 		if(iteration > 1 && !(user.is_holding(src))) //for burst firing
 			firing_burst = FALSE
@@ -515,6 +523,11 @@
 	if(user && HAS_TRAIT(user, TRAIT_DOUBLE_TAP))
 		modified_burst_delay = ROUND_UP(burst_delay * 0.5)
 		modified_fire_delay = ROUND_UP(fire_delay * 0.5)
+	// VOIDCREW EDIT ADDITION START - cyberware time dilation (voidcrew/modules/cyberware/ware_sandy_timestop.dm): a slowed shooter's gun cycles slowly too
+	cyberware_burst_start = cyberware_burst_clock(user)
+	cyberware_burst_gap = modified_burst_delay
+	modified_fire_delay = cyberware_dilated_time(user, modified_fire_delay)
+	// VOIDCREW EDIT ADDITION END
 
 	if(burst_size > 1)
 		firing_burst = TRUE

@@ -66,11 +66,17 @@
 	// Who it is must be known before the base dresses it: the outfit table reads the record (bounty_outfits.dm).
 	if(istype(order?.look, /datum/bounty_record))
 		record = order.look
+	// So must where it is: at a space ruin, or on a planet with air that would hurt it, it is dressed for that wherever it stands (bounty_suits.dm)
+	npc_always_site |= bounty_site_dress_for(order?.context)
+	// Its record's chrome joins npc_cyberware, so the base installs the real implants once it is dressed (C0, bounty_chrome.dm)
+	bounty_chrome_prepare(src)
 	. = ..()
 	add_traits(list(TRAIT_NO_TELEPORT, TRAIT_NOMOBSWAP), BOUNTY_BODY_TRAIT)
 	AddComponent(/datum/component/bounty_body)
 	body_hook_cuffs()
 	body_toughness()
+	// Its chrome's moves (a mini-boss's in its ability rotation), and the EMP look (C0)
+	bounty_chrome_ready(src)
 
 /mob/living/carbon/human/npc/bounty_criminal/Destroy()
 	if(body_leaves_proof())
@@ -124,6 +130,8 @@
 					return /mob/living/carbon/human/npc/bounty_criminal/boss/ghost
 				if(BOUNTY_KIT_HEAVY)
 					return /mob/living/carbon/human/npc/bounty_criminal/boss/heavy
+				if(BOUNTY_KIT_CYBERPSYCHO)
+					return /mob/living/carbon/human/npc/bounty_criminal/boss/cyberpsycho
 			return pick(
 				/mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut,
 				/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac,
@@ -610,7 +618,9 @@
  * - who has been attacking it (tg's relay_attackers, an item's attackby, a projectile's firer, a mech's
  *   or a vehicle's pilot) goes on its grudge list;
  * - teleports, polymorph and type changes are refused;
- * - any change of tg state that capture_state() reads tells the body (body_state_changed()).
+ * - any change of tg state that capture_state() reads tells the body (body_state_changed());
+ * - a hunter reaching through the strip menu with a pressure suit or helmet for a slot its own locked piece
+ *   fills may put theirs on instead (bounty_suits.dm, suits_strip_reach()).
  */
 /datum/component/bounty_body
 	dupe_mode = COMPONENT_DUPE_UNIQUE
@@ -639,6 +649,7 @@
 	), PROC_REF(on_state_signal))
 	// A stun's traits land before the stun is on its list, so the trait handlers alone would miss it.
 	RegisterSignals(criminal, list(COMSIG_LIVING_STATUS_APPLIED, COMSIG_LIVING_STATUS_REMOVED), PROC_REF(on_state_signal))
+	RegisterSignal(criminal, COMSIG_BEING_STRIPPED, PROC_REF(on_being_stripped))
 
 /datum/component/bounty_body/UnregisterFromParent()
 	UnregisterSignal(parent, list(
@@ -657,6 +668,7 @@
 		SIGNAL_REMOVETRAIT(TRAIT_INCAPACITATED),
 		COMSIG_LIVING_STATUS_APPLIED,
 		COMSIG_LIVING_STATUS_REMOVED,
+		COMSIG_BEING_STRIPPED,
 	))
 
 /// `attacker` went for it: they go on its grudge list (a vehicle's pilots for a vehicle)
@@ -711,6 +723,12 @@
 	var/mob/living/carbon/human/npc/bounty_criminal/criminal = parent
 	if(!QDELING(criminal))
 		criminal.body_state_changed()
+
+/// Someone reaches for a piece of it through the strip menu: a hunter's pressure suit may go on in place of its own (bounty_suits.dm)
+/datum/component/bounty_body/proc/on_being_stripped(datum/source, mob/user, obj/item/item)
+	SIGNAL_HANDLER
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = parent
+	return criminal.suits_strip_reach(user, item)
 
 // ===== TURRETS AND PLAYERS =====
 

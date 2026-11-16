@@ -11,7 +11,9 @@
 // round's damage after the head's armour, wounds, dismemberment, and death if the damage kills. If the
 // round dealt HV_EXECUTION_BURST_DAMAGE or more to the head, the head bursts (hv_burst_head, which keeps
 // the brain, so revival works as usual); a lighter round leaves the skull wound its real damage earns.
-// Nothing is added to finish the target off.
+// A laser or other burn round never bursts the head: it burns a hole in and out of the skull, with
+// hardly any blood, and one that heavy goes through the brain (tg's brain damage, which kills on the
+// brain's next Life tick and can be treated like any other). Nothing else is added to finish the target off.
 //
 // The mouth click reaches us through tg's handle_suicide(); the head click through
 // hv_try_head_execution(), called from a marked line in tg's fire_gun(). Anyone the execution does
@@ -26,6 +28,9 @@
 	var/hv_execution_head_damage = 0
 	/// Counts clicks that went to an execution, so try_fire_gun() can tell its own click took that path
 	var/hv_execution_claims = 0
+	/// TRUE while an execution round is being fired: the barrel is on the head, so the shot's flash is drawn there
+	/// (visuals/execution_motion.dm) and not at the hip
+	var/hv_firing_execution = FALSE
 
 /obj/item/gun/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer)
 	if(bypass_timer || !hv_execution_possible(user, target))
@@ -93,11 +98,15 @@
 	to_chat(target, span_userdanger("[user] presses the barrel of [src] to your head!"))
 	// Like tg's version: no other shot from this gun while the barrel is held there.
 	fire_cd = TRUE
-	var/held = do_after(user, HV_EXECUTION_WINDUP, target, extra_checks = CALLBACK(src, PROC_REF(hv_execution_holds), user, target), interaction_key = DOAFTER_SOURCE_HV_EXECUTION)
+	// Everyone in view sees the bar over the shooter (finisher_bar.dm), so do_after shows none of its own.
+	var/obj/effect/abstract/hv_exec_bar/bar = hv_exec_bar_start(user, HV_EXECUTION_WINDUP)
+	var/held = do_after(user, HV_EXECUTION_WINDUP, target, progress = FALSE, extra_checks = CALLBACK(src, PROC_REF(hv_execution_holds), user, target), interaction_key = DOAFTER_SOURCE_HV_EXECUTION)
 	fire_cd = FALSE
+	if(!QDELETED(bar))
+		bar.finish(held && !QDELETED(src) && !QDELETED(user) && !QDELETED(target))
 	if(!held || QDELETED(src) || QDELETED(user) || QDELETED(target))
 		return
-	hv_fire_execution(user, target, params)
+	return hv_fire_execution(user, target, params)
 
 /// do_after check: the shooter still holds the gun to the head of someone who still can't fight back.
 /obj/item/gun/proc/hv_execution_holds(mob/living/user, mob/living/target)
@@ -120,22 +129,46 @@
 		return process_fire(target, user, TRUE, params, BODY_ZONE_HEAD)
 	var/shot_dir = get_dir(user, target)
 	var/was_dead = target.stat == DEAD
+	var/burns = chambered.loaded_projectile.damage_type == BURN
 	hv_execution_head_damage = 0
 	RegisterSignal(target, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(hv_execution_hit))
+	// The barrel is on the head, so tg's zone roll for the shot can't send the round elsewhere.
+	var/obj/item/ammo_casing/execution_casing = chambered
+	RegisterSignal(execution_casing, COMSIG_CASING_READY_PROJECTILE, PROC_REF(hv_execution_round_ready))
 	var/normal_multiplier = projectile_damage_multiplier
 	projectile_damage_multiplier *= HV_EXECUTION_POINT_BLANK_MULT
+	// The flashes tg and gun feel draw for a shot are at the hip, out toward the victim's tile: on the boots of a
+	// body lying with its head at the far end. The execution draws its own, at the barrel.
+	var/hip_flash = execution_casing.firing_effect_type
+	execution_casing.firing_effect_type = null
+	hv_firing_execution = TRUE
 	// Only the first round of a burst is held to the head; the rest are ordinary shots.
 	var/fired = process_fire(target, user, TRUE, params, BODY_ZONE_HEAD)
+	hv_firing_execution = FALSE
 	projectile_damage_multiplier = normal_multiplier
+	if(!QDELETED(execution_casing))
+		execution_casing.firing_effect_type = hip_flash
+		UnregisterSignal(execution_casing, COMSIG_CASING_READY_PROJECTILE)
 	if(!QDELETED(target))
 		UnregisterSignal(target, COMSIG_MOB_APPLY_DAMAGE)
 	if(!fired)
 		return FALSE
 	log_combat(user, target, "executed", src, "([round(hv_execution_head_damage, 0.1)] damage to the head)")
 	if(!QDELETED(target))
-		target.hv_take_execution(hv_execution_head_damage, shot_dir, was_dead)
+		target.hv_take_execution(hv_execution_head_damage, shot_dir, was_dead, burns)
 		hv_execution_witnesses(user, target)
 	return TRUE
+
+/// Each round (or pellet) the execution casing readies loses its accuracy falloff, so tg's zone roll on
+/// impact (projectile.dm, the one TRAIT_DESIGNATED_TARGET also skips) keeps it on the aimed head. Its
+/// damage, armour and everything after are tg's as usual. It is never drawn: fired with the barrel on the
+/// head it lands the tick it is made, and a Sandevistan replay, which draws every round it saw, showed it as
+/// a tracer lying across the shooter (cyberware/ware_sandy_replay.dm records nothing it can't see).
+/obj/item/gun/proc/hv_execution_round_ready(obj/item/ammo_casing/source, atom/target, mob/living/user, quiet, zone_override, atom/fired_from)
+	SIGNAL_HANDLER
+	if(fired_from == src && source.loaded_projectile)
+		source.loaded_projectile.accuracy_falloff = 0
+		source.loaded_projectile.invisibility = INVISIBILITY_ABSTRACT
 
 /// Adds up what this gun's rounds do to the victim's head while an execution round is fired.
 /obj/item/gun/proc/hv_execution_hit(mob/living/source, damage, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, atom/attacking_item)
@@ -191,22 +224,40 @@
 
 /**
  * Shows what an execution round did. `head_damage` is what it dealt to the head; `was_dead` whether
- * the target was already dead before it. Adds no damage and kills nothing: the round did that or not.
+ * the target was already dead before it; `burns` whether it was a burn round (a laser). A brute round
+ * adds no damage and kills nothing: the round did that or not. A burn round's is hv_burn_through_head().
  * Only a body with a head shows it (below); anything else just took the shot.
  */
-/mob/living/proc/hv_take_execution(head_damage, shot_dir, was_dead)
+/mob/living/proc/hv_take_execution(head_damage, shot_dir, was_dead, burns = FALSE)
 	return
 
-/mob/living/carbon/hv_take_execution(head_damage, shot_dir, was_dead)
+/mob/living/carbon/hv_take_execution(head_damage, shot_dir, was_dead, burns = FALSE)
 	var/obj/item/bodypart/head/head = get_bodypart(BODY_ZONE_HEAD)
 	if(isnull(head) || head_damage <= 0)
 		return // the round took the head off itself, or never reached it
+	if(burns)
+		hv_burn_through_head(head, head_damage, shot_dir)
+		return
 	if(head_damage >= HV_EXECUTION_BURST_DAMAGE && hv_burst_head(shot_dir))
 		return
 	// The skull wound the round's real damage earns (gore_overlays.dm); the line only for the worst.
 	if(head.hv_open_skull() && head.hv_skull_wound >= 3)
 		hv_blood_spray(shot_dir, 3)
 		hv_add_hit_line("The shot blows out the back of [src]'s skull.", HV_LINE_HUGE, null, DEFAULT_MESSAGE_RANGE)
+
+/**
+ * A beam fired with the barrel to the head: a scorched hole in and a hole out, and next to no blood. As heavy a round
+ * as would burst a head goes through the brain instead: tg brain damage at its death line, so the brain's own Life
+ * tick kills (brain_item.dm) and a brain repair can bring the body back, as with a burst head.
+ */
+/mob/living/carbon/proc/hv_burn_through_head(obj/item/bodypart/head/head, head_damage, shot_dir)
+	if(head.hv_shows_gore() && !head.hv_burn_hole)
+		head.hv_burn_hole = TRUE
+		update_damage_overlays()
+	if(head_damage < HV_EXECUTION_BURST_DAMAGE)
+		return
+	adjustOrganLoss(ORGAN_SLOT_BRAIN, BRAIN_DAMAGE_DEATH)
+	hv_add_hit_line("The beam burns clean through [src]'s skull.", HV_LINE_HUGE, null, DEFAULT_MESSAGE_RANGE)
 
 /// Whether this mob turns a point-blank head shot on someone helpless into an execution. Players can;
 /// human NPCs only at boss rank (human_npcs/human_npc.dm).

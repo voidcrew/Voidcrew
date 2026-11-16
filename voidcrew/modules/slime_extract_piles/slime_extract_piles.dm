@@ -9,7 +9,7 @@
 	RegisterSignal(src, COMSIG_MOVABLE_THROW_LANDED, PROC_REF(queue_extract_piling))
 	queue_extract_piling()
 
-/obj/item/slime_extract/Moved()
+/obj/item/slime_extract/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
 	. = ..()
 	if(loc != extract_pile_excluded_turf)
 		extract_pile_excluded_turf = null

@@ -1,4 +1,4 @@
-/// The Outpost Manipulator's free checkpoint tools, on a real hull in a real bay.
+/// The Outpost Manipulator's free construction tools, on a real hull in a real bay.
 /datum/unit_test/voidcrew_outpost_admin_checkpoints
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 	var/list/obj/structure/overmap/ship/test_ships = list()
@@ -33,6 +33,17 @@
 	ship.state = "flying"
 	home.on_ship_undock_complete(ship)
 
+/// A snapshot straight off a hull. The job built from it owns it.
+/datum/unit_test/voidcrew_outpost_admin_checkpoints/proc/capture_copy(obj/structure/overmap/dynamic/player_outpost/home, obj/structure/overmap/ship/ship, owner_ckey)
+	var/datum/ship_checkpoint/snapshot = new
+	var/denial = snapshot.capture_hull(ship, owner_ckey)
+	if(denial)
+		TEST_FAIL("Could not capture [ship]: [denial]")
+		qdel(snapshot)
+		return null
+	snapshot.outpost = home
+	return snapshot
+
 /// Waits for a rushed job to reach commissioning, or to finish outright.
 /datum/unit_test/voidcrew_outpost_admin_checkpoints/proc/wait_for_hull(datum/checkpoint_construction/job)
 	var/deadline = world.time + 60 SECONDS
@@ -63,20 +74,18 @@
 
 	panel.allow_actions = FALSE
 	panel.manage_outpost(home, operator, "checkpoint_rebuild_docked", list())
-	TEST_ASSERT(!length(home.checkpoints) && !QDELETED(original), "A revoked admin panel used the checkpoint tools")
+	TEST_ASSERT(!length(home.checkpoint_jobs) && !QDELETED(original), "A revoked admin panel used the construction tools")
 	panel.allow_actions = TRUE
 
-	// Free saves: no fee, no captain, one per owner and one per ship.
-	var/datum/ship_checkpoint/first = panel.save_free_checkpoint(home, operator, original, "freeowner")
-	TEST_ASSERT_NOTNULL(first, "Free save failed: [panel.error]")
-	TEST_ASSERT_EQUAL(first.captain_ckey, "freeowner", "The free checkpoint has the wrong owner")
-	TEST_ASSERT_EQUAL(original.ship_account.account_balance, 1234, "A free save charged the ship")
-	TEST_ASSERT_EQUAL(home.treasury.account_balance, before_treasury, "A free save touched the treasury")
-	var/datum/ship_checkpoint/second = panel.save_free_checkpoint(home, operator, original, "freeowner")
-	TEST_ASSERT(second && QDELETED(first) && length(home.checkpoints) == 1, "Saving again did not replace the owner's checkpoint")
-	TEST_ASSERT_EQUAL(original.checkpoint_ref?.resolve(), second, "The ship is not linked to its checkpoint")
-	TEST_ASSERT_NULL(panel.save_free_checkpoint(home, operator, original, "otherowner"), "One ship was saved for two owners")
-	TEST_ASSERT(!panel.admin_rebuild(home, operator, second), "A rebuild started while the original filled the bay")
+	// A capture is free and needs no captain.
+	var/datum/ship_checkpoint/second = capture_copy(home, original, "freeowner")
+	TEST_ASSERT_NOTNULL(second, "The capture failed")
+	TEST_ASSERT_EQUAL(second.captain_ckey, "freeowner", "The snapshot has the wrong owner")
+	TEST_ASSERT_EQUAL(original.ship_account.account_balance, 1234, "A capture charged the ship")
+	TEST_ASSERT_EQUAL(home.treasury.account_balance, before_treasury, "A capture touched the treasury")
+	var/datum/checkpoint_construction/blocked = new(null, capture_copy(home, original, "freeowner"), operator)
+	TEST_ASSERT_NULL(blocked.bay, "A rebuild took the bay while the original filled it")
+	qdel(blocked)
 
 	// Removing the docked ship moves people out and gives the pad back its own room.
 	var/turf/deck
@@ -104,10 +113,9 @@
 	crew.key = null
 
 	// A lost original: the normal rebuild, rushed and handed over to an absent owner.
-	panel.manage_outpost(home, operator, "checkpoint_rebuild", list("ref" = REF(second)))
-	TEST_ASSERT_EQUAL(length(home.checkpoint_jobs), 1, "The admin rebuild did not start: [panel.error]")
-	var/datum/checkpoint_construction/job = home.checkpoint_jobs[1]
-	TEST_ASSERT(!job.manual, "Admin rebuilds must run on the real controller")
+	var/datum/checkpoint_construction/job = new(null, second, operator)
+	TEST_ASSERT(job.prepare(), "The rebuild did not start: [job.error]")
+	TEST_ASSERT_EQUAL(length(home.checkpoint_jobs), 1, "The rebuild is not listed on the outpost")
 	var/list/fleet = job.drones.Copy()
 	panel.manage_outpost(home, operator, "rebuild_rush", list("ref" = REF(job)))
 	TEST_ASSERT(job.rushed && job.state == "building", "Finish Now did not skip the survey")
@@ -117,7 +125,7 @@
 	TEST_ASSERT_NOTNULL(rebuilt, "The rebuilt hull did not take the bay")
 	test_ships += rebuilt
 	TEST_ASSERT(rebuilt.abandoned, "A hull nobody collected cannot be claimed")
-	TEST_ASSERT(!length(home.checkpoints), "The admin rebuild did not use up the checkpoint")
+	TEST_ASSERT(QDELETED(second), "The rebuild did not use up its snapshot")
 	var/deadline = world.time + 30 SECONDS
 	var/drones_left = TRUE
 	while(drones_left && world.time < deadline)
@@ -129,14 +137,15 @@
 			sleep(2)
 	TEST_ASSERT(!drones_left, "Drones did not go home after the build")
 
-	// An original still in service is left alone: the rebuild is an extra copy.
+	// A snapshot with no source, as a load from an earlier round has, leaves other ships alone.
 	rebuilt.abandoned = FALSE
 	rebuilt.ship_account.account_balance = 777
-	var/datum/ship_checkpoint/copy_source = panel.save_free_checkpoint(home, operator, rebuilt, "copyowner")
-	TEST_ASSERT_NOTNULL(copy_source, "Could not save the rebuilt ship: [panel.error]")
+	var/datum/ship_checkpoint/copy_source = capture_copy(home, rebuilt, "copyowner")
+	TEST_ASSERT_NOTNULL(copy_source, "Could not capture the rebuilt ship")
+	copy_source.source_ship = null
 	send_to_transit(home, rebuilt)
-	TEST_ASSERT(panel.admin_rebuild(home, operator, copy_source), "The copy rebuild did not start: [panel.error]")
-	job = home.checkpoint_jobs[1]
+	job = new(null, copy_source, operator)
+	TEST_ASSERT(job.prepare(), "The copy rebuild did not start: [job.error]")
 	TEST_ASSERT_NULL(job.original_ref, "A copy rebuild took over the ship in service")
 	job.rush()
 	wait_for_hull(job)
@@ -145,28 +154,28 @@
 	var/obj/structure/overmap/ship/copy = bay.ship
 	TEST_ASSERT(copy && copy != rebuilt, "The finished copy did not take the bay")
 	test_ships += copy
-	TEST_ASSERT(!length(home.checkpoints), "The copy rebuild did not use up its checkpoint")
-	TEST_ASSERT_NULL(rebuilt.checkpoint_ref?.resolve(), "The original kept a link to a used checkpoint")
+	TEST_ASSERT(QDELETED(copy_source), "The copy rebuild did not use up its snapshot")
 	TEST_ASSERT(panel.remove_docked_ship(home, operator, bay, copy), "The copy could not be removed from the bay: [panel.error]")
 	TEST_ASSERT(bay.is_available(), "Removing the copy did not free the bay")
 
-	// Stop before the first piece: the bay is freed and the checkpoint kept.
-	var/datum/ship_checkpoint/stop_source = panel.save_free_checkpoint(home, operator, rebuilt, "copyowner")
-	TEST_ASSERT_NOTNULL(stop_source, "Could not save the ship to test Stop: [panel.error]")
-	TEST_ASSERT(panel.admin_rebuild(home, operator, stop_source), "The rebuild to stop did not start: [panel.error]")
-	job = home.checkpoint_jobs[1]
+	// Stop before the first piece: the bay is freed and nothing is left behind.
+	var/datum/ship_checkpoint/stop_source = capture_copy(home, rebuilt, "copyowner")
+	TEST_ASSERT_NOTNULL(stop_source, "Could not capture the ship to test Stop")
+	stop_source.source_ship = null
+	job = new(null, stop_source, operator)
+	TEST_ASSERT(job.prepare(), "The rebuild to stop did not start: [job.error]")
 	TEST_ASSERT(!job.committed, "The rebuild placed a piece before it could be stopped")
 	panel.manage_outpost(home, operator, "rebuild_stop", list("ref" = REF(job)))
 	TEST_ASSERT(QDELETED(job) && bay.is_available(), "Stop did not end the build and free the bay")
-	TEST_ASSERT(!QDELETED(stop_source) && !stop_source.busy, "Stop before the first piece lost the checkpoint")
-	qdel(stop_source)
+	TEST_ASSERT(QDELETED(stop_source), "Stop before the first piece left its snapshot behind")
 
-	// One click: save the docked ship, delete it and rebuild it for its owner.
+	// One click: capture the docked ship, delete it and rebuild it for its owner.
 	dock_in_bay(home, rebuilt)
 	panel.manage_outpost(home, operator, "checkpoint_rebuild_docked", list())
 	TEST_ASSERT(QDELETED(rebuilt), "Rebuild Docked Ship kept the old hull: [panel.error]")
 	TEST_ASSERT_EQUAL(length(home.checkpoint_jobs), 1, "Rebuild Docked Ship did not start a rebuild: [panel.error]")
 	job = home.checkpoint_jobs[1]
+	TEST_ASSERT(!job.manual, "Admin rebuilds must run on the real controller")
 	TEST_ASSERT_EQUAL(job.captain_ckey, operator.ckey, "An ownerless ship was not rebuilt for the admin")
 	job.rush()
 	wait_for_hull(job)
@@ -175,3 +184,4 @@
 	TEST_ASSERT(QDELETED(job) && bay.ship, "The one-click rebuild did not finish")
 	test_ships += bay.ship
 	TEST_ASSERT_EQUAL(bay.ship.claimed_captain, operator.mind, "The one-click rebuild was not handed to its owner")
+	TEST_ASSERT_EQUAL(home.treasury.account_balance, before_treasury, "The free tools touched the treasury")

@@ -30,6 +30,10 @@
 //   held in the attacker's grab loses the throat to about one combat knife slash in three, one
 //   in two for a 25+ weapon. A 10-force kitchen knife tops out near 30, and even on a held
 //   victim under 70, so it never crits by roll.
+// * An attacker can carry a keyed roll bonus of its own (hv_crit_set_attacker_bonus()): a Cascade-line
+//   reflex window (voidcrew/modules/cyberware/ware_legend.dm) adds 9, 14 or 18. On the 1 to 90 roll
+//   of a 25+ damage hit that is about +10, +15 or +20 points of chance to clear a threshold. It
+//   never applies against a helpless or held victim, so finishers and executions are unchanged.
 // * Gear that covers the spot blocks a crit outright (see each crit's blocked_on_carbon()). Worn
 //   armour and the body's own plating (cyberware) count together, as tg's check_armor() stacks them.
 // * A crit never stacks on itself: the wound can only be on a limb once.
@@ -198,8 +202,13 @@ GLOBAL_LIST_INIT(hv_crits, hv_crit_init_list())
 		return shot.armour_penetration
 	if(isitem(source))
 		var/obj/item/weapon = source
-		return weapon.armour_penetration
+		return weapon.hv_crit_armour_pen()
 	return 0
+
+/// How much armour this weapon ignores at the crit gates. Its armour_penetration unless it says otherwise:
+/// the Widowline's full penetration is for its cuts, not for getting a crit past a collar (hyperviolence/wire/).
+/obj/item/proc/hv_crit_armour_pen()
+	return armour_penetration
 
 /// How well the victim is armoured against armour_flag on limb, less armour_penetration: the best rating among
 /// the clothes covering it, stacked on the human's own physiology armour (cyberware dermal plating lives there)
@@ -223,6 +232,28 @@ GLOBAL_LIST_INIT(hv_crits, hv_crit_init_list())
 	if(attacker && attacker.pulling == src && attacker.grab_state >= GRAB_AGGRESSIVE)
 		. += HV_CRIT_HELD_BONUS
 
+/mob/living
+	/// Roll bonuses this mob's own aimed hits get, by source (a reflex window, say). Lazy; the highest counts.
+	var/list/hv_crit_attacker_bonuses
+
+/// Sets (or with a null amount clears) this mob's keyed roll bonus for its own aimed hits.
+/mob/living/proc/hv_crit_set_attacker_bonus(source, amount)
+	if(isnull(amount) || amount <= 0)
+		LAZYREMOVE(hv_crit_attacker_bonuses, source)
+		return
+	LAZYSET(hv_crit_attacker_bonuses, source, amount)
+
+/// Roll bonus for this mob's own hit on `victim`: the highest keyed bonus. None against a helpless or
+/// held victim, so finishers, executions and the garrote roll as they always did.
+/mob/living/proc/hv_crit_attacker_bonus(mob/living/victim)
+	if(!LAZYLEN(hv_crit_attacker_bonuses))
+		return 0
+	if(victim && (victim.hv_is_helpless() || victim.has_status_effect(/datum/status_effect/hv_finisher_hold)))
+		return 0
+	. = 0
+	for(var/source in hv_crit_attacker_bonuses)
+		. = max(., hv_crit_attacker_bonuses[source])
+
 /// Roll bonus from how the blow was struck, on top of the helpless bonus: 0 here. The stealth layer adds one for a guard
 /// caught unaware or stabbed in the back (voidcrew/modules/stealth/stealth_crits.dm). `source` is the weapon or projectile.
 /mob/living/proc/hv_crit_situation_bonus(mob/living/attacker, atom/source, obj/item/bodypart/limb)
@@ -241,6 +272,7 @@ GLOBAL_LIST_INIT(hv_crits, hv_crit_init_list())
 		damage *= 0.85
 	var/base_roll = rand(1, max(1, round(damage ** WOUND_DAMAGE_EXPONENT)))
 	var/bonus = wound_bonus + round(HV_CRIT_BATTERED_BONUS * get_damage() / max(max_damage, 1)) + owner.hv_crit_helpless_bonus(attacker) + owner.hv_crit_situation_bonus(attacker, source, src)
+	bonus += attacker?.hv_crit_attacker_bonus(owner) || 0
 	return check_woundings_mods(wounding_type, base_roll, damage, bonus, exposed_wound_bonus, FALSE)
 
 // ---------------------------------------------------------------------------------------------

@@ -34,6 +34,9 @@
 		/datum/shop_sku/ripperdoc/hemoglass,
 		/datum/shop_sku/ripperdoc/dead_channel,
 		/datum/shop_sku/ripperdoc/lazarus,
+		/datum/shop_sku/ripperdoc/clotter_node,
+		/datum/shop_sku/ripperdoc/medic_palms,
+		/datum/shop_sku/ripperdoc/second_wind_deep,
 	)
 	loot_common = list(
 		/obj/item/storage/medkit/regular = 10,
@@ -51,6 +54,11 @@
 		// cheapest thing on the parlor's shelf and the one piece of chrome a
 		// clinic would actually stock: it replaces a stomach
 		/obj/item/organ/cyberimp/cyberware/gastro = 4,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/stimmed = 3,
+		// clinic chrome: a clotting node and a medic's sensor palms
+		/obj/item/organ/cyberimp/cyberware/clotter_node = 4,
+		/obj/item/organ/cyberimp/cyberware/medic_palms = 3,
 	)
 	loot_uncommon = list(
 		/obj/item/storage/medkit/advanced = 10,
@@ -74,6 +82,11 @@
 		// reserve and a blood filter, both things a med bay would have fitted
 		/obj/item/organ/cyberimp/cyberware/second_wind = 4,
 		/obj/item/organ/cyberimp/cyberware/hemoglass = 3,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/hypermetabolic = 3,
+		/obj/item/dnainjector/loot/plasmocile = 2,
+		// the long-shift air bladder
+		/obj/item/organ/cyberimp/cyberware/second_wind/deep = 3,
 	)
 	loot_prime = list(
 		/obj/item/reagent_containers/hypospray/medipen/atropine = 7,
@@ -91,6 +104,10 @@
 		// node that restarts a heart on its own (4 vouchers over the counter)
 		/obj/item/organ/cyberimp/cyberware/dead_channel = 3,
 		/obj/item/organ/cyberimp/cyberware/lazarus = 2,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/inexorable = 2,
+		/obj/item/dnainjector/loot/mending_touch = 2,
+		/obj/item/dnainjector/loot/adrenaline_rush = 2,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable

@@ -70,6 +70,8 @@
 
 /mob/living/carbon/human/npc/ruin/trooper
 	name = "trooper"
+	// Armed hostiles: cover from stun fire, and a stimulant if one carries it (human_npc_combat_sense.dm)
+	npc_combat_sense = /datum/npc_combat_sense
 
 // ===== SPACE PIRATES (tg's pirate troopers) =====
 

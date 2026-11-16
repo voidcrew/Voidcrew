@@ -34,6 +34,7 @@
 		/datum/ai_planning_subtree/human_npc_surrender/crewless,
 		/datum/ai_planning_subtree/pirate_crew_find_target,
 		/datum/ai_planning_subtree/pirate_crew_human_self_care,
+		/datum/ai_planning_subtree/npc_combat_sense,
 		/datum/ai_planning_subtree/pirate_crew_doors,
 		/datum/ai_planning_subtree/human_npc_arm/pirate_crew,
 		/datum/ai_planning_subtree/pirate_crew_human_shoot,

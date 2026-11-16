@@ -83,9 +83,7 @@
 		eyes.Remove(victim)
 		var/turf/drop_turf = victim.drop_location()
 		eyes.forceMove(drop_turf)
-		var/turf/landing = get_step(drop_turf, attack_direction)
-		if(landing && !landing.is_blocked_turf())
-			eyes.throw_at(landing, 1, 1)
+		eyes.hv_fling(attack_direction, 1, null, victim.hv_vis_head_offset())
 		if(!length(open_sides))
 			line = "[victim]'s eyes are torn out!"
 			own_line = "Your eyes are torn out!"
@@ -128,9 +126,7 @@
 	tongue.Remove(victim)
 	var/turf/drop_turf = victim.drop_location()
 	tongue.forceMove(drop_turf)
-	var/turf/landing = get_step(drop_turf, attack_direction)
-	if(landing && !landing.is_blocked_turf())
-		tongue.throw_at(landing, 1, 1)
+	tongue.hv_fling(attack_direction, 1, null, victim.hv_vis_head_offset())
 	victim.hv_blood_spray(attack_direction, 1)
 	announce(victim, attack_direction)
 	return TRUE

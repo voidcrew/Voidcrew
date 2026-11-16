@@ -59,7 +59,7 @@ Voidcrew adds a vocabulary that /tg/station does not have, and most of it turns 
 | **[Ship parts](ship-parts.md)** | Physical items in four classes (combat, science, trade and misc). Bank them through an extraction case to keep them between rounds and buy permanent shipyard unlocks. |
 | **Extraction case** | The secure case parts must be sitting in, on your person, for them to survive the round. Request one with the **Request Extraction Case** verb. Only the first standard case counts. |
 | **Voucher** | A trade voucher: a physical chit earned from dangerous work, never bought with credits, and spent at any trader for restricted goods. Being an item, it can be stolen off you. |
-| **Chrome** | Cyberware, implantable robotic organs sold at the Chop Shop on the Undertow Exchange. See [Cyberware](cyberware.md). |
+| **Chrome** | Cyberware, implantable robotic organs sold at the Chop Shop on the Undertow Exchange and the Back Bay at Quartermain Depot. See [Cyberware](cyberware.md). |
 | **Neural load** | The shared cost of chrome, implants, robotic organs, surgical enhancements and installed nanite programs against 20 capacity. Overload disables chrome and beneficial nanite programs. |
 | **Trader outpost** | One of three permanent markets, one per zone: general store in green, outfitter in yellow, black market in red. Turrets shoot people who keep starting fights. See [Trader Outposts](trader-outposts.md). |
 | **Player outpost** | A base a crew plants for itself using an outpost deed. See [Player Outposts](player-outposts.md). |

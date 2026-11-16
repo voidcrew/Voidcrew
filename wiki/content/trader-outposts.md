@@ -11,7 +11,7 @@ Three trader outposts sit permanently on the [overmap](overmap.md), one per zone
 
 | Outpost | Zone | Trader | Sells |
 |---|---|---|---|
-| Waystation Halcyon | Neutral ring (green) | Barnaby | Survival kit, tools, medical, prospecting gear, basic arms and armour, street chrome and sundries. Back-room goods also cost vouchers. |
+| Waystation Halcyon | Neutral ring (green) | Barnaby | Survival kit, tools, medical, prospecting gear, basic arms and armour, street chrome and sundries, plus walkmans, cassette tapes and a tape deck for making your own mixtapes. Back-room goods also cost vouchers. |
 | Quartermain Depot | Contested lanes (yellow) | Sarge | Armour, firearms, thruster and turret boards, ordnance, hull stock. |
 | Undertow Exchange | Lawless deep (red) | Vex | Syndicate hardware, MODsuit control units, ship shield, interdiction and electronic-warfare boards, exploit software, sealed mystery cargo. |
 
@@ -28,9 +28,18 @@ A berth is locked to its own crew. Only your crew can send the elevator down to 
 !!! tip "The elevator is the only way between floors"
     Berths are separate bays, not rooms down a corridor. If you walk out of your ship looking for a door to the shop, you will not find one. Get in the alcove.
 
+### The shipyard console
+
+Every berth has a **shipyard console** beside its exit, the same one found in a [player outpost's ship bay](player-outposts.md#ship-bay). Docking is free.
+
+- **Saved ships**: the captain of the ship in the berth can save it to one of their slots, paying [ship parts](ship-parts.md) as usual. A save can also be loaded here.
+- **New ship**: order a new hull.
+
+A loaded save or a new hull is built in a berth of its own, so a free berth is needed. Until it is finished, only the captain can ride down to it. An outpost that has marked you or your ship for violence will not deal with you.
+
 ## The checkpoint
 
-No combat guns past the checkpoint. Work tools and disablers are fine, including kinetic accelerators and plasma cutters. Every way into an outpost, the lift lobby and the outer hatches alike, runs through a **scan chamber**: a small room between two doors, with a guard watching from a glass booth.
+No combat guns past the checkpoint. Work tools and disablers are fine, including kinetic accelerators and plasma cutters. Every way into an outpost, the lift lobby and the outer hatches alike, runs through a **scan chamber**: a small room between two doors, with a guard watching from a booth.
 
 - Walk in through the outer door and walk into the inner door. The outer door shuts behind you, the chamber scans everyone and everything inside it, and if you are clean the inner door opens. If anything in there is a combat gun or a mech weapon, the inner door stays shut and the outer door opens again so you can walk back out. Everyone in the chamber goes through together, or nobody does.
 - The scan looks everywhere: hands, pockets, bags inside bags, implants. Anything lying on the floor of the chamber counts too, and a gun left there keeps the chamber refusing everyone until someone carries it out.
@@ -64,6 +73,7 @@ Each outpost's concourse has its own side vendors, each with their own shopkeep 
 | Halcyon | The Chowder Pot | Roux | The diner. Hot meals in tiers, galley staples, buys home cooking |
 | Quartermain | The Skunkworks | Boffin | Research and fabrication gear, Strong-Arm implants, robotics and xenobiology starter packs, raw anomaly cores and anomaly charts |
 | Quartermain | The Fitting Bay | Wick | Civilian through advanced MODsuits |
+| Quartermain | The Back Bay | Ratchet | Street chrome for credits, installed in the bay's own Chrome Cradle |
 | The Undertow | The Dregs | Dram | The cantina |
 | The Undertow | Patch-Up Clinic | Sawbones | Medical supplies, the genetics starter pack |
 | The Undertow | The Chop Shop | Splice | Cyberware implants in four tiers, installed in the parlor's own Chrome Cradle |
@@ -72,7 +82,9 @@ Each outpost's concourse has its own side vendors, each with their own shopkeep 
 
 **The Fitting Bay** at Quartermain has a **MOD fitting bench**, a powered frame you back into while still wearing your suit. It swaps modules for free with no screwdriver work, sells permanent upgrades (plating, module capacity, actuator tuning, power regulation, cell swaps) and per-visit servicing, gives away paint and engraving, and trickle-charges your cell while the frame is shut. Reinforced plating needs 4 [reputation](zone-reputation.md) and composite plating needs 11. It will not convert a suit from one theme to another. For the tier Wick won't touch, syndicate and elite chassis, Interdyne and infiltrator control units, the antag modules. Go to **Vex**: 3600 credits plus 2 vouchers for a syndicate chassis, 5400 plus 3 for an elite, 5 vouchers for a fully equipped syndicate suit.
 
-**The Chop Shop** at the Undertow is the galaxy's only cyberware parlor, a neon annex off the Dregs. Splice sells chrome implants off four shelves, street chrome for credits, pro chrome for credits or vouchers, military and legend chrome for vouchers only, and the **Chrome Cradle** in the middle of the room does the installing: you lie on the slab, pick a piece off the rack, and the rig does the surgery in seconds. Removals, repairs and ink re-keying run on the same console, an ammunition shelf keeps implanted weapons fed, and Splice buys back pulled street chrome at about half price. The full catalog is on [Cyberware](cyberware.md).
+**The Chop Shop** at the Undertow is the full cyberware parlor, a neon annex off the Dregs. Splice sells chrome implants off four shelves, street chrome for credits, pro chrome for credits or vouchers, military and legend chrome for vouchers only, and the **Chrome Cradle** in the middle of the room does the installing: you lie on the slab, pick a piece off the rack, and the rig does the surgery in seconds. Removals, repairs and ink re-keying run on the same console, an ammunition shelf keeps implanted weapons fed, and Splice buys back pulled street chrome at about half price. The full catalog is on [Cyberware](cyberware.md).
+
+**The Back Bay** at Quartermain is the cheap end of the trade: Ratchet works out of a storage bay off the upper landing, with a Chrome Cradle of his own. He sells street chrome only, for credits, at Splice's prices, and buys pulled street chrome back on the same terms.
 
 Vex's own shelves carry the other half of the deep-band trade: **exploit software** for ship hacking, from 500-credit lightshow cartridges to the voucher-only exotics, plus the electronic-warfare suite board itself. See [Ship Hacking](ship-hacking.md).
 

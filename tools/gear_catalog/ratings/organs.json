@@ -429,7 +429,7 @@
    "group": "Eyes",
    "hash": "970e50f04a7a2db8",
    "name": "eyes",
-   "rank": 18,
+   "rank": 23,
    "reason": "Plain replacement eyes.",
    "tier": "none"
   },
@@ -438,7 +438,7 @@
    "group": "Eyes",
    "hash": "07ec6668fecdcd61",
    "name": "moth eyes",
-   "rank": 19,
+   "rank": 24,
    "reason": "Plain replacement eyes.",
    "tier": "none"
   },
@@ -447,7 +447,7 @@
    "group": "Eyes",
    "hash": "3e1ed2dde4757134",
    "name": "fung-eye",
-   "rank": 8,
+   "rank": 11,
    "reason": "Night vision you can toggle, with no neural load. Placed in one jungle ruin. Same job as night vision goggles.",
    "tier": "yellow"
   },
@@ -456,7 +456,7 @@
    "group": "Eyes",
    "hash": "84a3161d476535dd",
    "name": "robotic eyes",
-   "rank": 11,
+   "rank": 16,
    "reason": "A working pair of robotic eyes, no better than your own.",
    "tier": "none"
   },
@@ -465,7 +465,7 @@
    "group": "Eyes",
    "hash": "7cc5a72a291dbd8a",
    "name": "basic robotic eyes",
-   "rank": 13,
+   "rank": 18,
    "reason": "Cheap replacement eyes, weak to flashes.",
    "tier": "none"
   },
@@ -474,7 +474,7 @@
    "group": "Eyes",
    "hash": "4ba3d5231be60398",
    "name": "basic robotic moth eyes",
-   "rank": 14,
+   "rank": 19,
    "reason": "Cheap replacement eyes, weak to flashes.",
    "tier": "none"
   },
@@ -483,8 +483,35 @@
    "group": "Eyes",
    "hash": "8ea026e0bf1e0602",
    "name": "Deadeye link",
-   "rank": 5,
-   "reason": "Tag a target and your next three shots curve onto it, every 25 s. Bullets stop missing for a burst, but the target gets a warning and walls stop it. Load 3, 2 vouchers with no reputation.",
+   "rank": 7,
+   "reason": "Tag a target and your next three shots curve onto it, every 25 s. Bullets stop missing for a burst, but the target gets a warning and walls stop it. Also zooms about 14 tiles out at a slight slowdown, though nobody can shoot while zoomed. Load 3, 2 vouchers at yellow reputation.",
+   "tier": "yellow"
+  },
+  "/obj/item/organ/eyes/robotic/cyberware/deadeye/milspec": {
+   "confidence": "medium",
+   "group": "Eyes",
+   "hash": "",
+   "name": "marksman link",
+   "rank": 3,
+   "reason": "Tag a target and your next four shots curve onto it, every 18 s, out to 10 tiles. Also zooms the view about 19 tiles out at full speed, though nobody can shoot while zoomed. Load 4, 3 vouchers at advanced reputation.",
+   "tier": "red"
+  },
+  "/obj/item/organ/eyes/robotic/cyberware/longsight": {
+   "confidence": "medium",
+   "group": "Eyes",
+   "hash": "",
+   "name": "longsight optics",
+   "rank": 9,
+   "reason": "Zooms the view about 19 tiles out at full speed and names implants out to 9 tiles. Scouting only, no help in a fight. Load 2, 2,400 cr at yellow reputation.",
+   "tier": "yellow"
+  },
+  "/obj/item/organ/eyes/robotic/cyberware/lookout": {
+   "confidence": "medium",
+   "group": "Eyes",
+   "hash": "",
+   "name": "lookout optics",
+   "rank": 6,
+   "reason": "Zooms the view about 24 tiles out at full speed, sees in the dark, and names every implant on a body out to 11 tiles every 8 s. Pure scouting: no shooting while zoomed. Load 3, 3 vouchers at advanced reputation.",
    "tier": "yellow"
   },
   "/obj/item/organ/eyes/robotic/cyberware/nightshade": {
@@ -493,8 +520,8 @@
    "hash": "030567541e7e32a4",
    "name": "Nightshade optics",
    "note": "Gives night vision with a green tint and puts a glow, visible only to the wearer, on every living body in view even in the dark (corpses glow dimmer). Flash protection stays at the robotic default, and its chrome scan only counts implants without naming them.",
-   "rank": 6,
-   "reason": "Night vision with no flash weakness and a glow on every living body in view. Beats night vision goggles for 600 cr and load 1.",
+   "rank": 8,
+   "reason": "Night vision with no flash weakness and a glow on every living body in view. Beats night vision goggles for 600 cr and load 1. Also zooms about 9 tiles out at a walk.",
    "tier": "yellow"
   },
   "/obj/item/organ/eyes/robotic/cyberware/prospector": {
@@ -502,16 +529,34 @@
    "group": "Eyes",
    "hash": "5f70c88fa7552793",
    "name": "Prospector Suite optics",
-   "rank": 7,
-   "reason": "A pulse every 10 s shows ore through rock and loot caches within 9 tiles. Great for mining and ruin crews, no help in a fight. Load 2, 2 vouchers.",
+   "rank": 10,
+   "reason": "A pulse every 10 s shows ore through rock and loot caches within 9 tiles. Great for mining and ruin crews, no help in a fight. Also zooms about 14 tiles out at a slight slowdown. Load 2, 1 voucher at yellow reputation.",
    "tier": "yellow"
+  },
+  "/obj/item/organ/eyes/robotic/cyberware/prospector/street": {
+   "confidence": "high",
+   "group": "Eyes",
+   "hash": "",
+   "name": "assay optics",
+   "rank": 12,
+   "reason": "A 5-tile ore pulse through rock every 15 s with no cache marks, plus a short zoom that slows you. A cheap start for miners. Load 1, 900 cr.",
+   "tier": "green"
+  },
+  "/obj/item/organ/eyes/robotic/cyberware/spyglass": {
+   "confidence": "high",
+   "group": "Eyes",
+   "hash": "",
+   "name": "spyglass optics",
+   "rank": 13,
+   "reason": "A short zoom, about 9 tiles, that slows you while you look, and a chrome read that only counts implants. Binoculars reach further but take both hands. Load 1, 400 cr.",
+   "tier": "green"
   },
   "/obj/item/organ/eyes/robotic/flashlight": {
    "confidence": "high",
    "group": "Eyes",
    "hash": "31bf05befe1e2bdf",
    "name": "flashlight eyes",
-   "rank": 17,
+   "rank": 22,
    "reason": "Flashlights strapped into your skull. You can't see through them. A joke.",
    "tier": "none"
   },
@@ -520,7 +565,7 @@
    "group": "Eyes",
    "hash": "121bc2c724450f5d",
    "name": "high luminosity eyes",
-   "rank": 15,
+   "rank": 20,
    "reason": "A coloured torch in your face. Useful in the dark, costs a load.",
    "tier": "none"
   },
@@ -529,7 +574,7 @@
    "group": "Eyes",
    "hash": "880f3fcfed561cbf",
    "name": "high luminosity moth eyes",
-   "rank": 16,
+   "rank": 21,
    "reason": "A coloured torch in your face. Useful in the dark, costs a load.",
    "tier": "none"
   },
@@ -538,7 +583,7 @@
    "group": "Eyes",
    "hash": "1719a4848fac0fdb",
    "name": "robotic moth eyes",
-   "rank": 12,
+   "rank": 17,
    "reason": "A working pair of robotic eyes, no better than your own.",
    "tier": "none"
   },
@@ -547,7 +592,7 @@
    "group": "Eyes",
    "hash": "5d54a8f40d09d8b4",
    "name": "shielded robotic eyes",
-   "rank": 9,
+   "rank": 14,
    "reason": "Flash immunity with no tint, and EMP proof. Better sunglasses that don't take the slot. About 2 cr of material.",
    "tier": "green"
   },
@@ -556,7 +601,7 @@
    "group": "Eyes",
    "hash": "617e9ddf30f1f6f4",
    "name": "shielded robotic moth eyes",
-   "rank": 10,
+   "rank": 15,
    "reason": "Moth looks on shielded eyes. Flash immunity with no tint.",
    "tier": "green"
   },
@@ -565,7 +610,7 @@
    "group": "Eyes",
    "hash": "2abaf20763c58a3e",
    "name": "thermal eyes",
-   "rank": 3,
+   "rank": 4,
    "reason": "Same sight as thermal goggles, every living thing through walls, but sunglasses over them cancel the flash weakness. Better than the goggles, and they print with no reputation. An EMP flashes them.",
    "tier": "yellow"
   },
@@ -574,7 +619,7 @@
    "group": "Eyes",
    "hash": "1436defdd6c14505",
    "name": "thermal moth eyes",
-   "rank": 4,
+   "rank": 5,
    "reason": "Same as thermal eyes with moth looks. Living things through walls, flash weak.",
    "tier": "yellow"
   },
@@ -601,7 +646,7 @@
    "group": "Eyes",
    "hash": "927d6a5cf2f19d2f",
    "name": "snail eyes",
-   "rank": 20,
+   "rank": 25,
    "reason": "Plain replacement eyes.",
    "tier": "none"
   },

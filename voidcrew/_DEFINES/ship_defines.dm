@@ -14,3 +14,10 @@
 #define COMSIG_VOIDCREW_SHIP_UNDOCKED_BY "voidcrew_ship_undocked_by"
 /// Signal sent when a ship completes surveying a celestial object (args: celestial_type_key)
 #define COMSIG_VOIDCREW_SURVEY_COMPLETED "voidcrew_survey_completed"
+
+// Ship part classes. Defined here, before voidcrew/mapping/, because hull templates key their
+// part_requirements by them: a macro defined later is read there as the literal key name.
+#define PART_CLASS_COMBAT "combat"
+#define PART_CLASS_SCIENCE "science"
+#define PART_CLASS_TRADE "trade"
+#define PART_CLASS_MISC "misc"

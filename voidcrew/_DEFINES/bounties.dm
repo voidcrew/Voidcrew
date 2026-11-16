@@ -28,12 +28,14 @@
 #define BOUNTY_ARCHETYPE_BOSS "boss"
 
 // ===== FIGHTING STYLES =====
-// A normal criminal fights in one of the first six; a meek one always carries the holdout.
+// A normal criminal fights in one of the first eight; a meek one always carries the holdout.
 
 #define BOUNTY_STYLE_BRAWLER "brawler"
 #define BOUNTY_STYLE_KNIFE "knife"
 #define BOUNTY_STYLE_PISTOL "pistol"
 #define BOUNTY_STYLE_SHOTGUN "shotgun"
+#define BOUNTY_STYLE_SMG "smg"
+#define BOUNTY_STYLE_REVOLVER "revolver"
 #define BOUNTY_STYLE_CLUB "club"
 #define BOUNTY_STYLE_BOTTLE "bottle"
 #define BOUNTY_STYLE_HOLDOUT "holdout"
@@ -46,6 +48,8 @@
 #define BOUNTY_KIT_DEMOLITIONIST "demolitionist"
 #define BOUNTY_KIT_GHOST "ghost"
 #define BOUNTY_KIT_HEAVY "heavy"
+/// Its kit is its chrome (chrome/bounty_cyberpsycho.dm): the rarest
+#define BOUNTY_KIT_CYBERPSYCHO "cyberpsycho"
 
 // ===== PLACEMENT KINDS =====
 

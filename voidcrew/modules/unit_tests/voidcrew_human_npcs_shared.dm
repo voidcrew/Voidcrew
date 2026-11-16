@@ -323,6 +323,12 @@
 	var/datum/outfit/human_npc/raider/rags_outfit = new()
 	TEST_ASSERT(human_npc_outfit_sealed(sealed_outfit), "The pirate spacer's suit doesn't count as sealed")
 	TEST_ASSERT(!human_npc_outfit_sealed(rags_outfit), "Rags count as sealed")
+	// A fire suit holds pressure, but a person freezes in one in space
+	var/datum/outfit/fire_outfit = new()
+	fire_outfit.suit = /obj/item/clothing/suit/utility/fire/firefighter
+	fire_outfit.head = /obj/item/clothing/head/utility/hardhat/red
+	TEST_ASSERT(!human_npc_outfit_sealed(fire_outfit), "A fire suit and hard hat count as sealed for space")
+	qdel(fire_outfit)
 	TEST_ASSERT(human_npc_outfit_has_air(sealed_outfit), "The pirate spacer doesn't count as carrying air")
 
 	var/mob/living/carbon/human/npc/sample/raider/unit_test_spacer/spacer = human_npc_build_in_zone(/mob/living/carbon/human/npc/sample/raider/unit_test_spacer, 1)

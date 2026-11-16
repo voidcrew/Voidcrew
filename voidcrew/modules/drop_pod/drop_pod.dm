@@ -93,6 +93,11 @@
 		if(ui_user)
 			to_chat(ui_user, span_warning("Bluespace disruption along the zone boundary blocks the link to the pad. Teleport aborted."))
 		return
+	// The teleport below is forced, so it never meets the damper check in check_teleport_valid()
+	if(teleport_blocked_by_ship(src, linked_pad))
+		if(ui_user)
+			to_chat(ui_user, span_warning("Bluespace noise drowns out the link to the pad. Teleport aborted."))
+		return
 	teleport_used = TRUE
 
 	sparks()
