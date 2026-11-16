@@ -278,3 +278,95 @@
 	TEST_ASSERT(gun.vent_key(user), "A vent didn't start for the delete test")
 	qdel(gun)
 	TEST_ASSERT(isnull(gun.vent_bar) && isnull(gun.vent_marker), "Deleting the Furnace left its vent bar")
+
+/// The vent's controls: using the Furnace in hand starts it, the next fire attempt or use in hand taps it, and the
+/// unbound keybinding does both. A tap never fires a shot.
+/datum/unit_test/voidcrew_plasma_heat_vent_controls
+	var/turf/open/spot
+	var/datum/gas_mixture/saved_air
+
+/datum/unit_test/voidcrew_plasma_heat_vent_controls/Run()
+	spot = run_loc_floor_bottom_left
+	var/datum/gas_mixture/air = spot.return_air()
+	saved_air = air.copy()
+	air.remove_ratio(1) // vacuum, so nothing vented can burn
+	var/mob/living/carbon/human/consistent/user = allocate(/mob/living/carbon/human/consistent, spot)
+	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle)
+	user.put_in_active_hand(gun, forced = TRUE)
+	var/turf/far = locate(spot.x + 3, spot.y, spot.z)
+
+	var/datum/keybinding/living/plasma_vent/binding = new
+	TEST_ASSERT_EQUAL(binding.hotkey_keys[1], "Unbound", "The vent keybinding has a default key")
+	TEST_ASSERT(!length(binding.classic_keys) || binding.classic_keys[1] == "Unbound", "The vent keybinding has a default classic key")
+	qdel(binding)
+
+	// In hand: starts a vent, and the pistol, which doesn't heat up, never vents
+	var/obj/item/gun/energy/plasma_weapon/pistol/pistol = allocate(/obj/item/gun/energy/plasma_weapon/pistol)
+	pistol.barrel_heat = 90
+	pistol.attack_self(user)
+	TEST_ASSERT(!pistol.vent_started_at, "Using a Cinder in hand started a vent")
+	gun.barrel_heat = 90
+	gun.heat_updated_at = world.time
+	gun.attack_self(user)
+	TEST_ASSERT(gun.vent_started_at, "Using a glowing Furnace in hand didn't start a vent")
+	TEST_ASSERT_NOTNULL(gun.vent_bar, "A vent started in hand made no bar")
+
+	// A fire attempt on the gold is the tap: all the heat off, and nothing fired
+	var/chamber_before = gun.chamber_mol()
+	gun.vent_started_at = world.time - plasma_heat_test_unit_time(9)
+	gun.heat_updated_at = world.time
+	TEST_ASSERT(gun.try_fire_gun(far, user, ""), "A fire attempt during a vent wasn't taken as the tap")
+	TEST_ASSERT(!gun.vent_started_at, "A fire attempt on the gold didn't end the vent")
+	TEST_ASSERT_EQUAL(gun.barrel_heat, 0, "A fire attempt on the gold left heat [gun.barrel_heat]")
+	TEST_ASSERT_EQUAL(gun.chamber_mol(), chamber_before, "The tap fired a shot")
+	TEST_ASSERT_NULL(locate(/obj/projectile) in range(4, spot), "The tap fired a projectile")
+
+	// The same attempt with no vent running does fire, so the check above means something
+	gun.gold_until = 0
+	gun.try_fire_gun(far, user, "")
+	TEST_ASSERT(gun.chamber_mol() < chamber_before, "A Furnace with no vent running didn't fire")
+	chamber_before = gun.chamber_mol()
+
+	// A fire attempt on the dark end is a fumble, still without a shot
+	gun.barrel_heat = 90
+	gun.heat_updated_at = world.time
+	gun.attack_self(user)
+	TEST_ASSERT(gun.vent_started_at, "A vent didn't start for the fumble test")
+	gun.vent_started_at = world.time - plasma_heat_test_unit_time(1)
+	gun.heat_updated_at = world.time
+	var/projectiles_before = 0
+	for(var/obj/projectile/bolt in range(4, spot))
+		projectiles_before++
+	gun.try_fire_gun(far, user, "")
+	TEST_ASSERT_EQUAL(gun.vent_lock_until, world.time + PLASMA_VENT_FAIL_LOCK, "A fire attempt on the dark end didn't fumble the vent")
+	TEST_ASSERT_EQUAL(gun.chamber_mol(), chamber_before - PLASMA_VENT_MOL, "A fumbled tap took [chamber_before - gun.chamber_mol()] mol, not the vent's spit")
+	var/projectiles_after = 0
+	for(var/obj/projectile/bolt in range(4, spot))
+		projectiles_after++
+	TEST_ASSERT_EQUAL(projectiles_after, projectiles_before, "A fumbled tap fired a projectile")
+	gun.vent_lock_until = 0
+	air.remove_ratio(1)
+
+	// Using it in hand again during the bar taps too
+	gun.barrel_heat = 90
+	gun.heat_updated_at = world.time
+	gun.attack_self(user)
+	gun.vent_started_at = world.time - plasma_heat_test_unit_time(6)
+	gun.heat_updated_at = world.time
+	gun.attack_self(user)
+	TEST_ASSERT(!gun.vent_started_at, "Using the Furnace in hand during the bar didn't tap")
+	TEST_ASSERT_EQUAL(gun.barrel_heat, 90 - PLASMA_VENT_COOL, "An in-hand tap on the amber left heat [gun.barrel_heat]")
+
+	// The keybinding's path starts and taps the same way
+	gun.barrel_heat = 90
+	gun.heat_updated_at = world.time
+	TEST_ASSERT(plasma_vent_held_gun(user), "The vent keybinding didn't start a vent")
+	gun.vent_started_at = world.time - plasma_heat_test_unit_time(9)
+	gun.heat_updated_at = world.time
+	TEST_ASSERT(plasma_vent_held_gun(user), "The vent keybinding didn't tap")
+	TEST_ASSERT_EQUAL(gun.barrel_heat, 0, "A keybinding tap on the gold left heat [gun.barrel_heat]")
+
+/datum/unit_test/voidcrew_plasma_heat_vent_controls/Destroy()
+	if(spot && saved_air)
+		spot.return_air().copy_from(saved_air)
+	return ..()

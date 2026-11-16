@@ -1,4 +1,6 @@
-// Package: P3 heat. The vent key and the vent bar a venting player sees.
+// Package: P3 heat. The vent controls and the vent bar a venting player sees.
+// A vent starts by using the Furnace in hand, and the tap is the next fire attempt or use in hand (plasma_heat.dm).
+// The keybinding has no default key ("V" is the cyberware wheel); players can bind it to start and tap.
 // The bar is two images on the venting player's mob, shown only to their client, over their head like a do_after
 // bar. The marker's sweep is animated on the client; the tap is judged on the server against vent_started_at (plasma_heat.dm), so the
 // grace zones are the latency slack.
@@ -14,7 +16,7 @@
 #define PLASMA_VENT_BAR_LYING_DROP 4
 
 /datum/keybinding/living/plasma_vent
-	hotkey_keys = list("V")
+	hotkey_keys = list("Unbound")
 	name = "plasma_vent"
 	full_name = "Vent held gun"
 	description = "Vent the heat from the Furnace in your hand."
@@ -24,7 +26,10 @@
 	. = ..()
 	if(.)
 		return
-	var/mob/living/owner = user.mob
+	return plasma_vent_held_gun(user.mob)
+
+/// The vent keybinding: starts a vent on the plasma gun in `owner`'s active hand, or taps the one running
+/proc/plasma_vent_held_gun(mob/living/owner)
 	var/obj/item/gun/energy/plasma_weapon/gun = owner.get_active_held_item()
 	if(!istype(gun))
 		return FALSE
