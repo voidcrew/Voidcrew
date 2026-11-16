@@ -1266,6 +1266,8 @@
 	TEST_ASSERT(!table.is_flipped, "The table went over before the wind-up was done")
 
 	// Over it goes, toward the warden, where it stood and unbroken.
+	// A table fresh off the map may still be queued for its first smooth, and tg's flip leaves it in that queue.
+	SSicon_smooth.remove_from_queues(table)
 	TEST_ASSERT(move.finish_windup(move.pending_serial), "The heavy did not flip the table")
 	TEST_ASSERT(table.is_flipped, "The table is not flipped")
 	TEST_ASSERT_EQUAL(table.dir, EAST, "The table went over toward [dir2text(table.dir)], not toward the warden")
