@@ -1,5 +1,5 @@
 // Package: P3 heat. Furnace heat: gain per shot, cooling from turf air, the overheat shutdown, the timed vent
-// (the vent key, its bar and its four results) and the coil overlay steps.
+// (the vent controls, its bar and its four results) and the coil overlay steps.
 // Only guns with uses_heat gain heat. Cooling is applied for the time since heat_updated_at whenever heat is
 // read or changed, so it doesn't depend on how often SSobj ticks; the gun processes on SSobj only while it is hot,
 // venting or shut down, to keep the coil overlay current and end a shutdown whose timer was lost.
@@ -122,7 +122,29 @@
 	plasma_vent_puff(where)
 	return taken
 
-/// The vent key: starts a vent, or times the one running. TRUE if it did either.
+/// Using the gun in hand starts a vent, or taps the one running
+/obj/item/gun/energy/plasma_weapon/attack_self(mob/living/user)
+	. = ..()
+	if(.)
+		return
+	if(uses_heat && vent_key(user))
+		return TRUE
+
+/// While the bar is up, a fire attempt is the vent tap instead, judged at this click's server time. It never fires.
+/// Clicks that would never reach the trigger (an adjacent object, something in the user's own contents) are left alone.
+/obj/item/gun/energy/plasma_weapon/fire_gun(atom/target, mob/living/user, flag, params)
+	if(!vent_started_at || QDELETED(target))
+		return ..()
+	if(flag && ((target in user.contents) || !ismob(target)))
+		return ..()
+	if(user == vent_user)
+		vent_tap()
+	// A tap past the end changes nothing; a sweep whose timer was lost settles here
+	if(vent_started_at && world.time >= vent_started_at + PLASMA_VENT_SWEEP)
+		finish_vent_sweep()
+	return TRUE
+
+/// Starts a vent, or times the one running. TRUE if it did either.
 /obj/item/gun/energy/plasma_weapon/proc/vent_key(mob/living/user)
 	if(vent_started_at)
 		if(user != vent_user)
@@ -152,7 +174,7 @@
 	playsound(src, PLASMA_SOUND_VENT_START, 40, TRUE, -2)
 	return TRUE
 
-/// The vent key pressed again during the sweep: judged on the server's own clock against the sweep start
+/// A tap during the sweep: judged on the server's own clock against the sweep start
 /obj/item/gun/energy/plasma_weapon/proc/vent_tap()
 	if(!vent_started_at)
 		return

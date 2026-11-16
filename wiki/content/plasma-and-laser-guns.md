@@ -97,14 +97,14 @@ The Furnace and the Old Furnace heat up as they fire, and their coils glow brigh
 - Fire a full cartridge at a steady, unhurried pace in ship air and the Furnace never overheats. Fire as fast as it goes, or in vacuum, and it will.
 - An overheated rifle **locks up**: its coils stay white-hot and it won't fire or vent for ten seconds. It clicks when it's ready again.
 
-**Venting:** with a glowing Furnace in your hand, press **V** (Vent held gun, in your keybindings). A small bar appears above your head and a marker sweeps across it. Press **V** again as the marker passes the middle:
+**Venting:** use a glowing Furnace in your hand. A small bar appears above your head and a marker sweeps across it. Fire as the marker passes the middle, or use the rifle in your hand again. That trigger pull vents the rifle instead of shooting. You can also bind a key to Vent held gun in your keybindings.
 
 - On the bright gold centre, the coils go cold at once, and the next few shots heat them less.
 - On the amber either side of it, the rifle vents most of its heat.
-- Don't press at all and it vents most of its heat when the marker reaches the end, and takes a moment longer before it fires.
+- Don't do anything and it vents most of its heat when the marker reaches the end, and takes a moment longer before it fires.
 - On the dark ends, the vent fumbles: the rifle spits plasma onto your tile and you can't fire for a moment.
 
-You can't fire while the bar is up. Dropping the rifle or swapping hands stops the vent.
+You can't shoot while the bar is up. Dropping the rifle or swapping hands stops the vent.
 
 !!! warning "Vented gas is fuel"
     Spat plasma doesn't light itself, but a spark, a flame or another plasma bolt can set it off in breathable air.
