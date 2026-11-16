@@ -31,13 +31,13 @@
 #define LAUNCH_LIFT_HEIGHT 20
 #define LAUNCH_TILT_HEIGHT 44
 #define LAUNCH_GO_HEIGHT 140
-/// How far the bow edge rises above the hull's middle at full pitch, and how much nearer (bigger) it looks
-#define LAUNCH_PITCH_RISE 30
-#define LAUNCH_PITCH_SCALE 1.13
+/// How far the whole hull turns (degrees) as its nose comes up, and how much nearer (bigger) it looks then
+#define LAUNCH_TILT_ANGLE 10
+#define LAUNCH_TILT_SCALE 1.04
 /// How far the ship creeps toward its bow while it pitches up
 #define LAUNCH_TILT_CREEP 24
 /// Size of the ship as it leaves the screen
-#define LAUNCH_GO_SCALE 0.85
+#define LAUNCH_GO_SCALE 0.9
 /// Tiles past the hull's own length it flies before it is removed: off the screen of anyone near the berth
 #define LAUNCH_GO_TILES 30
 /// How far the shadow slides after it, in tiles
@@ -587,7 +587,7 @@
 		return
 	var/bow_x = (bow_dir & EAST) ? 1 : ((bow_dir & WEST) ? -1 : 0)
 	var/bow_y = (bow_dir & NORTH) ? 1 : ((bow_dir & SOUTH) ? -1 : 0)
-	// the hull's length along its bow, for how hard to shear it and how far it has to fly
+	// the hull's length along its bow, for how far it has to fly
 	var/min_along = INFINITY
 	var/max_along = -INFINITY
 	for(var/turf/berth_turf as anything in berth_turfs)
@@ -595,19 +595,25 @@
 		min_along = min(min_along, along)
 		max_along = max(max_along, along)
 	var/length_tiles = max_along - min_along + 1
-	// pitch, seen from above: the bow end lifts toward the camera, so the hull shears up toward its bow and
-	// grows a little. y' = scale * y + shear * (bow . (x, y)), around the hull's middle.
-	var/shear = LAUNCH_PITCH_RISE / max(ICON_SIZE_X, length_tiles * ICON_SIZE_X / 2)
-	var/matrix/pitched = matrix(LAUNCH_PITCH_SCALE, 0, 0, shear * bow_x, LAUNCH_PITCH_SCALE + shear * bow_y, 0)
-	var/go_shear = shear * LAUNCH_GO_SCALE
-	var/matrix/leaving = matrix(LAUNCH_GO_SCALE, 0, 0, go_shear * bow_x, LAUNCH_GO_SCALE + go_shear * bow_y, 0)
+	// The nose comes up as an angle: the whole hull turns, rigid, so its bow swings toward the top of the
+	// screen (a ship pointing up or down the screen turns clockwise). Turn() is clockwise.
+	var/angle = bow_x ? -bow_x * LAUNCH_TILT_ANGLE : LAUNCH_TILT_ANGLE
+	var/matrix/tilted = matrix()
+	tilted.Scale(LAUNCH_TILT_SCALE)
+	tilted.Turn(angle)
+	var/matrix/leaving = matrix()
+	leaving.Scale(LAUNCH_GO_SCALE)
+	leaving.Turn(angle)
+	// it flies where its nose points: the bow direction turned by the same angle
+	var/head_x = bow_x * cos(angle) + bow_y * sin(angle)
+	var/head_y = -bow_x * sin(angle) + bow_y * cos(angle)
 	var/fly = (length_tiles + LAUNCH_GO_TILES) * ICON_SIZE_X
 	// 1. level lift on the thrusters
 	animate(proxy, pixel_z = LAUNCH_LIFT_HEIGHT, time = LAUNCH_LIFT_TIME, easing = SINE_EASING | EASE_OUT)
 	// 2. nose up, creeping toward the bow
-	animate(transform = pitched, pixel_w = bow_x * LAUNCH_TILT_CREEP, pixel_z = LAUNCH_TILT_HEIGHT + bow_y * LAUNCH_TILT_CREEP, time = LAUNCH_TILT_TIME, easing = SINE_EASING)
-	// 3. off toward the bow, still climbing, shrinking as it goes; solid until it is gone from view
-	animate(transform = leaving, pixel_w = bow_x * fly, pixel_z = LAUNCH_GO_HEIGHT + bow_y * fly, time = LAUNCH_GO_TIME, easing = QUAD_EASING | EASE_IN)
+	animate(transform = tilted, pixel_w = round(head_x * LAUNCH_TILT_CREEP), pixel_z = LAUNCH_TILT_HEIGHT + round(head_y * LAUNCH_TILT_CREEP), time = LAUNCH_TILT_TIME, easing = SINE_EASING)
+	// 3. off the way it points, still climbing; solid until it is gone from view
+	animate(transform = leaving, pixel_w = round(head_x * fly), pixel_z = LAUNCH_GO_HEIGHT + round(head_y * fly), time = LAUNCH_GO_TIME, easing = QUAD_EASING | EASE_IN)
 	landing_wash(berth_turfs, bow_dir)
 	landing_jolt(berth_turfs, 'voidcrew/sound/machines/rocket/rocket_launch.ogg', 70, reach = LANDING_HEAR_RANGE, shake_strength = LANDING_SHAKE)
 	landing_jolt(hull_turfs, 'voidcrew/sound/machines/rocket/rocket_launch.ogg', 50, shake_strength = LANDING_SHAKE)
@@ -617,8 +623,10 @@
 		shadow.alpha = LANDING_SHADOW_DARK
 		// stays on the berth while the ship hangs over it, then slides after it and pales
 		animate(shadow, time = LAUNCH_LIFT_TIME)
-		animate(pixel_w = bow_x * LAUNCH_TILT_CREEP, pixel_z = bow_y * LAUNCH_TILT_CREEP, time = LAUNCH_TILT_TIME, easing = SINE_EASING)
-		animate(pixel_w = bow_x * slide, pixel_z = bow_y * slide, time = LAUNCH_GO_TIME, easing = QUAD_EASING | EASE_IN)
+		var/matrix/shadow_turn = matrix()
+		shadow_turn.Turn(angle)
+		animate(transform = shadow_turn, pixel_w = round(head_x * LAUNCH_TILT_CREEP), pixel_z = round(head_y * LAUNCH_TILT_CREEP), time = LAUNCH_TILT_TIME, easing = SINE_EASING)
+		animate(pixel_w = round(head_x * slide), pixel_z = round(head_y * slide), time = LAUNCH_GO_TIME, easing = QUAD_EASING | EASE_IN)
 		// pales on its own curve, from the moment the nose comes up, so it is gone before the ship is
 		animate(shadow, time = LAUNCH_LIFT_TIME, flags = ANIMATION_PARALLEL)
 		animate(alpha = 0, time = LAUNCH_TILT_TIME + LAUNCH_GO_TIME * 0.6, easing = SINE_EASING)
@@ -714,8 +722,8 @@
 #undef LAUNCH_LIFT_HEIGHT
 #undef LAUNCH_TILT_HEIGHT
 #undef LAUNCH_GO_HEIGHT
-#undef LAUNCH_PITCH_RISE
-#undef LAUNCH_PITCH_SCALE
+#undef LAUNCH_TILT_ANGLE
+#undef LAUNCH_TILT_SCALE
 #undef LAUNCH_TILT_CREEP
 #undef LAUNCH_GO_SCALE
 #undef LAUNCH_GO_TILES
