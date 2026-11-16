@@ -241,21 +241,27 @@
 	abstract_move(anchor)
 	SET_PLANE_IMPLICIT(src, ABOVE_LIGHTING_PLANE)
 	var/matrix/turn = rotation ? matrix().Turn(rotation) : null
+	// One group per world plane, floor first. In the world each plane draws whole over the one below, whatever
+	// the layers; in one picture everything would sort by layer alone, and floor things (cables, catwalks,
+	// blood, all on TOPDOWN_LAYER) would paint over every machine on the game plane.
+	var/list/plane_parts = new /list(ABOVE_GAME_PLANE - FLOOR_PLANE + 1)
+	for(var/rank in 1 to length(plane_parts))
+		plane_parts[rank] = list()
 	var/list/parts = list()
 	for(var/i in 1 to length(places))
 		var/turf/source = sources[i]
 		var/turf/place = places[i]
 		var/offset_w = (place.x - anchor.x) * ICON_SIZE_X
 		var/offset_z = (place.y - anchor.y) * ICON_SIZE_Y
+		var/turf_plane = clamp(PLANE_TO_TRUE(source.plane), FLOOR_PLANE, ABOVE_GAME_PLANE)
 		var/mutable_appearance/floor = new(source)
 		floor.underlays = list() // its lighting; drawn below as a multiply over the whole tile
 		floor.plane = FLOAT_PLANE
-		floor.layer = LANDING_PROXY_TURF_LAYER
 		floor.pixel_w += offset_w
 		floor.pixel_z += offset_z
 		if(turn)
 			floor.transform = turn
-		parts += floor
+		plane_parts[turf_plane - FLOOR_PLANE + 1] += floor
 		for(var/atom/movable/thing as anything in source)
 			if(thing.invisibility > SEE_INVISIBLE_LIVING || !thing.icon)
 				continue
@@ -269,7 +275,21 @@
 			part.pixel_z += offset_z
 			if(turn)
 				part.transform = turn
-			parts += part
+			plane_parts[true_plane - FLOOR_PLANE + 1] += part
+	for(var/rank in 1 to length(plane_parts))
+		if(!length(plane_parts[rank]))
+			continue
+		var/mutable_appearance/plane_group = new()
+		plane_group.plane = FLOAT_PLANE
+		plane_group.layer = rank
+		plane_group.appearance_flags = KEEP_TOGETHER | PIXEL_SCALE
+		plane_group.overlays = plane_parts[rank]
+		parts += plane_group
+	for(var/i in 1 to length(places))
+		var/turf/source = sources[i]
+		var/turf/place = places[i]
+		var/offset_w = (place.x - anchor.x) * ICON_SIZE_X
+		var/offset_z = (place.y - anchor.y) * ICON_SIZE_Y
 		// the tile's own light as the hull has it now, laid over the tile the way the lighting plane would
 		// (rooms lit by their area as a whole, or not lit at all, have no darkness of their own to carry)
 		var/area/source_area = source.loc
