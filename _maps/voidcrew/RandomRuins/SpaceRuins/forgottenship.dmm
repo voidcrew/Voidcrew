@@ -168,7 +168,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/syndicate_forgotten_ship)
 "aG" = (
-/mob/living/basic/trooper/nanotrasen/ranged,
+/obj/effect/spawner/human_npc/ruin/nanotrasen,
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/space/has_grav/syndicate_forgotten_ship)
 "aH" = (
@@ -190,7 +190,7 @@
 	dir = 10
 	},
 /obj/item/wrench,
-/mob/living/basic/trooper/nanotrasen/ranged,
+/obj/effect/spawner/human_npc/ruin/nanotrasen,
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/space/has_grav/syndicate_forgotten_ship)
 "aK" = (
@@ -214,7 +214,7 @@
 /area/ruin/space/has_grav/syndicate_forgotten_ship)
 "aN" = (
 /obj/machinery/light/directional/south,
-/mob/living/basic/trooper/nanotrasen/ranged,
+/obj/effect/spawner/human_npc/ruin/nanotrasen,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/syndicate_forgotten_ship)
 "aO" = (
@@ -299,7 +299,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
 	dir = 4
 	},
-/mob/living/basic/trooper/nanotrasen/ranged,
+/obj/effect/spawner/human_npc/ruin/nanotrasen,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/syndicate_forgotten_ship)
 "bd" = (

@@ -33,12 +33,6 @@
 		// mob set, grandfathered here so the freeze still catches genuinely new
 		// simple animals. They are queued for the basic mob refactor like the rest.
 		// VOIDCREW EDIT START: unit_tests retains the existing mining fauna during basic-mob migration.
-		/mob/living/simple_animal/hostile/asteroid/hermit,
-		/mob/living/simple_animal/hostile/asteroid/hermit/ranged,
-		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger,
-		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter,
-		/mob/living/simple_animal/hostile/asteroid/hermit/survivor,
-		/mob/living/simple_animal/hostile/asteroid/hermit/survivor/random,
 		/mob/living/simple_animal/hostile/asteroid/old_demon,
 		// VOIDCREW EDIT END
 		/mob/living/simple_animal/hostile/asteroid/polarbear,

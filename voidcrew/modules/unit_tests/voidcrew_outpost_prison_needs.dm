@@ -23,7 +23,7 @@
 	var/turf/hatch_turf = prison_spot(home, 5, 6)
 	var/obj/structure/table/reinforced/prison_hatch/hatch = locate() in hatch_turf
 	TEST_ASSERT_NOTNULL(hatch, "The serving hatch is not where the map puts it")
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, yard_by_hatch)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, yard_by_hatch)
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 5, 5), "needsowner")
 
 	// Unit tests are parsed before voidcrew/_DEFINES, so the rates are read off one minute of play:
@@ -161,7 +161,7 @@
 	TEST_ASSERT_EQUAL(prison.find_supply(prisoner, TRUE), fresh, "A filthy prisoner did not find the clean uniform on the hatch")
 	TEST_ASSERT(reach_until_ok(prisoner, fresh), "The prisoner could not reach the uniform through the hatch")
 	TEST_ASSERT(prisoner.take_uniform(fresh), "The prisoner did not change at the hatch")
-	TEST_ASSERT(QDELETED(fresh), "The clean uniform was not taken")
+	TEST_ASSERT_EQUAL(prisoner.w_uniform, fresh, "The prisoner is not wearing the clean uniform they took")
 	TEST_ASSERT(prisoner.uniform_grime < 0.01, "Changing did not leave the prisoner clean ([prisoner.uniform_grime])")
 	var/obj/item/clothing/under/rank/prisoner/outpost/left_behind = locate() in hatch_turf
 	TEST_ASSERT_NOTNULL(left_behind, "The old uniform was not left on the hatch")
@@ -278,15 +278,17 @@
 	// Medical: the advanced med HUD tracks their health bar, and a bruise pack treats them.
 	var/datum/atom_hud/medhud = GLOB.huds[DATA_HUD_MEDICAL_ADVANCED]
 	TEST_ASSERT(medhud.hud_atoms_all_z_levels[prisoner], "The prisoner is not on the medical HUD")
-	prisoner.adjustBruteLoss(40)
+	// 40 brute on the chest (which counts in full), so 60 health
+	prisoner.apply_damage(40, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
 	var/image/health_bar = prisoner.hud_list[HEALTH_HUD]
 	TEST_ASSERT_EQUAL(health_bar.icon_state, "hud[RoundHealth(prisoner)]", "The health bar did not follow the injury")
 	TEST_ASSERT(abs(prisoner.care() - (200 + 60) / 3) < 0.01, "Care with 60 health was [prisoner.care()], not 86.7")
 	prison.tick(10 * 60)
 	TEST_ASSERT_EQUAL(prisoner.health, 60, "Health came back on its own")
+	// A bruise pack on the bruised chest, the way it treats anyone's (40 brute off that limb)
 	var/obj/item/stack/medical/bruise_pack/pack = allocate(__IMPLIED_TYPE__)
 	TEST_ASSERT(pack.try_heal_checks(prisoner, warden, BODY_ZONE_CHEST, TRUE), "A bruise pack could not treat the prisoner")
-	pack.heal_simplemob(prisoner, warden)
+	pack.heal_carbon(prisoner, warden, BODY_ZONE_CHEST)
 	TEST_ASSERT_EQUAL(prisoner.health, 100, "A bruise pack did not treat the prisoner")
 	TEST_ASSERT_EQUAL(health_bar.icon_state, "hudhealth100", "The health bar did not recover")
 
@@ -299,19 +301,21 @@
 	warden.put_in_active_hand(toolbox)
 	warden.set_combat_mode(TRUE)
 	click_wrapper(warden, prisoner)
-	warden.set_combat_mode(FALSE)
 	TEST_ASSERT(prisoner.health < 100, "The toolbox did not hurt the prisoner")
-	TEST_ASSERT(locate(/obj/effect/decal/cleanable/blood) in prison_spot(home, 10, 8), "A brute hit left no blood on the floor")
+	// tg splatters blood on some blows, not all (about half for a toolbox): a few more, healed between
+	for(var/i in 1 to 15)
+		if(locate(/obj/effect/decal/cleanable/blood) in prison_spot(home, 10, 8))
+			break
+		prisoner.adjustBruteLoss(-prisoner.getBruteLoss())
+		click_wrapper(warden, prisoner)
+	warden.set_combat_mode(FALSE)
+	TEST_ASSERT(locate(/obj/effect/decal/cleanable/blood) in prison_spot(home, 10, 8), "Fifteen brute hits left no blood on the floor")
 	prison.refresh_conditions()
 	// Counted in the mess load; Clean itself only drops past PRISON_MESS_FREE units per 100 floor tiles.
 	TEST_ASSERT(prison.mess_load > mess_before, "Blood on the floor did not count as mess")
-	// Badly hurt and untreated, they drip; treated, they stop.
-	prisoner.forceMove(prison_spot(home, 11, 8))
-	prisoner.adjustBruteLoss(60 - prisoner.getBruteLoss())
-	TEST_ASSERT(prisoner.maybe_drip(1000), "A prisoner at 40% health never dripped")
-	TEST_ASSERT(locate(/obj/effect/decal/cleanable/blood) in prison_spot(home, 11, 8), "The drip left nothing on the floor")
+	// Their blood is a person's: real blood in their veins, lost through tg's own bleeding.
+	TEST_ASSERT(prisoner.blood_volume > 0, "A prisoner has no blood")
 	prisoner.adjustBruteLoss(-prisoner.getBruteLoss())
-	TEST_ASSERT(!prisoner.maybe_drip(1000), "A treated prisoner still dripped")
 
 	// The wing's first aid kit holds dressings and a scanner, nothing that goes in a mouth or vein.
 	var/obj/item/storage/medkit/brute/outpost_prison/kit = locate() in prison_spot(home, 16, 2)
@@ -327,7 +331,7 @@
 /datum/unit_test/voidcrew_outpost_prison_routine
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
-/datum/unit_test/voidcrew_outpost_prison_routine/proc/has_activity(mob/living/basic/outpost_prisoner/prisoner)
+/datum/unit_test/voidcrew_outpost_prison_routine/proc/has_activity(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return prisoner.activity?.started
 
 /datum/unit_test/voidcrew_outpost_prison_routine/proc/in_flight(datum/prisoner_activity/basketball/game)
@@ -356,8 +360,8 @@
 		if(context)
 			TEST_ASSERT(islist(outpost_prisoner_context_lines(context)), "[activity_type] speaks in a context no dialogue file has: [context]")
 
-	var/mob/living/basic/outpost_prisoner/talker = test_prisoner(prison, prison_spot(home, 7, 8))
-	var/mob/living/basic/outpost_prisoner/listener = test_prisoner(prison, prison_spot(home, 9, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/talker = test_prisoner(prison, prison_spot(home, 7, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/listener = test_prisoner(prison, prison_spot(home, 9, 8))
 	TEST_ASSERT(talker.personality in personalities, "A prisoner got the personality [talker.personality]")
 	TEST_ASSERT(talker.crime in crimes, "A prisoner got the crime [talker.crime]")
 	TEST_ASSERT_EQUAL(talker.cell, prison.cells[1], "The first booked prisoner is not in cell 1")
@@ -599,7 +603,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("moodneedsowner")
 	TEST_ASSERT_NOTNULL(home, "The needs mood test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
 	TEST_ASSERT(abs(prison.conditions_score() - 100) < 0.01, "The mood test wing is not in perfect condition")
 
 	// Per minute: a well kept prisoner in a wing with every condition at 80+ gains 2.
@@ -615,11 +619,12 @@
 	TEST_ASSERT(drift_is(prisoner, 2 - 5), "A filthy uniform drifts [prisoner.mood_drift_per_minute()], not -3") // PRISONER_MOOD_FILTHY
 	prisoner.set_uniform_grime(0)
 	// Injuries cost mood only below 75% health (PRISONER_HURT_MOOD_BELOW): 8 x (75 - health) / 75.
-	prisoner.adjustBruteLoss(20)
+	// Bruised by health lost, not brute dealt: a limb counts for less of a body's health than the chest.
+	outpost_prison_bruise(prisoner, 20)
 	TEST_ASSERT(drift_is(prisoner, 2), "80% health drifts [prisoner.mood_drift_per_minute()], not +2")
-	prisoner.adjustBruteLoss(30)
+	outpost_prison_bruise(prisoner, 30)
 	TEST_ASSERT(drift_is(prisoner, 2 - 8 * 25 / 75), "Half health drifts [prisoner.mood_drift_per_minute()], not [2 - 8 * 25 / 75]") // PRISONER_MOOD_HURT
-	prisoner.adjustBruteLoss(-50)
+	prisoner.adjustBruteLoss(-prisoner.getBruteLoss())
 
 	// Instant changes: a meal +10, a clean uniform +8, treatment +8.
 	prisoner.set_mood(40)
@@ -662,14 +667,14 @@
 /datum/unit_test/voidcrew_outpost_prison_arrivals_food
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
-/datum/unit_test/voidcrew_outpost_prison_arrivals_food/proc/present(mob/living/basic/outpost_prisoner/prisoner)
+/datum/unit_test/voidcrew_outpost_prison_arrivals_food/proc/present(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return prisoner.phase == "present"
 
 /datum/unit_test/voidcrew_outpost_prison_arrivals_food/Run()
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("arrivalowner")
 	TEST_ASSERT_NOTNULL(home, "The arrivals test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 
 	// Arrivals, 200 of them: hunger 35-75, a third in a stained uniform (55-70 grime, else 0-15), and a
 	// fifth roughed up to 60-85% health (PRISONER_ARRIVAL_*, _STAINED_*, _HURT_ARRIVAL_*).
@@ -699,7 +704,7 @@
 	prisoner.set_hunger(100)
 	prisoner.set_uniform_grime(0)
 	TEST_ASSERT_EQUAL(prisoner.bubble, "hurt", "A roughed-up arrival did not show the hurt bubble")
-	prisoner.adjustBruteLoss(-25)
+	prisoner.adjustBruteLoss(-prisoner.getBruteLoss())
 
 	// Hunger 5 a minute (PRISONER_HUNGER_DECAY), paused while well fed.
 	prisoner.adjust_needs(60)
@@ -723,7 +728,7 @@
 
 	// Sport: three times the grime (PRISONER_GRIME_SPORT_MULT) at basketball or a workout, not pacing.
 	// At 45% health they play carefully, so no injury gets in the way here (PRISONER_SPORT_INJURY_ABOVE).
-	prisoner.adjustBruteLoss(55)
+	outpost_prison_bruise(prisoner, 55)
 	var/datum/prisoner_activity/basketball/game = new(prisoner)
 	game.started = TRUE
 	prisoner.activity = game
@@ -741,10 +746,10 @@
 	prisoner.adjust_needs(60)
 	TEST_ASSERT(abs(prisoner.uniform_grime - 7.5) < 0.01, "A minute of working out added [prisoner.uniform_grime] grime, not 7.5")
 	TEST_ASSERT(!prisoner.sport_injury(), "A badly hurt prisoner was injured at sport")
-	// A sport injury: 8-15 brute (PRISONER_SPORT_INJURY_MIN/_MAX), no blood, and they stop.
-	prisoner.adjustBruteLoss(-55)
+	// A sport injury: 8-15 brute on the limb it happened to (PRISONER_SPORT_INJURY_MIN/_MAX), no blood, and they stop.
+	prisoner.adjustBruteLoss(-prisoner.getBruteLoss())
 	TEST_ASSERT(prisoner.sport_injury(), "A healthy prisoner working out could not be injured")
-	TEST_ASSERT(prisoner.health >= 85 && prisoner.health <= 92, "A sport injury left [prisoner.health] health")
+	TEST_ASSERT(prisoner.getBruteLoss() >= 8 && prisoner.getBruteLoss() <= 15 && prisoner.health < 100, "A sport injury did [prisoner.getBruteLoss()] brute, leaving [prisoner.health] health")
 	TEST_ASSERT_NULL(prisoner.activity, "The injured prisoner kept working out")
 	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood) in get_turf(prisoner), "A sport injury bled on the floor")
 	prisoner.adjustBruteLoss(-prisoner.getBruteLoss())
@@ -830,7 +835,7 @@
 	clear_hatch(east_hatch)
 	// OUTPOST_PRISON_HATCH_CAPACITY, read off an empty hatch so a retune does not break the tests.
 	TEST_ASSERT(capacity >= 6, "An empty hatch holds only [capacity] items")
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, yard_side)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, yard_side)
 	var/mob/living/carbon/human/warden = make_player(office_side, "hatchowner")
 
 	// Food anywhere in the wing they can reach is theirs, for the AI's eating (setup) and for an
@@ -957,9 +962,9 @@
 	prison.refresh_reach()
 
 	// Stocking gets a call-out from a prisoner who wants it, and thanks from one waiting at the hatch.
-	var/mob/living/basic/outpost_prisoner/waiting = prisoner
-	var/mob/living/basic/outpost_prisoner/watcher = test_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/full = test_prisoner(prison, prison_spot(home, 7, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/waiting = prisoner
+	var/mob/living/carbon/human/npc/outpost_prisoner/watcher = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/full = test_prisoner(prison, prison_spot(home, 7, 8))
 	waiting.set_hunger(30)
 	waiting.set_uniform_grime(0)
 	watcher.set_hunger(30)
@@ -970,7 +975,7 @@
 	COOLDOWN_RESET(waiting, thanks_cooldown)
 	COOLDOWN_RESET(prison, hatch_call_cooldown)
 	var/obj/item/food/prison_ration/stocked = new(hatch_turf)
-	var/mob/living/basic/outpost_prisoner/crier = prison.on_hatch_stocked(hatch, list(stocked), warden)
+	var/mob/living/carbon/human/npc/outpost_prisoner/crier = prison.on_hatch_stocked(hatch, list(stocked), warden)
 	TEST_ASSERT_EQUAL(crier, watcher, "The call-out came from [crier || "nobody"], not the hungry prisoner watching")
 	TEST_ASSERT(is_line_for(waiting.last_line, "thanks_food"), "The prisoner waiting at the hatch did not say thanks: [waiting.last_line]")
 	TEST_ASSERT_EQUAL(waiting.last_carer_ref?.resolve(), warden, "The waiting prisoner did not note who stocked the hatch")
@@ -1108,7 +1113,7 @@
 /datum/unit_test/voidcrew_outpost_prison_liveliness
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
-/datum/unit_test/voidcrew_outpost_prison_liveliness/proc/holds(mob/living/basic/outpost_prisoner/prisoner, obj/item/thing)
+/datum/unit_test/voidcrew_outpost_prison_liveliness/proc/holds(mob/living/carbon/human/npc/outpost_prisoner/prisoner, obj/item/thing)
 	return thing.loc == prisoner
 
 /datum/unit_test/voidcrew_outpost_prison_liveliness/Run()
@@ -1117,7 +1122,7 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/turf/table = prison_spot(home, 5, 9)
 	var/turf/seat = prison_spot(home, 5, 10)
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	// The map's own bin (if any) moves aside for a known one.
 	for(var/turf/tile as anything in prison.wing_turfs())
 		for(var/obj/structure/closet/crate/bin/map_bin in tile)
@@ -1217,15 +1222,15 @@
 	qdel(again)
 
 	// Shared meals: three at the tables within a minute each cheer up by 3, once (PRISONER_MOOD_SHARED_MEAL).
-	var/mob/living/basic/outpost_prisoner/second = test_prisoner(prison, prison_spot(home, 4, 10))
-	var/mob/living/basic/outpost_prisoner/third = test_prisoner(prison, prison_spot(home, 6, 10))
-	var/mob/living/basic/outpost_prisoner/fourth = test_prisoner(prison, prison_spot(home, 4, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = test_prisoner(prison, prison_spot(home, 4, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/third = test_prisoner(prison, prison_spot(home, 6, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/fourth = test_prisoner(prison, prison_spot(home, 4, 8))
 	set_moods(list(prisoner, second, third, fourth), 50)
 	TEST_ASSERT_EQUAL(length(prison.note_table_meal(prisoner)), 0, "One prisoner eating alone made a shared meal")
 	TEST_ASSERT_EQUAL(length(prison.note_table_meal(second)), 0, "Two prisoners eating made a shared meal")
 	var/list/lifted = prison.note_table_meal(third)
 	TEST_ASSERT_EQUAL(length(lifted), 3, "Three prisoners at the tables lifted [length(lifted)]")
-	for(var/mob/living/basic/outpost_prisoner/diner as anything in list(prisoner, second, third))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/diner as anything in list(prisoner, second, third))
 		TEST_ASSERT(abs(diner.mood - 53) < 0.01, "A shared meal left [diner] at [diner.mood], not 53")
 	lifted = prison.note_table_meal(fourth)
 	TEST_ASSERT(length(lifted) == 1 && lifted[1] == fourth, "The fourth at the table did not get the lift alone")
@@ -1290,6 +1295,7 @@
 	medic.put_in_active_hand(ball)
 	TEST_ASSERT(game.tick(1) != 1, "The game ended as soon as staff picked up the ball") // ACTIVITY_DONE
 	medic.dropItemToGround(ball)
+	TEST_ASSERT(prisoner.routine_allowed() && !prisoner.held_item, "The playing prisoner could not take a ball before the throw (holding [prisoner.held_item])")
 	ball.throw_at(prisoner, 5, 1, medic)
 	TEST_ASSERT(wait_until(CALLBACK(src, PROC_REF(holds), prisoner, ball), 5 SECONDS), "The playing prisoner did not catch the ball")
 	TEST_ASSERT_EQUAL(prisoner.held_item, ball, "The caught ball is not in the prisoner's hands")
@@ -1319,7 +1325,7 @@
 	TEST_ASSERT_NOTNULL(hatch, "The serving hatch is not where the map puts it")
 	var/obj/machinery/door/window/yard_door = hatch.yard_windoor()
 	TEST_ASSERT_NOTNULL(yard_door, "The serving hatch has no yard-side window door")
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	prison.refresh_reach()
 
 	// Two tiles away on the yard floor: out of reach, not taken, and it stays put.
@@ -1400,11 +1406,11 @@
 /datum/unit_test/voidcrew_outpost_prison_beam_gates/proc/knitting(atom/movable/arrival)
 	return !!arrival.get_filter("transporter_dissolve")
 
-/datum/unit_test/voidcrew_outpost_prison_beam_gates/proc/all_in(mob/living/basic/outpost_prisoner/prisoner, mob/living/basic/outpost_prison_guard/guard, mob/living/basic/outpost_kessler_staff/doctor)
+/datum/unit_test/voidcrew_outpost_prison_beam_gates/proc/all_in(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/carbon/human/npc/outpost_prison_guard/guard, mob/living/carbon/human/npc/outpost_kessler_staff/doctor)
 	return prisoner.phase == "present" && guard.phase == "present" && !doctor.beaming
 
 /// Whether nothing about the prisoner can act, talk or show: the gates an arriving or leaving prisoner must fail
-/datum/unit_test/voidcrew_outpost_prison_beam_gates/proc/check_held(mob/living/basic/outpost_prisoner/prisoner, when)
+/datum/unit_test/voidcrew_outpost_prison_beam_gates/proc/check_held(mob/living/carbon/human/npc/outpost_prisoner/prisoner, when)
 	var/datum/ai_planning_subtree/outpost_prisoner_routine/routine = GLOB.ai_subtrees[/datum/ai_planning_subtree/outpost_prisoner_routine]
 	TEST_ASSERT(!prisoner.routine_allowed(), "The routine was allowed [when]")
 	TEST_ASSERT_NULL(routine.SelectBehaviors(prisoner.ai_controller, 1), "The routine planned something [when]")
@@ -1419,18 +1425,18 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("beamgateowner")
 	TEST_ASSERT_NOTNULL(home, "The beam gate test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/other = test_prisoner(prison, prison_spot(home, 9, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/other = test_prisoner(prison, prison_spot(home, 9, 8))
 	REMOVE_TRAIT(prisoner, TRAIT_IMMOBILIZED, TRAIT_SOURCE_UNIT_TESTS)
 	prison.refresh_reach()
 	// Hungry (PRISONER_HUNGER_HUNGRY 40), so a meal and a thought bubble would both be due.
 	prisoner.arrival_brute = 0
 	prisoner.set_hunger(20)
 	prisoner.beam_in()
-	var/datum/outpost_guard_record/record = prison.add_guard_record(TRUE, /mob/living/basic/outpost_prison_guard)
-	var/mob/living/basic/outpost_prison_guard/guard = record?.guard
+	var/datum/outpost_guard_record/record = prison.add_guard_record(TRUE, /mob/living/carbon/human/npc/outpost_prison_guard)
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = record?.guard
 	TEST_ASSERT_NOTNULL(guard, "The test guard did not beam in")
-	var/mob/living/basic/outpost_kessler_staff/researcher/doctor = allocate(/mob/living/basic/outpost_kessler_staff/researcher, prison_spot(home, 12, 3), null)
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor = allocate(/mob/living/carbon/human/npc/outpost_kessler_staff/researcher, prison_spot(home, 12, 3), null)
 	doctor.beam_in()
 
 	// In the beam they are knitting together from the start, under the mask at its lowest

@@ -14,9 +14,14 @@
 /datum/ambient_place/ship/strays_test
 	/// What counts as aboard, list(min x, min y, max x, max y, z)
 	var/list/test_bounds
+	/// Stands in for the trader outpost the ship is docked at
+	var/test_outpost
 
 /datum/ambient_place/ship/strays_test/aboard(turf/tile)
 	return ambient_in_bounds(get_turf(tile), test_bounds)
+
+/datum/ambient_place/ship/strays_test/docked_outpost()
+	return test_outpost
 
 /// A convict hideout kind that always has room. No planet types, so the shared instance never rolls.
 /datum/ambient_site_kind/convict/strays_test
@@ -64,11 +69,11 @@
 	var/datum/ambient_place/ship/deck = ambient_ship_place(ship, create = FALSE)
 	TEST_ASSERT(istype(deck, /datum/ambient_place/ship/strays_test), "The test ship has no deckhand place")
 	var/mob/living/carbon/human/consistent/leader = allocate(__IMPLIED_TYPE__, run_loc_floor_top_right)
-	var/mob/living/basic/ambient_npc/stray/stranded/stray = allocate(/mob/living/basic/ambient_npc/stray/stranded, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/stray = allocate(/mob/living/carbon/human/npc/ambient_npc/stray/stranded, corner)
 
 	// Only strays can be asked along
 	TEST_ASSERT(ambient_offer_recruit(stray), "A stray could not be opened to offers")
-	var/mob/living/basic/ambient_npc/plain = allocate(/mob/living/basic/ambient_npc, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/plain = allocate(/mob/living/carbon/human/npc/ambient_npc, corner)
 	TEST_ASSERT(!ambient_offer_recruit(plain), "An ordinary ambient NPC was opened to offers")
 	TEST_ASSERT(stray.is_wild(), "A new stray is not wild")
 	TEST_ASSERT(!HAS_TRAIT(stray, TRAIT_GODMODE), "A stray can't be hurt")
@@ -94,15 +99,16 @@
 	TEST_ASSERT(istype(stray.activity, /datum/ambient_activity/stray_follow), "A stray who agreed is not following anyone")
 	TEST_ASSERT_EQUAL(stray.get_leader(), leader, "A stray follows someone else")
 	TEST_ASSERT_EQUAL(deck.pending(), stray, "The ship does not know who is on the way")
-	TEST_ASSERT(HAS_TRAIT(stray, TRAIT_SPACEWALK), "A follower can't cross open space to the ship")
+	TEST_ASSERT(!HAS_TRAIT(stray, TRAIT_SPACEWALK), "A follower crosses open space with no kit (human NPCs use their own suit and jets)")
 	TEST_ASSERT_NULL(stray.start_activity(new /datum/ambient_activity/shelter(stray, null, 100)), "A storm stopped a stray following")
 	TEST_ASSERT(!stray.accept_offer(leader, ship), "A follower agreed a second time")
 	TEST_ASSERT(!ambient_ship_can_take(ship), "A ship took a second stray while one was on the way") // AMBIENT_RECRUITS_PENDING_PER_SHIP
-	var/mob/living/basic/ambient_npc/stray/stranded/second = allocate(/mob/living/basic/ambient_npc/stray/stranded, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/second = allocate(/mob/living/carbon/human/npc/ambient_npc/stray/stranded, corner)
 	TEST_ASSERT(!second.accept_offer(leader, ship), "Two strays were on their way to one ship at once")
 
 	// Aboard: a deckhand, kept aboard, living by the deckhand routine
 	TEST_ASSERT(stray.board(ship), "A stray did not come aboard")
+	TEST_ASSERT_EQUAL(stray.gifts_given, 1, "A rescued stray gave [stray.gifts_given] gifts on coming aboard")
 	TEST_ASSERT(stray.is_deckhand(), "A stray aboard is not a deckhand")
 	TEST_ASSERT_EQUAL(stray.place, deck, "A deckhand does not belong to their ship")
 	TEST_ASSERT_EQUAL(deck.taken, 1, "The ship did not count the stray it took")
@@ -120,26 +126,26 @@
 	TEST_ASSERT(second.board(ship), "The second stray did not come aboard")
 	TEST_ASSERT_EQUAL(deck.taken, 2, "The ship did not count its second stray")
 	TEST_ASSERT(!ambient_ship_can_take(ship), "A ship took more than two strays in a round") // AMBIENT_RECRUITS_PER_SHIP_ROUND
-	var/mob/living/basic/ambient_npc/stray/stranded/third = allocate(/mob/living/basic/ambient_npc/stray/stranded, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/third = allocate(/mob/living/carbon/human/npc/ambient_npc/stray/stranded, corner)
 	TEST_ASSERT(!third.accept_offer(leader, ship), "A third stray joined a ship in one round")
 
 	// A follower deleted on the way (the planet's sweep) frees their ship's place
 	var/obj/structure/overmap/ship/other_ship = strays_test_ship(room)
-	var/mob/living/basic/ambient_npc/stray/stranded/runaway = allocate(/mob/living/basic/ambient_npc/stray/stranded, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/runaway = allocate(/mob/living/carbon/human/npc/ambient_npc/stray/stranded, corner)
 	TEST_ASSERT(runaway.accept_offer(leader, other_ship), "A stray refused a second ship")
 	qdel(runaway)
 	TEST_ASSERT(ambient_ship_can_take(other_ship), "A deleted follower kept their ship's place")
 
 	// One whose leader is gone goes back to being wild and frees the place
-	var/mob/living/basic/ambient_npc/stray/stranded/lost = allocate(/mob/living/basic/ambient_npc/stray/stranded, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/lost = allocate(/mob/living/carbon/human/npc/ambient_npc/stray/stranded, corner)
 	TEST_ASSERT(lost.accept_offer(leader, other_ship), "A stray refused a ship with room")
 	lost.lose_leader()
 	TEST_ASSERT(lost.is_wild(), "A stray who lost their leader is not wild again")
 	TEST_ASSERT(ambient_ship_can_take(other_ship), "A lost follower kept their ship's place")
-	TEST_ASSERT(!HAS_TRAIT(lost, TRAIT_SPACEWALK), "A lost follower can still cross open space")
+	TEST_ASSERT(!HAS_TRAIT(lost, TRAIT_SPACEWALK), "A lost follower crosses open space with no kit")
 
 	// One killed on the way frees it too, and drops nothing
-	var/mob/living/basic/ambient_npc/stray/stranded/doomed = allocate(/mob/living/basic/ambient_npc/stray/stranded, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/doomed = allocate(/mob/living/carbon/human/npc/ambient_npc/stray/stranded, corner)
 	TEST_ASSERT(doomed.accept_offer(leader, other_ship), "A stray refused a ship with room")
 	var/objects_before = length(corner.contents)
 	doomed.death()
@@ -163,7 +169,7 @@
 	var/turf/corner = run_loc_floor_bottom_left
 	var/obj/structure/overmap/ship/ship = strays_test_ship(room)
 	var/mob/living/carbon/human/consistent/leader = allocate(__IMPLIED_TYPE__, run_loc_floor_top_right)
-	var/mob/living/basic/ambient_npc/stray/stranded/deckhand = allocate(/mob/living/basic/ambient_npc/stray/stranded, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/deckhand = allocate(/mob/living/carbon/human/npc/ambient_npc/stray/stranded, corner)
 	deckhand.ai_controller?.set_ai_status(AI_STATUS_OFF)
 	TEST_ASSERT(deckhand.accept_offer(leader, ship) && deckhand.board(ship), "The stray did not come aboard")
 
@@ -229,7 +235,7 @@
 	TEST_ASSERT(kind.realize(site), "A crashed pod brought nobody out")
 	var/list/people = site.living_npcs()
 	TEST_ASSERT_EQUAL(length(people), 1, "A crashed pod brought out [length(people)] people")
-	var/mob/living/basic/ambient_npc/stray/stranded/survivor = people[1]
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/survivor = people[1]
 	TEST_ASSERT(istype(survivor), "A crashed pod's person is not a stranded survivor")
 	TEST_ASSERT(survivor.is_wild() && survivor.recruit_open, "A stranded survivor can't be asked along")
 	TEST_ASSERT(site.get_prop(/obj/structure/bonfire) || site.get_prop(/obj/structure/bounty_camp_lamp), "A crashed pod has no fire or lantern")
@@ -247,7 +253,7 @@
 	qdel(survivor)
 	TEST_ASSERT(kind.realize(site), "A swept survivor did not come back")
 	people = site.living_npcs()
-	var/mob/living/basic/ambient_npc/stray/stranded/again = length(people) ? people[1] : null
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/again = length(people) ? people[1] : null
 	TEST_ASSERT_EQUAL(again?.real_name, survivor_name, "A different person came back to the pod")
 	var/seats_after = 0
 	for(var/obj/structure/chair/comfy/shuttle/seat in range(3, middle))
@@ -256,12 +262,41 @@
 
 	// Taken aboard: the site is spent, and nobody comes back
 	var/obj/structure/overmap/ship/ship = strays_test_ship(ambient_test_room_bounds())
+	var/datum/team/voidcrew/team = allocate(/datum/team/voidcrew)
+	team.ship = ship
+	ship.ship_team = team
+	var/datum/voidcrew_crew_record/crew = ship.get_crew_record()
 	var/mob/living/carbon/human/consistent/leader = allocate(__IMPLIED_TYPE__, run_loc_floor_top_right)
 	TEST_ASSERT(again?.accept_offer(leader, ship), "A stranded survivor refused a ship with room")
+	again.rescue_zone = 3 // ZONE_RED: found in the red zone (the test room is on no overmap tile)
+	leader.forceMove(get_step(again, NORTH) || get_turf(again))
 	TEST_ASSERT(again?.board(ship), "A stranded survivor did not come aboard")
 	TEST_ASSERT_EQUAL(site.state, "spent", "A site whose survivor was taken aboard is not spent") // AMBIENT_SITE_SPENT
 	TEST_ASSERT(!kind.realize(site), "A pod whose survivor was taken aboard brought someone out")
 	allocated += again
+
+	// Rescued: a ship part for whoever brought them in, and another later
+	var/obj/item/ship_parts/thanks = leader.is_holding_item_of_type(/obj/item/ship_parts)
+	TEST_ASSERT_NOTNULL(thanks, "A rescued survivor gave the crew member who brought them in no ship part")
+	TEST_ASSERT_EQUAL(again.gifts_given, 1, "A rescued survivor gave [again.gifts_given] gifts on coming aboard")
+	TEST_ASSERT(again.next_gift_at >= world.time + 75 MINUTES, "A rescued survivor's next gift is due too soon") // AMBIENT_STRAY_GIFT_LOW
+	qdel(thanks)
+	var/obj/item/ship_parts/later = again.give_gift(leader)
+	TEST_ASSERT(istype(later) && leader.is_holding(later), "A deckhand's later gift did not reach the crew member")
+	TEST_ASSERT_EQUAL(again.gifts_given, 2, "A deckhand's later gift was not counted")
+	qdel(later)
+
+	// Let go at an outpost: the crew that rescued them gets red-zone reputation, once
+	var/datum/ambient_place/ship/strays_test/deck = again.place
+	TEST_ASSERT(istype(deck), "A rescued deckhand does not live on the ship")
+	TEST_ASSERT_EQUAL(again.claim_rescue(leader), 0, "A rescued survivor paid out away from any outpost")
+	deck.test_outpost = TRUE
+	TEST_ASSERT_EQUAL(again.claim_rescue(leader), 3, "A survivor rescued in the red zone did not pay 3 reputation") // REPUTATION_GAIN_HARD
+	TEST_ASSERT_EQUAL(crew.reputation, 3, "The rescuing crew's reputation is [crew.reputation]")
+	TEST_ASSERT_EQUAL(again.claim_rescue(leader), 0, "A rescued survivor paid out twice")
+	TEST_ASSERT_EQUAL(crew.reputation, 3, "A second drop-off changed the crew's reputation")
+	deck.test_outpost = null
+	team.ship = null
 
 	for(var/datum/weakref/ref as anything in site.props)
 		qdel(ref?.resolve())
@@ -271,7 +306,13 @@
 // THE ESCAPED CONVICT
 // =========================================================================
 
-/// The cap follows the crews; a convict is a meek petty criminal in orange; seen, they get one private offer on their own record, within the two-offer limit; talked down, the offer is withdrawn unpaid and a stray with their name follows the crew; an offer that ends leaves a free convict where they are
+/**
+ * The cap follows the crews; a convict is a meek petty criminal in prison orange with the meek's holdout
+ * kit; seen, they give up the tg way (weapon away, *surrender's real Paralyze) and get one private offer on
+ * their own record, within the two-offer limit; talked down, the SAME body goes with the crew (follower AI,
+ * the people's side, off the board for good) and the offer is withdrawn unpaid; aboard they stay aboard; an
+ * offer that ends leaves a free convict where they are
+ */
 /datum/unit_test/voidcrew_ambient_strays_convict
 
 /datum/unit_test/voidcrew_ambient_strays_convict/Run()
@@ -285,23 +326,43 @@
 	var/list/room = ambient_test_room_bounds()
 	var/turf/corner = run_loc_floor_bottom_left
 	var/obj/structure/overmap/space_ruin/ruin = allocate(/obj/structure/overmap/space_ruin)
-	var/mob/living/basic/bounty_criminal/meek/convict/convict = ambient_spawn_convict(corner, ruin, "ruin") // BOUNTY_PLACEMENT_RUIN
+	var/mob/living/carbon/human/npc/bounty_criminal/meek/convict/convict = ambient_spawn_convict(corner, ruin, "ruin") // BOUNTY_PLACEMENT_RUIN
 	TEST_ASSERT_NOTNULL(convict, "No convict was made")
 	allocated += convict
 	convict.ai_controller?.set_ai_status(AI_STATUS_OFF)
 	TEST_ASSERT(WEAKREF(convict) in GLOB.ambient_convicts, "A convict is not on the list")
 	TEST_ASSERT_EQUAL(convict.record?.tier, 1, "A convict is not a petty criminal") // BOUNTY_TIER_PETTY
 	TEST_ASSERT_EQUAL(convict.record?.archetype, "meek", "A convict is not meek") // BOUNTY_ARCHETYPE_MEEK
-	TEST_ASSERT_EQUAL(convict.bounty_outfit(), /datum/outfit/prisoner, "A convict is not in prison orange")
+
+	// Prison orange, under their own name, with the meek's holdout carried, not held
+	TEST_ASSERT(ispath(convict.bounty_build_outfit(1), /datum/outfit/prisoner), "A convict is not dressed as an escapee") // ZONE_GREEN
+	TEST_ASSERT(istype(convict.w_uniform, /obj/item/clothing/under/rank/prisoner), "A convict is not in prison orange")
+	TEST_ASSERT(istype(convict.shoes, /obj/item/clothing/shoes/sneakers/orange), "A convict is not in orange shoes")
+	TEST_ASSERT_EQUAL(convict.real_name, convict.record?.name, "A convict goes by a prisoner number, not their own name")
+	var/obj/item/gun/ballistic/automatic/pistol/holdout = locate() in convict.get_all_contents()
+	TEST_ASSERT_NOTNULL(holdout, "A convict carries no holdout")
+	TEST_ASSERT(!convict.is_holding(holdout), "A convict walks about with the holdout in hand")
+	TEST_ASSERT_NOTNULL(locate(/obj/item/ammo_box/magazine/m9mm) in convict.get_all_contents(), "A convict carries no spare magazine")
+
 	TEST_ASSERT_NULL(convict.posting(), "A convict nobody has seen is wanted")
 	TEST_ASSERT(convict.convict_can_talk(), "A calm convict won't talk")
 	convict.hidden = TRUE
 	TEST_ASSERT(!convict.convict_can_talk(), "A hidden convict talks")
 	convict.hidden = FALSE
 
-	// Seen: one private petty offer, to that crew, on the convict's own record
+	// Seen: they give up the way a person does, and one private petty offer goes to that crew, on the convict's own record
 	var/obj/structure/overmap/ship/ship = strays_test_ship(room)
-	var/datum/criminal_bounty/posting = convict.convict_post_bounty(ship)
+	var/mob/living/carbon/human/consistent/spotter = allocate(__IMPLIED_TYPE__, run_loc_floor_top_right)
+	TEST_ASSERT(human_npc_take_in_hand(convict, holdout), "Test fixture: the convict could not draw the holdout")
+	convict.convict_sighted(spotter, ship)
+	TEST_ASSERT(convict.IsParalyzed(), "A sighted convict did not give up with tg's *surrender")
+	TEST_ASSERT(convict.npc_surrendering, "A sighted convict is not lying there with their hands on their head")
+	TEST_ASSERT_EQUAL(convict.npc_last_bark, "surrender", "A sighted convict gave no line as they gave up") // HUMAN_NPC_BARK_SURRENDER
+	TEST_ASSERT_EQUAL(convict.capture_state(), "stunned", "A convict who gave up reads as [convict.capture_state()]") // BOUNTY_STATE_STUNNED
+	TEST_ASSERT(!convict.is_holding(holdout), "A convict who gave up kept the holdout in hand")
+	TEST_ASSERT_EQUAL(human_npc_holding(holdout), convict, "A convict's holdout left their body when they gave up")
+	TEST_ASSERT(!convict.convict_can_talk(), "A convict lying there with their hands on their head talks")
+	var/datum/criminal_bounty/posting = convict.posting()
 	TEST_ASSERT_NOTNULL(posting, "Seeing a convict posted no bounty")
 	TEST_ASSERT_EQUAL(posting?.record, convict.record, "The bounty shows someone other than the convict")
 	TEST_ASSERT_EQUAL(posting?.offered_to(), ship, "The bounty was not offered to the crew who saw the convict")
@@ -315,25 +376,51 @@
 	var/obj/structure/overmap/ship/busy = strays_test_ship(room)
 	SScriminal_bounties.board_post(1, null, ruin, busy, TRUE) // BOUNTY_TIER_PETTY
 	SScriminal_bounties.board_post(1, null, ruin, busy, TRUE)
-	var/mob/living/basic/bounty_criminal/meek/convict/other = ambient_spawn_convict(run_loc_floor_top_right, ruin, "ruin")
+	var/mob/living/carbon/human/npc/bounty_criminal/meek/convict/other = ambient_spawn_convict(run_loc_floor_top_right, ruin, "ruin")
 	allocated += other
 	other.ai_controller?.set_ai_status(AI_STATUS_OFF)
 	TEST_ASSERT_NULL(other.convict_post_bounty(busy), "A convict's bounty went past the two private offers") // BOUNTY_PRIVATE_MAX
 
-	// Talked down: the bounty is withdrawn unpaid, and a stray with their name follows the crew
+	// Talked down once they are up again: the same body goes with the crew, and the bounty is withdrawn unpaid
+	convict.SetParalyzed(0)
 	var/mob/living/carbon/human/consistent/leader = allocate(__IMPLIED_TYPE__, locate(corner.x + 1, corner.y, corner.z))
 	var/convict_name = convict.real_name
 	var/datum/bounty_record/convict_record = convict.record
-	var/mob/living/basic/ambient_npc/stray/convict/stray = convict.convict_join(leader, ship)
-	TEST_ASSERT_NOTNULL(stray, "A talked-down convict did not join the crew")
-	allocated += stray
-	TEST_ASSERT(QDELETED(convict), "The convict's body stayed after they joined a crew")
+	var/datum/ambient_place/ship/deck = GLOB.ambient_ship_places[REF(ship)]
+	var/taken_before = deck?.taken
+	TEST_ASSERT_EQUAL(convict.convict_join(leader, ship), convict, "A talked-down convict did not go with the crew in their own body")
+	convict.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	TEST_ASSERT(!QDELETED(convict), "The convict's body was replaced when they joined a crew")
+	TEST_ASSERT(convict.convict_recruited, "The talked-down convict is not with the crew")
 	TEST_ASSERT(!(posting in GLOB.criminal_bounties), "Recruiting the convict left their bounty open")
+	TEST_ASSERT_NULL(convict.posting(), "A recruited convict is still wanted on a posting")
 	TEST_ASSERT_EQUAL(convict_record.status, "closed", "The recruited convict's record is still wanted") // BOUNTY_RECORD_CLOSED
-	TEST_ASSERT_EQUAL(stray?.real_name, convict_name, "The convict came back as someone else")
-	TEST_ASSERT_EQUAL(stray?.bounty_record, convict_record, "The recruited convict lost their face")
-	TEST_ASSERT(stray?.is_following(), "The recruited convict is not following the crew")
-	TEST_ASSERT_NULL(locate(/obj/item/bounty_proof) in get_turf(stray), "Recruiting the convict left proof of death")
+	TEST_ASSERT_EQUAL(convict.real_name, convict_name, "The recruited convict is someone else now")
+	TEST_ASSERT_EQUAL(convict.record, convict_record, "The recruited convict lost who they are")
+	TEST_ASSERT(istype(convict.ai_controller, /datum/ai_controller/basic_controller/convict_follower), "The recruited convict kept the criminal's AI")
+	TEST_ASSERT_EQUAL(convict.convict_leader(), leader, "The recruited convict is not following the crew member who asked")
+	TEST_ASSERT((FACTION_NEUTRAL in convict.faction) && !(FACTION_HOSTILE in convict.faction), "The recruited convict is still on the hostiles' side")
+	TEST_ASSERT(!(WEAKREF(convict) in GLOB.ambient_convicts), "A recruited convict still counts as a convict on the loose")
+	TEST_ASSERT(!HAS_TRAIT(convict, TRAIT_NO_TELEPORT), "A recruited convict still can't be teleported")
+	TEST_ASSERT_NULL(convict.GetComponent(/datum/component/bounty_body), "A recruited convict still has the bounty body's hooks")
+	TEST_ASSERT(!HAS_TRAIT(convict, "mission_field_mob"), "A recruited convict is still kept from the sweep") // TRAIT_MISSION_FIELD_MOB
+	TEST_ASSERT(!is_hostile_creature(convict), "A hull turret would take the recruited convict for a threat")
+	TEST_ASSERT_EQUAL(deck?.taken, taken_before + 1, "The ship did not count the convict it took in")
+	TEST_ASSERT_NULL(locate(/obj/item/bounty_proof) in get_turf(convict), "Recruiting the convict left proof of death")
+	TEST_ASSERT(!convict.convict_can_talk(), "A recruited convict pleads to be taken in again")
+
+	// Aboard (the test room counts as the ship): they step aboard once, and from then on stay aboard
+	TEST_ASSERT(convict.convict_board_if_aboard(), "The recruited convict did not step aboard")
+	TEST_ASSERT(convict.convict_aboard, "The recruited convict does not live aboard")
+	TEST_ASSERT(!convict.convict_board_if_aboard(), "The recruited convict stepped aboard twice")
+	TEST_ASSERT(convict.convict_may_step(locate(corner.x + 1, corner.y + 1, corner.z)), "Aboard, the recruited convict won't walk about the ship")
+	TEST_ASSERT(!convict.convict_may_step(locate(corner.x - 1, corner.y, corner.z)), "Aboard, the recruited convict would walk off the ship")
+
+	// Told to stay, they stay; asked again, they follow
+	convict.convict_stay()
+	TEST_ASSERT_NULL(convict.convict_leader(), "Told to stay, the recruited convict still follows someone")
+	TEST_ASSERT(convict.convict_follow(leader), "The recruited convict would not follow again")
+	TEST_ASSERT_EQUAL(convict.convict_leader(), leader, "Asked again, the recruited convict follows someone else")
 
 	// The crew's last offer just ended: none during the board's gap after it
 	TEST_ASSERT_NULL(other.convict_post_bounty(ship), "A convict was offered during the gap after the crew's last private offer ended") // BOUNTY_PRIVATE_GAP
@@ -374,7 +461,7 @@
 	record.sites += site
 	TEST_ASSERT(kind.realize(site), "A hideout brought no convict out")
 	var/datum/weakref/convict_ref = site.data["convict"]
-	var/mob/living/basic/bounty_criminal/meek/convict/convict = convict_ref?.resolve()
+	var/mob/living/carbon/human/npc/bounty_criminal/meek/convict/convict = convict_ref?.resolve()
 	TEST_ASSERT(istype(convict), "A hideout's convict is not a convict")
 	allocated += convict
 	convict.ai_controller?.set_ai_status(AI_STATUS_OFF)
@@ -433,14 +520,22 @@
 	TEST_ASSERT_EQUAL(length(SSambient_strays.live_lifeboats()), 1, "More than one lifeboat is out")
 
 	// Its survivor: open to offers, in their softsuit, and the same person on the next load
-	var/mob/living/basic/ambient_npc/stray/lifeboat/survivor = lifeboat.spawn_survivor(run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/lifeboat/survivor = lifeboat.spawn_survivor(run_loc_floor_bottom_left)
 	allocated += survivor
 	survivor.ai_controller?.set_ai_status(AI_STATUS_OFF)
 	TEST_ASSERT(survivor.is_wild() && survivor.recruit_open, "The lifeboat's survivor can't be asked along")
-	TEST_ASSERT(HAS_TRAIT(survivor, TRAIT_SPACEWALK), "The lifeboat's survivor can't cross open space")
+	// Their softsuit, helmet and jet harness of air: real kit for the crossing, no trait
+	TEST_ASSERT(!HAS_TRAIT(survivor, TRAIT_SPACEWALK), "The lifeboat's survivor crosses open space with no kit")
+	TEST_ASSERT(istype(survivor.wear_suit, /obj/item/clothing/suit/space), "The lifeboat's survivor has no softsuit")
+	TEST_ASSERT(istype(survivor.head, /obj/item/clothing/head/helmet/space), "The lifeboat's survivor has no helmet")
+	var/obj/item/tank/jetpack/harness = survivor.back
+	TEST_ASSERT(istype(harness), "The lifeboat's survivor has no jet harness")
+	survivor.ready_for_space(TRUE)
+	TEST_ASSERT(harness?.on, "The lifeboat's survivor never turns on their jets")
+	survivor.ready_for_space(FALSE)
 	var/survivor_name = survivor.real_name
 	qdel(survivor)
-	var/mob/living/basic/ambient_npc/stray/lifeboat/again = lifeboat.spawn_survivor(run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/lifeboat/again = lifeboat.spawn_survivor(run_loc_floor_bottom_left)
 	allocated += again
 	again.ai_controller?.set_ai_status(AI_STATUS_OFF)
 	TEST_ASSERT_EQUAL(again.real_name, survivor_name, "Someone else was aboard the lifeboat on the next load")
@@ -457,7 +552,7 @@
 	var/obj/structure/overmap/space_ruin/ambient_lifeboat/grim = allocate(/obj/structure/overmap/space_ruin/ambient_lifeboat)
 	grim.set_ruin_template(template)
 	grim.start_beacon()
-	var/mob/living/basic/ambient_npc/stray/lifeboat/victim = grim.spawn_survivor(run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/lifeboat/victim = grim.spawn_survivor(run_loc_floor_bottom_left)
 	allocated += victim
 	victim.ai_controller?.set_ai_status(AI_STATUS_OFF)
 	victim.death()
@@ -486,10 +581,12 @@
 		for(var/context in list("talk", "accepted", "aboard", "lost"))
 			TEST_ASSERT(length(ambient_dialogue_lines("strays.json", section, context)), "Strays: [section] has no [context] lines") // AMBIENT_STRINGS_STRAYS
 	for(var/section in list("stranded", "lifeboat"))
-		for(var/context in list("greet", "refused"))
+		for(var/context in list("greet", "refused", "rescued", "delivered"))
 			TEST_ASSERT(length(ambient_dialogue_lines("strays.json", section, context)), "Strays: [section] has no [context] lines")
 	for(var/context in list("sighted", "plea", "refused", "camp", "cornered", "cuffed"))
 		TEST_ASSERT(length(ambient_dialogue_lines("strays.json", "convict", context)), "Strays: the convict has no [context] lines")
-	for(var/context in list("idle", "talk", "crew", "follow", "wait", "dismissed"))
+	for(var/context in list("idle", "talk", "crew", "gift", "follow", "wait", "dismissed"))
 		TEST_ASSERT(length(ambient_dialogue_lines("strays.json", "deckhand", context)), "Strays: deckhands have no [context] lines")
 	TEST_ASSERT(length(ambient_dialogue_lines("strays.json", "lifeboat", "mayday")), "The lifeboat has no mayday")
+	var/mob/living/carbon/human/npc/ambient_npc/stray/plain_type = /mob/living/carbon/human/npc/ambient_npc/stray
+	TEST_ASSERT(!initial(plain_type.gives_gifts), "A stray who was never stranded thanks the crew with ship parts")

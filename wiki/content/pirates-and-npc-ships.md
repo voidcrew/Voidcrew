@@ -82,3 +82,4 @@ The one exception is dispatched rather than roaming: **NTSV Vigilant**, a Nanotr
 - Paying is often cheaper than the repair bill.
 - If you intend to fight, do it in the Lawless Zone with shields up and your own [weapons](ship-combat.md) built. Getting jumped in the Contested Zone with no interdictor means you cannot chase, cannot board and cannot shoot back.
 - Bring guns before you board. Their crew does not stop being dangerous because their ship stopped moving.
+- Pirate gunners hit by stun shots duck behind cover and look out again a moment later; their melee fighters and shotgunners charge whoever shot them.

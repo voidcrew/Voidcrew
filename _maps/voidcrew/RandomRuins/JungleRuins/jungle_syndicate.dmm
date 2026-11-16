@@ -129,7 +129,7 @@
 /area/ruin/powered)
 "G" = (
 /obj/structure/cable,
-/mob/living/basic/trooper/syndicate,
+/obj/effect/spawner/human_npc/ruin/syndicate,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "H" = (
@@ -148,7 +148,7 @@
 /area/ruin/unpowered)
 "K" = (
 /obj/structure/chair/plastic,
-/mob/living/basic/trooper/syndicate/ranged,
+/obj/effect/spawner/human_npc/ruin/syndicate/gunner,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "M" = (

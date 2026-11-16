@@ -163,7 +163,7 @@
 		"uhh, bad luck, we guess"
 	)
 	var/reason = pick(poss_reasons)
-	priority_announce("Due to [reason], sector-wide vendor prices will be increased for a short period.", "Sector Accounting Division")
+	priority_announce("Due to [reason], sector-wide vendor prices will be increased for a short period.", sender_override = "Sector Accounting Division")
 
 /datum/round_event/voidcrew/market_crash/start()
 	SSeconomy.update_vending_prices()
@@ -174,7 +174,7 @@
 	REMOVE_TRAIT(SSeconomy, TRAIT_MARKET_CRASHING, MARKET_CRASH_EVENT_TRAIT)
 	SSeconomy.price_update()
 	SSeconomy.update_vending_prices()
-	priority_announce("Sector-wide vendor prices have now stabilized.", "Sector Accounting Division")
+	priority_announce("Sector-wide vendor prices have now stabilized.", sender_override = "Sector Accounting Division")
 
 /datum/round_event/voidcrew/market_crash/tick()
 	tick_counter++ // TG writes `tick_counter = tick_counter++`, a DM no-op that stalls the counter at 1, fixed to match the evident intent

@@ -1146,7 +1146,7 @@ Basically, we fill the time between now and 2s from now with hands based off the
 	holder.remove_reagent(/datum/reagent/drug/happiness, 5 * REM * seconds_per_tick)
 	holder.remove_reagent(/datum/reagent/medicine/psicodine, 5 * REM * seconds_per_tick)
 
-	affected_mob.mob_mood.adjust_sanity(-7.5 * REM * seconds_per_tick, minimum = SANITY_INSANE)
+	affected_mob.mob_mood?.adjust_sanity(-7.5 * REM * seconds_per_tick, minimum = SANITY_INSANE) // VOIDCREW EDIT CHANGE: human NPCs have no mood datum (voidcrew/modules/human_npcs)
 	if(affected_mob.mob_mood != null && affected_mob.mob_mood.sanity < (SANITY_CRAZY))
 		affected_mob.adjust_drowsiness_up_to(5 SECONDS, 30 SECONDS)
 		if(SPT_PROB(25, seconds_per_tick))

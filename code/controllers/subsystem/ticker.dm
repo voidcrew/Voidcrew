@@ -160,7 +160,7 @@ SUBSYSTEM_DEF(ticker)
 				start_at = world.time + (CONFIG_GET(number/lobby_countdown) * 10)
 			for(var/client/C in GLOB.clients)
 				window_flash(C, ignorepref = TRUE) //let them know lobby has opened up.
-			to_chat(world, span_notice("<b>Welcome to [station_name()]!</b>"))
+			// VOIDCREW EDIT REMOVAL: no "Welcome to [station_name()]" lobby line; Voidcrew has no station.
 			// VOIDCREW EDIT START: Include the configured Discord round-alert role (voidcrew/controllers/configuration/new_round_alert.dm).
 			var/new_round_alert_role = CONFIG_GET(string/new_round_alert_role_id)
 			var/new_round_message = "[new_round_alert_role ? "<@&[new_round_alert_role]> " : ""]New round starting on [SSmapping.current_map.map_name]!"
@@ -289,8 +289,7 @@ SUBSYSTEM_DEF(ticker)
 	log_world("Game start took [(world.timeofday - init_start)/10]s")
 	INVOKE_ASYNC(SSdbcore, TYPE_PROC_REF(/datum/controller/subsystem/dbcore,SetRoundStart))
 
-	to_chat(world, span_notice(span_bold("Welcome to [station_name()], enjoy your stay!")))
-	SEND_SOUND(world, sound(SSstation.announcer.get_rand_welcome_sound()))
+	// VOIDCREW EDIT REMOVAL: no station welcome line or welcome sound at roundstart; Voidcrew has no station.
 
 	current_state = GAME_STATE_PLAYING
 	Master.SetRunLevel(RUNLEVEL_GAME)

@@ -32,6 +32,10 @@
 	var/boarding_committed = 0
 	var/boarding_pending = 0
 	var/boarding_boss_sent = FALSE
+	/// Human boarders (and a human boss) of this encounter still waiting in the spawn queue
+	var/list/datum/human_npc_order/boarding_orders = list()
+	/// Of those, the ones the scripted wave sent: the wave isn't over while any of them is still coming
+	var/list/datum/human_npc_order/wave_orders = list()
 
 /datum/ai_controller/npc_ship/New(atom/new_pawn)
 	// Initialize combat blackboard
@@ -101,6 +105,7 @@
 /// Override to avoid ai_movement access in parent Destroy
 /datum/ai_controller/npc_ship/Destroy(force)
 	cleanup_boarding_signals()
+	cancel_boarding_orders()
 	UnpossessPawn(FALSE)
 	if(ai_status)
 		GLOB.ai_controllers_by_status[ai_status] -= src
@@ -439,6 +444,8 @@
 	// half-elapsed wipe timer over onto whoever we point at next.
 	if(old_target != target)
 		cleanup_boarding_signals()
+		// Boarders not yet built for the old target are never sent
+		cancel_boarding_orders()
 		boarding_context = null
 		boarding_budget = 0
 		boarding_committed = 0
@@ -835,27 +842,26 @@
 	GLOB.boarding_spawn_index = 0
 	GLOB.boarding_spawn_total = boarder_count
 
-	// Spawn the boarders via drop pods
+	// Spawn the boarders via drop pods. Human boarders are built through the spawn queue first, so they
+	// join the wave (track_wave_boarder()) as each one goes in its pod.
 	var/list/wave_boarders = list()
+	blackboard[BB_NPC_BOARDING_WAVE_BOARDERS] = wave_boarders
+	wave_orders.Cut()
+	var/launched = 0
 	for(var/i in 1 to boarder_count)
 		if(!length(valid_turfs))
 			break
 		var/turf/spawn_loc = pick(valid_turfs)
 		var/mob_type = pick(mob_types)
 
-		// Create boarding pod with the mob inside - returns the boarder for tracking
-		var/mob/living/boarder = create_boarding_pod(spawn_loc, target, ship, mob_type)
-
-		if(boarder)
-			// Track this boarder and register death signal
-			wave_boarders += boarder
-			RegisterSignal(boarder, COMSIG_LIVING_DEATH, PROC_REF(on_boarder_death))
+		var/sent = create_boarding_pod(spawn_loc, target, ship, mob_type, on_boarder = CALLBACK(src, PROC_REF(track_wave_boarder), wave_boarders))
+		if(istype(sent, /datum/human_npc_order))
+			wave_orders += sent
+		if(sent)
+			launched++
 
 	// Note: Patrol setup is handled by the boarding pod's open_pod() proc
-	log_shuttle("PATROL: Wave [wave_number] launched [length(wave_boarders)] boarders via drop pods")
-
-	// Store the wave boarders for tracking
-	blackboard[BB_NPC_BOARDING_WAVE_BOARDERS] = wave_boarders
+	log_shuttle("PATROL: Wave [wave_number] launched [launched] boarders via drop pods")
 
 	// Track wave start time and target position (for time limit and movement detection)
 	set_blackboard_key(BB_NPC_BOARDING_WAVE_START_TIME, world.time)
@@ -865,9 +871,42 @@
 
 	// Notify target ship
 	target.ship_notify("Hostiles have boarded!", "SECURITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
-	npc_metric_boarding_wave(src, wave_number, length(wave_boarders))
+	npc_metric_boarding_wave(src, wave_number, launched)
 
 	return TRUE
+
+/// A wave boarder is in its pod: it counts toward `wave` (the list it was sent with) until it is out of
+/// the fight. Dead, in crit or cuffed is out (owner ruling OC-7).
+/datum/ai_controller/npc_ship/proc/track_wave_boarder(list/wave, mob/living/boarder)
+	prune_boarding_orders()
+	if(QDELETED(boarder) || wave != blackboard[BB_NPC_BOARDING_WAVE_BOARDERS])
+		return
+	wave += boarder
+	RegisterSignal(boarder, COMSIG_LIVING_DEATH, PROC_REF(on_boarder_death))
+	if(ishumannpc(boarder))
+		RegisterSignals(boarder, list(COMSIG_HUMAN_NPC_DOWNED, SIGNAL_ADDTRAIT(TRAIT_RESTRAINED)), PROC_REF(on_boarder_out_of_fight))
+
+/// Remembers a human boarder still waiting to be built, so the encounter can call it off.
+/datum/ai_controller/npc_ship/proc/track_boarding_order(datum/human_npc_order/order)
+	if(!QDELETED(order) && !order.done)
+		boarding_orders += order
+
+/// Drops orders that have been built or cancelled.
+/datum/ai_controller/npc_ship/proc/prune_boarding_orders()
+	for(var/datum/human_npc_order/order as anything in boarding_orders.Copy())
+		if(QDELETED(order) || order.done)
+			boarding_orders -= order
+	for(var/datum/human_npc_order/order as anything in wave_orders.Copy())
+		if(QDELETED(order) || order.done)
+			wave_orders -= order
+
+/// Calls off every boarder of this encounter that hasn't been built yet.
+/datum/ai_controller/npc_ship/proc/cancel_boarding_orders()
+	for(var/datum/human_npc_order/order as anything in boarding_orders)
+		if(!QDELETED(order))
+			qdel(order)
+	boarding_orders.Cut()
+	wave_orders.Cut()
 
 /**
  * Find valid turfs on the target ship for spawning boarders.
@@ -904,7 +943,7 @@
  */
 /datum/ai_controller/npc_ship/proc/on_boarder_death(mob/living/victim, gibbed)
 	SIGNAL_HANDLER
-	UnregisterSignal(victim, COMSIG_LIVING_DEATH)
+	UnregisterSignal(victim, list(COMSIG_LIVING_DEATH, COMSIG_HUMAN_NPC_DOWNED, SIGNAL_ADDTRAIT(TRAIT_RESTRAINED)))
 
 	var/list/wave_boarders = blackboard[BB_NPC_BOARDING_WAVE_BOARDERS]
 	if(wave_boarders)
@@ -913,8 +952,14 @@
 	// Check if all boarders are dead
 	INVOKE_ASYNC(src, PROC_REF(check_wave_complete))
 
+/// A human boarder went into crit or was cuffed: out of the fight, so the wave may be over.
+/datum/ai_controller/npc_ship/proc/on_boarder_out_of_fight(mob/living/source)
+	SIGNAL_HANDLER
+	INVOKE_ASYNC(src, PROC_REF(check_wave_complete))
+
 /**
- * Check if the current wave is complete (all boarders dead).
+ * Check if the current wave is complete: every boarder is out of the fight (dead, in crit or cuffed,
+ * owner ruling OC-7) and none is still waiting to be built.
  */
 /datum/ai_controller/npc_ship/proc/check_wave_complete()
 	// Guard against multiple calls - only process if we're in BOARDING state
@@ -922,12 +967,16 @@
 	if(combat_state != NPC_COMBAT_BOARDING || !validate_boarding_target())
 		return
 
+	prune_boarding_orders()
+	if(length(wave_orders))
+		return // Boarders still on their way
+
 	var/list/wave_boarders = blackboard[BB_NPC_BOARDING_WAVE_BOARDERS]
 
-	// Count living boarders
+	// Count boarders still fighting
 	var/living_count = 0
 	for(var/mob/living/boarder as anything in wave_boarders)
-		if(!QDELETED(boarder) && boarder.stat != DEAD)
+		if(!human_npc_out_of_fight(boarder))
 			living_count++
 
 	if(living_count > 0)
@@ -981,7 +1030,7 @@
 
 	// Notify about cooldown
 	var/next_wave = completed_wave + 1
-	target.ship_notify("Wave [completed_wave] repelled! Next wave in 30 seconds...", "COMBAT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	target.ship_notify("Boarders repelled!", "COMBAT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 	// Schedule next wave
 	boarding_timers += addtimer(CALLBACK(src, PROC_REF(end_wave_cooldown), next_wave), NPC_BOARDING_WAVE_COOLDOWN, TIMER_STOPPABLE)
@@ -1071,24 +1120,32 @@
 	if(!boss_type)
 		return
 
-	// Create boss boarding pod - returns the boss for tracking
-	// Pod handles parent_ship, AI controller swap, and patrol assignment
-	var/mob/living/basic/trooper/pirate/faction/boss/boss = create_boss_boarding_pod(spawn_loc, target, ship, boss_type)
-	if(boss)
-		set_blackboard_key(BB_NPC_BOARDING_BOSS, boss)
-		RegisterSignal(boss, COMSIG_LIVING_DEATH, PROC_REF(on_boss_death))
-		npc_metric_boss_deployed(src, boss)
+	// Create boss boarding pod. The pod gives the boss its parent_ship; track_boss() follows it from
+	// the moment it is in its pod (a human boss is built through the spawn queue first).
+	create_boss_boarding_pod(spawn_loc, target, ship, boss_type, CALLBACK(src, PROC_REF(track_boss)))
 
 	// Announce boss arrival
 	target.ship_notify("WARNING: Enemy Commander incoming via drop pod!", "SECURITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
 
+/// The boss is in its pod: watched until it is out of the fight.
+/datum/ai_controller/npc_ship/proc/track_boss(mob/living/boss)
+	prune_boarding_orders()
+	if(QDELETED(boss))
+		return
+	set_blackboard_key(BB_NPC_BOARDING_BOSS, boss)
+	RegisterSignal(boss, COMSIG_LIVING_DEATH, PROC_REF(on_boss_death))
+	// A human boss in crit or cuffed is beaten as surely as a dead one (owner ruling OC-7)
+	if(ishumannpc(boss))
+		RegisterSignals(boss, list(COMSIG_HUMAN_NPC_DOWNED, SIGNAL_ADDTRAIT(TRAIT_RESTRAINED)), PROC_REF(on_boss_death))
+	npc_metric_boss_deployed(src, boss)
+
 /**
- * Signal handler for when the boss is killed.
+ * Signal handler for when the boss is killed, or a human boss is downed or cuffed.
  * This disables the pirate ship and allows players to board it.
  */
 /datum/ai_controller/npc_ship/proc/on_boss_death(mob/living/victim, gibbed)
 	SIGNAL_HANDLER
-	UnregisterSignal(victim, COMSIG_LIVING_DEATH)
+	UnregisterSignal(victim, list(COMSIG_LIVING_DEATH, COMSIG_HUMAN_NPC_DOWNED, SIGNAL_ADDTRAIT(TRAIT_RESTRAINED)))
 
 	INVOKE_ASYNC(src, PROC_REF(handle_boss_killed))
 
@@ -1333,6 +1390,8 @@
 	boarding_timers.Cut()
 	boarding_committed -= boarding_pending
 	boarding_pending = 0
+	// Boarders still being built land as part of the raid, outside any wave
+	wave_orders.Cut()
 
 	// Unregister from player crew deaths
 	var/list/tracked_crew = blackboard[BB_NPC_BOARDING_PLAYER_CREW]
@@ -1345,11 +1404,11 @@
 	var/list/wave_boarders = blackboard[BB_NPC_BOARDING_WAVE_BOARDERS]
 	for(var/mob/living/boarder as anything in wave_boarders)
 		if(!QDELETED(boarder))
-			UnregisterSignal(boarder, COMSIG_LIVING_DEATH)
+			UnregisterSignal(boarder, list(COMSIG_LIVING_DEATH, COMSIG_HUMAN_NPC_DOWNED, SIGNAL_ADDTRAIT(TRAIT_RESTRAINED)))
 
 	var/mob/living/boss = blackboard[BB_NPC_BOARDING_BOSS]
 	if(!QDELETED(boss))
-		UnregisterSignal(boss, COMSIG_LIVING_DEATH)
+		UnregisterSignal(boss, list(COMSIG_LIVING_DEATH, COMSIG_HUMAN_NPC_DOWNED, SIGNAL_ADDTRAIT(TRAIT_RESTRAINED)))
 
 	// Clear boarding blackboard keys
 	clear_blackboard_key(BB_NPC_BOARDING_WAVE)
@@ -1397,13 +1456,14 @@
 		return
 	npc_metric_wave_ended(src, current_wave, "timed_out")
 
-	// Clean up current wave boarders
+	// Clean up current wave boarders; any still on their way land as part of the raid, outside the wave
 	var/list/wave_boarders = blackboard[BB_NPC_BOARDING_WAVE_BOARDERS]
 	if(wave_boarders)
 		for(var/mob/living/boarder as anything in wave_boarders)
 			if(!QDELETED(boarder))
-				UnregisterSignal(boarder, COMSIG_LIVING_DEATH)
+				UnregisterSignal(boarder, list(COMSIG_LIVING_DEATH, COMSIG_HUMAN_NPC_DOWNED, SIGNAL_ADDTRAIT(TRAIT_RESTRAINED)))
 	clear_blackboard_key(BB_NPC_BOARDING_WAVE_BOARDERS)
+	wave_orders.Cut()
 
 	if(is_red_zone_raid())
 		start_boss_cooldown()
@@ -1411,8 +1471,9 @@
 		end_yellow_raid()
 
 /**
- * Check if any boarders have fallen into space and clean them up.
- * This prevents boarders from being "stuck" floating in space after being spaced.
+ * Boarders that have fallen into space are off the ship and out of this wave. Nothing kills them: space
+ * does that to an unsuited body, and a suited one drifts until its crew gives it up (pirate_crew.dm,
+ * check_adrift()). A wave whose last boarders were spaced is over.
  */
 /datum/ai_controller/npc_ship/proc/check_boarders_in_space()
 	var/list/wave_boarders = blackboard[BB_NPC_BOARDING_WAVE_BOARDERS]
@@ -1421,21 +1482,17 @@
 
 	var/list/spaced_boarders = list()
 	for(var/mob/living/boarder as anything in wave_boarders)
-		if(QDELETED(boarder))
+		if(QDELETED(boarder) || boarder.stat == DEAD)
 			continue
-		var/turf/boarder_turf = get_turf(boarder)
-		if(!boarder_turf)
-			continue
-		// Check if boarder is in space (not on a ship)
-		if(isspaceturf(boarder_turf) || istype(get_area(boarder_turf), /area/space))
+		if(pirate_crew_member_adrift(boarder))
 			spaced_boarders += boarder
 
-	// Kill spaced boarders (they suffocate in space anyway)
+	if(!length(spaced_boarders))
+		return
 	for(var/mob/living/spaced as anything in spaced_boarders)
-		if(!QDELETED(spaced) && spaced.stat != DEAD)
-			spaced.death()
-			wave_boarders -= spaced
-			UnregisterSignal(spaced, COMSIG_LIVING_DEATH)
+		wave_boarders -= spaced
+		UnregisterSignal(spaced, list(COMSIG_LIVING_DEATH, COMSIG_HUMAN_NPC_DOWNED, SIGNAL_ADDTRAIT(TRAIT_RESTRAINED)))
+	check_wave_complete()
 
 /// Snapshot the target band and connected crew exactly once, including combat-only raids.
 /datum/ai_controller/npc_ship/proc/capture_boarding_encounter(obj/structure/overmap/ship/target)
@@ -1451,6 +1508,7 @@
 	return reserved
 
 /// Timer callbacks must still belong to this encounter after docking or target changes.
+/// Returns the boarder, or the order of a human one still being built.
 /datum/ai_controller/npc_ship/proc/deploy_combat_boarder(turf/spot, obj/structure/overmap/ship/target, mob_type, datum/npc_spawn_context/encounter)
 	if(get_target() != target || boarding_context != encounter)
 		return
@@ -1464,10 +1522,6 @@
 	var/list/spots = get_target_spawn_turfs(target)
 	if(!istype(ship) || !ship.boss_type || !length(spots))
 		return FALSE
-	var/mob/living/boss = create_boss_boarding_pod(pick(spots), target, ship, ship.boss_type)
-	if(!boss)
+	if(!create_boss_boarding_pod(pick(spots), target, ship, ship.boss_type, CALLBACK(src, PROC_REF(track_boss))))
 		return FALSE
-	set_blackboard_key(BB_NPC_BOARDING_BOSS, boss)
-	RegisterSignal(boss, COMSIG_LIVING_DEATH, PROC_REF(on_boss_death))
-	npc_metric_boss_deployed(src, boss)
 	return TRUE

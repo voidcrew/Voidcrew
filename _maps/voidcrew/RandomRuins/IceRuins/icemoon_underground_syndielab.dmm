@@ -18,13 +18,13 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/syndielab)
 "ae" = (
-/mob/living/basic/trooper/syndicate/ranged,
+/obj/effect/spawner/human_npc/ruin/syndicate/gunner,
 /obj/structure/cable/layer1,
 /turf/open/floor/iron/dark/textured,
 /area/ruin/syndielab)
 "af" = (
 /obj/structure/chair/sofa/corp/right,
-/mob/living/basic/trooper/syndicate/ranged,
+/obj/effect/spawner/human_npc/ruin/syndicate/gunner,
 /obj/machinery/light/warm/directional/north,
 /obj/structure/cable/layer1,
 /turf/open/floor/iron/dark/textured,

@@ -1,7 +1,9 @@
 /**
- * Pirate crew AI (voidcrew/modules/npc_ships/code/pirate_crew.dm and pirate_crew_ai.dm): which
- * doors a pirate walks through, which it may break, the search for the door in the way, and how
- * a hull's crew and a raid are put together.
+ * Pirate crew AI (voidcrew/modules/npc_ships/code/pirate_crew.dm, pirate_crew_ai.dm and
+ * pirate_crew_human.dm): which doors a pirate walks through, which it may break, the search for the
+ * door in the way, and how a hull's crew and a raid are put together. NPC ship crews are human NPCs
+ * (faction_pirate_humans.dm), so most of these use them; voidcrew_pirate_crew_human.dm tests what they
+ * do with their hands.
  *
  * Fork defines are included after the tests, so roles and blackboard keys appear as their
  * literal strings ("captain" is PIRATE_ROLE_CAPTAIN, "pirate_crew" is BB_PIRATE_CREW). Every
@@ -30,13 +32,21 @@
 	changed_turfs |= where
 	return where.ChangeTurf(new_type)
 
+/// Builds a human NPC now at `where`, dressed in `outfit` if given (an outfit or an outfit table)
+/datum/unit_test/voidcrew_pirate_crew/proc/build_npc(npc_type, turf/where, outfit)
+	var/datum/human_npc_order/order = spawn_human_npc(npc_type, where || run_loc_floor_bottom_left, outfit = outfit, immediate = TRUE)
+	var/mob/living/carbon/human/npc/npc = order?.spawned_ref?.resolve()
+	if(npc)
+		allocated += npc
+	return npc
+
 // ===== WHICH DOORS OPEN =====
 
 /// An unlocked airlock opens for a pirate; a bolted, welded, unpowered or access-locked one does not
 /datum/unit_test/voidcrew_pirate_crew/door_rules
 
 /datum/unit_test/voidcrew_pirate_crew/door_rules/Run()
-	var/mob/living/basic/trooper/pirate/melee/pirate = allocate(/mob/living/basic/trooper/pirate/melee, spot(0, 0))
+	var/mob/living/carbon/human/npc/faction_pirate/grey/melee/pirate = build_npc(/mob/living/carbon/human/npc/faction_pirate/grey/melee, spot(0, 0))
 	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, spot(2, 2))
 	TEST_ASSERT(door.density, "The test airlock spawned open")
 	TEST_ASSERT(pirate_can_open_door(pirate, door), "A pirate can't open an unlocked, powered airlock")
@@ -55,8 +65,9 @@
 	door.set_machine_stat(old_stat)
 	TEST_ASSERT(pirate_can_open_door(pirate, door), "Restoring power didn't make the airlock openable again")
 
+	// The pirate's ID card carries its name and no access
 	door.req_access = list(ACCESS_ENGINEERING)
-	TEST_ASSERT(!pirate_can_open_door(pirate, door), "A pirate with no ID can open an access-locked airlock")
+	TEST_ASSERT(!pirate_can_open_door(pirate, door), "A pirate's ID card opens an access-locked airlock")
 	door.req_access = null
 
 /// Breaking an external airlock with space beyond it is off limits; an inner door or an indestructible one depends
@@ -74,13 +85,19 @@
 	inner.open()
 	TEST_ASSERT(!pirate_door_breachable(inner, spot(0, 2)), "A pirate may break an airlock that is already open")
 
+	// A firelock holding back a room that lost its air is never forced either
+	var/obj/machinery/door/firedoor/firelock = allocate(/obj/machinery/door/firedoor, spot(4, 3))
+	TEST_ASSERT(pirate_door_vents_space(firelock, spot(4, 2)), "A pirate may force a firelock with vacuum behind it")
+	var/obj/machinery/door/firedoor/inner_firelock = allocate(/obj/machinery/door/firedoor, spot(1, 3))
+	TEST_ASSERT(!pirate_door_vents_space(inner_firelock, spot(1, 2)), "A firelock with air on both sides counts as venting")
+
 // ===== THE DOOR IN THE WAY =====
 
 /// Two rooms joined only by a bolted airlock: the search finds that airlock and the floor to break it from
 /datum/unit_test/voidcrew_pirate_crew/breach_search
 
 /datum/unit_test/voidcrew_pirate_crew/breach_search/Run()
-	var/mob/living/basic/trooper/pirate/melee/pirate = allocate(/mob/living/basic/trooper/pirate/melee, spot(0, 2))
+	var/mob/living/carbon/human/npc/faction_pirate/grey/melee/pirate = build_npc(/mob/living/carbon/human/npc/faction_pirate/grey/melee, spot(0, 2))
 	for(var/dy in list(0, 1, 3, 4))
 		change_turf(spot(2, dy), /turf/closed/wall)
 	var/obj/machinery/door/airlock/instant/door = allocate(/obj/machinery/door/airlock/instant, spot(2, 2))
@@ -113,15 +130,18 @@
 
 // ===== CREWS =====
 
-/// A hull's crew has one captain and one guard, a melee guard when there is one, and alerting it wakes everyone
+/// A hull's crew has one captain and one guard, a melee guard when there is one, and alerting it wakes
+/// everyone; the captain and guard join the hunt once the rest are out of the fight (dead, down or cuffed)
 /datum/unit_test/voidcrew_pirate_crew/defending_roles
 
 /datum/unit_test/voidcrew_pirate_crew/defending_roles/Run()
 	var/obj/structure/overmap/ship/npc/pirate/hull = allocate(/obj/structure/overmap/ship/npc/pirate)
-	var/mob/living/basic/trooper/pirate/ranged/captain = allocate(/mob/living/basic/trooper/pirate/ranged, spot(0, 0))
-	var/mob/living/basic/trooper/pirate/ranged/gunner = allocate(/mob/living/basic/trooper/pirate/ranged, spot(1, 0))
-	var/mob/living/basic/trooper/pirate/melee/brawler = allocate(/mob/living/basic/trooper/pirate/melee, spot(2, 0))
-	var/mob/living/basic/trooper/pirate/melee/deckhand = allocate(/mob/living/basic/trooper/pirate/melee, spot(3, 0))
+	var/mob/living/carbon/human/npc/faction_pirate/silverscale/captain/captain = build_npc(/mob/living/carbon/human/npc/faction_pirate/silverscale/captain, spot(0, 0))
+	var/mob/living/carbon/human/npc/faction_pirate/silverscale/ranged/gunner = build_npc(/mob/living/carbon/human/npc/faction_pirate/silverscale/ranged, spot(1, 0))
+	var/mob/living/carbon/human/npc/faction_pirate/silverscale/melee/brawler = build_npc(/mob/living/carbon/human/npc/faction_pirate/silverscale/melee, spot(2, 0))
+	var/mob/living/carbon/human/npc/faction_pirate/silverscale/melee/deckhand = build_npc(/mob/living/carbon/human/npc/faction_pirate/silverscale/melee, spot(3, 0))
+	TEST_ASSERT(pirate_crew_is_ranged(gunner), "A marksman holding a gun doesn't count as a gunner")
+	TEST_ASSERT(!pirate_crew_is_ranged(brawler), "A duelist counts as a gunner")
 
 	TEST_ASSERT(pirate_crew_enlist_defender(captain, hull, "captain"), "The captain could not join the hull's crew")
 	// The gunner joins first and takes the guard post; the first melee recruit takes it off him
@@ -142,6 +162,8 @@
 			if("guard")
 				guards++
 		TEST_ASSERT_EQUAL(member.ai_controller?.blackboard["pirate_crew"], crew, "[member] doesn't know its crew")
+		TEST_ASSERT_EQUAL(member.ai_controller?.type, /datum/ai_controller/basic_controller/pirate_crew/human, "[member] isn't on the human pirate crew controller")
+		TEST_ASSERT_EQUAL(member.ai_controller?.blackboard[BB_TARGET_MINIMUM_STAT], HARD_CRIT, "[member] stops shooting people in crit")
 	TEST_ASSERT_EQUAL(captains, 1, "The crew has [captains] captains")
 	TEST_ASSERT_EQUAL(guards, 1, "The crew has [guards] guards")
 	TEST_ASSERT_EQUAL(crew.members[captain], "captain", "The pirate enlisted as captain isn't the captain")
@@ -159,32 +181,45 @@
 	for(var/mob/living/member in crew.members)
 		TEST_ASSERT(!member.ai_controller.can_idle, "[member] can still idle on alert")
 
+	// The guard down and the deckhand cuffed: only the gunner is still fighting, so the captain joins in
+	brawler.adjustToxLoss(110) // down in soft crit; a silverscale doesn't breathe, so oxygen damage wouldn't touch it
+	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs)
+	TEST_ASSERT(deckhand.equip_to_slot_if_possible(cuffs, ITEM_SLOT_HANDCUFFED), "Test fixture: the deckhand could not be cuffed")
+	crew.check_promotion()
+	TEST_ASSERT(crew.promoted, "The captain didn't join the hunt with only one of his crew still fighting")
+	TEST_ASSERT(!crew.holds_post(captain), "The captain still holds the post once his crew is beaten")
+
 	qdel(crew)
 	TEST_ASSERT_NULL(pirate_crew_of(hull), "A deleted crew is still registered to its hull")
 	TEST_ASSERT_NULL(captain.ai_controller.blackboard["pirate_crew"], "The captain still points at a deleted crew")
 
-/// A boarder joins the raid on the ship it landed on, and a trooper gets the melee controller, a ranged trooper the ranged one
+/// A boarder joins the raid on the ship it landed on; a human pirate gets the human controller, and a
+/// basic trooper still gets the melee controller, a ranged trooper the ranged one
 /datum/unit_test/voidcrew_pirate_crew/raid_controllers
 
 /datum/unit_test/voidcrew_pirate_crew/raid_controllers/Run()
 	var/obj/structure/overmap/ship/target = allocate(/obj/structure/overmap/ship)
 	var/mob/living/basic/trooper/trooper = allocate(/mob/living/basic/trooper, spot(0, 0))
-	var/mob/living/basic/trooper/pirate/ranged/gunner = allocate(/mob/living/basic/trooper/pirate/ranged, spot(1, 0))
+	var/mob/living/basic/trooper/pirate/ranged/basic_gunner = allocate(/mob/living/basic/trooper/pirate/ranged, spot(1, 0))
+	var/mob/living/carbon/human/npc/faction_pirate/irs/ranged/boarder = build_npc(/mob/living/carbon/human/npc/faction_pirate/irs/ranged, spot(2, 0))
 	TEST_ASSERT_EQUAL(pirate_crew_controller_type(trooper), /datum/ai_controller/basic_controller/pirate_crew, "A melee trooper is down for the wrong controller")
-	TEST_ASSERT_EQUAL(pirate_crew_controller_type(gunner), /datum/ai_controller/basic_controller/pirate_crew/ranged, "A ranged trooper is down for the wrong controller")
+	TEST_ASSERT_EQUAL(pirate_crew_controller_type(basic_gunner), /datum/ai_controller/basic_controller/pirate_crew/ranged, "A ranged trooper is down for the wrong controller")
+	TEST_ASSERT_EQUAL(pirate_crew_controller_type(boarder), /datum/ai_controller/basic_controller/pirate_crew/human, "A human pirate is down for the wrong controller")
 
 	TEST_ASSERT(pirate_crew_enlist_raider(trooper, target), "A trooper could not join the raid")
-	TEST_ASSERT(pirate_crew_enlist_raider(gunner, target), "A gunner could not join the raid")
+	TEST_ASSERT(pirate_crew_enlist_raider(basic_gunner, target), "A basic gunner could not join the raid")
+	TEST_ASSERT(pirate_crew_enlist_raider(boarder, target), "A human boarder could not join the raid")
 	TEST_ASSERT_EQUAL(trooper.ai_controller?.type, /datum/ai_controller/basic_controller/pirate_crew, "The trooper didn't get the pirate crew controller")
-	TEST_ASSERT_EQUAL(gunner.ai_controller?.type, /datum/ai_controller/basic_controller/pirate_crew/ranged, "The gunner didn't get the ranged pirate crew controller")
+	TEST_ASSERT_EQUAL(basic_gunner.ai_controller?.type, /datum/ai_controller/basic_controller/pirate_crew/ranged, "The basic gunner didn't get the ranged pirate crew controller")
+	TEST_ASSERT_EQUAL(boarder.ai_controller?.type, /datum/ai_controller/basic_controller/pirate_crew/human, "The human boarder lost its human controller")
 
 	var/datum/pirate_crew/raid = pirate_crew_of(target, TRUE)
 	TEST_ASSERT_NOTNULL(raid, "Enlisting made no raid on the ship")
 	TEST_ASSERT_NULL(pirate_crew_of(target), "A raid registered itself as the ship's own crew")
 	TEST_ASSERT(raid.raiding && raid.alerted, "A raid isn't on the attack from the start")
-	TEST_ASSERT_EQUAL(raid.members[trooper], "hunter", "A boarder isn't a hunter")
-	TEST_ASSERT(!raid.holds_post(trooper), "A boarder holds a post")
-	TEST_ASSERT(!trooper.ai_controller.can_idle && !gunner.ai_controller.can_idle, "Boarders can idle")
+	TEST_ASSERT_EQUAL(raid.members[boarder], "hunter", "A boarder isn't a hunter")
+	TEST_ASSERT(!raid.holds_post(boarder), "A boarder holds a post")
+	TEST_ASSERT(!trooper.ai_controller.can_idle && !boarder.ai_controller.can_idle, "Boarders can idle")
 	qdel(raid)
 
 // ===== LOOKS =====
@@ -214,10 +249,10 @@
 /datum/unit_test/voidcrew_pirate_crew/mineral_doors
 
 /datum/unit_test/voidcrew_pirate_crew/mineral_doors/Run()
-	var/mob/living/basic/trooper/pirate/melee/pirate = allocate(/mob/living/basic/trooper/pirate/melee, spot(0, 2))
+	var/mob/living/carbon/human/npc/faction_pirate/grey/melee/pirate = build_npc(/mob/living/carbon/human/npc/faction_pirate/grey/melee, spot(0, 2))
 	var/mob/living/basic/trooper/pirate/melee/bystander = allocate(/mob/living/basic/trooper/pirate/melee, spot(4, 2))
 	var/obj/structure/overmap/ship/target = allocate(/obj/structure/overmap/ship)
-	TEST_ASSERT(pirate_crew_enlist_raider(pirate, target), "A trooper could not join the raid")
+	TEST_ASSERT(pirate_crew_enlist_raider(pirate, target), "A pirate could not join the raid")
 	for(var/dy in list(0, 1, 3, 4))
 		change_turf(spot(2, dy), /turf/closed/wall)
 	var/obj/structure/mineral_door/iron/slab = allocate(/obj/structure/mineral_door/iron, spot(2, 2))
@@ -236,67 +271,4 @@
 	slab.set_anchored(FALSE)
 	TEST_ASSERT(!pirate_can_open_mineral_door(slab), "A pirate tries to open a loose iron door")
 	TEST_ASSERT_NULL(pirate_crew_breach_search(pirate, spot(0, 2), spot(4, 2), areas), "The search found a way through a loose iron door")
-	qdel(pirate_crew_of(target, TRUE))
-
-// ===== GUNS =====
-
-/// Every pirate gun fires a real round from a real magazine; a gunner joining a crew trades its stock shot for one, and a crossbowman keeps his
-/datum/unit_test/voidcrew_pirate_crew/guns
-
-/datum/unit_test/voidcrew_pirate_crew/guns/Run()
-	for(var/loadout_type in subtypesof(/datum/pirate_gun_loadout))
-		var/datum/pirate_gun_loadout/loadout = GLOB.pirate_gun_loadouts[loadout_type]
-		TEST_ASSERT_NOTNULL(loadout, "[loadout_type] has no shared copy")
-		TEST_ASSERT(loadout.magazine_size() > 1, "[loadout_type] holds [loadout.magazine_size()] rounds")
-		TEST_ASSERT(loadout.fire_sound, "[loadout_type] makes no sound")
-		var/obj/projectile/shot = loadout.make_projectile(spot(4, 4))
-		TEST_ASSERT_NOTNULL(shot, "[loadout_type] fires nothing")
-		TEST_ASSERT(shot.damage > 0, "[loadout_type]'s round does no damage")
-		qdel(shot)
-	var/datum/pirate_gun_loadout/shotgun = GLOB.pirate_gun_loadouts[/datum/pirate_gun_loadout/shotgun]
-	TEST_ASSERT(shotgun.pellets() > 1, "The shotgun fires one pellet")
-	var/datum/pirate_gun_loadout/smg = GLOB.pirate_gun_loadouts[/datum/pirate_gun_loadout/smg]
-	TEST_ASSERT_EQUAL(smg.magazine_size(), 32, "The SMG's magazine isn't the Uzi's")
-
-	var/obj/structure/overmap/ship/target = allocate(/obj/structure/overmap/ship)
-	var/mob/living/basic/trooper/pirate/faction/irs/ranged/gunner = allocate(/mob/living/basic/trooper/pirate/faction/irs/ranged, spot(0, 0))
-	var/mob/living/basic/trooper/pirate/faction/medieval/ranged/archer = allocate(/mob/living/basic/trooper/pirate/faction/medieval/ranged, spot(0, 1))
-	TEST_ASSERT(pirate_crew_enlist_raider(gunner, target), "A gunner could not join the raid")
-	TEST_ASSERT(pirate_crew_enlist_raider(archer, target), "A crossbowman could not join the raid")
-	var/datum/component/pirate_gun/gun = pirate_gun_of(gunner)
-	TEST_ASSERT_NOTNULL(gun, "A gunner joined a crew without rolling a gun")
-	TEST_ASSERT_NULL(gunner.GetComponent(/datum/component/ranged_attacks), "A gunner kept its stock shot as well as its gun")
-	TEST_ASSERT_EQUAL(gunner.r_hand, gun.loadout.gun_type, "A gunner holds a different gun from the one it fires")
-	TEST_ASSERT_NULL(pirate_gun_of(archer), "A crossbowman traded his crossbow for a gun")
-	TEST_ASSERT_NOTNULL(archer.GetComponent(/datum/component/ranged_attacks), "A crossbowman lost his crossbow")
-
-	// A pistol fires its pair, and reloads when the magazine runs dry
-	var/mob/living/basic/trooper/pirate/ranged/pistoleer = allocate(/mob/living/basic/trooper/pirate/ranged, spot(0, 2))
-	TEST_ASSERT_EQUAL(pirate_crew_arm(pistoleer, /datum/pirate_gun_loadout/pistol), GLOB.pirate_gun_loadouts[/datum/pirate_gun_loadout/pistol], "A gunner couldn't be handed a pistol")
-	var/datum/component/pirate_gun/pistol = pirate_gun_of(pistoleer)
-	var/mob/living/carbon/human/consistent/mark = allocate(/mob/living/carbon/human/consistent, spot(4, 2))
-	var/full = pistol.ammo
-	TEST_ASSERT(pistol.try_fire(mark), "A loaded pistol wouldn't fire")
-	TEST_ASSERT_EQUAL(pistol.ammo, full - 2, "A pistol pair didn't use two rounds")
-	TEST_ASSERT(!pistol.try_fire(mark), "A pistol fired again before its cooldown")
-	pistol.next_fire_at = 0
-	pistol.ammo = 1
-	TEST_ASSERT(pistol.try_fire(mark), "A pistol with one round left wouldn't fire")
-	TEST_ASSERT(pistol.is_reloading(), "An empty pistol isn't reloading")
-	TEST_ASSERT_EQUAL(pistol.ammo, full, "A reload didn't fill the magazine")
-
-	// A shotgunner holds fire until it's close, and a hit during the pump spoils the shot
-	var/mob/living/basic/trooper/pirate/ranged/shotgunner = allocate(/mob/living/basic/trooper/pirate/ranged, spot(0, 3))
-	pirate_crew_arm(shotgunner, /datum/pirate_gun_loadout/shotgun)
-	var/datum/component/pirate_gun/pump = pirate_gun_of(shotgunner)
-	var/mob/living/carbon/human/consistent/far_mark = allocate(/mob/living/carbon/human/consistent, spot(4, 3))
-	TEST_ASSERT(!pump.try_fire(far_mark), "A shotgun fired from four tiles out")
-	far_mark.forceMove(spot(2, 3))
-	TEST_ASSERT(pump.try_fire(far_mark), "A shotgun wouldn't fire from two tiles")
-	TEST_ASSERT(pump.winding, "A shotgun fired without pumping")
-	var/shells = pump.ammo
-	shotgunner.apply_damage(5, BRUTE)
-	TEST_ASSERT(!pump.winding, "A hit during the pump didn't spoil it")
-	pump.finish_windup(pump.serial - 1)
-	TEST_ASSERT_EQUAL(pump.ammo, shells, "A spoiled pump still fired")
 	qdel(pirate_crew_of(target, TRUE))
