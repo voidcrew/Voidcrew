@@ -126,10 +126,14 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 		return FALSE
 	if(!islist(params))
 		params = list()
+	// The shell's pre-round open renders one facing; anything the player does wakes the idle fill.
+	var/auto_open = action == "char_open" && !!lobby_char_int(params["auto"])
+	if(!auto_open && action != "char_face")
+		char_preview_lazy = FALSE
 
 	switch(action)
 		if("char_open")
-			return char_open_tab(user, prefs)
+			return char_open_tab(user, prefs, auto_open)
 		if("char_slot")
 			return char_switch_slot(user, prefs, lobby_char_int(params["slot"]))
 		if("char_set")
@@ -208,7 +212,10 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 	char_edited(user, prefs)
 	return TRUE
 
-/datum/lobby_terminal/proc/char_open_tab(mob/user, datum/preferences/prefs)
+/// auto: opened by the shell before the round, not by the player. Renders the south facing only until woken.
+/datum/lobby_terminal/proc/char_open_tab(mob/user, datum/preferences/prefs, auto = FALSE)
+	if(auto && !char_open)
+		char_preview_lazy = TRUE
 	if(ui && !QDELETED(ui) && ui.window)
 		if(ui.send_asset(get_asset_datum(/datum/asset/json/preferences)))
 			owner?.browse_queue_flush()
@@ -227,6 +234,7 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 		return FALSE
 	if(!prefs.lobby_switch_to_slot(slot, user))
 		return FALSE
+	char_dress = null // a new file wears its own top role
 	char_edited(user, prefs)
 	char_save()
 	return TRUE
@@ -240,7 +248,7 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 	if(istype(preference, /datum/preference/color))
 		value = lobby_char_clean_hex(value)
 		if(!value)
-			return FALSE
+			return char_refused(user, preference)
 	if(istype(preference, /datum/preference/choiced/species))
 		var/list/dropped = char_quirks_dropped_by(prefs, value)
 		if(length(dropped))
@@ -248,7 +256,19 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 			char_rev++
 			char_push(user)
 			return TRUE
-	return char_apply(user, prefs, preference, value)
+	if(!char_apply(user, prefs, preference, value))
+		return char_refused(user, preference)
+	return TRUE
+
+/// A refused char_set: push the char block so the page snaps back, and say why for the two that can be refused.
+/datum/lobby_terminal/proc/char_refused(mob/user, datum/preference/preference)
+	char_rev++
+	char_push(user)
+	if(istype(preference, /datum/preference/name/real_name))
+		set_notice("The registry won't take that name.", "warn")
+	else if(istype(preference, /datum/preference/color))
+		set_notice("That colour is too dark.", "warn")
+	return TRUE
 
 /// Names of the taken quirks the species with that id can't keep.
 /datum/lobby_terminal/proc/char_quirks_dropped_by(datum/preferences/prefs, species_id)
@@ -551,6 +571,7 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 		"kit" = kit,
 		"dress" = char_resolved_dress(prefs),
 		"confirm" = confirm,
+		"look" = char_appearance_key(),
 	)
 
 /datum/lobby_terminal/char_push(mob/user)
