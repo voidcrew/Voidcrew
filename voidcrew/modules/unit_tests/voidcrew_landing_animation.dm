@@ -123,7 +123,7 @@
 	for(var/datum/landing_view_piece/piece as anything in view.pieces)
 		if(piece.sky)
 			TEST_ASSERT_EQUAL(piece.sky.mouse_opacity, MOUSE_OPACITY_TRANSPARENT, "A piece of the sky catches the mouse")
-			TEST_ASSERT_EQUAL(piece.sky.plane, -19, "A piece of the sky is off the view's plane") // LANDING_VIEW_PLANE
+			TEST_ASSERT(piece.sky.plane == -19 || piece.sky.plane == 18, "A piece of the sky is off the view's planes") // LANDING_VIEW_PLANE, LANDING_VIEW_LIGHT_PLANE
 	UNTIL((length(view.ground.parts) && length(view.close.parts)) || QDELETED(view))
 	TEST_ASSERT(length(view.ground.parts) > 1, "The picture of the ground from afar has nothing in it")
 	TEST_ASSERT(length(view.close.parts) > 1, "The close-up picture of the ground has nothing in it")
