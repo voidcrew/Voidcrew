@@ -262,8 +262,10 @@ export function Band(props: {
   w: number;
   h: number;
   tone: BandTone;
+  /** Drawn at half strength (a dead field). */
+  dead?: boolean;
 }) {
-  const { x, y, w, h, tone } = props;
+  const { x, y, w, h, tone, dead } = props;
   const { cw, ch, lw } = useGrid();
   const style: CSSProperties = {
     left: px(x * cw),
@@ -274,7 +276,12 @@ export function Band(props: {
   if (tone === 'warn') {
     style.borderLeftWidth = 3 * lw;
   }
-  return <div className={`lt-band lt-band-${tone}`} style={style} />;
+  return (
+    <div
+      className={`lt-band lt-band-${tone}${dead ? ' is-dead' : ''}`}
+      style={style}
+    />
+  );
 }
 
 /** A rect in px snapped so neighbours meet without gaps. */
@@ -661,6 +668,8 @@ type FieldProps = Pick<NavProps, 'auto'> & {
   disabled?: boolean;
   /** Mask the text (codes). */
   secret?: boolean;
+  /** Text at 1.25x, matching Big values beside it. */
+  big?: boolean;
   onChange: (value: string) => void;
   onEnter: () => void;
 };
@@ -673,6 +682,8 @@ function FieldInput(
     width: number;
     height: number;
     cls: string;
+    /** Inner padding left and right, px. */
+    pad?: number;
   },
 ) {
   const { value, max, disabled, secret, onChange, onEnter } = props;
@@ -710,6 +721,14 @@ function FieldInput(
         width: props.width,
         height: props.height,
         lineHeight: `${props.height}px`,
+        ...(props.pad
+          ? {
+              paddingLeft: props.pad,
+              paddingRight: props.pad,
+              boxSizing: 'border-box' as const,
+            }
+          : {}),
+        ...(props.big ? { fontSize: '1.25em' } : {}),
       }}
     />
   );
@@ -727,19 +746,22 @@ export function Field(props: FieldProps) {
   const box = rect(x, y, w, h, cw, ch);
   return (
     <>
-      <Band x={x} y={y} w={w} h={h} tone="field" />
-      {!value && (
-        <Put x={x + 1} y={y + (h - 1) / 2} cls={disabled ? 'faint' : 'dim'}>
+      <Band x={x} y={y} w={w} h={h} tone="field" dead={disabled} />
+      {!value && !disabled && (
+        <Put x={x + 1} y={y + (h - 1) / 2} cls="dim">
           {'.'.repeat(Math.max(0, w - 2))}
         </Put>
       )}
+      {/* The input covers the band, its text one cell in from both ends, so the focus ring
+          frames the band and typed text never runs onto it. */}
       <FieldInput
         {...props}
         cls={`lt-field${disabled ? ' is-dead' : ''}`}
-        left={box.left + px(cw)}
+        left={box.left}
         top={box.top}
-        width={Math.max(0, box.width - px(2 * cw))}
+        width={box.width}
         height={box.height}
+        pad={px(cw)}
       />
     </>
   );
@@ -1506,6 +1528,7 @@ export const TERM_CSS = `
 .lt-tui .lt-band-fg { background: var(--lt-fg); }
 .lt-tui .lt-band-panel { background: var(--lt-panel); }
 .lt-tui .lt-band-field { background: var(--lt-field); }
+.lt-tui .lt-band-field.is-dead { background: rgba(223,196,255,.05); }
 .lt-tui .lt-band-warn { background: rgba(255,196,31,.10); border-left-style: solid; border-color: var(--lt-amb); }
 .lt-tui .lt-band-bad { background: var(--lt-red); }
 .lt-tui .lt-band-bg { background: var(--lt-bg); }
