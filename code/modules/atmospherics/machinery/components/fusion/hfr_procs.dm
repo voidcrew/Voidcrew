@@ -435,7 +435,15 @@
 			continue
 		else if(i > 50)
 			if(i == 10 SECONDS && critical)
-				sound_to_playing_players('sound/machines/hypertorus/HFR_critical_explosion.ogg')
+				// VOIDCREW EDIT CHANGE START: only players on this z-level (each ship has its own) hear the meltdown, not the whole sector.
+				var/turf/hfr_turf = get_turf(src)
+				for(var/mob/listener as anything in GLOB.player_list)
+					if(isnewplayer(listener))
+						continue
+					var/turf/listener_turf = get_turf(listener)
+					if(hfr_turf && listener_turf?.z == hfr_turf.z)
+						listener.playsound_local(listener_turf, 'sound/machines/hypertorus/HFR_critical_explosion.ogg', 100, pressure_affected = FALSE)
+				// VOIDCREW EDIT CHANGE END
 			speaking = "[DisplayTimeText(i, TRUE)] remain before total integrity failure."
 		else
 			speaking = "[i*0.1]..."
