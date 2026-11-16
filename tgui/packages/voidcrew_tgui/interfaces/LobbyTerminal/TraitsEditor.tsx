@@ -13,7 +13,7 @@ import { useBackend } from 'tgui/backend';
 import type { Quirk } from 'tgui/interfaces/PreferencesMenu/types';
 
 import { fileColours } from './BodyEditor';
-import { useChar } from './CharFrame';
+import { clamp, useChar, useLatePager } from './CharFrame';
 import { ColourPanel, ListPicker } from './CharPickers';
 import { parseHex } from './ColorEntry';
 import {
@@ -33,7 +33,7 @@ import {
   useGrid,
   wrapMax,
 } from './term';
-import type { CellBox, LobbyData } from './types';
+import type { LobbyData } from './types';
 import { choicesOf, nameOf, usePrefsCatalog } from './usePrefsCatalog';
 
 type Filter = 'taken' | 'good' | 'bad' | 'other';
@@ -164,7 +164,7 @@ function TraitColour(props: { k: string; label: string }) {
 /** One drawn block of the list: a trait and its option rows. */
 type Block = { k: string; opts: string[] };
 
-export function TraitsEditor(_props: Partial<CellBox>) {
+export function TraitsEditor() {
   const { act, data } = useBackend<LobbyData>();
   const cat = usePrefsCatalog();
   const { sub, subOpen, from, quiet } = useChar();
@@ -175,8 +175,10 @@ export function TraitsEditor(_props: Partial<CellBox>) {
   const [page, setPage] = useState(0);
   const [shown, setShown] = useState<string | null>(null);
   const [fresh, setFresh] = useState(true);
+  const pager = useLatePager();
 
   if (!char || !cat?.quirks) {
+    pager.current = null;
     return null;
   }
   const prefs = char.prefs || {};
@@ -287,6 +289,13 @@ export function TraitsEditor(_props: Partial<CellBox>) {
   }
   const pg = Math.min(page, pages.length - 1);
   const onPage = pages[pg] || [];
+  pager.current =
+    pages.length > 1 && !subOpen
+      ? (step) => {
+          setFresh(false);
+          setPage(clamp(pg + step, 0, pages.length - 1));
+        }
+      : null;
 
   // The panel shows the focused row; on entry the first row.
   const panelKey =
@@ -323,7 +332,7 @@ export function TraitsEditor(_props: Partial<CellBox>) {
         <Put
           x={3}
           y={blockY + 0.125}
-          cls={isTaken ? 'wht' : reason ? 'faint' : ''}
+          cls={isTaken ? 'wht' : reason ? 'dim' : ''}
         >
           {cut(safe(q.name), 24)}
         </Put>
@@ -331,7 +340,7 @@ export function TraitsEditor(_props: Partial<CellBox>) {
           <RPut
             x={31}
             y={blockY + 0.125}
-            cls={reason && !isTaken ? 'faint' : v > 0 ? 'amb' : ''}
+            cls={reason && !isTaken ? 'dim' : v > 0 ? 'amb' : ''}
           >
             {v > 0 ? `-${v}` : `+${-v}`}
           </RPut>

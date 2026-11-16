@@ -348,7 +348,8 @@ export function Slab(
     .join(' ');
   const style: CSSProperties = {
     ...box,
-    borderWidth: variant === 'block' ? lw : 0,
+    // A focused muted row gains a whole border: its dead fill alone hides where the focus is.
+    borderWidth: variant === 'block' || (muted && focus.focused) ? lw : 0,
     borderLeftWidth: 3 * lw,
   };
   return (
@@ -394,6 +395,8 @@ export function Key(
     kind: KeyKind;
     state?: KeyState;
     onClick: () => void;
+    /** Told when the key gains or loses the focus (mouse or keys). */
+    onFocus?: (on: boolean) => void;
     /** A layout zone for the keyboard rules (nav.tsx FocusOpts.zone). */
     zone?: string;
     title?: string;
@@ -432,6 +435,13 @@ export function Key(
     mouseOnly: props.mouseOnly,
     zone,
   });
+  const was = useRef(false);
+  useEffect(() => {
+    if (was.current !== focus.focused) {
+      was.current = focus.focused;
+      props.onFocus?.(focus.focused);
+    }
+  }, [focus.focused]);
   const box = rect(x, y, w, h, cw, ch);
   // Border widths, so the label sits on the grid inside the padding box.
   const bl = kind === 'plain' ? 0 : lw;
@@ -1384,6 +1394,7 @@ export const TERM_CSS = `
 .lt-tui .lt-slab-row.is-alt { background: var(--lt-panel-alt); }
 .lt-tui .lt-slab.is-foc { border-color: var(--lt-fg); background: var(--lt-panel-foc); box-shadow: var(--lt-glow-foc); }
 .lt-tui .lt-slab.is-dead { border-color: var(--lt-edge-dead); background: rgba(30,12,58,.36); }
+.lt-tui .lt-slab.is-dead.is-foc { border-color: var(--lt-fg); box-shadow: var(--lt-glow-foc); }
 .lt-tui .lt-slab.is-on { border-left-color: var(--lt-acc); }
 .lt-tui .lt-slab.is-on.is-foc { border-left-color: var(--lt-acc); }
 .lt-tui .lt-swatch { position: absolute; box-sizing: border-box; z-index: 4; border-style: solid;

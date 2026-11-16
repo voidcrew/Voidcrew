@@ -25,6 +25,7 @@ import {
   planId,
   q,
   useChar,
+  useLatePager,
   WORK_W,
   WORK_X,
 } from './CharFrame';
@@ -47,7 +48,6 @@ import {
   wrapMax,
 } from './term';
 import {
-  type CellBox,
   type CharKitItem,
   KIT_NAME_MAX,
   type LobbyData,
@@ -225,7 +225,7 @@ type Line =
   | { kind: 'group'; text: string; first: boolean }
   | { kind: 'item'; item: LoadoutItem; opts: Opt[] };
 
-export function KitEditor(_props: Partial<CellBox>) {
+export function KitEditor() {
   const { act, data } = useBackend<LobbyData>();
   const catalog = usePrefsCatalog();
   const { sub, subOpen, from, quiet } = useChar();
@@ -242,9 +242,11 @@ export function KitEditor(_props: Partial<CellBox>) {
   const [page, setPage] = useState(0);
   const [catPage, setCatPage] = useState<number | null>(null);
   const [fresh, setFresh] = useState(true);
+  const pager = useLatePager();
 
   const tabs: LoadoutCategory[] = catalog?.loadout?.loadout_tabs || [];
   if (!char || !tabs.length) {
+    pager.current = null;
     return null;
   }
   const tabOf = (path: string) =>
@@ -352,6 +354,11 @@ export function KitEditor(_props: Partial<CellBox>) {
     );
   }
 
+  // PageUp and PageDown turn the categories here; the item list below takes them when it pages.
+  pager.current =
+    paged && !subOpen
+      ? (step) => setCatPage(clamp(cpg + step, 0, catPages - 1))
+      : null;
   if (subOpen) {
     return <IdColumn pv={plan.pv}>{idList}</IdColumn>;
   }
@@ -427,6 +434,12 @@ export function KitEditor(_props: Partial<CellBox>) {
   }
   const pg = Math.min(page, pages.length - 1);
   const lines = pages[pg] || [];
+  if (pages.length > 1) {
+    pager.current = (step) => {
+      setFresh(false);
+      setPage(clamp(pg + step, 0, pages.length - 1));
+    };
+  }
 
   const rows: ReactNode[] = [];
   let y = BODY_Y;

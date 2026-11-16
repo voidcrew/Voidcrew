@@ -24,7 +24,7 @@ import {
 import { useBackend } from 'tgui/backend';
 
 import { turned, Viewscreen } from './CharPreview';
-import { useBack } from './nav';
+import { useBack, usePager } from './nav';
 import {
   Band,
   BODY_Y,
@@ -295,6 +295,28 @@ export function useAfter(when: boolean, ms: number, fn: () => void) {
     const t = window.setTimeout(() => ref.current(), ms);
     return () => window.clearTimeout(t);
   }, [when]);
+}
+
+/**
+ * PageUp and PageDown (design 03 section 6) for a paged list: steps `page` (0-based) within
+ * `pages`, or does nothing on one page.
+ */
+export function useListPager(
+  page: number,
+  pages: number,
+  set: (p: number) => void,
+) {
+  usePager(pages > 1 ? (step) => set(clamp(page + step, 0, pages - 1)) : null);
+}
+
+/**
+ * The same for a screen that returns early before its pages are known (hooks can't follow an
+ * early return): set `.current` while drawing, null when nothing pages.
+ */
+export function useLatePager() {
+  const ref = useRef<((step: number) => void) | null>(null);
+  usePager((step) => ref.current?.(step));
+  return ref;
 }
 
 /** The facing after a turn, for the router's dir state. */

@@ -226,24 +226,13 @@ export function CharacterTab(props: {
     );
   } else if (section === 'body') {
     screen = <BodyEditor group={group} setGroup={setGroup} />;
+  } else if (section === 'roles') {
+    // Each of these draws its own ID column (or none, TRAITS) and its work column.
+    screen = <RolesEditor />;
+  } else if (section === 'traits') {
+    screen = <TraitsEditor />;
   } else {
-    // ROLES, TRAITS and KIT: the old editors inside the new frame until they are rebuilt.
-    const full = section === 'traits';
-    const box = full
-      ? { x: 0, y: BODY_Y, w: 63, h: M - 4 }
-      : { x: WORK_X - 1, y: BODY_Y, w: WORK_W + 2, h: M - 4 };
-    const Editor =
-      section === 'roles'
-        ? RolesEditor
-        : section === 'traits'
-          ? TraitsEditor
-          : KitEditor;
-    screen = (
-      <>
-        {!full && <IdColumn pv={Math.min(14, bodyRows(M) - 2.25)} />}
-        <Editor {...box} />
-      </>
-    );
+    screen = <KitEditor />;
   }
 
   return (

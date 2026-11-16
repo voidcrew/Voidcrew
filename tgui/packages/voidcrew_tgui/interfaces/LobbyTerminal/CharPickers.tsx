@@ -9,6 +9,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 
+import { useListPager } from './CharFrame';
 import {
   barGradient,
   type HSV,
@@ -132,6 +133,7 @@ export function ListPicker(props: PickerProps) {
     }
   }, [value]);
   const pg = Math.min(page, pages - 1);
+  useListPager(pg, pages, setPage);
   const slice = list.slice(pg * per, (pg + 1) * per);
 
   const step = (by: number) => {
@@ -305,7 +307,7 @@ export function ColourPanel(props: ColourPanelProps) {
         <Field
           x={x + 14}
           y={5.25}
-          w={9}
+          w={11}
           value={text}
           max={7}
           onChange={(v) => {

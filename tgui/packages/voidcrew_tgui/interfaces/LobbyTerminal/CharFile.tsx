@@ -16,6 +16,7 @@ import {
   q,
   type Section,
   useChar,
+  useListPager,
   WORK_W,
   WORK_X,
 } from './CharFrame';
@@ -171,6 +172,7 @@ export function CharFile(props: {
     paged ? Math.floor((char.slot - 1) / per) : 0,
   );
   const pg = Math.min(page, pages - 1);
+  useListPager(pg, pages, setPage);
   const listTop = paged ? BODY_Y + plan.pv + 2.25 : plan.top;
   const shownSlots = slots
     .map((s, i) => [s, i] as [string | null, number])

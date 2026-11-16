@@ -23,9 +23,8 @@ import {
   WORK_W,
   WORK_X,
 } from './CharFrame';
-import { useFocusable } from './nav';
-import { BODY_Y, bodyRows, cut, Put, Slab, safe, useGrid } from './term';
-import type { CellBox, LobbyData, RoleLevel } from './types';
+import { BODY_Y, bodyRows, cut, Key, Put, Slab, safe, useGrid } from './term';
+import type { LobbyData, RoleLevel } from './types';
 
 type Levels = Record<string, RoleLevel>;
 
@@ -49,94 +48,7 @@ function titlesOf(entry: [string, string[] | string]): string[] {
   return t ? String(t).split(', ') : [];
 }
 
-/**
- * One cap key of a role row. Key in term.tsx has no focus callback, and the row that holds
- * the focus dresses the preview, so this draws the same 'cap' look with its own focus hook.
- */
-function RoleKey(props: {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  label: string;
-  state: 'idle' | 'lit' | 'on';
-  auto?: number;
-  onPress: () => void;
-  onFocus: () => void;
-}) {
-  const { x, y, w, h, label, state, onPress, onFocus } = props;
-  const { cw, ch, lw } = useGrid();
-  const [pressed, setPressed] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(
-    () => () => {
-      if (timer.current) {
-        clearTimeout(timer.current);
-      }
-    },
-    [],
-  );
-  const press = () => {
-    setPressed(true);
-    if (timer.current) {
-      clearTimeout(timer.current);
-    }
-    timer.current = setTimeout(() => setPressed(false), 80);
-    onPress();
-  };
-  const focus = useFocusable<HTMLDivElement>(true, {
-    activate: press,
-    auto: props.auto,
-  });
-  const was = useRef(false);
-  useEffect(() => {
-    if (focus.focused && !was.current) {
-      onFocus();
-    }
-    was.current = focus.focused;
-  }, [focus.focused]);
-  const left = Math.round(x * cw);
-  const top = Math.round(y * ch);
-  const cls = [
-    'lt-k',
-    'lt-k-cap',
-    `is-${state}`,
-    focus.focused ? 'is-foc' : '',
-    pressed ? 'is-press' : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
-  return (
-    <div
-      ref={focus.ref}
-      className={cls}
-      style={{
-        left,
-        top,
-        width: Math.round((x + w) * cw) - left,
-        height: Math.round((y + h) * ch) - top,
-        borderWidth: 0,
-        borderLeftWidth: lw,
-      }}
-      onClick={(e) => {
-        e.stopPropagation();
-        press();
-      }}
-      onMouseEnter={focus.onMouseEnter}
-    >
-      <span
-        style={{
-          left: Math.round(Math.floor((w - label.length) / 2) * cw - lw),
-          top: Math.round(((h - 1) / 2) * ch),
-        }}
-      >
-        {label}
-      </span>
-    </div>
-  );
-}
-
-export function RolesEditor(_props: Partial<CellBox>) {
+export function RolesEditor() {
   const { act, data } = useBackend<LobbyData>();
   const { quiet } = useChar();
   const { rows: M } = useGrid();
@@ -265,19 +177,20 @@ export function RolesEditor(_props: Partial<CellBox>) {
               {cut(safe(cat).toUpperCase(), 13)}
             </Put>
             {KEYS.map(([label, kx, kw], li) => (
-              <RoleKey
+              <Key
                 key={label}
                 x={kx}
                 y={y}
                 w={kw}
                 h={h}
+                kind="cap"
                 label={label}
                 state={
                   li === 0 || li !== level ? 'idle' : li === 3 ? 'on' : 'lit'
                 }
                 auto={!quiet && i === top && li === topLevel ? 5 : undefined}
-                onPress={() => set(cat, li as 0 | RoleLevel)}
-                onFocus={() => setFocusRow(i)}
+                onClick={() => set(cat, li as 0 | RoleLevel)}
+                onFocus={(on) => on && setFocusRow(i)}
               />
             ))}
           </Slab>
