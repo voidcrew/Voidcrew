@@ -71,16 +71,18 @@
 #define PLASMA_OVERHEAT_SHUTDOWN_UNIQUE (6 SECONDS)
 /// Heat an overheated gun comes back at, below the first coil step
 #define PLASMA_OVERHEAT_END_HEAT 20
+/// An amber tap on the bar an overheat brings up cuts the lockout to this long from the overheat
+#define PLASMA_OVERHEAT_GRACE_LOCK (2 SECONDS)
 
 /// The vent bar's marker takes this long to cross the bar
-#define PLASMA_VENT_SWEEP (1.5 SECONDS)
-/// The bar's units, left to right: fail, grace, gold, grace, fail. ----yyyyxxxyyyy----
-#define PLASMA_VENT_UNITS 19
+#define PLASMA_VENT_SWEEP (1 SECONDS)
+/// The bar's units, one pixel each, left to right: fail 12, grace 5, gold 4, grace 5, fail 12
+#define PLASMA_VENT_UNITS 38
 /// Units from the left where each zone ends
-#define PLASMA_VENT_FAIL_END 4
-#define PLASMA_VENT_GRACE_END 8
-#define PLASMA_VENT_GOLD_END 11
-#define PLASMA_VENT_GRACE2_END 15
+#define PLASMA_VENT_FAIL_END 12
+#define PLASMA_VENT_GRACE_END 17
+#define PLASMA_VENT_GOLD_END 21
+#define PLASMA_VENT_GRACE2_END 26
 /// Vent results
 #define PLASMA_VENT_RESULT_FAIL "fail"
 #define PLASMA_VENT_RESULT_GRACE "grace"

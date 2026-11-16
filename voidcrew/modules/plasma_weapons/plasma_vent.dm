@@ -1,13 +1,18 @@
 // Package: P3 heat. The vent controls and the vent bar a venting player sees.
-// A vent starts by using the Furnace in hand, and the tap is the next fire attempt or use in hand (plasma_heat.dm).
+// A vent starts by using the Furnace in hand, or by itself when the Furnace overheats in a player's hand. The tap is
+// the next fire attempt or use in hand (plasma_heat.dm).
 // The keybinding has no default key ("V" is the cyberware wheel); players can bind it to start and tap.
 // The bar is two images on the venting player's mob, shown only to their client, over their head like a do_after
 // bar. The marker's sweep is animated on the client; the tap is judged on the server against vent_started_at (plasma_heat.dm), so the
 // grace zones are the latency slack.
 
-/// Pixels the marker slides each way from its resting column (the gold's middle) to the bar's end columns.
-/// The bar is 19 px inside, one per unit, so the marker is within half a pixel of the unit the tap is judged in.
-#define PLASMA_VENT_MARKER_REACH 9
+/// The marker's slide, in pixels from its drawn column (unit 19, canvas column 32), from the left edge of the bar's inside
+/// to its right edge. The bar is 38 px inside, one per unit (canvas columns 13 to 50), so the marker's middle always
+/// sits inside the column of the unit a tap at that moment is judged in.
+#define PLASMA_VENT_MARKER_FROM -19.5
+#define PLASMA_VENT_MARKER_TO 18.5
+/// The art is 64 px wide; this centres it over a 32 px body
+#define PLASMA_VENT_BAR_CENTRE -16
 /// Bar strip pixel_z over a standing body: the art's bottom row (4 px up the strip) sits at the top of the tile, like a do_after bar
 #define PLASMA_VENT_BAR_HEAD 28
 /// Rise per do_after bar shown on the venter, so the vent bar sits over them
@@ -41,7 +46,7 @@
 	vent_bar = make_vent_bar_image(user, "bar", 1)
 	vent_marker = make_vent_bar_image(user, "marker", 2)
 	// The marker slides by transform; an animated pixel_x left it still in a live client
-	vent_marker.transform = matrix(1, 0, -PLASMA_VENT_MARKER_REACH, 0, 1, 0)
+	vent_marker.transform = matrix(1, 0, PLASMA_VENT_MARKER_FROM, 0, 1, 0)
 	place_vent_bar(user)
 	RegisterSignals(user, list(COMSIG_DO_AFTER_BEGAN, COMSIG_LIVING_SET_BODY_POSITION), PROC_REF(on_vent_bar_moved))
 	RegisterSignal(user, COMSIG_DO_AFTER_ENDED, PROC_REF(on_vent_user_do_after_ended))
@@ -50,7 +55,7 @@
 		return
 	vent_client.images += vent_bar
 	vent_client.images += vent_marker
-	animate(vent_marker, transform = matrix(1, 0, PLASMA_VENT_MARKER_REACH, 0, 1, 0), time = PLASMA_VENT_SWEEP, easing = LINEAR_EASING)
+	animate(vent_marker, transform = matrix(1, 0, PLASMA_VENT_MARKER_TO, 0, 1, 0), time = PLASMA_VENT_SWEEP, easing = LINEAR_EASING)
 
 /// One part of the bar, drawn on `user` like a do_after bar: it walks with them and ignores their turn when they lie down
 /obj/item/gun/energy/plasma_weapon/proc/make_vent_bar_image(mob/living/user, state, part_layer)
@@ -60,8 +65,7 @@
 	// PIXEL_SCALE keeps the one-pixel marker sharp while it slides between whole pixels
 	part.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA | RESET_TRANSFORM | KEEP_APART | PIXEL_SCALE
 	part.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	// The 32 px strip lines up with the 32 px body
-	part.pixel_x = user.get_oversized_icon_offsets()["x"]
+	part.pixel_x = PLASMA_VENT_BAR_CENTRE + user.get_oversized_icon_offsets()["x"]
 	return part
 
 /// Pixels above `user`'s base where the bar's strip goes: over the head, and over any do_after bars on them
@@ -109,7 +113,9 @@
 	vent_bar = null
 	vent_marker = null
 
-#undef PLASMA_VENT_MARKER_REACH
+#undef PLASMA_VENT_MARKER_FROM
+#undef PLASMA_VENT_MARKER_TO
+#undef PLASMA_VENT_BAR_CENTRE
 #undef PLASMA_VENT_BAR_HEAD
 #undef PLASMA_VENT_BAR_STACK
 #undef PLASMA_VENT_BAR_LYING_DROP

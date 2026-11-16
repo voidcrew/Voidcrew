@@ -107,7 +107,7 @@
 	gun.barrel_heat = 90
 	gun.heat_updated_at = world.time
 	TEST_ASSERT(gun.vent_key(user), "The Old Furnace didn't start a vent")
-	gun.vent_started_at = world.time - plasma_heat_test_unit_time(9)
+	gun.vent_started_at = world.time - plasma_heat_test_unit_time(19)
 	gun.heat_updated_at = world.time
 	gun.vent_key(user)
 	TEST_ASSERT_EQUAL(gun.gold_until, world.time + 8 SECONDS, "The Old Furnace's gold window isn't 8 s")
@@ -170,7 +170,7 @@
 	var/datum/gas_mixture/saved_air
 
 /datum/unit_test/voidcrew_plasma_heat_vent/Run()
-	// The zones: ----yyyyxxxyyyy----
+	// The zones: fail 12, grace 5, gold 4, grace 5, fail 12
 	var/zones = ""
 	for(var/unit in 0 to PLASMA_VENT_UNITS - 1)
 		switch(plasma_vent_zone(plasma_heat_test_unit_time(unit)))
@@ -182,7 +182,7 @@
 				zones += "-"
 			else
 				zones += "?"
-	TEST_ASSERT_EQUAL(zones, "----yyyyxxxyyyy----", "The vent bar's zones are wrong")
+	TEST_ASSERT_EQUAL(zones, "------------yyyyyxxxxyyyyy------------", "The vent bar's zones are wrong")
 	TEST_ASSERT_EQUAL(plasma_vent_zone(PLASMA_VENT_SWEEP), PLASMA_VENT_RESULT_NONE, "A tap at the sweep's end still counts")
 
 	spot = run_loc_floor_bottom_left
@@ -209,7 +209,7 @@
 	TEST_ASSERT(gun.vent_bar.pixel_z >= ICON_SIZE_Y - 4, "The vent bar sits at [gun.vent_bar.pixel_z], inside the venter's body")
 
 	// Gold: all the heat off, and the next shots add half heat for a while
-	gun.vent_started_at = world.time - plasma_heat_test_unit_time(9)
+	gun.vent_started_at = world.time - plasma_heat_test_unit_time(19)
 	gun.heat_updated_at = world.time
 	gun.vent_key(user)
 	TEST_ASSERT(!gun.vent_started_at, "A gold tap didn't end the vent")
@@ -224,7 +224,7 @@
 	TEST_ASSERT_EQUAL(gun.barrel_heat, gun.heat_per_shot, "A shot after the gold window still added half heat")
 
 	// Grace, early and late: a large fixed cut, and the trigger free at once
-	for(var/unit in list(6, 13))
+	for(var/unit in list(14, 23))
 		gun.barrel_heat = 90
 		gun.heat_updated_at = world.time
 		gun.vent_lock_until = 0
@@ -251,7 +251,7 @@
 	TEST_ASSERT(!gun.vent_key(user), "A new vent started while the last one finished")
 
 	// Fail, early and late: the old plasma vent, below ignition, plus the cut and a lock
-	for(var/unit in list(1, 17))
+	for(var/unit in list(1, 33))
 		gun.vent_lock_until = 0
 		gun.cell.charge = PLASMA_CARTRIDGE_CAPACITY
 		gun.chamber_changed()
@@ -368,7 +368,7 @@
 
 	// A fire attempt on the gold is the tap: all the heat off, and nothing fired
 	var/chamber_before = gun.chamber_mol()
-	gun.vent_started_at = world.time - plasma_heat_test_unit_time(9)
+	gun.vent_started_at = world.time - plasma_heat_test_unit_time(19)
 	gun.heat_updated_at = world.time
 	TEST_ASSERT(gun.try_fire_gun(far, user, ""), "A fire attempt during a vent wasn't taken as the tap")
 	TEST_ASSERT(!gun.vent_started_at, "A fire attempt on the gold didn't end the vent")
@@ -406,7 +406,7 @@
 	gun.barrel_heat = 90
 	gun.heat_updated_at = world.time
 	gun.attack_self(user)
-	gun.vent_started_at = world.time - plasma_heat_test_unit_time(6)
+	gun.vent_started_at = world.time - plasma_heat_test_unit_time(14)
 	gun.heat_updated_at = world.time
 	gun.attack_self(user)
 	TEST_ASSERT(!gun.vent_started_at, "Using the Furnace in hand during the bar didn't tap")
@@ -416,12 +416,127 @@
 	gun.barrel_heat = 90
 	gun.heat_updated_at = world.time
 	TEST_ASSERT(plasma_vent_held_gun(user), "The vent keybinding didn't start a vent")
-	gun.vent_started_at = world.time - plasma_heat_test_unit_time(9)
+	gun.vent_started_at = world.time - plasma_heat_test_unit_time(19)
 	gun.heat_updated_at = world.time
 	TEST_ASSERT(plasma_vent_held_gun(user), "The vent keybinding didn't tap")
 	TEST_ASSERT_EQUAL(gun.barrel_heat, 0, "A keybinding tap on the gold left heat [gun.barrel_heat]")
 
 /datum/unit_test/voidcrew_plasma_heat_vent_controls/Destroy()
+	if(spot && saved_air)
+		spot.return_air().copy_from(saved_air)
+	return ..()
+
+/// An overheat in a player's hand brings the vent bar up. Gold ends the lockout cold, amber vents most of the heat and
+/// cuts the lockout to 2 s, a miss leaves all of it, and a fumble leaves all of it and spits gas. Dropping the gun takes
+/// the bar away and leaves the lockout. With no player holding it, an overheat brings no bar.
+/datum/unit_test/voidcrew_plasma_heat_overheat_vent
+	var/turf/open/spot
+	var/datum/gas_mixture/saved_air
+
+/// Overheats `gun` with a shot, then brings the bar up as overheat() does for a player (test mobs have no client).
+/// TRUE if the shot locked the gun and the bar came up.
+/datum/unit_test/voidcrew_plasma_heat_overheat_vent/proc/overheat_with_bar(obj/item/gun/energy/plasma_weapon/gun, mob/living/user)
+	gun.vent_lock_until = 0
+	gun.shutdown_until = 0
+	gun.gold_until = 0
+	gun.barrel_heat = PLASMA_HEAT_MAX - 1
+	gun.heat_updated_at = world.time
+	gun.add_heat(gun.heat_per_shot)
+	if(!gun.is_shut_down() || gun.vent_started_at)
+		return FALSE
+	return gun.start_overheat_vent(user) && gun.vent_overheat && gun.vent_bar
+
+/datum/unit_test/voidcrew_plasma_heat_overheat_vent/Run()
+	spot = run_loc_floor_bottom_left
+	var/datum/gas_mixture/air = spot.return_air()
+	saved_air = air.copy()
+	air.remove_ratio(1) // vacuum, so nothing vented can burn
+	var/mob/living/carbon/human/consistent/user = allocate(/mob/living/carbon/human/consistent, spot)
+	var/obj/item/gun/energy/plasma_weapon/rifle/gun = allocate(/obj/item/gun/energy/plasma_weapon/rifle)
+	user.put_in_active_hand(gun, forced = TRUE)
+	var/turf/far = locate(spot.x + 3, spot.y, spot.z)
+
+	// No player holding it: the lockout runs with no bar, and a bar never comes up outside a lockout
+	gun.barrel_heat = PLASMA_HEAT_MAX - 1
+	gun.heat_updated_at = world.time
+	gun.add_heat(gun.heat_per_shot)
+	TEST_ASSERT(gun.is_shut_down(), "The test shot didn't overheat the Furnace")
+	TEST_ASSERT(!gun.vent_started_at, "An overheat with no player holding the Furnace brought the bar up")
+	gun.shutdown_until = 0
+	gun.barrel_heat = 90
+	TEST_ASSERT(!gun.start_overheat_vent(user), "The overheat bar came up on a Furnace that isn't locked")
+
+	// Gold: the lockout ends at once, the coils go cold, and the next shots add half heat. Nothing fires.
+	TEST_ASSERT(overheat_with_bar(gun, user), "An overheat didn't bring the bar up for the gold test")
+	var/chamber_before = gun.chamber_mol()
+	gun.vent_started_at = world.time - plasma_heat_test_unit_time(19)
+	TEST_ASSERT(gun.try_fire_gun(far, user, ""), "A fire attempt on the overheat bar wasn't taken as the tap")
+	TEST_ASSERT(!gun.vent_started_at, "A gold tap didn't end the overheat bar")
+	TEST_ASSERT_NULL(gun.vent_bar, "A gold tap left the overheat bar")
+	TEST_ASSERT(!gun.is_shut_down(), "A gold tap on the overheat bar left the lockout")
+	TEST_ASSERT(gun.can_fire_heat(), "A Furnace can't fire after a gold tap on the overheat bar")
+	TEST_ASSERT_EQUAL(gun.barrel_heat, 0, "A gold tap on the overheat bar left heat [gun.barrel_heat]")
+	TEST_ASSERT_EQUAL(gun.gold_until, world.time + gun.gold_window, "A gold tap on the overheat bar gave no gold window")
+	TEST_ASSERT_EQUAL(gun.chamber_mol(), chamber_before, "The tap on the overheat bar fired a shot")
+
+	// Amber: most of the heat vented and the lockout cut to 2 s from the overheat
+	TEST_ASSERT(overheat_with_bar(gun, user), "An overheat didn't bring the bar up for the amber test")
+	gun.vent_started_at = world.time - plasma_heat_test_unit_time(14)
+	var/expected_end = gun.vent_started_at + PLASMA_OVERHEAT_GRACE_LOCK
+	gun.attack_self(user)
+	TEST_ASSERT(!gun.vent_started_at, "An in-hand tap didn't end the overheat bar")
+	TEST_ASSERT_EQUAL(gun.shutdown_until, expected_end, "An amber tap left the lockout ending at [gun.shutdown_until], not [expected_end]")
+	TEST_ASSERT(gun.is_shut_down(), "An amber tap ended the lockout at once")
+	TEST_ASSERT_EQUAL(gun.barrel_heat, PLASMA_HEAT_MAX - PLASMA_VENT_COOL, "An amber tap on the overheat bar left heat [gun.barrel_heat]")
+	gun.shutdown_until = world.time
+	TEST_ASSERT(gun.can_fire_heat(), "The Furnace stayed locked past an amber tap's 2 s")
+	TEST_ASSERT_EQUAL(gun.barrel_heat, PLASMA_HEAT_MAX - PLASMA_VENT_COOL, "The lockout's end after an amber tap moved the heat to [gun.barrel_heat]")
+
+	// No tap: the whole lockout
+	TEST_ASSERT(overheat_with_bar(gun, user), "An overheat didn't bring the bar up for the no-tap test")
+	gun.vent_started_at = world.time - PLASMA_VENT_SWEEP
+	gun.finish_vent_sweep()
+	TEST_ASSERT(!gun.vent_started_at, "The overheat bar's sweep end didn't end it")
+	TEST_ASSERT_EQUAL(gun.shutdown_until, world.time + gun.overheat_shutdown, "A missed overheat bar changed the lockout")
+	TEST_ASSERT_EQUAL(gun.barrel_heat, PLASMA_HEAT_MAX, "A missed overheat bar vented heat")
+	TEST_ASSERT_EQUAL(gun.vent_lock_until, 0, "A missed overheat bar added a vent lock")
+
+	// Dark red: the whole lockout, and the fumble's gas below ignition
+	gun.cell.charge = PLASMA_CARTRIDGE_CAPACITY
+	gun.chamber_changed()
+	TEST_ASSERT(overheat_with_bar(gun, user), "An overheat didn't bring the bar up for the fumble test")
+	chamber_before = gun.chamber_mol()
+	var/turf_before = plasma_heat_test_plasma(air)
+	gun.vent_started_at = world.time - plasma_heat_test_unit_time(1)
+	gun.try_fire_gun(far, user, "")
+	var/lost = chamber_before - gun.chamber_mol()
+	var/gained = plasma_heat_test_plasma(air) - turf_before
+	TEST_ASSERT(!gun.vent_started_at, "A fumbled tap didn't end the overheat bar")
+	TEST_ASSERT_EQUAL(gun.shutdown_until, world.time + gun.overheat_shutdown, "A fumbled overheat bar changed the lockout")
+	TEST_ASSERT_EQUAL(lost, PLASMA_VENT_MOL, "A fumbled overheat bar took [lost] mol from a full chamber")
+	TEST_ASSERT_EQUAL(gained, lost, "A fumbled overheat bar put [gained] mol on the turf but took [lost] mol from the chamber")
+	TEST_ASSERT(air.return_temperature() < PLASMA_MINIMUM_BURN_TEMPERATURE, "A fumbled overheat bar left gas at [air.return_temperature()] K, hot enough to light")
+	air.remove_ratio(1)
+
+	// Dropping the gun takes the bar away and leaves the whole lockout
+	TEST_ASSERT(overheat_with_bar(gun, user), "An overheat didn't bring the bar up for the drop test")
+	user.dropItemToGround(gun)
+	TEST_ASSERT(!gun.vent_started_at, "Dropping the Furnace didn't end the overheat bar")
+	TEST_ASSERT(isnull(gun.vent_bar) && isnull(gun.vent_marker), "Dropping the Furnace left the overheat bar")
+	TEST_ASSERT(!gun.vent_overheat, "Dropping the Furnace left it marked as venting an overheat")
+	TEST_ASSERT_EQUAL(gun.shutdown_until, world.time + gun.overheat_shutdown, "Dropping the Furnace changed the lockout")
+	user.put_in_active_hand(gun, forced = TRUE)
+	TEST_ASSERT(!gun.vent_key(user), "A Furnace picked back up during its lockout started a vent")
+
+	// Swapping hands does the same
+	gun.shutdown_until = 0
+	TEST_ASSERT(overheat_with_bar(gun, user), "An overheat didn't bring the bar up for the swap test")
+	user.swap_hand()
+	TEST_ASSERT(!gun.vent_started_at, "Swapping hands didn't end the overheat bar")
+	TEST_ASSERT_EQUAL(gun.shutdown_until, world.time + gun.overheat_shutdown, "Swapping hands changed the lockout")
+	user.swap_hand()
+
+/datum/unit_test/voidcrew_plasma_heat_overheat_vent/Destroy()
 	if(spot && saved_air)
 		spot.return_air().copy_from(saved_air)
 	return ..()

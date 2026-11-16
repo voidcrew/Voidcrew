@@ -77,24 +77,43 @@
 /obj/item/gun/energy/plasma_weapon/proc/is_shut_down()
 	return world.time < shutdown_until
 
-/// A shot brought the barrel to the max: the coils lock up and the gun can't fire or vent for a while
+/// A shot brought the barrel to the max: the coils lock up and the gun can't fire or vent for a while.
+/// In a player's active hand the vent bar comes up at once, and a tap on it can cut the lockout short
+/// (resolve_overheat_vent()). Held by an NPC or by no one, the lockout just runs.
 /obj/item/gun/energy/plasma_weapon/proc/overheat()
 	cancel_vent()
 	barrel_heat = PLASMA_HEAT_MAX
 	gold_until = 0
-	shutdown_until = world.time + overheat_shutdown
-	addtimer(CALLBACK(src, PROC_REF(end_shutdown)), overheat_shutdown, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_DELETE_ME)
+	set_shutdown(world.time + overheat_shutdown)
 	var/turf/where = get_turf(src)
 	if(where)
 		where.visible_message(span_warning("[src]'s coils lock up!"))
 	playsound(src, PLASMA_SOUND_FURNACE_OVERHEAT, 50, TRUE)
+	var/mob/living/holder = loc
+	if(istype(holder) && holder.client)
+		start_overheat_vent(holder)
+
+/// Locks the gun until `until`, with the timer that brings it back then
+/obj/item/gun/energy/plasma_weapon/proc/set_shutdown(until)
+	shutdown_until = until
+	addtimer(CALLBACK(src, PROC_REF(end_shutdown)), max(until - world.time, 1), TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_DELETE_ME)
+
+/// Brings the vent bar up on `user` for the overheat that just happened. TRUE if it did.
+/obj/item/gun/energy/plasma_weapon/proc/start_overheat_vent(mob/living/user)
+	if(!uses_heat || vent_started_at || !is_shut_down() || !can_hold_vent(user))
+		return FALSE
+	begin_vent(user)
+	vent_overheat = TRUE
+	return TRUE
 
 /// The shutdown is over: the gun comes back cooler and can fire
 /obj/item/gun/energy/plasma_weapon/proc/end_shutdown()
 	if(!shutdown_until || is_shut_down())
 		return
 	shutdown_until = 0
-	barrel_heat = PLASMA_OVERHEAT_END_HEAT
+	// An amber tap on the overheat's bar has already vented it below the max
+	if(barrel_heat >= PLASMA_HEAT_MAX)
+		barrel_heat = PLASMA_OVERHEAT_END_HEAT
 	heat_updated_at = world.time
 	playsound(src, PLASMA_SOUND_FURNACE_RECOVER, 40, TRUE, -2)
 	update_heat_step()
@@ -155,24 +174,32 @@
 
 /// Starts a vent if `user` holds this in the active hand and its coils glow. TRUE if it started.
 /obj/item/gun/energy/plasma_weapon/proc/start_vent(mob/living/user)
-	if(!uses_heat || vent_started_at || QDELETED(user) || user.stat != CONSCIOUS)
-		return FALSE
-	if(HAS_TRAIT(user, TRAIT_INCAPACITATED) || HAS_TRAIT(user, TRAIT_HANDS_BLOCKED))
-		return FALSE
-	if(user.get_active_held_item() != src || !can_fire_heat())
+	if(!uses_heat || vent_started_at || !can_hold_vent(user) || !can_fire_heat())
 		return FALSE
 	cool_to_now()
 	// A barrel not hot enough to glow has nothing to vent
 	if(barrel_heat < PLASMA_HEAT_STEP_1)
 		return FALSE
+	begin_vent(user)
+	playsound(src, PLASMA_SOUND_VENT_START, 40, TRUE, -2)
+	return TRUE
+
+/// TRUE if `user` is awake, has free hands and holds this in the active hand
+/obj/item/gun/energy/plasma_weapon/proc/can_hold_vent(mob/living/user)
+	if(QDELETED(user) || user.stat != CONSCIOUS)
+		return FALSE
+	if(HAS_TRAIT(user, TRAIT_INCAPACITATED) || HAS_TRAIT(user, TRAIT_HANDS_BLOCKED))
+		return FALSE
+	return user.get_active_held_item() == src
+
+/// Starts the sweep and its bar on `user`
+/obj/item/gun/energy/plasma_weapon/proc/begin_vent(mob/living/user)
 	vent_started_at = world.time
 	vent_user = user
 	RegisterSignals(user, list(COMSIG_MOB_SWAP_HANDS, COMSIG_MOB_LOGOUT, COMSIG_LIVING_DEATH, COMSIG_QDELETING), PROC_REF(on_vent_user_lost))
 	vent_timer = addtimer(CALLBACK(src, PROC_REF(finish_vent_sweep)), PLASMA_VENT_SWEEP, TIMER_STOPPABLE|TIMER_DELETE_ME)
 	START_PROCESSING(SSobj, src)
 	show_vent_bar(user)
-	playsound(src, PLASMA_SOUND_VENT_START, 40, TRUE, -2)
-	return TRUE
 
 /// A tap during the sweep: judged on the server's own clock against the sweep start
 /obj/item/gun/energy/plasma_weapon/proc/vent_tap()
@@ -192,7 +219,11 @@
 
 /// Ends the running vent with `result`'s heat, lock, gas and sound
 /obj/item/gun/energy/plasma_weapon/proc/resolve_vent(result)
+	var/overheat_at = vent_overheat ? vent_started_at : 0
 	end_vent()
+	if(overheat_at)
+		resolve_overheat_vent(result, overheat_at)
+		return
 	cool_to_now()
 	switch(result)
 		if(PLASMA_VENT_RESULT_GOLD)
@@ -217,6 +248,28 @@
 			playsound(src, PLASMA_SOUND_VENT_FAIL, 50, TRUE)
 	update_heat_step()
 
+/// Ends the bar an overheat at `overheat_at` brought up. Gold ends the lockout cold, amber vents most of the heat
+/// and cuts the lockout short, and a miss or a fumble leaves the whole lockout, the fumble spitting gas as well.
+/obj/item/gun/energy/plasma_weapon/proc/resolve_overheat_vent(result, overheat_at)
+	switch(result)
+		if(PLASMA_VENT_RESULT_GOLD)
+			shutdown_until = 0
+			barrel_heat = 0
+			heat_updated_at = world.time
+			gold_until = world.time + gold_window
+			playsound(src, PLASMA_SOUND_VENT_GOLD, 50, TRUE)
+		if(PLASMA_VENT_RESULT_GRACE)
+			barrel_heat = max(barrel_heat - PLASMA_VENT_COOL, 0)
+			set_shutdown(min(shutdown_until, overheat_at + PLASMA_OVERHEAT_GRACE_LOCK))
+			playsound(src, PLASMA_SOUND_VENT_GRACE, 50, TRUE)
+		if(PLASMA_VENT_RESULT_FAIL)
+			vent_plasma(PLASMA_VENT_MOL)
+			var/turf/where = get_turf(src)
+			if(where)
+				where.visible_message(span_warning("[src] hisses and spits gas!"))
+			playsound(src, PLASMA_SOUND_VENT_FAIL, 50, TRUE)
+	update_heat_step()
+
 /// Stops a running vent without a result: the gun left the hand, or its holder can't go on
 /obj/item/gun/energy/plasma_weapon/proc/cancel_vent()
 	if(vent_started_at)
@@ -229,6 +282,7 @@
 /// Clears the running vent's state, timer, signals and bar
 /obj/item/gun/energy/plasma_weapon/proc/end_vent()
 	vent_started_at = 0
+	vent_overheat = FALSE
 	if(vent_timer)
 		deltimer(vent_timer)
 		vent_timer = null

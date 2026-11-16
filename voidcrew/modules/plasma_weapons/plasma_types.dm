@@ -72,6 +72,8 @@ GLOBAL_LIST_EMPTY(plasma_soot_decals)
 	var/vent_started_at = 0
 	/// Who is venting, while a vent runs
 	var/mob/living/vent_user
+	/// TRUE while the running vent is the one an overheat brought up, which works on the lockout
+	var/vent_overheat = FALSE
 	/// The running vent's sweep-end timer
 	var/vent_timer
 	/// The vent bar and its marker, images on vent_user shown to vent_client
