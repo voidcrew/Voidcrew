@@ -68,6 +68,10 @@
 /// Chance an edge tile kicks up a puff of dust, and the most puffs one landing makes
 #define LANDING_DUST_CHANCE 20
 #define LANDING_DUST_MAX 12
+/// Thruster wash before touchdown: most puffs per wave (three waves), the chance an edge tile throws one, how far they blow
+#define LANDING_WASH_PUFFS 7
+#define LANDING_WASH_CHANCE 35
+#define LANDING_WASH_PUSH 1.5
 /// How hard the screen shakes for those who feel a landing or a takeoff (tiles)
 #define LANDING_SHAKE 0.4
 /// How far from the hull people on the ground feel and hear it land or leave
@@ -93,7 +97,48 @@
 	QDEL_NULL(landing_animation)
 	if(!shuttle || !dock_to_use || !landing_animation_wanted(site))
 		return
-	landing_animation = new(src, site, dock_to_use, warmup + 1 SECONDS)
+	landing_animation = new(src, site, dock_to_use, landing_expected_move(warmup + 1 SECONDS) - world.time)
+
+/**
+ * world.time a hull whose move timer runs out in [delay] will actually move. SSshuttle only looks at its ports
+ * once a second, on a fixed beat, so the move comes at the first beat after the timer.
+ */
+/proc/landing_expected_move(delay)
+	// the port counts whole deciseconds left, rounding half a one down to none
+	var/earliest = world.time + delay - 0.5
+	var/beat = SSshuttle.next_fire
+	if(!beat || !SSshuttle.wait)
+		return earliest
+	while(beat < earliest)
+		beat += SSshuttle.wait
+	return beat
+
+/**
+ * Brings the lighting up to date now, not over the next few ticks. A hull that has just moved has every light
+ * and every tile aboard queued for an update, and SSlighting works through that queue a slice at a time, in
+ * ticks the move has already overrun: for a third of a second or more the whole hull draws black.
+ */
+/proc/landing_settle_lighting()
+	// the same three passes as SSlighting.fire(), without its tick limit
+	var/list/queue = SSlighting.current_sources + SSlighting.sources_queue
+	SSlighting.current_sources = list()
+	SSlighting.sources_queue = list()
+	for(var/datum/light_source/source as anything in queue)
+		source.update_corners()
+		if(!QDELETED(source))
+			source.needs_update = LIGHTING_NO_UPDATE
+	queue = SSlighting.corners_queue
+	SSlighting.corners_queue = list()
+	for(var/datum/lighting_corner/corner as anything in queue)
+		corner.needs_update = FALSE
+		corner.update_objects()
+	queue = SSlighting.objects_queue
+	SSlighting.objects_queue = list()
+	for(var/datum/lighting_object/lit as anything in queue)
+		if(QDELETED(lit))
+			continue
+		lit.update()
+		lit.needs_update = FALSE
 
 /// Ends the descent, removing every proxy and the shadow.
 /obj/structure/overmap/ship/proc/end_landing_animation()
@@ -119,12 +164,16 @@
 		var/list/pairs = landing_hull_pairs(src, new_dock)
 		descent = ship.landing_animation
 		descent?.freeze()
-		landing_touchdown(pairs[2])
+		landing_touchdown(pairs[2], pairs[1], descent)
 		// the crew aboard feel it too, though they are still in transit for the moment
-		landing_jolt(pairs[1], 'sound/effects/meteorimpact.ogg', 60, shake_strength = LANDING_SHAKE)
+		landing_jolt(pairs[1], 'voidcrew/sound/effects/landing/touchdown.ogg', 70, shake_strength = LANDING_SHAKE)
 	else if(ship.state == OVERMAP_SHIP_UNDOCKING && old_dock && !istype(old_dock, /obj/docking_port/stationary/transit) && istype(new_dock, /obj/docking_port/stationary/transit) && landing_animation_wanted(ship.undock_origin?.resolve()))
 		launch = new(landing_hull_pairs(src, new_dock)[1], src)
 	. = ..()
+	if((descent || launch) && . == DOCKING_SUCCESS)
+		landing_settle_lighting()
+	if(descent)
+		log_world("LANDING_DEBUG: touchdown expected [descent.touchdown_time] actual [world.time] ([world.time - descent.touchdown_time] late)")
 	if(launch)
 		if(. == DOCKING_SUCCESS)
 			launch.lift_off(landing_hull_pairs(src, old_dock)[1])
@@ -133,10 +182,14 @@
 	if(descent && !QDELETED(descent) && . == DOCKING_SUCCESS)
 		descent.landed()
 
-/// Hull on the ground: dust off the edges, and a jolt for everyone aboard and nearby.
-/proc/landing_touchdown(list/hull_turfs)
-	landing_dust(hull_turfs)
-	landing_jolt(hull_turfs, 'sound/effects/meteorimpact.ogg', 60, reach = LANDING_HEAR_RANGE, shake_strength = LANDING_SHAKE)
+/**
+ * Hull on the ground: dust off the edges, and a jolt for everyone nearby.
+ * * transit_turfs, descent - the hull's turfs in transit in the same order, and its descent, if the people aboard
+ *   should see the same dust beside the hull while it is still there
+ */
+/proc/landing_touchdown(list/hull_turfs, list/transit_turfs, datum/landing_animation/descent)
+	landing_dust(hull_turfs, transit_turfs, descent)
+	landing_jolt(hull_turfs, 'voidcrew/sound/effects/landing/touchdown.ogg', 70, reach = LANDING_HEAR_RANGE, shake_strength = LANDING_SHAKE)
 
 /**
  * Shakes the camera of, and plays [sound_file] to, every player on [hull_turfs] and, with [reach], everyone within
@@ -172,22 +225,28 @@
 		if(sound_file)
 			listener.playsound_local(hull_set[where] ? where : middle, sound_file, volume, TRUE, pressure_affected = FALSE, max_distance = reach + max(max_x - min_x, max_y - min_y))
 
-/// A few light puffs of dust kicked out from the hull's edges
-/proc/landing_dust(list/hull_turfs)
+/// A few light puffs of dust kicked out from the hull's edges, with twins in transit for a [descent]'s crew
+/proc/landing_dust(list/hull_turfs, list/transit_turfs, datum/landing_animation/descent)
 	var/list/hull_set = list()
 	for(var/turf/hull_turf as anything in hull_turfs)
 		hull_set[hull_turf] = TRUE
+	var/list/order = list()
+	for(var/i in 1 to length(hull_turfs))
+		order += i
 	var/puffs = 0
-	for(var/turf/hull_turf as anything in shuffle(hull_turfs.Copy()))
+	for(var/i in shuffle(order))
 		if(puffs >= LANDING_DUST_MAX)
 			break
+		var/turf/hull_turf = hull_turfs[i]
 		for(var/edge_dir in GLOB.cardinals)
 			var/turf/outside = get_step(hull_turf, edge_dir)
 			if(!outside || hull_set[outside] || isclosedturf(outside))
 				continue
 			if(!prob(LANDING_DUST_CHANCE))
 				break
-			new /obj/effect/temp_visual/landing_dust(outside, edge_dir)
+			var/list/shape = landing_dust_shape()
+			new /obj/effect/temp_visual/landing_dust(outside, edge_dir, 1, shape)
+			descent?.twin_dust(transit_turfs?[i], edge_dir, 1, shape)
 			puffs++
 			break
 
@@ -403,17 +462,25 @@
 	alpha = 0
 	duration = 2.4 SECONDS
 
-/// [push] scales how far it is blown: thruster wash drifts further than a settling hull's dust
-/obj/effect/temp_visual/landing_dust/Initialize(mapload, push_dir = NORTH, push = 1)
+/// Rolls the numbers one puff is drawn with, so its twin in transit space can be drawn exactly alike
+/proc/landing_dust_shape(push = 1)
+	return list(round(rand(14, 28) * push), rand(-6, 6), rand(-6, 6), push > 1 ? rand(110, 150) : rand(80, 120))
+
+/**
+ * * push - scales how far it is blown: thruster wash drifts further than a settling hull's dust
+ * * shape - the numbers from landing_dust_shape() to draw it with; rolled here if not given
+ */
+/obj/effect/temp_visual/landing_dust/Initialize(mapload, push_dir = NORTH, push = 1, list/shape)
 	. = ..()
 	SET_PLANE_IMPLICIT(src, ABOVE_LIGHTING_PLANE)
-	var/drift = round(rand(14, 28) * push)
+	shape ||= landing_dust_shape(push)
+	var/drift = shape[1]
 	if(push > 1) // thruster wash: as much air as dust, paler so it shows on sand too
 		color = "#e4ded2"
-	var/drift_w = (push_dir & EAST) ? drift : ((push_dir & WEST) ? -drift : rand(-6, 6))
-	var/drift_z = (push_dir & NORTH) ? drift : ((push_dir & SOUTH) ? -drift : rand(-6, 6))
+	var/drift_w = (push_dir & EAST) ? drift : ((push_dir & WEST) ? -drift : shape[2])
+	var/drift_z = (push_dir & NORTH) ? drift : ((push_dir & SOUTH) ? -drift : shape[3])
 	transform = matrix().Scale(0.45)
-	animate(src, alpha = push > 1 ? rand(110, 150) : rand(80, 120), transform = matrix().Scale(0.7), time = 0.3 SECONDS, easing = SINE_EASING | EASE_OUT)
+	animate(src, alpha = shape[4], transform = matrix().Scale(0.7), time = 0.3 SECONDS, easing = SINE_EASING | EASE_OUT)
 	animate(alpha = 0, transform = matrix().Scale(1.1), pixel_w = pixel_w + drift_w, pixel_z = pixel_z + drift_z, time = duration - 0.3 SECONDS, easing = SINE_EASING | EASE_OUT)
 
 /**
@@ -458,12 +525,16 @@
 	rotation = landing_rotation(ship.shuttle, dock)
 	touchdown_time = world.time + until_touchdown
 	give_up_time = touchdown_time + 60 SECONDS
+	inside_view = new(ship.shuttle, hull_turfs, berth_turfs, rotation, site, touchdown_time)
 	addtimer(CALLBACK(src, PROC_REF(show_shadow)), max(0, until_touchdown - LANDING_SHADOW_LEAD), TIMER_DELETE_ME)
 	addtimer(CALLBACK(src, PROC_REF(show_proxies)), max(0, until_touchdown - LANDING_PROXY_LEAD), TIMER_DELETE_ME)
+	for(var/lead in list(1.4 SECONDS, 0.9 SECONDS, 0.4 SECONDS))
+		addtimer(CALLBACK(src, PROC_REF(thruster_wash)), max(0, until_touchdown - lead), TIMER_DELETE_ME)
 	addtimer(CALLBACK(src, PROC_REF(watch)), 0.5 SECONDS, TIMER_DELETE_ME | TIMER_LOOP)
 
 /datum/landing_animation/Destroy(force)
 	QDEL_NULL(shadow)
+	QDEL_NULL(inside_view)
 	for(var/client/crew_client as anything in hidden_from)
 		crew_client?.images -= hidden_from[crew_client]
 	hidden_from = null
@@ -488,6 +559,7 @@
 	if(frozen)
 		return
 	frozen = TRUE
+	inside_view?.touchdown()
 	if(shadow) // under the hull now; let its blurred rim go gently
 		animate(shadow, alpha = 0, time = 0.4 SECONDS)
 		QDEL_IN(shadow, 0.4 SECONDS)
@@ -511,6 +583,7 @@
 	if(ship?.landing_animation == src)
 		ship.landing_animation = null
 	landed = TRUE
+	inside_view?.landed()
 	addtimer(CALLBACK(src, PROC_REF(fade_out)), LANDING_LIGHTING_SETTLE, TIMER_DELETE_ME)
 
 /// The real hull is lit again: the picture gives way to it
@@ -537,6 +610,47 @@
 	animate(time = max(1, spread_end))
 	animate(transform = matrix().Scale(LANDING_SHADOW_NEAR), alpha = 80, time = min(LANDING_PROXY_LEAD, time_left) * 2 / 3, easing = SINE_EASING)
 	animate(transform = matrix(), alpha = LANDING_SHADOW_DARK, time = min(LANDING_PROXY_LEAD, time_left) / 3, easing = SINE_EASING | EASE_OUT)
+
+/**
+ * The thrusters reach the ground in the last moments: dust blown out from under the hull's edges. Every puff on
+ * the berth has a twin in transit space beside the hull, drawn alike, so the people aboard see the same dust
+ * before the hull moves as after.
+ */
+/datum/landing_animation/proc/thruster_wash()
+	if(frozen || !length(berth_turfs))
+		return
+	var/list/berth_set = list()
+	for(var/turf/berth_turf as anything in berth_turfs)
+		berth_set[berth_turf] = TRUE
+	var/list/order = list()
+	for(var/i in 1 to length(berth_turfs))
+		order += i
+	var/puffs = 0
+	for(var/i in shuffle(order))
+		if(puffs >= LANDING_WASH_PUFFS)
+			break
+		var/turf/berth_turf = berth_turfs[i]
+		for(var/edge_dir in shuffle(GLOB.cardinals.Copy()))
+			var/turf/outside = get_step(berth_turf, edge_dir)
+			if(!outside || berth_set[outside] || isclosedturf(outside))
+				continue
+			if(!prob(LANDING_WASH_CHANCE))
+				break
+			var/list/shape = landing_dust_shape(LANDING_WASH_PUSH)
+			new /obj/effect/temp_visual/landing_dust(outside, edge_dir, LANDING_WASH_PUSH, shape)
+			twin_dust(hull_turfs[i], edge_dir, LANDING_WASH_PUSH, shape)
+			puffs++
+			break
+
+/// The twin, beside the hull in transit, of a puff of dust thrown from the [edge_dir] side of a berth tile
+/datum/landing_animation/proc/twin_dust(turf/hull_turf, edge_dir, push, list/shape)
+	if(!inside_view || !hull_turf)
+		return
+	// the same side of the same hull tile, as the hull lies in transit
+	var/transit_dir = rotation ? turn(edge_dir, rotation) : edge_dir
+	var/turf/transit_outside = get_step(hull_turf, transit_dir)
+	if(transit_outside)
+		inside_view.props += new /obj/effect/temp_visual/landing_dust(transit_outside, transit_dir, push, shape)
 
 /datum/landing_animation/proc/show_proxies()
 	if(!length(hull_turfs) || frozen)
@@ -744,4 +858,7 @@
 #undef LANDING_DUST_CHANCE
 #undef LANDING_DUST_MAX
 #undef LANDING_SHAKE
+#undef LANDING_WASH_PUFFS
+#undef LANDING_WASH_CHANCE
+#undef LANDING_WASH_PUSH
 #undef LANDING_HEAR_RANGE
