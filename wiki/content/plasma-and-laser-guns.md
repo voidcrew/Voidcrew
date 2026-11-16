@@ -58,7 +58,7 @@ Plasma bolts are slower than lasers and bullets, so a target far away can step o
 - **Burns:** bolts leave plasma burns that get worse with every hit on the same spot. They do not set people on fire. See [Plasma burns](#plasma-burns) below.
 - **Cuts:** a bolt sears the cuts on the limb it hits, so they bleed less.
 - **Limbs:** an arm or leg that is already badly hurt melts away under a bolt. A rifle bolt also melts an arm or leg with a Plasma Burn-Through that still has slag in it. One bolt never melts a healthy limb. Heads and chests never melt.
-- **Glass and doors:** bolts stop at windows and break them. They break windows, tables, other structures and doors faster than other guns: a shuttle window takes two rifle bolts or four pistol bolts, an airlock about four rifle bolts. Grilles and blast doors shrug them off, and mechs and machines take no extra damage.
+- **Glass and doors:** bolts stop at windows and grilles and break them. They break every structure and door the same way, however armoured, and faster than other guns: one bolt breaks through a grille, a shuttle window takes three rifle bolts or five pistol bolts, an airlock five rifle bolts and a blast door ten. Mechs and machines take no extra damage. The walls, doors and gates of trader outposts and the Colosseum hold as usual.
 - **Fuel gas:** a bolt passing through plasma, tritium or hydrogen in the air can light it. Clean air never lights.
 - **Canisters:** bolts do not damage gas canisters.
 

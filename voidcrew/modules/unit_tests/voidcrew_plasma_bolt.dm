@@ -62,6 +62,64 @@
 	TEST_ASSERT_EQUAL(rifle_bolt.get_demolition_modifier(door), PLASMA_DEMOLITION_RIFLE, "a rifle bolt does not break doors faster")
 	var/obj/machinery/recharger/machine = allocate(/obj/machinery/recharger, turf_at(1, 1))
 	TEST_ASSERT_EQUAL(rifle_bolt.get_demolition_modifier(machine), 1, "a rifle bolt breaks ordinary machines faster")
+	TEST_ASSERT_EQUAL(rifle_bolt.get_object_armour_penetration(machine), rifle_bolt.armour_penetration, "a rifle bolt ignores an ordinary machine's armour")
+	TEST_ASSERT_EQUAL(rifle_bolt.get_object_armour_penetration(canister), rifle_bolt.armour_penetration, "a rifle bolt ignores a canister's armour")
+
+/// Every structure and door takes the same hit, whatever its armour: grilles, blast doors and shutters (energy armour
+/// 100, 100 and 75) included. A rifle bolt takes 60, a pistol bolt 33.
+/datum/unit_test/voidcrew_plasma_bolt/armoured_structures
+
+/datum/unit_test/voidcrew_plasma_bolt/armoured_structures/Run()
+	var/turf/open/here = turf_at(1, 1)
+	var/rifle_hit = /obj/projectile/energy/plasma_bolt/heavy::damage * PLASMA_DEMOLITION_RIFLE
+	var/pistol_hit = /obj/projectile/energy/plasma_bolt::damage * PLASMA_DEMOLITION_PISTOL
+	TEST_ASSERT_EQUAL(rifle_hit, 60, "a rifle bolt's structure hit changed")
+	TEST_ASSERT_EQUAL(pistol_hit, 33, "a pistol bolt's structure hit changed")
+
+	// A grille's energy armour is 100: other energy hits do nothing, a plasma bolt the full hit.
+	// (A broken grille resets to 20 integrity, so the hit is read off its armour, not its integrity.)
+	var/obj/structure/grille/grille = allocate(/obj/structure/grille, turf_at(2, 1))
+	var/obj/projectile/energy/plasma_bolt/heavy/grille_bolt = make_bolt(/obj/projectile/energy/plasma_bolt/heavy, here)
+	TEST_ASSERT_EQUAL(grille.run_atom_armor(rifle_hit, BURN, ENERGY, null, grille_bolt.armour_penetration), 0, "a grille's armour no longer stops other energy hits")
+	TEST_ASSERT_EQUAL(grille.run_atom_armor(rifle_hit, BURN, ENERGY, null, grille_bolt.get_object_armour_penetration(grille)), rifle_hit, "a rifle bolt doesn't land its full [rifle_hit] on a grille")
+	grille.projectile_hit(make_bolt(/obj/projectile/energy/plasma_bolt, here))
+	TEST_ASSERT(QDELETED(grille) || !grille.density, "one pistol bolt didn't break through a grille")
+
+	var/obj/structure/grille/rifle_grille = allocate(/obj/structure/grille, turf_at(2, 2))
+	rifle_grille.projectile_hit(make_bolt(/obj/projectile/energy/plasma_bolt/heavy, here))
+	TEST_ASSERT(QDELETED(rifle_grille) || !rifle_grille.density, "one rifle bolt didn't break through a grille")
+
+	var/obj/machinery/door/poddoor/blast = allocate(/obj/machinery/door/poddoor, turf_at(3, 1))
+	var/blast_before = blast.get_integrity()
+	blast.projectile_hit(make_bolt(/obj/projectile/energy/plasma_bolt/heavy, here))
+	TEST_ASSERT_EQUAL(blast_before - blast.get_integrity(), rifle_hit, "a rifle bolt took [blast_before - blast.get_integrity()] from a blast door, expected [rifle_hit]")
+	TEST_ASSERT_EQUAL(plasma_bolt_test_bolts_to_destroy(src, blast, /obj/projectile/energy/plasma_bolt/heavy, here, 1), 10, "a blast door didn't take ten rifle bolts")
+
+	var/obj/machinery/door/poddoor/shutters/shutters = allocate(/obj/machinery/door/poddoor/shutters, turf_at(3, 2))
+	var/shutters_before = shutters.get_integrity()
+	shutters.projectile_hit(make_bolt(/obj/projectile/energy/plasma_bolt, here))
+	TEST_ASSERT_EQUAL(shutters_before - shutters.get_integrity(), pistol_hit, "a pistol bolt took [shutters_before - shutters.get_integrity()] from shutters, expected [pistol_hit]")
+
+	var/obj/machinery/door/airlock/public/airlock = allocate(/obj/machinery/door/airlock/public, turf_at(4, 1))
+	TEST_ASSERT_EQUAL(plasma_bolt_test_bolts_to_destroy(src, airlock, /obj/projectile/energy/plasma_bolt/heavy, here), 5, "an airlock didn't take five rifle bolts")
+	var/obj/structure/window/reinforced/shuttle/window = allocate(/obj/structure/window/reinforced/shuttle, turf_at(4, 2))
+	TEST_ASSERT_EQUAL(plasma_bolt_test_bolts_to_destroy(src, window, /obj/projectile/energy/plasma_bolt/heavy, here), 3, "a shuttle window didn't take three rifle bolts")
+	var/obj/structure/window/reinforced/shuttle/pistol_window = allocate(/obj/structure/window/reinforced/shuttle, turf_at(5, 2))
+	TEST_ASSERT_EQUAL(plasma_bolt_test_bolts_to_destroy(src, pistol_window, /obj/projectile/energy/plasma_bolt, here), 5, "a shuttle window didn't take five pistol bolts")
+
+	// Indestructible things still take nothing
+	var/obj/machinery/door/poddoor/ert/sealed = allocate(/obj/machinery/door/poddoor/ert, turf_at(5, 1))
+	var/sealed_before = sealed.get_integrity()
+	sealed.projectile_hit(make_bolt(/obj/projectile/energy/plasma_bolt/heavy, here))
+	TEST_ASSERT_EQUAL(sealed.get_integrity(), sealed_before, "a rifle bolt damaged an indestructible blast door")
+
+/// Hits `target` with bolts of `bolt_type` until it is gone. Returns the bolts it took, counting `already` earlier hits.
+/proc/plasma_bolt_test_bolts_to_destroy(datum/unit_test/voidcrew_plasma_bolt/test, obj/target, bolt_type, turf/here, already = 0)
+	var/bolts = already
+	while(!QDELETED(target) && target.get_integrity() > 0 && bolts < 40)
+		target.projectile_hit(test.make_bolt(bolt_type, here))
+		bolts++
+	return bolts
 
 /// A flying bolt lights a turf holding fuel gas and oxygen, and nothing in clean air or vacuum.
 /datum/unit_test/voidcrew_plasma_bolt/ignition
