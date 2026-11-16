@@ -139,6 +139,48 @@ function bindsOf(block: SettingsKeysBlock | undefined, id: string): string[] {
 
 const upper = (s: string) => safe(s).toUpperCase();
 
+/** BYOND's names for the arrow and paging keys, as the keys are labelled. */
+const KEY_LABEL: Record<string, string> = {
+  North: 'UP',
+  South: 'DOWN',
+  East: 'RIGHT',
+  West: 'LEFT',
+  Northeast: 'PGUP',
+  Southeast: 'PGDN',
+  Northwest: 'HOME',
+  Southwest: 'END',
+};
+/** BYOND's modifier order in a stored key. */
+const MODIFIERS = ['Alt', 'Ctrl', 'Shift'];
+
+/**
+ * A stored key as players read it, for display only (what is stored and sent stays BYOND's):
+ * CtrlShiftNumpad5 -> CTRL+SHIFT+NUMPAD5, AltF -> ALT+F, CtrlShift -> CTRL+SHIFT,
+ * NumpadNortheast -> NUMPAD PGUP.
+ */
+function keyText(stored: string): string {
+  const parts: string[] = [];
+  let rest = stored;
+  for (const mod of MODIFIERS) {
+    if (rest.startsWith(mod)) {
+      parts.push(mod.toUpperCase());
+      rest = rest.slice(mod.length);
+    }
+  }
+  if (rest) {
+    const pad = rest.startsWith('Numpad') && rest.length > 6;
+    const key = pad ? rest.slice(6) : rest;
+    const name = KEY_LABEL[key] || key.toUpperCase();
+    parts.push(
+      pad ? (/^[0-9]$/.test(key) ? `NUMPAD${name}` : `NUMPAD ${name}`) : name,
+    );
+  }
+  return upper(parts.join('+'));
+}
+
+/** An action's keys, each as keyText(), between commas. */
+const keysText = (keys: string[]) => keys.map(keyText).join(', ');
+
 /** An empty slot. */
 const EMPTY = '---';
 /** tg's MAX_HOTKEY_SLOTS. */
@@ -443,10 +485,10 @@ function KeyEdit(props: { id: string }) {
         let text: string;
         let cls: string;
         if (listening) {
-          text = held ? upper(held) : 'PRESS A KEY';
+          text = held ? keyText(held) : 'PRESS A KEY';
           cls = held || lit ? 'wht' : 'faint';
         } else if (key) {
-          text = cut(upper(key), SLOT_TEXT_W);
+          text = cut(keyText(key), SLOT_TEXT_W);
           cls = sel === i ? 'wht' : '';
         } else {
           text = EMPTY;
@@ -566,7 +608,7 @@ export function SettingsKeys() {
           .map(([id, info]) => {
             const NAME = upper(info.name || id);
             const keys = bindsOf(block, id);
-            const all = keys.map(upper).join(' ');
+            const all = keysText(keys);
             return {
               key: id,
               name: NAME,

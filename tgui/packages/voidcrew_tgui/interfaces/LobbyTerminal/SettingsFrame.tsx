@@ -91,10 +91,10 @@ export const SettingsContext = createContext<SettingsNav>({
 export const useSettings = () => useContext(SettingsContext);
 
 /** A row's height: one line, or two when the name wraps. */
-export const rowHeight = (name: string) => (name.length > NAME_W ? 2.25 : 1.25);
+const rowHeight = (name: string) => (name.length > NAME_W ? 2.25 : 1.25);
 
 /** The name's lines in its zone (at most two; a longer one ends in the cut mark). */
-export const nameLines = (name: string) => wrapMax(name, NAME_W, 2);
+const nameLines = (name: string) => wrapMax(name, NAME_W, 2);
 
 /** tg's own order: by name, as a plain string compare (GamePreferencesPage binaryInsert). */
 export const byName = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
@@ -226,9 +226,10 @@ function SettingRow(props: {
   h: number;
   alt: boolean;
   auto?: number;
+  /** The mouse is over the row. */
   onSeen: (key: string) => void;
   /** Told when the row gains or loses the focus. */
-  onFocused: (on: boolean) => void;
+  onFocused: (key: string, on: boolean) => void;
 }) {
   const { spec, y, h, alt, auto, onSeen, onFocused } = props;
   const [focused, setFocused] = useState(false);
@@ -250,10 +251,7 @@ function SettingRow(props: {
         auto={auto}
         onFocus={(on) => {
           setFocused(on);
-          onFocused(on);
-          if (on) {
-            onSeen(spec.key);
-          }
+          onFocused(spec.key, on);
         }}
         onClick={live ? () => spec.onPress?.() : undefined}
         edge={
@@ -332,9 +330,12 @@ export function SettingsColumns(props: {
   const { subOpen, closeSub } = useSettings();
   const { rows: M } = useGrid();
   const [page, setPage] = useState(0);
+  /** The strip describes the row under the mouse, else the focused row, else nothing. */
   const [seen, setSeen] = useState<string | null>(null);
-  /** The focus is on a row; Escape then goes up to the list before it leaves the screen. */
-  const [inRows, setInRows] = useState(false);
+  /** The focused row; Escape then goes up to the list before it leaves the screen. */
+  const [focusRow, setFocusRow] = useState<string | null>(null);
+  /** The search field's box: a row taking the focus (the mouse, say) takes the keys out of it. */
+  const findBox = useRef<HTMLDivElement>(null);
   const [bump, setBump] = useState(0);
 
   // A new category or search starts on its first page with no description.
@@ -344,18 +345,9 @@ export function SettingsColumns(props: {
   }, [cat, find]);
   useEffect(() => {
     if (subOpen) {
-      setInRows(false);
+      setFocusRow(null);
     }
   }, [subOpen]);
-  useBack(
-    subOpen
-      ? null
-      : find
-        ? () => onFind?.('')
-        : inRows
-          ? () => setBump((n) => n + 1)
-          : null,
-  );
 
   const heights = rows.map((r) => rowHeight(r.name));
   const total = heights.reduce((a, b) => a + b, 0);
@@ -377,6 +369,19 @@ export function SettingsColumns(props: {
   const pg = clamp(page, 0, pages.length - 1);
   useListPager(pg, subOpen ? 1 : pages.length, setPage);
   const onWheel = useWheelPages(pg, pages.length, setPage);
+  // A row that went away (another page, category or search) never says it lost the focus.
+  const shownRow = (key: string | null) =>
+    key !== null && pages[pg].some((i) => rows[i].key === key);
+  const inRows = shownRow(focusRow);
+  useBack(
+    subOpen
+      ? null
+      : find
+        ? () => onFind?.('')
+        : inRows
+          ? () => setBump((n) => n + 1)
+          : null,
+  );
 
   const onCatPress = (id: string) => {
     if (subOpen) {
@@ -392,19 +397,21 @@ export function SettingsColumns(props: {
   const list = (
     <>
       {!!onFind && (
-        <Field
-          x={LIST_X}
-          y={FIND_Y}
-          w={LIST_W}
-          h={1.25}
-          value={find}
-          max={24}
-          hint="SEARCH"
-          onChange={(v) => onFind(v.toUpperCase())}
-          onEnter={() =>
-            (document.activeElement as HTMLElement | null)?.blur()
-          }
-        />
+        <div ref={findBox}>
+          <Field
+            x={LIST_X}
+            y={FIND_Y}
+            w={LIST_W}
+            h={1.25}
+            value={find}
+            max={24}
+            hint="SEARCH"
+            onChange={(v) => onFind(v.toUpperCase())}
+            onEnter={() =>
+              (document.activeElement as HTMLElement | null)?.blur()
+            }
+          />
+        </div>
       )}
       <CategoryList
         cats={cats}
@@ -433,21 +440,34 @@ export function SettingsColumns(props: {
         alt={n % 2 === 1}
         auto={spec.claim || spec.key === focusKey ? 5 : undefined}
         onSeen={setSeen}
-        onFocused={setInRows}
+        onFocused={(key, on) => {
+          if (on) {
+            const typing = document.activeElement;
+            if (typing && findBox.current?.contains(typing)) {
+              (typing as HTMLElement).blur();
+            }
+          }
+          setFocusRow((was) => (on ? key : was === key ? null : was));
+        }}
       />
     );
     y += h;
     return row;
   });
 
-  const desc = safe(rows.find((r) => r.key === seen)?.desc || '').toUpperCase();
+  const described = seen ?? (inRows ? focusRow : null);
+  const desc = safe(
+    rows.find((r) => r.key === described)?.desc || '',
+  ).toUpperCase();
   const descLines = desc ? wrapMax(desc, DESC_W, 2) : [];
   const rowsBottom = paged ? M - 4.75 : M - 3.5;
 
   return (
     <>
       {list}
-      <div onWheel={onWheel}>{drawn}</div>
+      <div onWheel={onWheel} onMouseLeave={() => setSeen(null)}>
+        {drawn}
+      </div>
       {!rows.length && (!!empty || !!find) && (
         <NameLine
           x={NAME_X}
