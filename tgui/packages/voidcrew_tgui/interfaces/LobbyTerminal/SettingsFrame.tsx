@@ -91,10 +91,10 @@ export const SettingsContext = createContext<SettingsNav>({
 export const useSettings = () => useContext(SettingsContext);
 
 /** A row's height: one line, or two when the name wraps. */
-export const rowHeight = (name: string) => (name.length > NAME_W ? 2.25 : 1.25);
+const rowHeight = (name: string) => (name.length > NAME_W ? 2.25 : 1.25);
 
 /** The name's lines in its zone (at most two; a longer one ends in the cut mark). */
-export const nameLines = (name: string) => wrapMax(name, NAME_W, 2);
+const nameLines = (name: string) => wrapMax(name, NAME_W, 2);
 
 /** tg's own order: by name, as a plain string compare (GamePreferencesPage binaryInsert). */
 export const byName = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
@@ -334,7 +334,6 @@ export function SettingsColumns(props: {
   const [seen, setSeen] = useState<string | null>(null);
   /** The focused row; Escape then goes up to the list before it leaves the screen. */
   const [focusRow, setFocusRow] = useState<string | null>(null);
-  const inRows = focusRow !== null;
   /** The search field's box: a row taking the focus (the mouse, say) takes the keys out of it. */
   const findBox = useRef<HTMLDivElement>(null);
   const [bump, setBump] = useState(0);
@@ -349,15 +348,6 @@ export function SettingsColumns(props: {
       setFocusRow(null);
     }
   }, [subOpen]);
-  useBack(
-    subOpen
-      ? null
-      : find
-        ? () => onFind?.('')
-        : inRows
-          ? () => setBump((n) => n + 1)
-          : null,
-  );
 
   const heights = rows.map((r) => rowHeight(r.name));
   const total = heights.reduce((a, b) => a + b, 0);
@@ -379,6 +369,19 @@ export function SettingsColumns(props: {
   const pg = clamp(page, 0, pages.length - 1);
   useListPager(pg, subOpen ? 1 : pages.length, setPage);
   const onWheel = useWheelPages(pg, pages.length, setPage);
+  // A row that went away (another page, category or search) never says it lost the focus.
+  const shownRow = (key: string | null) =>
+    key !== null && pages[pg].some((i) => rows[i].key === key);
+  const inRows = shownRow(focusRow);
+  useBack(
+    subOpen
+      ? null
+      : find
+        ? () => onFind?.('')
+        : inRows
+          ? () => setBump((n) => n + 1)
+          : null,
+  );
 
   const onCatPress = (id: string) => {
     if (subOpen) {
@@ -452,7 +455,7 @@ export function SettingsColumns(props: {
     return row;
   });
 
-  const described = seen ?? focusRow;
+  const described = seen ?? (inRows ? focusRow : null);
   const desc = safe(
     rows.find((r) => r.key === described)?.desc || '',
   ).toUpperCase();

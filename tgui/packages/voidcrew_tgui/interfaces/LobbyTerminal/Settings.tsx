@@ -14,9 +14,9 @@
  *
  * ## How a group plugs in (SettingsOptions.tsx, SettingsKeys.tsx)
  *
- * Everything below is exported from SettingsFrame.tsx (re-exported here). Import it from
- * './SettingsFrame', not './Settings': Settings.tsx imports the two panes, so a pane importing it
- * back would read its constants before they exist.
+ * Everything below is exported from SettingsFrame.tsx. The panes import it from there, not from
+ * './Settings': Settings.tsx imports the two panes, so a pane importing it back would read its
+ * constants before they exist.
  *
  * Each group owns its data (OPTIONS: settings_open/set/close; KEYS: its own settings_keys_*
  * actions, which settings_act() routes to settings_keys_act()) and draws the two columns with
@@ -60,8 +60,6 @@ import { SettingsKeys } from './SettingsKeys';
 import { SettingsOptions } from './SettingsOptions';
 import { BODY_Y, Box, Put, useGrid, WipeAt } from './term';
 import type { LobbyData } from './types';
-
-export * from './SettingsFrame';
 
 /** The box, with SAVED on the border for two seconds after a save. */
 function SettingsBox() {

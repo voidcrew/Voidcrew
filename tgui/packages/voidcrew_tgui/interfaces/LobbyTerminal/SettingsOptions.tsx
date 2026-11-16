@@ -74,7 +74,7 @@ const optionCache: Record<string, [string, string][] | null> = {};
  * called once, outside React: a plain function returning a Dropdown whose options carry the
  * labels. Anything else (a component with hooks, another shape) gives null.
  */
-export function dropdownOptions(key: string): [string, string][] | null {
+function dropdownOptions(key: string): [string, string][] | null {
   if (key in optionCache) {
     return optionCache[key];
   }
