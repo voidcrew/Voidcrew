@@ -919,10 +919,11 @@
 /// Layers on the cradle: the rig over the ware, both over the patient.
 #define RIG_LAYER (ABOVE_MOB_LAYER + 0.02)
 #define RIG_WARE_LAYER (ABOVE_MOB_LAYER + 0.01)
-/// The gripper's tip, as pixel offsets of the carried ware's centre on the cradle tile.
-#define RIG_WARE_X 4
-#define RIG_WARE_PARKED_Y 19
-#define RIG_WARE_WORK_Y 2
+/// The gripper's tip, as pixel offsets of the carried ware's centre on the cradle tile:
+/// tucked in the rig's head, then down on the patient's chest. Matches the rig sheet's gripper.
+#define RIG_WARE_X 1
+#define RIG_WARE_PARKED_Y 21
+#define RIG_WARE_WORK_Y -4
 /// How long each move of the rig takes, matching its art.
 #define RIG_GRIP_TIME (0.6 SECONDS)
 #define RIG_PRESS_TIME (0.4 SECONDS)
@@ -940,6 +941,11 @@
 
 /obj/machinery/chrome_cradle/update_overlays()
 	. = ..()
+	// The plinth and mast the rig stands on, behind the slab and under the patient.
+	var/mutable_appearance/frame = mutable_appearance(CHROME_CRADLE_RIG_ICON, "frame", layer - 0.01)
+	frame.pixel_x = -16
+	frame.pixel_y = -16
+	. += frame
 	if(rig_phase)
 		return
 	// The parked rig, over whoever lies on the slab.
@@ -994,7 +1000,10 @@
 	carried.transform = matrix().Scale(0.45)
 	carried.pixel_x = RIG_WARE_X
 	carried.pixel_y = RIG_WARE_PARKED_Y
+	// It comes out of the head: unseen at first, in view as it clears the pod.
+	carried.alpha = 0
 	animate(carried, pixel_y = RIG_WARE_WORK_Y, time = RIG_GRIP_TIME, easing = CUBIC_EASING | EASE_OUT)
+	animate(carried, alpha = 255, time = 0.1 SECONDS, flags = ANIMATION_PARALLEL)
 	rig_ware_ref = WEAKREF(carried)
 
 /// The sequence is over, done or not: the rig pulls back and parks.

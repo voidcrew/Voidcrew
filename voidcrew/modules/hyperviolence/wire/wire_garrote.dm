@@ -62,6 +62,8 @@
 	var/datum/hv_finisher/garrote/garrote_running
 	/// TRUE while the garrote swings the wire for real, so the swing isn't taken for a new garrote.
 	var/garrote_blow = FALSE
+	/// TRUE while the garrote's own blow lands: it cuts the victim alone, never anyone behind (wire_through_target()).
+	var/garrote_no_cleave = FALSE
 
 /obj/item/melee/cyberware_monowire/pre_attack(atom/target, mob/living/user, list/modifiers, list/attack_modifiers)
 	. = ..()
@@ -300,9 +302,11 @@
 	var/old_wound_bonus = wire.wound_bonus
 	wire.wound_bonus += extra_wound_bonus
 	wire.garrote_blow = TRUE
+	wire.garrote_no_cleave = TRUE
 	wire.melee_attack_chain(user, victim)
 	if(!QDELETED(wire))
 		wire.garrote_blow = FALSE
+		wire.garrote_no_cleave = FALSE
 		wire.wound_bonus = old_wound_bonus
 	if(!QDELETED(user))
 		user.set_combat_mode(old_combat_mode)

@@ -10,8 +10,8 @@
  *   beat and slides off after (wire_sever_fx.dm). Someone on their feet who loses a leg goes down once it has
  *   dropped (wire_leg_fall()): tg's own knockdown, so the fall is tg's and they get up again on one leg.
  * - The Arc's charged wire sears the stump shut: little blood, no spray (wire_sever_fx.dm).
- * - It carries on into whoever stands right behind the target, and cleaves everyone else beside it, all as
- *   lines of the one hit message. Hurting someone at a trader outpost this way counts as an attack there.
+ * - It carries on into one body standing right behind the target, along the swing's line, and nobody else, as a
+ *   line of the one hit message. Hurting someone at a trader outpost this way counts as an attack there.
  * - With a wire out in each hand, every third landed hit in a row crosses both through the target: both wires
  *   lash out, and the sever takes a limb at half the usual damage.
  * - The aimed sever, the crossing cut and the garrote are the wielder's moves, open to whoever
@@ -252,60 +252,66 @@
 		return
 	victim.Knockdown(WIRE_LEG_KNOCKDOWN)
 
-// ---- Through and around ----
+// ---- Through ----
 
 /**
- * The wire carries on past the target: whoever stands right behind it (along the swing) takes the through-cut, and
- * the swing's lash runs on through the target to them (wire_lash_through()), even when the target's own cut shows
- * as well (`clean`: a limb coming off, a crossing cut), so whoever is behind sees what cut them; anyone else beside
- * the target takes the plain cleave. Both deal the wire's cleave share and cut clean. Lines join the hit's message.
+ * The wire carries on past the target into one body at most: the first one standing on the tile right behind it, along
+ * the swing, that the swing's lash can run on through the target to (wire_through_line()). It is picked by that same
+ * line before anything is cut, so whoever the wire carries into always gets the line (wire_lash_through()), even when
+ * the target's own cut shows as well (`clean`: a limb coming off, a crossing cut). Nobody else beside the target is
+ * touched. The cut deals the wire's cleave share, cuts clean, and never takes a limb off. Its line joins the hit's message.
  */
 /obj/item/melee/cyberware_monowire/proc/wire_cleave(mob/living/target, mob/living/user, clean = FALSE)
-	var/direction = get_dir(user, target) || user.dir
-	var/turf/target_turf = get_step(target, direction)
-	var/mob/living/behind
-	var/cleaved = FALSE
-	for(var/mob/living/nearby in orange(1, target))
-		if(nearby == user || nearby == target || nearby.stat == DEAD)
-			continue
-		if(!can_see(target, nearby, 1))
-			continue
-		if(cyberware_is_ally(user, nearby))
-			continue
-		wire_cleave_cut(nearby, user)
-		if(QDELETED(nearby))
-			continue
-		if(!behind && get_turf(nearby) == target_turf)
-			behind = nearby
-		else
-			to_chat(nearby, span_userdanger("[user]'s monowire carries through into you!"))
-			cleaved = TRUE
-	if(behind)
-		wire_through_fx(user, target, behind, direction, clean)
-		lash_through = WEAKREF(behind)
-		target.hv_add_hit_line("The wire carries through into [behind]!", HV_LINE_BOLD)
-		to_chat(behind, span_userdanger("The wire carries through into you!"))
-	if(cleaved)
-		target.hv_add_hit_line("The wire sings through everything beside [target]!")
-	if(behind || cleaved)
-		playsound(target, 'sound/items/weapons/bladeslice.ogg', 50, TRUE)
-
-/// One cleave cut on `nearby`: both halves of the wire's damage at the cleave share, one armour roll, cut clean.
-/obj/item/melee/cyberware_monowire/proc/wire_cleave_cut(mob/living/nearby, mob/living/user)
-	// A cleave is an attack like the swing itself, so trader outposts see it.
-	GLOB.outpost_pvp_enforcement?.register_pvp_aggression(nearby, user)
-	var/cleave_block = nearby.run_armor_check(BODY_ZONE_CHEST, MELEE, armour_penetration = armour_penetration)
-	ADD_TRAIT(nearby, TRAIT_HV_CLEAN_CUT, REF(src))
-	nearby.apply_damage(force * cleave_mult, BRUTE, BODY_ZONE_CHEST, cleave_block, wound_bonus = wound_bonus, sharpness = SHARP_EDGED, attack_direction = get_dir(user, nearby))
-	if(!QDELETED(nearby))
-		nearby.apply_damage(charge_burn * cleave_mult, BURN, BODY_ZONE_CHEST, cleave_block)
-	if(QDELETED(nearby))
+	var/mob/living/behind = wire_through_target(target, user)
+	if(!behind)
 		return
-	REMOVE_TRAIT(nearby, TRAIT_HV_CLEAN_CUT, REF(src))
-	// tg's roll may have wanted a limb: it comes off clean, as it would have come off anyway.
-	var/obj/item/bodypart/owed = nearby.hv_wire_owed_sever
-	nearby.hv_wire_owed_sever = null
-	if(owed?.owner == nearby && wire_can_sever(owed, user, corpse = FALSE))
-		wire_sever(owed, user, get_dir(user, nearby), FALSE)
+	var/direction = get_dir(user, target)
+	wire_cleave_cut(behind, user)
+	if(QDELETED(behind))
+		return
+	wire_through_fx(user, target, behind, direction, clean)
+	lash_through = WEAKREF(behind)
+	target.hv_add_hit_line("The wire carries through into [behind]!", HV_LINE_BOLD)
+	to_chat(behind, span_userdanger("The wire carries through into you!"))
+	playsound(target, 'sound/items/weapons/bladeslice.ogg', 50, TRUE)
+
+/// Who a swing at `target` carries on into (wire_cleave()): the first living body, not the wielder's crew, on the tile
+/// right behind it along the swing that a line can run to from the hand through `target`, or null. Not a garrote's blow.
+/obj/item/melee/cyberware_monowire/proc/wire_through_target(mob/living/target, mob/living/user)
+	if(garrote_no_cleave || !isliving(target) || !isliving(user))
+		return null
+	var/turf/from = get_turf(user)
+	var/turf/first = get_turf(target)
+	if(!from || !first || from == first)
+		return null
+	var/turf/behind_turf = get_step(first, get_dir(from, first))
+	if(!behind_turf)
+		return null
+	for(var/mob/living/candidate in behind_turf)
+		if(candidate == user || candidate == target || candidate.stat == DEAD)
+			continue
+		if(!can_see(target, candidate, 1))
+			continue
+		if(cyberware_is_ally(user, candidate))
+			continue
+		if(!wire_through_line(user, target, candidate))
+			continue
+		return candidate
+	return null
+
+/// One cut on `behind`: both halves of the wire's damage at the cleave share, one armour roll, cut clean. A limb tg's
+/// wound roll wanted stays on: only the swing's own target loses limbs to the wire.
+/obj/item/melee/cyberware_monowire/proc/wire_cleave_cut(mob/living/behind, mob/living/user)
+	// A cleave is an attack like the swing itself, so trader outposts see it.
+	GLOB.outpost_pvp_enforcement?.register_pvp_aggression(behind, user)
+	var/cleave_block = behind.run_armor_check(BODY_ZONE_CHEST, MELEE, armour_penetration = armour_penetration)
+	ADD_TRAIT(behind, TRAIT_HV_CLEAN_CUT, REF(src))
+	behind.apply_damage(force * cleave_mult, BRUTE, BODY_ZONE_CHEST, cleave_block, wound_bonus = wound_bonus, sharpness = SHARP_EDGED, attack_direction = get_dir(user, behind))
+	if(!QDELETED(behind))
+		behind.apply_damage(charge_burn * cleave_mult, BURN, BODY_ZONE_CHEST, cleave_block)
+	if(QDELETED(behind))
+		return
+	REMOVE_TRAIT(behind, TRAIT_HV_CLEAN_CUT, REF(src))
+	behind.hv_wire_owed_sever = null
 
 #undef WIRE_CROSS_LASH_LAG

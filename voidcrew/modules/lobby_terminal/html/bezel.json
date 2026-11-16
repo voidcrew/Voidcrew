@@ -1,0 +1,146 @@
+{
+ "_note": "All numbers are 1x pixels. Multiply by the integer scale s. Built by ~/code/tg-tools/lobby-terminal-art/make_pieces.py.",
+ "scale": {
+  "rule": "s = clamp(min(floor(paneH / 360), floor(paneW / min_width)), 1, 4)",
+  "min_width": 472,
+  "base_height": 360
+ },
+ "frame": {
+  "file": "frame_9slice.png",
+  "size": [
+   132,
+   28
+  ],
+  "slice": {
+   "top": 18,
+   "right": 64,
+   "bottom": 6,
+   "left": 64
+  },
+  "note": "Covers the pane from the top down to the deck. Centre is transparent; draw it over the screen."
+ },
+ "screen": {
+  "inset": {
+   "top": 15,
+   "left": 13,
+   "right": 13,
+   "bottom": 52
+  },
+  "note": "Glass rect inside the whole bezel. The frame paints rounded corner pixels on top of it."
+ },
+ "strip_top": {
+  "file": "strip_top.png",
+  "size": [
+   61,
+   8
+  ],
+  "top": 3,
+  "center_x": true
+ },
+ "deck": {
+  "file": "deck.png",
+  "height": 49,
+  "slice": {
+   "left": 26,
+   "right": 26
+  },
+  "note": "Full width, bottom of the pane. Hazard posts and bottom screws live in the end caps."
+ },
+ "keys": {
+  "left": 30,
+  "top": 6,
+  "gap": 4,
+  "sizes": {
+   "join": [
+    68,
+    34
+   ],
+   "ready": [
+    68,
+    34
+   ],
+   "notready": [
+    68,
+    34
+   ],
+   "observe": [
+    84,
+    34
+   ],
+   "character": [
+    100,
+    34
+   ]
+  },
+  "files": "key_<join|ready|notready|observe|character>_<idle|hover|pressed|disabled>.png",
+  "order": [
+   "join or ready/notready",
+   "observe",
+   "character"
+  ],
+  "note": "Images include the 2 px dark well. ready = player readied (green legend), notready = red legend."
+ },
+ "lamp": {
+  "files": "lamp_<ready|notready|off>.png",
+  "size": [
+   10,
+   9
+  ],
+  "after_key": "ready/notready",
+  "margin_left": 2,
+  "margin_right": 1,
+  "top": 17,
+  "note": "Sits between the READY key and OBSERVE (pre-round only). Cropped from collapse_expand.dmi ready_blip_*."
+ },
+ "grille": {
+  "file": "grille.png",
+  "tile": [
+   4,
+   14
+  ],
+  "max_width": 40,
+  "top": 14,
+  "min_gap": 12,
+  "note": "Centred between the key bank and the tray; hidden when there is no room."
+ },
+ "tray": {
+  "file": "tray.png",
+  "size": [
+   142,
+   31
+  ],
+  "right": 29,
+  "top": 7,
+  "buttons": {
+   "first": [
+    3,
+    3
+   ],
+   "step": 28,
+   "size": [
+    24,
+    24
+   ],
+   "order": [
+    "wiki",
+    "poll",
+    "crew_manifest",
+    "settings",
+    "changelog"
+   ],
+   "source": "icons/hud/lobby/bottom_buttons.dmi (+ _highlighted/_pressed/_disabled)"
+  },
+  "new_poll": {
+   "source": "icons/hud/lobby/poll_overlay.dmi new_poll",
+   "size": [
+    24,
+    26
+   ],
+   "over": "poll",
+   "offset": [
+    0,
+    -1
+   ]
+  }
+ }
+}

@@ -463,13 +463,21 @@
  * the three don't stand so that a line can run through them in that order. list(start_x, start_y, span_x, span_y,
  * length, leaves, passes, enters): where it starts and how far it runs, in pixels from the middle of the wielder's
  * tile, its length, and how far along it, in pixels, it leaves the wielder's tile, passes the first body's chest and
- * enters the second's tile.
+ * enters the second's tile. The wire's through-cut picks who it carries into by this same line (wire_through_target()).
  */
 /obj/item/melee/cyberware_monowire/proc/wire_through_line(mob/living/user, mob/living/target, mob/living/behind)
 	var/turf/from = get_turf(user)
 	var/turf/first = get_turf(target)
 	var/turf/last = get_turf(behind)
 	if(QDELETED(behind) || !from || !first || !last || from.z != first.z || from.z != last.z || from == first || first == last || from == last)
+		return null
+	// The second body stands straight on along the swing: the step from the first body to it runs the same way as the
+	// way from the wielder to the first body. A swing at a knight's move has no body straight behind its target.
+	var/reach_x = first.x - from.x
+	var/reach_y = first.y - from.y
+	var/past_x = last.x - first.x
+	var/past_y = last.y - first.y
+	if(reach_x * past_y != reach_y * past_x || reach_x * past_x + reach_y * past_y <= 0)
 		return null
 	var/list/hand = wire_hand_point(user, held_side(user) || "right")
 	var/hand_x = user.pixel_x + hand[1]

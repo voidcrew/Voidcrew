@@ -362,6 +362,10 @@
 	. = ..()
 	if(.)
 		hv_wire_dressing = null
+		// A limb back on forgets how its stump was cut (wire_seams.dm)
+		if(iscarbon(new_limb_owner))
+			LAZYREMOVE(new_limb_owner.hv_stump_burnt, body_zone)
+			LAZYREMOVE(new_limb_owner.hv_stump_wire_cut, body_zone)
 
 /// A limb cut clean by a wire: no bruising on the picture of it. Only the picture; its damage is as it was.
 /obj/item/bodypart/proc/wire_clean_look()

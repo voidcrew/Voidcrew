@@ -104,6 +104,17 @@
 		return null
 	return program.rules[index]
 
+/// Moves [program] one step up (-1) or down (1) in a backup. Sync installs programs in this order.
+/obj/machinery/computer/nanite_cloud_controller/proc/move_backup_program(datum/component/nanites/nanites, datum/nanite_program/program, offset)
+	var/index = nanites?.programs.Find(program)
+	if(!index)
+		return FALSE
+	var/target = index + offset
+	if(target < 1 || target > length(nanites.programs))
+		return FALSE
+	nanites.programs.Swap(index, target)
+	return TRUE
+
 /obj/machinery/computer/nanite_cloud_controller/proc/generate_backup(cloud_id, mob/user)
 	// Backups work without research; only carry a disk link while it is local.
 	validate_research_site(linked_techweb)
@@ -174,7 +185,9 @@
 			data["cloud_backup"] = TRUE
 			var/list/cloud_programs = list()
 			var/id = 1
+			var/cloud_load = 0
 			for(var/datum/nanite_program/P in nanites.programs)
+				cloud_load += P.capacity_cost()
 				var/list/cloud_program = list()
 				cloud_program["name"] = P.name
 				cloud_program["desc"] = P.desc
@@ -216,6 +229,7 @@
 				id++
 				cloud_programs += list(cloud_program)
 			data["cloud_programs"] = cloud_programs
+			data["cloud_load"] = cloud_load
 	else
 		var/list/backup_list = list()
 		for(var/datum/nanite_cloud_backup/backup as anything in cloud_backups)
@@ -320,6 +334,14 @@
 					return TRUE
 				log_game("[key_name(usr)] deleted program [P.name] from cloud #[current_view]")
 				qdel(P)
+			. = TRUE
+		if("move_program")
+			var/datum/nanite_cloud_backup/backup = get_backup(current_view)
+			if(backup)
+				var/datum/nanite_program/P = get_ui_program(backup.nanites, params["program_id"], usr)
+				var/offset = text2num(params["offset"])
+				if(P && (offset == 1 || offset == -1))
+					move_backup_program(backup.nanites, P, offset)
 			. = TRUE
 		if("add_rule")
 			if(istype(current_program, /datum/nanite_program/sensor))

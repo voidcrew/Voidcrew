@@ -680,7 +680,9 @@
 	var/datum/action/cooldown/cyberware/gorilla_haymaker/haymaker = locate() in arm(bearer, BODY_ZONE_R_ARM).actions
 	haymaker.Trigger(bearer)
 	TEST_ASSERT_NOTNULL(haymaker.rig, "A wind-up standing still raised no rig")
-	TEST_ASSERT_EQUAL(puppets_left(), 3, "The wind-up's rig isn't a body and two arms")
+	// Three puppets, plus the body's stand-in that every concealed rig puts up (chrome_rig/conceal())
+	TEST_ASSERT_EQUAL(puppets_left(), 4, "The wind-up's rig isn't a body and two arms")
+	TEST_ASSERT_EQUAL(length(haymaker.rig.puppets), 3, "The wind-up's rig isn't a body and two arms")
 	var/datum/status_effect/gorilla_windup/windup = bearer.has_status_effect(/datum/status_effect/gorilla_windup)
 	haymaker.charge_started = world.time - 2 SECONDS
 	windup.tick(0.2)
@@ -1108,9 +1110,9 @@
 	TEST_ASSERT(istype(finisher_bearer.chrome_finisher, /datum/hv_finisher/chrome/gorilla/backbreaker), "The zone given didn't pick the finisher")
 	run_to_end(finisher_bearer.chrome_finisher)
 
-	// The slam
-	var/mob/living/carbon/human/slammer = gorilla(spot(3, 0))
-	var/mob/living/carbon/human/consistent/held = allocate(/mob/living/carbon/human/consistent, spot(4, 0))
+	// The slam, clear of row 0: the haymaker above knocks its victim along it, onto the tiles used here before
+	var/mob/living/carbon/human/slammer = gorilla(spot(3, 2))
+	var/mob/living/carbon/human/consistent/held = allocate(/mob/living/carbon/human/consistent, spot(4, 2))
 	held.grabbedby(slammer, supress_message = TRUE)
 	held.grabbedby(slammer, supress_message = TRUE)
 	slammer.swap_hand(2, silent = TRUE)
@@ -1300,7 +1302,8 @@
 	TEST_ASSERT(forced & COMPONENT_CANCEL_ATTACK_CHAIN, "The Brawler pair didn't take the airlock click")
 	sleep(4.5 SECONDS)
 	TEST_ASSERT(shut.density, "The Brawler pair forced an airlock as fast as the Gorilla") // GORILLA_PRY_TIME
-	sleep(3 SECONDS)
+	// 7 s of prying, then the airlock's own opening before it stops blocking
+	sleep(4 SECONDS)
 	TEST_ASSERT(!shut.density, "The Brawler pair never forced the airlock") // BRAWLER_PRY_TIME 7 s
 
 	// An arm that's down forces nothing: the click is an ordinary one

@@ -199,8 +199,10 @@
 
 		if("join_outpost")
 			var/obj/structure/overmap/dynamic/player_outpost/home = locate(params["ref"]) in GLOB.player_outposts
-			if(home && user == ui.user)
-				INVOKE_ASYNC(user, TYPE_PROC_REF(/mob/dead/new_player, join_outpost), home)
+			var/datum/lobby_terminal/terminal = user?.client?.lobby_terminal
+			// Through the dock terminal's code limiter, so this popup can't be used to guess codes.
+			if(home && terminal && user == ui.user)
+				INVOKE_ASYNC(terminal, TYPE_PROC_REF(/datum/lobby_terminal, housing_prompt_move_in), user, home)
 			return TRUE
 		if("open_wiki")
 			var/wiki_url = CONFIG_GET(string/wikiurl)

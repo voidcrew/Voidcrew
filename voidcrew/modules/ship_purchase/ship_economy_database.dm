@@ -17,11 +17,7 @@
  * - ship_extraction_log: Audit trail for part extractions
  */
 
-// Part class defines
-#define PART_CLASS_COMBAT "combat"
-#define PART_CLASS_SCIENCE "science"
-#define PART_CLASS_TRADE "trade"
-#define PART_CLASS_MISC "misc"
+// Part class defines (PART_CLASS_*) live in voidcrew/_DEFINES/ship_defines.dm.
 
 // List of all valid part classes
 GLOBAL_LIST_INIT(ship_part_classes, list(
@@ -242,7 +238,7 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 
 	ckey = ckey(ckey) // Normalize ckey
 
-	if(!SSdbcore.IsConnected())
+	if(!is_available())
 		return FALSE
 
 	// First, check if player has sufficient parts
@@ -258,26 +254,17 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 			log_game("SHIP_ECONOMY: [ckey] insufficient [part_class] parts (have: [have], need: [needed])")
 			return FALSE
 
-	// Deduct each class. If a later class fails, the earlier ones go back.
+	// Deduct each class. Each class is its own row, so this is not one transaction: when a
+	// later class fails, the classes already taken are put back (a single lobby bill
+	// often spans several classes).
 	var/list/deducted = list()
 	for(var/part_class in requirements)
 		var/amount = requirements[part_class]
-
-		var/datum/db_query/query = SSdbcore.NewQuery(
-			"UPDATE [format_table_name("player_ship_parts")] \
-			SET quantity = quantity - :amount \
-			WHERE ckey = :ckey AND part_class = :part_class AND quantity >= :amount",
-			list("ckey" = ckey, "part_class" = part_class, "amount" = amount)
-		)
-
-		if(!query.Execute() || query.affected < 1)
-			qdel(query)
+		if(!deduct_part_class(ckey, part_class, amount))
 			log_game("SHIP_ECONOMY: [ckey] failed to deduct [amount] [part_class] parts (transaction failed)")
 			refund_parts(ckey, deducted)
 			invalidate_cache(ckey, "parts")
 			return FALSE
-
-		qdel(query)
 		deducted[part_class] = amount
 
 	// Invalidate cache
@@ -290,6 +277,20 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 	log_game("SHIP_ECONOMY: [ckey] spent parts: [req_text.Join(", ")]")
 
 	return TRUE
+
+/// Whether the database can take writes. A proc so tests can stand in for it.
+/datum/ship_economy_db/proc/is_available()
+	return SSdbcore.IsConnected()
+
+/// Takes amount parts of one class, only if the player has them. TRUE on success.
+/datum/ship_economy_db/proc/deduct_part_class(ckey, part_class, amount)
+	var/datum/db_query/query = SSdbcore.NewQuery(
+		"UPDATE [format_table_name("player_ship_parts")] 		SET quantity = quantity - :amount 		WHERE ckey = :ckey AND part_class = :part_class AND quantity >= :amount",
+		list("ckey" = ckey, "part_class" = part_class, "amount" = amount)
+	)
+	var/success = query.Execute() && query.affected >= 1
+	qdel(query)
+	return success
 
 /**
  * Spend a total number of parts from any class, largest stack first.
@@ -340,9 +341,12 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 /datum/ship_economy_db/proc/refund_parts(ckey, list/plan)
 	. = TRUE
 	for(var/part_class in plan)
-		if(!add_part(ckey, part_class, plan[part_class], "refund"))
-			log_game("SHIP_ECONOMY: [ckey] LOST [plan[part_class]] [part_class] parts: the refund failed")
-			. = FALSE
+		if(add_part(ckey, part_class, plan[part_class], "refund"))
+			log_game("SHIP_ECONOMY: [ckey] refunded [plan[part_class]] [part_class] parts")
+			continue
+		log_game("SHIP_ECONOMY: [ckey] LOST [plan[part_class]] [part_class] parts: the refund failed")
+		message_admins("Ship parts refund failed for [ckey]: [plan[part_class]] [part_class] parts were taken but not returned. Check the game log.")
+		. = FALSE
 
 /// Parts held by class, from the cache alone so it never sleeps. Null until something has loaded them.
 /datum/ship_economy_db/proc/cached_parts(ckey)

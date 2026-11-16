@@ -62,8 +62,10 @@
 /datum/ai_behavior/find_and_set/in_hands/given_list
 
 /datum/ai_behavior/find_and_set/in_hands/given_list/search_tactic(datum/ai_controller/controller, locate_paths)
-	var/atom/pawn_atom = controller.pawn // VOIDCREW EDIT: pass contents, not the mob; our guarded typecache_filter_list rejects non-lists (ai fix)
-	var/list/found = typecache_filter_list(pawn_atom.contents, locate_paths) // VOIDCREW EDIT
+	// VOIDCREW EDIT START - our typecache filter guard rejects a bare atom (voidcrew/edits/__HELPERS/_lists.dm)
+	var/atom/pawn = controller.pawn
+	var/list/found = typecache_filter_list(pawn.contents, locate_paths)
+	// VOIDCREW EDIT END
 	if(length(found))
 		return pick(found)
 

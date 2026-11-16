@@ -477,7 +477,7 @@
 	var/mob/living/carbon/human/lab_rat = allocate(/mob/living/carbon/human/consistent)
 	var/obj/item/organ/cyberimp/cyberware/redline/core = allocate(/obj/item/organ/cyberimp/cyberware/redline)
 	TEST_ASSERT(core.Insert(lab_rat, special = TRUE), "Redline staging insert was refused")
-	var/datum/action/cooldown/cyberware/redline_burn/burn = locate() in lab_rat.actions
+	var/datum/action/cooldown/cyberware/redline_burn/burn = locate() in core.actions // chrome abilities never join mob.actions (chrome_hud.dm)
 	TEST_ASSERT_NOTNULL(burn, "The Redline core gave no burn action")
 	burn.Trigger()
 	TEST_ASSERT_NOTNULL(lab_rat.has_status_effect(/datum/status_effect/cyberware_redline_window), "Pressing the burn opened no window")
@@ -1326,11 +1326,11 @@
 		TEST_ASSERT_EQUAL(cloud.add_program(null, program), 1, "Hostless backup was capacity-limited")
 		excess += program
 	TEST_ASSERT(cloud.programs_fit_capacity(cloud.programs), "Hostless cloud has a body capacity")
-	TEST_ASSERT_EQUAL(nanites.sync_programming(cloud, TRUE, TRUE), 4, "Over-budget cloud sync did not report refusal") // NANITE_SYNC_REFUSED
-	TEST_ASSERT(incumbent in nanites.programs, "Rejected cloud sync deleted an incumbent")
-	TEST_ASSERT_EQUAL(shared.activation_code, 12, "Rejected cloud sync copied settings")
-	TEST_ASSERT(!shared.activated, "Rejected cloud sync copied activation")
-	TEST_ASSERT_EQUAL(length(nanites.programs), 2, "Rejected cloud sync partially installed programs")
+	// Nothing new fits, but the settings on programs the host already runs still sync.
+	TEST_ASSERT_EQUAL(nanites.sync_programming(cloud, TRUE, TRUE), 6, "Over-budget cloud sync did not refuse its additions and copy settings") // NANITE_SYNC_REFUSED | NANITE_SYNC_REPLACED
+	TEST_ASSERT(incumbent in nanites.programs, "Refused additions deleted a matching incumbent")
+	TEST_ASSERT_EQUAL(shared.activation_code, 34, "Refused additions blocked a settings change")
+	TEST_ASSERT_EQUAL(length(nanites.programs), 2, "Over-budget cloud sync installed programs that don't fit")
 	for(var/datum/nanite_program/program in excess)
 		qdel(program)
 	TEST_ASSERT(nanites.sync_programming(cloud), "Fitting cloud sync didn't commit")

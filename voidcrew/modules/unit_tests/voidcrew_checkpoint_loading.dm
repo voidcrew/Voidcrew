@@ -354,8 +354,9 @@
 		if(job.queued)
 			waiting++
 			TEST_ASSERT_EQUAL(job.status_line(), "Waiting for the shipyard", "A queued rebuild reported the wrong status")
-			TEST_ASSERT_EQUAL(job.bay.status_text(), "Queued", "A queued rebuild's bay sign is wrong")
-			TEST_ASSERT(!job.bay.is_available(), "A queued rebuild released its bay")
+			var/datum/outpost_berth/ship_bay/queued_bay = job.bay
+			TEST_ASSERT_EQUAL(queued_bay.status_text(), "Queued", "A queued rebuild's bay sign is wrong")
+			TEST_ASSERT(!queued_bay.is_available(), "A queued rebuild released its bay")
 	TEST_ASSERT(waiting >= 3, "Only [waiting] rebuilds queued behind the first")
 	// A purchase in the middle of the queue goes ahead of the rebuilds still waiting.
 	INVOKE_ASYNC(src, PROC_REF(purchase), sizes[length(sizes)])

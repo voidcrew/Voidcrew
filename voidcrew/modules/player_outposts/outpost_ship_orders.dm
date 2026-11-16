@@ -176,7 +176,7 @@ GLOBAL_LIST_INIT(ship_order_refused_hulls, typecacheof(list(
 	/// Non-effect things off the hull's rooms that stay with the hidden copy, for tests.
 	var/list/left_behind
 
-/datum/checkpoint_construction/order/New(datum/ship_checkpoint_ui/terminal, obj/structure/overmap/dynamic/player_outpost/site, datum/ship_order/new_order, mob/living/buyer, datum/bank_account/payer, obj/structure/overmap/ship/payer_ship, manual_drive = FALSE, free_build = FALSE)
+/datum/checkpoint_construction/order/New(datum/ship_checkpoint_ui/terminal, obj/structure/overmap/site, datum/ship_order/new_order, mob/living/buyer, datum/bank_account/payer, obj/structure/overmap/ship/payer_ship, manual_drive = FALSE, free_build = FALSE)
 	panel_ref = terminal ? WEAKREF(terminal) : null
 	order = new_order
 	home = site
@@ -407,8 +407,9 @@ GLOBAL_LIST_INIT(ship_order_refused_hulls, typecacheof(list(
 	var/denial = order.denial()
 	if(denial)
 		return denial
-	if(!outpost.available_ship_bay())
-		return "The ship bay is occupied or reserved."
+	var/refusal = outpost.shipyard_refusal(user, null) || outpost.rebuild_bay_denial()
+	if(refusal)
+		return refusal
 	var/list/payer = resolve_payer(user, choice)
 	if(!payer)
 		return choice == "personal" ? "Hold your ID to pay from your account." : "You do not command that ship."
@@ -471,7 +472,7 @@ GLOBAL_LIST_INIT(ship_order_refused_hulls, typecacheof(list(
 	if(job.bay)
 		started = job.prepare()
 	else
-		job.error = "The ship bay is occupied or reserved."
+		job.error = outpost.rebuild_bay_denial() || "No berth is free."
 		qdel(job)
 	if(QDELETED(src))
 		return started

@@ -1937,7 +1937,8 @@
 	// Nowhere to lie, unless it lay there already
 	if(get_turf(victim) != ahead && (isgroundlessturf(ahead) || ischasm(ahead) || islava(ahead)))
 		return FALSE
-	if(ahead.is_blocked_turf(exclude_mobs = TRUE, source_atom = victim))
+	// No source atom: a body lying on a crate or table tile may pass what it sits on, but it is not put back down on one
+	if(ahead.is_blocked_turf(exclude_mobs = TRUE))
 		return FALSE
 	for(var/mob/living/other in ahead)
 		if(other != victim && other != user && other.density && other.body_position == STANDING_UP)

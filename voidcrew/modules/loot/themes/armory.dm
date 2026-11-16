@@ -161,6 +161,8 @@
 		/obj/item/clothing/glasses/hud/security/sunglasses = 5,
 		/obj/item/melee/baton/security/loaded = 4,
 		/obj/item/clothing/mask/balaclava = 4,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/strength = 3,
 		// guard-post chrome: faster hands with the cuffs, and an ear that
 		// shuts out a flashbang
 		/obj/item/organ/cyberimp/cyberware/cuffer_wrists = 4,
@@ -194,6 +196,8 @@
 		/obj/item/organ/cyberimp/cyberware/slabskin = 3,
 		/obj/item/organ/eyes/robotic/cyberware/deadeye = 3,
 		/obj/item/organ/cyberimp/cyberware/atlas = 2,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/quick_recovery = 1,
 		// surplus service chrome with the unit numbers still on it
 		/obj/item/organ/cyberimp/cyberware/governor_delete/milspec = 2,
 		/obj/item/organ/cyberimp/cyberware/redline/milspec = 2,
@@ -209,6 +213,9 @@
 		/obj/item/handloaders_vise = 3,
 		/obj/item/clothing/glasses/sunglasses/marksmans_cant = 2,
 		/obj/item/garrison_standard = 1,
+		// gene injector loot (gene_injectors.dm)
+		/obj/item/dnainjector/loot/hulk = 1,
+		/obj/item/dnainjector/loot/tough = 1,
 	)
 
 /obj/structure/closet/crate/zone_loot/armory

@@ -6,6 +6,11 @@
 /// it browns every piece of chrome out until the load drops back under.
 #define CYBERWARE_BASE_CAPACITY 20
 
+/// Neural capacity the Biotech Compatibility gene adds, held through
+/// TRAIT_BIOTECH_NEURAL (voidcrew/edits/datums/mutations/passive.dm).
+#define CYBERWARE_BIOTECH_CAPACITY 15
+#define TRAIT_BIOTECH_NEURAL "biotech_neural"
+
 /// Mob-overlay height worn chrome draws at: just over the jumpsuit
 /// (UNIFORM_LAYER, 28) and under the worn ID (ID_LAYER, 27), so arm plates and
 /// a spine rig read over normal clothes while hands (BODYPARTS_HIGH_LAYER 25),

@@ -1,12 +1,15 @@
 /// Why this user can't save the ship in this bay to any slot, or null. Only checks caches, so ui_data can use it.
-/datum/ship_checkpoint_ui/proc/saved_ship_bay_denial(mob/living/user, datum/outpost_berth/ship_bay/bay)
+/datum/ship_checkpoint_ui/proc/saved_ship_bay_denial(mob/living/user, datum/outpost_berth/bay)
 	if(QDELETED(src) || ui_status(user, GLOB.always_state) != UI_INTERACTIVE)
 		return "Shipyard console unavailable."
-	if(QDELETED(bay) || bay.outpost != outpost || !(bay in outpost.bay_berths) || !bay.is_ship_present())
-		return "Dock your ship in a ship bay first."
+	if(QDELETED(bay) || bay.outpost != outpost || !(bay in outpost.shipyard_berths()) || !bay.is_ship_present())
+		return "Dock your ship here first."
 	var/obj/structure/overmap/ship/ship = bay.ship
 	if(!ship.is_ship_captain(user) || ship.abandoned || ship.retired_by_checkpoint)
 		return "Only the ship's current captain can save it."
+	var/refusal = outpost.shipyard_refusal(user, ship)
+	if(refusal)
+		return refusal
 	if(ship.checkpoint_rebuilding)
 		return "Recovery is already in progress."
 	if(!length(ship.shuttle.spawn_points))
@@ -17,11 +20,11 @@
 	return null
 
 /// Why this user can't save the ship in this bay to this slot, or null.
-/datum/ship_checkpoint_ui/proc/saved_ship_denial(mob/living/user, datum/outpost_berth/ship_bay/bay, slot)
+/datum/ship_checkpoint_ui/proc/saved_ship_denial(mob/living/user, datum/outpost_berth/bay, slot)
 	return saved_ship_bay_denial(user, bay) || GLOB.ship_saves.slot_denial(user.ckey, slot)
 
 /// The denial, plus whether the ship we captured is still the one in the bay.
-/datum/ship_checkpoint_ui/proc/saved_ship_changed_denial(mob/living/user, datum/outpost_berth/ship_bay/bay, obj/structure/overmap/ship/ship, slot)
+/datum/ship_checkpoint_ui/proc/saved_ship_changed_denial(mob/living/user, datum/outpost_berth/bay, obj/structure/overmap/ship/ship, slot)
 	var/denial = saved_ship_denial(user, bay, slot)
 	if(denial)
 		return denial
@@ -31,7 +34,7 @@
 
 /// Captures the ship, asks the captain, and charges them for what it holds. Sleeps at every step, so
 /// everything is checked again afterwards.
-/datum/ship_checkpoint_ui/proc/save_ship(mob/living/user, datum/outpost_berth/ship_bay/bay, slot, funds_parts = 0)
+/datum/ship_checkpoint_ui/proc/save_ship(mob/living/user, datum/outpost_berth/bay, slot, funds_parts = 0)
 	error = saved_ship_denial(user, bay, slot)
 	if(error)
 		return FALSE
@@ -120,9 +123,7 @@
 	var/denial = GLOB.ship_saves.retrieve_denial(user.ckey, slot, allow_busy)
 	if(denial)
 		return denial
-	if(!outpost.available_ship_bay())
-		return "The ship bay is occupied."
-	return null
+	return outpost.shipyard_refusal(user, null) || outpost.rebuild_bay_denial()
 
 /datum/ship_checkpoint_ui/proc/create_retrieval_job(mob/living/user, datum/ship_checkpoint/snapshot, slot)
 	return new /datum/checkpoint_construction/saved(src, snapshot, user, slot)
@@ -166,7 +167,7 @@
 	if(job.bay)
 		started = job.prepare()
 	else
-		job.error = "The ship bay is occupied."
+		job.error = outpost.rebuild_bay_denial() || "No berth is free."
 		GLOB.ship_saves.cancel_retrieval(player_ckey, slot)
 		qdel(job)
 	if(!QDELETED(src))
@@ -184,7 +185,7 @@
 	for(var/list/row as anything in GLOB.ship_saves.saves_for(user.ckey))
 		saves += list(GLOB.ship_saves.saved_ship_entry(user.ckey, row, saved_ship_retrieve_denial(user, row["slot"])))
 	var/list/ships = list()
-	for(var/datum/outpost_berth/ship_bay/bay as anything in outpost.bay_berths)
+	for(var/datum/outpost_berth/bay as anything in outpost.shipyard_berths())
 		var/obj/structure/overmap/ship/ship = bay?.ship
 		if(!ship?.is_ship_captain(user))
 			continue

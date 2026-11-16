@@ -2,8 +2,9 @@
  * # Staged ship construction
  *
  * The ship is loaded once, through the ordinary template loader, into the outpost's shipyard
- * zone (outpost_level_layout.dm), where nobody can reach it and which this job holds while it
- * runs. Its pieces then move into the permanent bay one tile visit at a time,
+ * zone (outpost_level_layout.dm), or at a trader outpost a turf reservation of its own
+ * (outpost_shipyard.dm), where nobody can reach it and which this job holds while it
+ * runs. Its pieces then move into the bay or berth one tile visit at a time,
  * through the same per-atom shuttle move hooks a docking uses, so the finished hull is what
  * a normal landing would have left behind and departs the same way.
  *
@@ -18,9 +19,6 @@
  * builds a new ship from the catalog instead, and charges its buyer. The hooks each source
  * overrides are grouped under SOURCE below.
  */
-/obj/structure/overmap/dynamic/player_outpost
-	var/list/datum/checkpoint_construction/checkpoint_jobs = list()
-
 /// One bay tile's share of one build stage.
 /datum/checkpoint_visit
 	var/stage
@@ -36,8 +34,10 @@
 
 /datum/checkpoint_construction
 	var/state = CHECKPOINT_BUILD_PREPARING
-	var/obj/structure/overmap/dynamic/player_outpost/home
-	var/datum/outpost_berth/ship_bay/bay
+	/// The player outpost or trader outpost building the ship (outpost_shipyard.dm)
+	var/obj/structure/overmap/home
+	/// The ship bay or trader berth the ship is delivered into
+	var/datum/outpost_berth/bay
 	var/datum/ship_checkpoint/snapshot
 	/// Live round identity retains prize and research claims after checkpoint consumption.
 	var/datum/weakref/crew_record_ref
@@ -56,6 +56,8 @@
 	var/obj/docking_port/mobile/voidcrew/port
 	/// The outpost's shipyard zone: holds every piece that has not been placed yet.
 	var/datum/outpost_zone/source_zone
+	/// Or, at a host with no shipyard zone, the turf reservation holding it.
+	var/datum/turf_reservation/source_reservation
 	/// TRUE while the template is being written into the shipyard; nothing may wipe it then.
 	var/copy_loading = FALSE
 	/// Paired by index, exactly as initiate_docking() pairs a move.
@@ -165,6 +167,8 @@
 	// A load still writing into the shipyard lets it go itself when it returns (load_source()).
 	if(!copy_loading)
 		source_zone = null
+		if(source_reservation)
+			QDEL_NULL(source_reservation)
 	source_turfs = null
 	bay_turfs = null
 	stage_visits = null
@@ -193,6 +197,12 @@
 	update_bay_status()
 	var/loaded = SSshuttle.run_template_load(CALLBACK(src, PROC_REF(load_source)), background = TRUE, keep_waiting = CALLBACK(src, PROC_REF(still_queued)))
 	queued = FALSE
+	if(QDELETED(src) || state != CHECKPOINT_BUILD_PREPARING)
+		return FALSE
+	// A trader berth is only built once the hull's size is known.
+	if(loaded && !home.prepare_rebuild_bay(bay, port))
+		error ||= "No berth could be made ready. [unspent_note()]"
+		loaded = FALSE
 	if(QDELETED(src) || state != CHECKPOINT_BUILD_PREPARING)
 		return FALSE
 	if(!loaded || !plan())
@@ -260,21 +270,27 @@
 /datum/checkpoint_construction/proc/source_still_loading()
 	return !QDELETED(src) && state == CHECKPOINT_BUILD_PREPARING && !QDELETED(port) && has_source_ground()
 
-/// Whether the hidden copy still holds its ground: the shipyard zone, claimed and not given back.
+/// Whether the hidden copy still holds its ground: the shipyard zone or reservation, claimed and not given back.
 /datum/checkpoint_construction/proc/has_source_ground()
+	if(source_reservation)
+		return !QDELETED(source_reservation)
 	return !isnull(source_zone) && source_zone.is_held_by(src)
 
 /// Every turf of the hidden copy's ground in block() order; empty once it is given back.
 /datum/checkpoint_construction/proc/get_source_block()
 	if(!has_source_ground())
 		return list()
+	if(source_reservation)
+		if(!length(source_reservation.bottom_left_turfs) || !length(source_reservation.top_right_turfs))
+			return list()
+		return block(source_reservation.bottom_left_turfs[1], source_reservation.top_right_turfs[1])
 	return source_zone.get_block()
 
 /// Shared checks before any piece exists.
 /datum/checkpoint_construction/proc/build_denial()
-	if(QDELETED(home) || QDELETED(bay) || !IS_WEAKREF_OF(src, bay.rebuild_owner) || QDELETED(bay.dock) || !bay.has_ground())
+	if(QDELETED(home) || QDELETED(bay) || !IS_WEAKREF_OF(src, bay.rebuild_owner) || !bay.has_build_ground())
 		return "The ship bay is no longer reserved."
-	if(bay.ship || (bay.dock.get_docked() && (!port || bay.dock.get_docked() != port)))
+	if(bay.ship || (bay.dock?.get_docked() && (!port || bay.dock.get_docked() != port)))
 		return "The ship bay is occupied."
 	return source_denial()
 
@@ -311,9 +327,11 @@
  * job owns SSshuttle's template load. Returns the unregistered port, or null.
  */
 /datum/checkpoint_construction/proc/load_hidden_copy(datum/shuttle_template_load/load_owner)
-	var/datum/outpost_zone/yard = home?.level_zone(OUTPOST_ZONE_YARD)
-	if(!yard || !template?.width || !template?.height)
+	if(QDELETED(home) || !template?.width || !template?.height)
 		return null
+	var/datum/outpost_zone/yard = home.shipyard_source_zone()
+	if(!yard)
+		return load_reserved_copy()
 	if(template.width > yard.get_width() - 2 || template.height > yard.get_height() - 2)
 		log_mapping("OUTPOST SHIPYARD: [template.name] ([template.width]x[template.height]) does not fit the [yard.get_width()]x[yard.get_height()] shipyard at [home].")
 		return null
@@ -328,6 +346,23 @@
 	var/obj/docking_port/mobile/loaded_port = load_shuttle_template_at(template, locate(yard.low_x + 1, yard.low_y + 1, yard.z_value))
 	copy_loading = FALSE
 	yard.occupy()
+	return loaded_port
+
+/// load_hidden_copy() for a host without a shipyard zone: a turf reservation one tile larger than the
+/// hull on every side, held until the copy is done with, like the zone. Teleports into it are refused
+/// (in_shipyard_copy()).
+/datum/checkpoint_construction/proc/load_reserved_copy()
+	var/datum/turf_reservation/claimed = SSmapping.request_turf_block_reservation(template.width + 2, template.height + 2, 1, requester = "shipyard copy of '[ship_name]' at '[home.name]'")
+	if(!claimed)
+		return null
+	if(QDELETED(src) || state != CHECKPOINT_BUILD_PREPARING || !length(claimed.bottom_left_turfs))
+		qdel(claimed)
+		return null
+	source_reservation = claimed
+	var/turf/corner = claimed.bottom_left_turfs[1]
+	copy_loading = TRUE
+	var/obj/docking_port/mobile/loaded_port = load_shuttle_template_at(template, locate(corner.x + 1, corner.y + 1, corner.z))
+	copy_loading = FALSE
 	return loaded_port
 
 /// Runs once on the loaded, frozen copy, before anyone could reach any of it.
@@ -661,8 +696,7 @@
 		for(var/obj/structure/checkpoint_drone_bay/cradle in tile)
 			cradles += cradle
 	// Maps without drone bays launch from the bay console instead.
-	var/obj/machinery/computer/console = bay.console
-	var/turf/fallback = console ? get_turf(console) : (length(bay.alcove_turfs) ? bay.alcove_turfs[1] : get_turf(bay.dock))
+	var/turf/fallback = bay.drone_launch_turf()
 	var/count = clamp(CEILING(visit_total / CHECKPOINT_BUILD_VISITS_PER_DRONE, 1), CHECKPOINT_BUILD_MIN_DRONES, CHECKPOINT_BUILD_MAX_DRONES)
 	for(var/i in 1 to count)
 		var/obj/structure/checkpoint_drone_bay/cradle = length(cradles) ? cradles[(i - 1) % length(cradles) + 1] : null
@@ -1218,7 +1252,7 @@
 	home.refresh_elevator_uis()
 	log_game("[captain ? key_name(captain) : captain_ckey] received [vessel.name], [finished_text()] at [home.name].")
 	if(captain)
-		to_chat(captain, span_notice("[vessel.name] is ready in Ship Bay [bay.bay_number]."))
+		to_chat(captain, span_notice("[vessel.name] is ready in [bay.berth_label()]."))
 	var/datum/ship_checkpoint_ui/panel = panel_ref?.resolve()
 	if(panel)
 		panel.notice = "[vessel.name] is ready."
@@ -1271,9 +1305,13 @@
 
 /// Gives the shipyard back once the hidden copy is done with; the zone's wipe clears what is left.
 /datum/checkpoint_construction/proc/release_source_zone()
-	var/datum/outpost_zone/yard = source_zone
 	// A load in progress is still writing into the shipyard; load_source() lets it go on return.
-	if(!yard || copy_loading)
+	if(copy_loading)
+		return
+	if(source_reservation)
+		QDEL_NULL(source_reservation)
+	var/datum/outpost_zone/yard = source_zone
+	if(!yard)
 		return
 	source_zone = null
 	if(yard.is_held_by(src))

@@ -79,12 +79,12 @@
 
 /// Through the existing lobby only: respawn's delay/configuration still controls
 /// reaching this mob, and character reuse/job/population gates are checked again.
-/mob/dead/new_player/proc/join_outpost(obj/structure/overmap/dynamic/player_outpost/home)
+/// attempt: the resident password, already entered (the dock terminal's code field). Null prompts for it.
+/mob/dead/new_player/proc/join_outpost(obj/structure/overmap/dynamic/player_outpost/home, attempt = null)
 	if(spawning || spawning_ship || !client || QDELETED(home))
 		return FALSE
-	var/attempt
 	var/revision = home.resident_access_revision
-	if(home.resident_mode == "password" && !home.has_resident_clearance(ckey))
+	if(isnull(attempt) && home.resident_mode == "password" && !home.has_resident_clearance(ckey))
 		attempt = tgui_input_text(src, "Enter the resident password for [home.name].", "Resident Arrival", max_length = 64, encode = FALSE, timeout = 60 SECONDS)
 	if(QDELETED(home) || !client || spawning || spawning_ship)
 		return FALSE

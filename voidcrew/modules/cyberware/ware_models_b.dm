@@ -44,12 +44,13 @@
 
 /obj/item/organ/cyberimp/cyberware/dermal_mesh/hardweave
 	name = "\improper Hardweave plating"
-	desc = "Rib plates over the chest and back with a layered polymer weave sewn in below them, a size up from the usual mesh. The scarring is the part nobody mentions."
+	desc = "Rib plates over the chest and back with a layered polymer weave sewn in below them, a size up from the usual mesh. Rounds that come in at an angle skip off. The scarring is the part nobody mentions."
 	icon_state = "dermal_mesh_hardweave"
 	aug_overlay = "dermal_mesh_hardweave"
 	chrome_load = 3
 	tier = CYBERWARE_TIER_2
 	mesh_armor = /datum/armor/cyberware_hardweave
+	deflect_chance = 30
 
 // =========================================================================
 // STRUT FRAME (T2): the bones and nothing else

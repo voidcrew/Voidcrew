@@ -100,6 +100,11 @@
 			if(item in list(builder.internal_rcd, builder.internal_rtd, builder.internal_rpd, builder.internal_rld, builder.internal_painter))
 				return TRUE
 		return (item in machine.component_parts) || item == machine.circuit || istype(item, /obj/item/radio)
+	// A construction console's built-in RCD keeps its own access electronics.
+	if(istype(item.loc, /obj/item/construction/rcd) && ismachinery(item.loc.loc))
+		var/obj/item/construction/rcd/tool = item.loc
+		if(item == tool.airlock_electronics)
+			return checkpoint_is_machine_fitting(tool)
 	return istype(item, /obj/item/encryptionkey) && istype(item.loc, /obj/item/radio) && ismachinery(item.loc.loc)
 
 /// Top off as each machine is placed; the hidden copy may have drawn power while it waited.

@@ -23,7 +23,7 @@
  *   anything that answers tg's on_saboteur() hook (cameras) goes through that.
  *   Outpost property and the trader outposts' concourse are immune.
  *
- * The cleave is untouched: neighbours take the plain cleave, not the shock.
+ * The through-cut is untouched: the body behind takes the plain cut, not the shock.
  */
 
 /// Burn of the shock itself, on top of the cut and the wire's own charge.

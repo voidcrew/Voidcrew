@@ -181,13 +181,9 @@ GLOBAL_LIST_INIT(hv_wire_sever_zones, list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BOD
 // ---- Stumps: held back, and seared ----
 
 /mob/living/carbon/hv_update_gore_overlays()
-	// A limb back on forgets how its stump was cut.
-	for(var/zone in hv_stump_burnt?.Copy())
-		if(get_bodypart(zone))
-			LAZYREMOVE(hv_stump_burnt, zone)
-	for(var/zone in hv_stump_wire_cut?.Copy())
-		if(get_bodypart(zone))
-			LAZYREMOVE(hv_stump_wire_cut, zone)
+	// A limb back on forgets how its stump was cut: that is done as it goes on (try_attach_limb(), wire_sever_fx.dm),
+	// not here. A redraw while a limb is still coming off (tg's limb-removal signals go out before it leaves the
+	// body) would forget the cut that is taking it.
 	// A held-back stump whose time has come shows now, whatever else changed.
 	for(var/zone in hv_stump_reveal_at?.Copy())
 		if(get_bodypart(zone) || world.time >= hv_stump_reveal_at[zone])
