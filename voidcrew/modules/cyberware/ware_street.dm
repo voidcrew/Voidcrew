@@ -745,10 +745,14 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
  * add/subtract pair per flip is the whole lifecycle; re-applying on species
  * gain would stack the armor. The pair rides the failing-gated passive hooks
  * (BAL-4): EMP-scrambled or browned-out mesh armors nothing.
+ *
+ * The dermal ladder (Mesh, Hardweave, Slabskin) also turns bullets: a
+ * passive deflect source in the shared dodge arbiter (ware_pro_combat.dm),
+ * 15/30/45% by rung, front arc only, rides the same passive hooks.
  */
 /obj/item/organ/cyberimp/cyberware/dermal_mesh
 	name = "\improper Dermal Mesh weave"
-	desc = "A subdermal lattice of impact polymer. It won't stop anything serious, but it takes the edge off."
+	desc = "A subdermal lattice of impact polymer. It won't stop anything serious, but now and then a round skips off it."
 	icon_state = "dermal_mesh"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_DERMAL
@@ -761,9 +765,12 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
 	var/datum/armor/mesh_armor = /datum/armor/cyberware_dermal_mesh
 	/// TRUE while mesh_armor is mixed in; guards against double add/subtract.
 	var/mesh_armor_applied = FALSE
+	/// Percent of bullets from the front that glance off, through the shared dodge arbiter.
+	var/deflect_chance = 15
 
 /obj/item/organ/cyberimp/cyberware/dermal_mesh/chrome_passives_on(mob/living/carbon/bearer)
 	. = ..()
+	cyberware_register_deflect_source(bearer, REF(src), CALLBACK(src, PROC_REF(get_deflect_chance)))
 	if(mesh_armor_applied || !ishuman(bearer))
 		return
 	mesh_armor_applied = TRUE
@@ -772,6 +779,7 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
 
 /obj/item/organ/cyberimp/cyberware/dermal_mesh/chrome_passives_off(mob/living/carbon/bearer)
 	. = ..()
+	cyberware_unregister_deflect_source(bearer, REF(src))
 	if(!mesh_armor_applied)
 		return
 	mesh_armor_applied = FALSE // reset before the validity skip, see Shock Coils
@@ -779,6 +787,12 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
 		return
 	var/mob/living/carbon/human/human_bearer = bearer
 	human_bearer.physiology.armor = human_bearer.physiology.armor.subtract_other_armor(mesh_armor)
+
+/// Deflect-source callback: nothing while failing.
+/obj/item/organ/cyberimp/cyberware/dermal_mesh/proc/get_deflect_chance()
+	if(organ_flags & ORGAN_FAILING)
+		return 0
+	return deflect_chance
 
 // ---- 11. Gecko Grips ---------------------------------------------------
 
