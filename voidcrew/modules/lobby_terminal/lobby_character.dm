@@ -51,12 +51,16 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 
 /// The small per-round catalog the terminal adds to preferences.json: each role's berth titles and kit colour slot counts.
 /proc/lobby_char_static()
-	if(length(GLOB.lobby_char_static))
-		return GLOB.lobby_char_static
+	if(!length(GLOB.lobby_char_static))
+		GLOB.lobby_char_static = lobby_char_build_static(lobby_char_job_pool())
+	return GLOB.lobby_char_static
+
+/// Builds char_static from job_pool (job datums) without caching it. A seam so tests can supply their own pool.
+/proc/lobby_char_build_static(list/job_pool)
 	var/list/roles = list()
 	for(var/category in GLOB.job_categories)
 		var/list/slots_by_title = list()
-		for(var/datum/job/job as anything in lobby_char_job_pool())
+		for(var/datum/job/job as anything in job_pool)
 			if(job.job_category != category || !job.title)
 				continue
 			slots_by_title[job.title] += 1
@@ -76,8 +80,7 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 		var/count = lobby_char_kit_color_count(item)
 		if(count)
 			kit_colors["[item.item_path]"] = count
-	GLOB.lobby_char_static = list("roles" = roles, "kit_colors" = kit_colors)
-	return GLOB.lobby_char_static
+	return list("roles" = roles, "kit_colors" = kit_colors)
 
 /// Number of GAGS colour slots a recolourable loadout item has, or 0.
 /proc/lobby_char_kit_color_count(datum/loadout_item/item)

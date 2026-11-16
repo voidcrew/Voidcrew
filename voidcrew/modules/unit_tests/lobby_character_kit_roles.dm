@@ -20,11 +20,37 @@
 
 	qdel(term)
 
-/// char_static.roles: every category sent has 1 to 6 berth titles; none is sent empty.
+/// A job datum for the test pool, as assemble_job_slots_from_list() would make one.
+/datum/unit_test/lobby_character_kit_roles/proc/pool_job(category, title)
+	var/datum/job/job = allocate(/datum/job)
+	job.job_category = category
+	job.title = title
+	return job
+
+/// char_static.roles, built from a pool of known jobs (not the live ship catalog): every category sent has
+/// 1 to 6 berth titles, most common first; a category with no berth is left out.
 /datum/unit_test/lobby_character_kit_roles/proc/check_static()
-	var/list/static_data = lobby_char_static()
+	// Category names as text: the unit tests are included before JOB_CAT_* is defined.
+	var/list/pool = list()
+	for(var/i in 1 to 3)
+		pool += pool_job("Engineering", "Engines Guy")
+	for(var/i in 1 to 7)
+		pool += pool_job("Engineering", "Engineer [i]")
+	pool += pool_job("Medical", "Doctor")
+	pool += pool_job("Medical", "")
+	pool += pool_job(null, "Drifter")
+
+	var/list/static_data = lobby_char_build_static(pool)
 	var/list/roles = static_data["roles"]
-	TEST_ASSERT(length(roles), "no roles in char_static")
+	TEST_ASSERT_EQUAL(length(roles), 2, "char_static sent [length(roles)] roles from a pool with two")
+	var/list/sent = list()
+	for(var/list/entry in roles)
+		sent[entry[1]] = entry[2]
+	TEST_ASSERT(!("Silicon" in sent), "a role with no berth was sent")
+	TEST_ASSERT_EQUAL(length(sent["Engineering"]), 6, "Engineering titles not cut to six")
+	TEST_ASSERT_EQUAL(sent["Engineering"][1], "Engines Guy", "the most common berth is not first")
+	TEST_ASSERT_EQUAL(length(sent["Medical"]), 1, "an untitled job was sent as a berth")
+	TEST_ASSERT_EQUAL(sent["Medical"][1], "Doctor", "Medical berth missing")
 	for(var/list/entry in roles)
 		TEST_ASSERT_EQUAL(length(entry), 2, "a role entry is not \[category, titles\]")
 		var/category = entry[1]
