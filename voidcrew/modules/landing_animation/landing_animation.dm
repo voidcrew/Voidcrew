@@ -3,7 +3,8 @@
  *
  * Seen from the ground, a ship docking on a planet used to pop onto its berth. Now a soft shadow of the hull
  * spreads over the berth during the dock warmup, then the ship itself drops out of the sky and the real hull
- * replaces it the moment it lands. Takeoff runs the same in reverse.
+ * replaces it the moment it lands. On takeoff it lifts off on its thrusters, pitches its nose up and flies away
+ * toward its bow.
  *
  * The falling ship is a proxy: one object carrying a picture of the hull, taken from its transit turfs when it
  * comes into sight, so it is the ship as it really looks, crew and all. Nothing here changes docking: the
@@ -22,8 +23,29 @@
 #define LANDING_PROXY_START_HEIGHT 1100
 /// Height of the ship one second before touchdown
 #define LANDING_PROXY_FINAL_HEIGHT 64
-/// How long a takeoff takes to climb out of sight
-#define LAUNCH_CLIMB_TIME (4.5 SECONDS)
+/// Takeoff, in three beats: a level lift on the thrusters, the nose pitching up, then off toward the bow
+#define LAUNCH_LIFT_TIME (1 SECONDS)
+#define LAUNCH_TILT_TIME (1 SECONDS)
+#define LAUNCH_GO_TIME (1.5 SECONDS)
+/// Height of the leaving ship, in pixels, at the end of each beat
+#define LAUNCH_LIFT_HEIGHT 20
+#define LAUNCH_TILT_HEIGHT 44
+#define LAUNCH_GO_HEIGHT 140
+/// How far the bow edge rises above the hull's middle at full pitch, and how much nearer (bigger) it looks
+#define LAUNCH_PITCH_RISE 30
+#define LAUNCH_PITCH_SCALE 1.13
+/// How far the ship creeps toward its bow while it pitches up
+#define LAUNCH_TILT_CREEP 24
+/// Size of the ship as it leaves the screen
+#define LAUNCH_GO_SCALE 0.85
+/// Tiles past the hull's own length it flies before it is removed: off the screen of anyone near the berth
+#define LAUNCH_GO_TILES 30
+/// How far the shadow slides after it, in tiles
+#define LAUNCH_SHADOW_SLIDE_TILES 10
+/// Thruster wash: most puffs per wave (three waves), the chance an engine-end tile throws one, how far they blow
+#define LAUNCH_WASH_PER_WAVE 6
+#define LAUNCH_WASH_CHANCE 60
+#define LAUNCH_WASH_PUSH 1.8
 /// Width of the shadow at its widest, relative to the hull
 #define LANDING_SHADOW_WIDE 1.35
 /// Width of the shadow just before touchdown
@@ -99,7 +121,7 @@
 		// the crew aboard feel it too, though they are still in transit for the moment
 		landing_jolt(pairs[1], 'sound/effects/meteorimpact.ogg', 60, shake_strength = 0.2)
 	else if(ship.state == OVERMAP_SHIP_UNDOCKING && old_dock && !istype(old_dock, /obj/docking_port/stationary/transit) && istype(new_dock, /obj/docking_port/stationary/transit) && landing_animation_wanted(ship.undock_origin?.resolve()))
-		launch = new(landing_hull_pairs(src, new_dock)[1])
+		launch = new(landing_hull_pairs(src, new_dock)[1], src)
 	. = ..()
 	if(launch)
 		if(. == DOCKING_SUCCESS)
@@ -377,10 +399,11 @@
 	alpha = 0
 	duration = 2.4 SECONDS
 
-/obj/effect/temp_visual/landing_dust/Initialize(mapload, push_dir = NORTH)
+/// [push] scales how far it is blown: thruster wash drifts further than a settling hull's dust
+/obj/effect/temp_visual/landing_dust/Initialize(mapload, push_dir = NORTH, push = 1)
 	. = ..()
 	SET_PLANE_IMPLICIT(src, ABOVE_LIGHTING_PLANE)
-	var/drift = rand(14, 28)
+	var/drift = round(rand(14, 28) * push)
 	var/drift_w = (push_dir & EAST) ? drift : ((push_dir & WEST) ? -drift : rand(-6, 6))
 	var/drift_z = (push_dir & NORTH) ? drift : ((push_dir & SOUTH) ? -drift : rand(-6, 6))
 	transform = matrix().Scale(0.45)
@@ -526,47 +549,145 @@
 /**
  * # Takeoff
  *
- * The hull has just left the berth for transit. A proxy of it climbs from the berth and fades while its
- * shadow spreads and pales, then everything deletes itself.
+ * The hull has just left the berth for transit. A picture of it lifts off level on its thrusters, blowing dust
+ * out from under its engine end, pitches its nose up and flies off toward its bow, solid all the way, until it
+ * is off the screen. Its shadow stays on the berth, then slides after it and pales. Then everything deletes
+ * itself.
  */
 /datum/launch_animation
 	var/obj/effect/abstract/landing_shadow/shadow
-	/// The climbing hull
+	/// The leaving hull
 	var/obj/effect/abstract/landing_proxy/proxy
 	/// The berth turfs the hull is leaving
 	var/list/berth_turfs
+	/// The way the ship's bow points (a cardinal): away from its engines
+	var/bow_dir = NORTH
 
-/// Built just before the hull leaves [hull_turfs]: a picture of it, standing on it
-/datum/launch_animation/New(list/hull_turfs)
+/// Built just before [shuttle] leaves [hull_turfs]: a picture of it, standing on it
+/datum/launch_animation/New(list/hull_turfs, obj/docking_port/mobile/shuttle)
 	. = ..()
 	berth_turfs = hull_turfs
 	if(!length(hull_turfs))
 		return
+	bow_dir = landing_bow_dir(shuttle, hull_turfs)
 	proxy = new(hull_turfs[1])
 	if(!proxy.picture(hull_turfs, hull_turfs))
 		QDEL_NULL(proxy)
 
-/// The hull is gone (it now stands on [hull_turfs], in transit): the picture climbs away and its shadow
-/// spreads and fades
+/// The hull is gone (it now stands on [hull_turfs], in transit): the picture flies off and its shadow follows
 /datum/launch_animation/proc/lift_off(list/hull_turfs)
 	if(!proxy)
 		qdel(src)
 		return
-	animate(proxy, pixel_z = LANDING_PROXY_START_HEIGHT, time = LAUNCH_CLIMB_TIME, easing = QUAD_EASING | EASE_IN)
-	landing_dust(berth_turfs)
+	var/bow_x = (bow_dir & EAST) ? 1 : ((bow_dir & WEST) ? -1 : 0)
+	var/bow_y = (bow_dir & NORTH) ? 1 : ((bow_dir & SOUTH) ? -1 : 0)
+	// the hull's length along its bow, for how hard to shear it and how far it has to fly
+	var/min_along = INFINITY
+	var/max_along = -INFINITY
+	for(var/turf/berth_turf as anything in berth_turfs)
+		var/along = berth_turf.x * bow_x + berth_turf.y * bow_y
+		min_along = min(min_along, along)
+		max_along = max(max_along, along)
+	var/length_tiles = max_along - min_along + 1
+	// pitch, seen from above: the bow end lifts toward the camera, so the hull shears up toward its bow and
+	// grows a little. y' = scale * y + shear * (bow . (x, y)), around the hull's middle.
+	var/shear = LAUNCH_PITCH_RISE / max(ICON_SIZE_X, length_tiles * ICON_SIZE_X / 2)
+	var/matrix/pitched = matrix(LAUNCH_PITCH_SCALE, 0, 0, shear * bow_x, LAUNCH_PITCH_SCALE + shear * bow_y, 0)
+	var/go_shear = shear * LAUNCH_GO_SCALE
+	var/matrix/leaving = matrix(LAUNCH_GO_SCALE, 0, 0, go_shear * bow_x, LAUNCH_GO_SCALE + go_shear * bow_y, 0)
+	var/fly = (length_tiles + LAUNCH_GO_TILES) * ICON_SIZE_X
+	// 1. level lift on the thrusters
+	animate(proxy, pixel_z = LAUNCH_LIFT_HEIGHT, time = LAUNCH_LIFT_TIME, easing = SINE_EASING | EASE_OUT)
+	// 2. nose up, creeping toward the bow
+	animate(transform = pitched, pixel_w = bow_x * LAUNCH_TILT_CREEP, pixel_z = LAUNCH_TILT_HEIGHT + bow_y * LAUNCH_TILT_CREEP, time = LAUNCH_TILT_TIME, easing = SINE_EASING)
+	// 3. off toward the bow, still climbing, shrinking as it goes; solid until it is gone from view
+	animate(transform = leaving, pixel_w = bow_x * fly, pixel_z = LAUNCH_GO_HEIGHT + bow_y * fly, time = LAUNCH_GO_TIME, easing = QUAD_EASING | EASE_IN)
+	landing_wash(berth_turfs, bow_dir)
 	landing_jolt(berth_turfs, 'voidcrew/sound/machines/rocket/rocket_launch.ogg', 70, reach = LANDING_HEAR_RANGE, shake_strength = 0.2)
 	landing_jolt(hull_turfs, 'voidcrew/sound/machines/rocket/rocket_launch.ogg', 50, shake_strength = 0.2)
 	shadow = new(berth_turfs[1])
 	if(shadow.outline(berth_turfs))
+		var/slide = LAUNCH_SHADOW_SLIDE_TILES * ICON_SIZE_X
 		shadow.alpha = LANDING_SHADOW_DARK
-		animate(shadow, transform = matrix().Scale(LANDING_SHADOW_WIDE), time = LAUNCH_CLIMB_TIME, easing = SINE_EASING | EASE_IN)
-		// pales steadily, so it is all but gone before it is removed
-		animate(shadow, alpha = 0, time = LAUNCH_CLIMB_TIME * 0.7, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+		// stays on the berth while the ship hangs over it, then slides after it and pales
+		animate(shadow, time = LAUNCH_LIFT_TIME)
+		animate(pixel_w = bow_x * LAUNCH_TILT_CREEP, pixel_z = bow_y * LAUNCH_TILT_CREEP, alpha = LANDING_SHADOW_DARK * 0.85, time = LAUNCH_TILT_TIME, easing = SINE_EASING)
+		animate(pixel_w = bow_x * slide, pixel_z = bow_y * slide, alpha = 0, time = LAUNCH_GO_TIME * 0.8, easing = QUAD_EASING | EASE_IN)
 	else
 		QDEL_NULL(shadow)
 	// a hard reference: QDEL_IN keeps only a weakref past a second, and nothing else holds this datum, so it
 	// would be garbage collected without Destroy() and leave its picture and shadow on the map
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel), src), LAUNCH_CLIMB_TIME + 0.5 SECONDS)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel), src), LAUNCH_LIFT_TIME + LAUNCH_TILT_TIME + LAUNCH_GO_TIME + 0.2 SECONDS)
+
+/**
+ * The way a hull's bow points: away from the middle of its engines, as a cardinal. A hull with no engines, or
+ * engines dead in its middle, leaves straight up the screen.
+ */
+/proc/landing_bow_dir(obj/docking_port/mobile/shuttle, list/hull_turfs)
+	if(!shuttle || !length(shuttle.engine_list) || !length(hull_turfs))
+		return NORTH
+	var/hull_x = 0
+	var/hull_y = 0
+	for(var/turf/hull_turf as anything in hull_turfs)
+		hull_x += hull_turf.x
+		hull_y += hull_turf.y
+	hull_x /= length(hull_turfs)
+	hull_y /= length(hull_turfs)
+	var/engine_x = 0
+	var/engine_y = 0
+	var/engines = 0
+	for(var/obj/machinery/power/shuttle_engine/engine as anything in shuttle.engine_list)
+		var/turf/engine_turf = get_turf(engine)
+		if(!engine_turf || engine_turf.z != hull_turfs[1].z)
+			continue
+		engine_x += engine_turf.x
+		engine_y += engine_turf.y
+		engines++
+	if(!engines)
+		return NORTH
+	var/away_x = hull_x - engine_x / engines
+	var/away_y = hull_y - engine_y / engines
+	if(abs(away_x) < 0.5 && abs(away_y) < 0.5)
+		return NORTH
+	if(abs(away_x) > abs(away_y))
+		return away_x > 0 ? EAST : WEST
+	return away_y > 0 ? NORTH : SOUTH
+
+/// Thruster wash: a few waves of dust blown out from under a lifting hull, most of it at its engine end
+/proc/landing_wash(list/hull_turfs, bow_dir)
+	landing_wash_wave(hull_turfs, bow_dir)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(landing_wash_wave), hull_turfs.Copy(), bow_dir), 0.35 SECONDS)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(landing_wash_wave), hull_turfs.Copy(), bow_dir), 0.7 SECONDS)
+
+/proc/landing_wash_wave(list/hull_turfs, bow_dir)
+	var/bow_x = (bow_dir & EAST) ? 1 : ((bow_dir & WEST) ? -1 : 0)
+	var/bow_y = (bow_dir & NORTH) ? 1 : ((bow_dir & SOUTH) ? -1 : 0)
+	var/list/hull_set = list()
+	var/min_along = INFINITY
+	var/max_along = -INFINITY
+	for(var/turf/hull_turf as anything in hull_turfs)
+		hull_set[hull_turf] = TRUE
+		var/along = hull_turf.x * bow_x + hull_turf.y * bow_y
+		min_along = min(min_along, along)
+		max_along = max(max_along, along)
+	var/span = max(1, max_along - min_along)
+	var/puffs = 0
+	for(var/turf/hull_turf as anything in shuffle(hull_turfs.Copy()))
+		if(puffs >= LAUNCH_WASH_PER_WAVE)
+			break
+		// 0 at the bow, 1 at the engines
+		var/engine_end = (max_along - (hull_turf.x * bow_x + hull_turf.y * bow_y)) / span
+		if(!prob(LAUNCH_WASH_CHANCE * engine_end * engine_end))
+			continue
+		for(var/edge_dir in shuffle(GLOB.cardinals.Copy()))
+			if(edge_dir == bow_dir)
+				continue
+			var/turf/outside = get_step(hull_turf, edge_dir)
+			if(!outside || hull_set[outside] || isclosedturf(outside))
+				continue
+			new /obj/effect/temp_visual/landing_dust(outside, edge_dir, LAUNCH_WASH_PUSH)
+			puffs++
+			break
 
 /datum/launch_animation/Destroy(force)
 	QDEL_NULL(shadow)
@@ -578,7 +699,21 @@
 #undef LANDING_SHADOW_LEAD
 #undef LANDING_PROXY_START_HEIGHT
 #undef LANDING_PROXY_FINAL_HEIGHT
-#undef LAUNCH_CLIMB_TIME
+#undef LAUNCH_LIFT_TIME
+#undef LAUNCH_TILT_TIME
+#undef LAUNCH_GO_TIME
+#undef LAUNCH_LIFT_HEIGHT
+#undef LAUNCH_TILT_HEIGHT
+#undef LAUNCH_GO_HEIGHT
+#undef LAUNCH_PITCH_RISE
+#undef LAUNCH_PITCH_SCALE
+#undef LAUNCH_TILT_CREEP
+#undef LAUNCH_GO_SCALE
+#undef LAUNCH_GO_TILES
+#undef LAUNCH_SHADOW_SLIDE_TILES
+#undef LAUNCH_WASH_PER_WAVE
+#undef LAUNCH_WASH_CHANCE
+#undef LAUNCH_WASH_PUSH
 #undef LANDING_SHADOW_WIDE
 #undef LANDING_SHADOW_NEAR
 #undef LANDING_SHADOW_FAINT
