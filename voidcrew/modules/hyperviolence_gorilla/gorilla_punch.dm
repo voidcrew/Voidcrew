@@ -440,3 +440,62 @@ GLOBAL_LIST_INIT(gorilla_zone_points, list(
 	gorilla_floor_ring(victim, 0.5)
 	log_combat(attacker, victim, "snapped the [limb.plaintext_zone] of", source_item, "(gorilla arms)")
 	return TRUE
+
+// =========================================================================
+// GRAB AND SLAM
+// =========================================================================
+
+/**
+ * With someone in an aggressive grab, a click on the floor under them, an open floor beside the bearer
+ * or a table starts the slam that brings them down onto it (gorilla_slam.dm). Returns GORILLA_SLAM_*.
+ */
+/obj/item/organ/cyberimp/cyberware/gorilla_arms/proc/try_slam(mob/living/carbon/human/source, atom/target, obj/item/bodypart/active_hand)
+	var/mob/living/victim = source.pulling
+	if(!isliving(victim) || source.grab_state < GRAB_AGGRESSIVE || victim == source)
+		return GORILLA_SLAM_NO
+	var/obj/structure/table/table = istype(target, /obj/structure/table) ? target : null
+	if(!table && !isturf(target))
+		return GORILLA_SLAM_NO
+	if(!grab_slam || !gorilla_running() || !gorilla_may_use_heavy_moves(source) || HAS_TRAIT(source, TRAIT_PACIFISM) || victim.buckled || source.body_position == LYING_DOWN)
+		return table ? GORILLA_SLAM_PASS : GORILLA_SLAM_NO
+	if(!TIMER_COOLDOWN_FINISHED(source, COOLDOWN_GORILLA_GRAB_MOVE))
+		return table ? GORILLA_SLAM_PASS : GORILLA_SLAM_NO
+	var/turf/spot = table ? get_turf(table) : target
+	if(!source.Adjacent(spot))
+		return GORILLA_SLAM_NO
+	if(!table && !gorilla_slam_floor_ok(spot))
+		return GORILLA_SLAM_NO
+	var/datum/gorilla_slam/slam = new(source, victim, spot, table, src, active_hand)
+	if(!slam.start())
+		qdel(slam)
+		return table ? GORILLA_SLAM_PASS : GORILLA_SLAM_NO
+	gorilla_cooldown(source, COOLDOWN_GORILLA_GRAB_MOVE, grab_move_cooldown)
+	source.changeNext_move(CLICK_CD_MELEE)
+	return GORILLA_SLAM_DONE
+
+/**
+ * Slams whoever [bearer] holds in an aggressive grab onto [onto] (their own tile, an open floor beside the
+ * bearer, or a table) with the active arm, as a click there would. Returns TRUE if it slammed. For an AI.
+ * Brawler arms slam too; gorilla_may_use_heavy_moves() still keeps it to players and boss-rank NPCs.
+ */
+/proc/gorilla_try_slam(mob/living/carbon/human/bearer, atom/onto)
+	var/obj/item/bodypart/hand = bearer?.get_active_hand()
+	if(!iscarbon(bearer))
+		return FALSE
+	for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm in bearer.organs)
+		if(arm.owner != bearer || !arm.grab_slam || arm.zone != hand?.body_zone || !arm.gorilla_running() || !COOLDOWN_FINISHED(arm, slam_cooldown))
+			continue
+		if(arm.try_slam(bearer, onto, hand) != GORILLA_SLAM_DONE)
+			return FALSE
+		COOLDOWN_START(arm, slam_cooldown, arm.punch_cooldown_time)
+		return TRUE
+	return FALSE
+
+/// Whether a body can be slammed down on [spot]: solid floor with gravity and nothing standing in the way.
+/proc/gorilla_slam_floor_ok(turf/spot)
+	if(!isfloorturf(spot) || isgroundlessturf(spot) || !spot.has_gravity())
+		return FALSE
+	for(var/obj/thing in spot)
+		if(thing.density && !(thing.flags_1 & ON_BORDER_1))
+			return FALSE
+	return TRUE

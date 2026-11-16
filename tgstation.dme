@@ -7332,6 +7332,7 @@
 #include "voidcrew\modules\hyperviolence_gorilla\gorilla_pound.dm"
 #include "voidcrew\modules\hyperviolence_gorilla\gorilla_pry.dm"
 #include "voidcrew\modules\hyperviolence_gorilla\gorilla_punch.dm"
+#include "voidcrew\modules\hyperviolence_gorilla\gorilla_slam.dm"
 #include "voidcrew\modules\hyperviolence_gorilla\gorilla_swing.dm"
 #include "voidcrew\modules\hyperviolence_gorilla\gorilla_throw.dm"
 #include "voidcrew\modules\hyperviolence_gorilla\gorilla_thrust.dm"

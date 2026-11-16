@@ -221,6 +221,15 @@
 		COOLDOWN_START(src, slam_cooldown, smash_cooldown_time)
 		return COMPONENT_CANCEL_ATTACK_CHAIN
 
+	// Someone held in an aggressive grab, brought down on the floor or a table (hyperviolence_gorilla/gorilla_punch.dm).
+	// Before the structure smash, so a table click while grabbing slams them instead of caving the table in.
+	switch(try_slam(source, target, active_hand))
+		if(GORILLA_SLAM_DONE)
+			COOLDOWN_START(src, slam_cooldown, punch_cooldown_time)
+			return COMPONENT_CANCEL_ATTACK_CHAIN
+		if(GORILLA_SLAM_PASS)
+			return NONE
+
 	// A trader outpost's doors hold against a fist as they do against a pry, and trying counts against you
 	// (hyperviolence_gorilla/gorilla_pry.dm).
 	if(istype(target, /obj/machinery/door) && gorilla_pry_refused(target))
