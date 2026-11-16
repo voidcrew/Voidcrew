@@ -12,6 +12,10 @@
 
 /// Trait source for everything the core puts on an ambient NPC
 #define AMBIENT_NPC_TRAIT "ambient_npc"
+/// On an item an ambient NPC holds only for show (a mop, a parcel): it goes when they put it away
+#define TRAIT_AMBIENT_PROP "ambient_prop"
+/// Units poured into an ambient NPC's glass
+#define AMBIENT_DRINK_POUR 30
 
 // ===== SUBSYSTEM =====
 
@@ -24,8 +28,8 @@
 #define AMBIENT_OUTPOST_TRANSIENT_CAP 8
 /// While players are on a concourse, someone steps off the lift at most this often (to replace someone who left)
 #define AMBIENT_OUTPOST_ARRIVAL_EVERY (10 SECONDS)
-/// People made in place at the trader outposts per tick of SSambient_npcs, all outposts together
-#define AMBIENT_OUTPOST_SETTLE_PER_FIRE 2
+/// People made in place at the trader outposts per tick of SSambient_npcs, all outposts together. One: a human body costs about 11 ms to build.
+#define AMBIENT_OUTPOST_SETTLE_PER_FIRE 1
 /// Nobody is made in place until this long after the round starts, out of its busiest moments
 #define AMBIENT_OUTPOST_SETTLE_DELAY (20 SECONDS)
 /// Random tiles tried when looking for somewhere to make someone, or to set them going
@@ -41,7 +45,7 @@
 #define AMBIENT_OUTPOST_KILLED_SLOT_TIME (20 MINUTES)
 /// Most cash the people of one trader outpost drop when killed, all of them together, in a round
 #define AMBIENT_OUTPOST_CASH_CAP 300
-/// A body at a trader outpost is taken away this long after death while players are there; at once when nobody is
+/// A body at a trader outpost may be taken away this long after death, once nobody is near it (SShuman_npcs corpse rules)
 #define AMBIENT_OUTPOST_BODY_TIME (5 MINUTES)
 
 // ===== DEATH =====
@@ -88,9 +92,7 @@
 #define AMBIENT_SITE_EDGE_MARGIN 5
 /// Random turfs tried when looking for a site's spot
 #define AMBIENT_SITE_SPOT_TRIES 60
-/// A planet NPC's health is scaled by band at the spawn site, never on the type
-#define AMBIENT_HEALTH_MULT_YELLOW 1.25
-#define AMBIENT_HEALTH_MULT_RED 1.5
+// No health multipliers by band: planet NPCs get tougher through the kit their outfit tables give them.
 
 /// A site whose NPCs are not out right now; they come back on the next visit
 #define AMBIENT_SITE_DORMANT "dormant"

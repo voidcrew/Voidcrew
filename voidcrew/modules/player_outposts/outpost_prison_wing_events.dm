@@ -413,7 +413,7 @@ GLOBAL_LIST_INIT(outpost_prison_overflow_reagents, list(
 		for(var/turf/tile as anything in tiles)
 			splashed[tile] = TRUE
 	var/lines = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in view(PRISON_WING_EVENT_REACT_RANGE, origin))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in view(PRISON_WING_EVENT_REACT_RANGE, origin))
 		if(prisoner.prison != src || prisoner.phase != PRISONER_PRESENT || prisoner.stat != CONSCIOUS || prisoner.in_trouble() || prisoner.activity?.sleeping)
 			continue
 		prisoner.face_atom(source)
@@ -427,7 +427,7 @@ GLOBAL_LIST_INIT(outpost_prison_overflow_reagents, list(
 		note_speech()
 
 /// Out of the mess: whatever idle thing they were doing there ends, and they walk to the nearest clean floor
-/datum/outpost_prison/proc/step_out_of_mess(mob/living/basic/outpost_prisoner/prisoner, list/splashed)
+/datum/outpost_prison/proc/step_out_of_mess(mob/living/carbon/human/npc/outpost_prisoner/prisoner, list/splashed)
 	var/datum/prisoner_activity/current = prisoner.activity
 	if(current && (!current.leisure || !current.interruptible))
 		return FALSE
