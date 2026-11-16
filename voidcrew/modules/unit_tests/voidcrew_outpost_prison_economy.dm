@@ -18,14 +18,14 @@
 
 /// A prisoner booked in and standing still at `spot`: fed, in a clean uniform and unhurt
 /datum/unit_test/voidcrew_outpost_prison_economy_kit/proc/kept_prisoner(datum/outpost_prison/prison, turf/spot)
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, spot)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, spot)
 	set_health_percent(prisoner, 100)
 	return prisoner
 
 /// Sets a prisoner's health to `percent` of their maximum
-/datum/unit_test/voidcrew_outpost_prison_economy_kit/proc/set_health_percent(mob/living/basic/outpost_prisoner/prisoner, percent)
-	var/target_loss = prisoner.maxHealth * (100 - percent) / 100
-	prisoner.adjustBruteLoss(target_loss - prisoner.getBruteLoss(), forced = TRUE)
+/datum/unit_test/voidcrew_outpost_prison_economy_kit/proc/set_health_percent(mob/living/carbon/human/npc/outpost_prisoner/prisoner, percent)
+	// Limbs count for less of a body's health than the chest, so this measures as it bruises.
+	outpost_prison_set_health(prisoner, prisoner.maxHealth * percent / 100)
 
 /// Every bulb in the wing working (tg breaks a few at load) and drawn, and the condition scores refreshed
 /datum/unit_test/voidcrew_outpost_prison_economy_kit/proc/fix_wing(datum/outpost_prison/prison)
@@ -42,7 +42,7 @@
 	return console.ui_act(action, list(), ui, GLOB.always_state)
 
 /datum/unit_test/voidcrew_outpost_prison_economy_kit/proc/all_present(datum/outpost_prison/prison)
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prison.prisoners)
 		if(prisoner.phase != "present")
 			return FALSE
 	return TRUE
@@ -69,8 +69,8 @@
 	var/conditions = prison.conditions_pay_factor()
 	TEST_ASSERT(conditions > 0 && conditions <= 1, "The wing's conditions pay factor is [conditions]")
 
-	var/mob/living/basic/outpost_prisoner/kept = kept_prisoner(prison, prison_spot(home, 3, 8))
-	var/mob/living/basic/outpost_prisoner/other = kept_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/kept = kept_prisoner(prison, prison_spot(home, 3, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/other = kept_prisoner(prison, prison_spot(home, 12, 8))
 
 	// G(care) is 0 at or below 70% care (OUTPOST_PRISON_GRADE_FLOOR) and 1 from 95% (_GRADE_FULL).
 	TEST_ASSERT_EQUAL(prison.care_grade(70), 0, "70% care paid something")
@@ -202,7 +202,7 @@
 	var/list/newest = prison.entries[1]
 	TEST_ASSERT(findtext(newest["text"], kept_name) && findtext(newest["text"], "released"), "The release was not logged first: [newest["text"]]")
 	// Half the stay kept halves the bonus.
-	var/mob/living/basic/outpost_prisoner/half = kept_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/half = kept_prisoner(prison, prison_spot(home, 12, 8))
 	half.served_seconds = 600
 	half.kept_seconds = 300
 	start = treasury.account_balance
@@ -211,10 +211,10 @@
 	TEST_ASSERT(wait_until(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(is_qdeleted_ref), WEAKREF(kept)), 6 SECONDS), "The released prisoner was never beamed out")
 
 	// A newcomer takes the mood the yard gives them.
-	var/mob/living/basic/outpost_prisoner/settled = kept_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/settled = kept_prisoner(prison, prison_spot(home, 10, 8))
 	settled.set_mood(40)
 	var/expected_mood = prison.arrival_mood()
-	var/mob/living/basic/outpost_prisoner/newcomer = kept_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/newcomer = kept_prisoner(prison, prison_spot(home, 8, 8))
 	TEST_ASSERT(abs(newcomer.mood - expected_mood) < 0.01, "A newcomer arrived at mood [newcomer.mood], not the arrival mood [expected_mood]")
 	settle_prison_air(home)
 
@@ -293,7 +293,7 @@
 	prison.tick(1)
 	TEST_ASSERT_EQUAL(length(prison.prisoners), 1, "No prisoner arrived once the debt was paid")
 	TEST_ASSERT(wait_until(CALLBACK(src, TYPE_PROC_REF(/datum/unit_test/voidcrew_outpost_prison_economy_kit, all_present), prison), 8 SECONDS), "The arrival never finished beaming in")
-	var/mob/living/basic/outpost_prisoner/arrival = prison.prisoners[1]
+	var/mob/living/carbon/human/npc/outpost_prisoner/arrival = prison.prisoners[1]
 	ADD_TRAIT(arrival, TRAIT_IMMOBILIZED, TRAIT_SOURCE_UNIT_TESTS)
 	arrival.sentence_left = 3600
 	prison.set_intake(FALSE, owner)
@@ -412,7 +412,7 @@
 	TEST_ASSERT_EQUAL(length(prison.prisoners), 0, "A prisoner arrived early")
 	prison.tick(1)
 	TEST_ASSERT_EQUAL(length(prison.prisoners), 1, "Only one prisoner should arrive at a time")
-	var/mob/living/basic/outpost_prisoner/first = prison.prisoners[1]
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = prison.prisoners[1]
 	TEST_ASSERT_EQUAL(first.console_status(), "arriving", "A prisoner in the beam was not arriving")
 	TEST_ASSERT(HAS_TRAIT(first, TRAIT_IMMOBILIZED), "A prisoner could move inside the beam")
 	var/list/seen_cells = list()
@@ -423,7 +423,7 @@
 		TEST_ASSERT_EQUAL(length(prison.prisoners), i, "A prisoner arrived before the gap was up")
 		prison.tick(1)
 		TEST_ASSERT_EQUAL(length(prison.prisoners), i + 1, "No prisoner arrived when the gap was up")
-	for(var/mob/living/basic/outpost_prisoner/arrival as anything in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/arrival as anything in prison.prisoners)
 		TEST_ASSERT_NOTNULL(arrival.cell, "[arrival] has no cell")
 		TEST_ASSERT(!(arrival.cell in seen_cells), "Two prisoners share cell [arrival.cell.number]")
 		seen_cells += arrival.cell
@@ -434,7 +434,7 @@
 		TEST_ASSERT(arrival.personality && arrival.crime, "[arrival] has no personality or crime")
 	TEST_ASSERT_NULL(prison.arrival_countdown, "An arrival was still due with every cell full")
 	TEST_ASSERT(wait_until(CALLBACK(src, TYPE_PROC_REF(/datum/unit_test/voidcrew_outpost_prison_economy_kit, all_present), prison), 8 SECONDS), "The arrivals never finished beaming in")
-	for(var/mob/living/basic/outpost_prisoner/arrival as anything in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/arrival as anything in prison.prisoners)
 		TEST_ASSERT(!HAS_TRAIT(arrival, TRAIT_IMMOBILIZED), "[arrival] was still held after beaming in")
 		ADD_TRAIT(arrival, TRAIT_IMMOBILIZED, TRAIT_SOURCE_UNIT_TESTS)
 		// Long enough that the rest of the test releases nobody by accident.
@@ -458,7 +458,7 @@
 	TEST_ASSERT_NULL(console.ui_data(owner)["next_arrival"], "An arrival was due with the prison full")
 
 	// Staff doors: shut to prisoners whether open or closed, free to the wing's members.
-	var/mob/living/basic/outpost_prisoner/tester = prison.prisoners[1]
+	var/mob/living/carbon/human/npc/outpost_prisoner/tester = prison.prisoners[1]
 	var/obj/machinery/door/airlock/security/prison_staff/staff_door = locate() in prison_spot(home, 9, 6)
 	TEST_ASSERT_NOTNULL(staff_door, "The office door is not a staff airlock")
 	TEST_ASSERT(!staff_door.allowed(tester), "A prisoner may open the office door")
@@ -480,7 +480,7 @@
 	TEST_ASSERT(first_cell.door().allowed(tester), "A cell door refused a prisoner")
 
 	// Release: in the last 30 seconds they head back to their cell (OUTPOST_PRISON_RELEASE_WALK)...
-	var/mob/living/basic/outpost_prisoner/leaver = prison.prisoners[2]
+	var/mob/living/carbon/human/npc/outpost_prisoner/leaver = prison.prisoners[2]
 	var/datum/outpost_prison_cell/leaver_cell = leaver.cell
 	leaver.forceMove(prison_spot(home, 10, 8))
 	prison.refresh_prisoner_reach(leaver)
@@ -516,7 +516,7 @@
 	// Closing intake stops arrivals, and neither closing nor reopening it shortens a cell's wait.
 	console_act(console, owner, "toggle_intake")
 	TEST_ASSERT(!prison.intake_open, "The owner could not close intake")
-	var/mob/living/basic/outpost_prisoner/removed = prison.prisoners[4]
+	var/mob/living/carbon/human/npc/outpost_prisoner/removed = prison.prisoners[4]
 	var/datum/outpost_prison_cell/removed_cell = removed.cell
 	qdel(removed)
 	var/removed_ready = removed_cell.ready_at
@@ -535,15 +535,15 @@
 	prison.tick(1)
 	TEST_ASSERT_EQUAL(length(prison.prisoners), 4, "The reopened intake did not refill the ready cell")
 	TEST_ASSERT(wait_until(CALLBACK(src, TYPE_PROC_REF(/datum/unit_test/voidcrew_outpost_prison_economy_kit, all_present), prison), 8 SECONDS), "The reopened intake's arrival never finished beaming in")
-	for(var/mob/living/basic/outpost_prisoner/arrival as anything in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/arrival as anything in prison.prisoners)
 		ADD_TRAIT(arrival, TRAIT_IMMOBILIZED, TRAIT_SOURCE_UNIT_TESTS)
 		arrival.sentence_left = max(arrival.sentence_left, 3600)
 
 	// A death is logged. Nobody comes for the body: it keeps its cell while it lies in the cell block
 	// and sours the yard; carried out, it leaves the roster and the cell waits a refill.
-	var/mob/living/basic/outpost_prisoner/victim = prison.prisoners[1]
+	var/mob/living/carbon/human/npc/outpost_prisoner/victim = prison.prisoners[1]
 	var/datum/outpost_prison_cell/victim_cell = victim.cell
-	var/mob/living/basic/outpost_prisoner/witness = prison.prisoners[2]
+	var/mob/living/carbon/human/npc/outpost_prisoner/witness = prison.prisoners[2]
 	var/drift_before = witness.mood_drift_per_minute()
 	victim.death()
 	TEST_ASSERT_EQUAL(victim.console_status(), "dead", "A dead prisoner was not listed as dead")
@@ -569,7 +569,7 @@
 	qdel(victim)
 
 	// A gibbed prisoner's cell waits a refill too.
-	var/mob/living/basic/outpost_prisoner/gibbed = prison.prisoners[1]
+	var/mob/living/carbon/human/npc/outpost_prisoner/gibbed = prison.prisoners[1]
 	var/datum/outpost_prison_cell/gibbed_cell = gibbed.cell
 	gibbed.gib()
 	TEST_ASSERT(QDELETED(gibbed), "The gibbed prisoner is still about")
@@ -592,7 +592,7 @@
 
 	// Abandoning the outpost closes intake and transfers everyone out, living or dead, with no
 	// bonus and no stipend, and with nobody rioting or loose, no fine (see voidcrew_outpost_prison_abandon_fines).
-	var/mob/living/basic/outpost_prisoner/last_victim = prison.prisoners[1]
+	var/mob/living/carbon/human/npc/outpost_prisoner/last_victim = prison.prisoners[1]
 	last_victim.death()
 	prison.pay_owed = 7
 	treasury.account_balance = 1234
@@ -602,7 +602,7 @@
 	prison.on_outpost_abandoned()
 	TEST_ASSERT(!prison.intake_open, "Abandoning left intake open")
 	TEST_ASSERT_EQUAL(prison.pay_owed, 0, "Abandoning kept the stipend owed")
-	for(var/mob/living/basic/outpost_prisoner/leaving as anything in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/leaving as anything in prison.prisoners)
 		TEST_ASSERT_EQUAL(leaving.phase, "leaving", "[leaving] was not transferred out")
 	TEST_ASSERT(wait_until(CALLBACK(src, TYPE_PROC_REF(/datum/unit_test/voidcrew_outpost_prison_economy_kit, roster_empty), prison), 6 SECONDS), "The transfers never took everyone")
 	prison.tick(1)
@@ -671,7 +671,7 @@
 
 	// An admin's forced arrival skips the gap and the cell's wait, and starts a new gap.
 	prison.arrival_gap = 0
-	var/mob/living/basic/outpost_prisoner/forced = prison.admit_next(TRUE)
+	var/mob/living/carbon/human/npc/outpost_prisoner/forced = prison.admit_next(TRUE)
 	TEST_ASSERT_NOTNULL(forced, "The forced arrival did not come")
 	TEST_ASSERT(prison.arrival_gap >= 30 && prison.arrival_gap <= 180, "A forced arrival left a [prison.arrival_gap] s gap, not 30-180")
 	prison.arrival_gap = 150
@@ -680,7 +680,7 @@
 	TEST_ASSERT_EQUAL(length(prison.prisoners), 4, "The forced arrivals did not fill the wing")
 	prison.set_intake(FALSE)
 	TEST_ASSERT(wait_until(CALLBACK(src, TYPE_PROC_REF(/datum/unit_test/voidcrew_outpost_prison_economy_kit, all_present), prison), 8 SECONDS), "The arrivals never finished beaming in")
-	for(var/mob/living/basic/outpost_prisoner/arrival as anything in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/arrival as anything in prison.prisoners)
 		ADD_TRAIT(arrival, TRAIT_IMMOBILIZED, TRAIT_SOURCE_UNIT_TESTS)
 	settle_prison_air(home)
 
@@ -701,10 +701,10 @@
 	TEST_ASSERT_NOTNULL(home, "The abandonment test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 3), "abandonfinesowner")
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 4, 10))
-	var/mob/living/basic/outpost_prisoner/breaking_out = trouble_prisoner(prison, prison_spot(home, 5, 10))
-	var/mob/living/basic/outpost_prisoner/runner = trouble_prisoner(prison, prison_spot(home, 6, 10))
-	var/mob/living/basic/outpost_prisoner/quiet = trouble_prisoner(prison, prison_spot(home, 12, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 4, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/breaking_out = trouble_prisoner(prison, prison_spot(home, 5, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/runner = trouble_prisoner(prison, prison_spot(home, 6, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/quiet = trouble_prisoner(prison, prison_spot(home, 12, 10))
 	var/datum/bank_account/treasury = trouble_fund(home, 1500)
 	treasury.account_debt = 0
 	rioter.start_rioting(shout = FALSE)
@@ -719,7 +719,7 @@
 	TEST_ASSERT_EQUAL(treasury.account_debt, 1000, "Abandoning mid-riot left [treasury.account_debt] cr of debt, not 1000")
 	TEST_ASSERT(!prison.incident_open, "The incident stayed open after the abandonment")
 	TEST_ASSERT(!prison.intake_open, "Abandoning left intake open")
-	for(var/mob/living/basic/outpost_prisoner/leaving as anything in list(rioter, breaking_out, runner, quiet))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/leaving as anything in list(rioter, breaking_out, runner, quiet))
 		TEST_ASSERT_EQUAL(leaving.phase, "leaving", "[leaving] was not transferred out") // PRISONER_LEAVING
 
 	// The next claimant inherits the debt, and intake stays shut until it is paid.

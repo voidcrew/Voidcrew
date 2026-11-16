@@ -27,7 +27,7 @@
 	return best
 
 /// Sends `npc`, just off the lift on the lobby side of `outpost`'s checkpoint, through it first
-/proc/ambient_cross_checkpoint_on_arrival(mob/living/basic/ambient_npc/npc, obj/structure/overmap/trader_outpost/outpost)
+/proc/ambient_cross_checkpoint_on_arrival(mob/living/carbon/human/npc/ambient_npc/npc, obj/structure/overmap/trader_outpost/outpost)
 	if(QDELETED(npc) || !outpost || !length(outpost.checkpoints))
 		return
 	var/turf/here = get_turf(npc)
@@ -133,7 +133,7 @@
 /// They could not get through: back down the lift from the lobby, or gone from inside the chamber
 /datum/ambient_activity/cross_checkpoint/proc/give_up(datum/outpost_checkpoint/post)
 	// Starting the next activity ends this one, so hold on to them
-	var/mob/living/basic/ambient_npc/walker = doer
+	var/mob/living/carbon/human/npc/ambient_npc/walker = doer
 	var/turf/here = get_turf(walker)
 	if(!QDELETED(post) && ((here in post.chamber_turfs) || here == get_turf(post.inner_door) || here == get_turf(post.outer_door)))
 		walker.fade_out()

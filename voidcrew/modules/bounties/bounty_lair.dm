@@ -22,9 +22,10 @@
  * rooms a crew clears stay cleared: the zone_mobs markers delete themselves after spawning and are never stamped
  * again. On its first load it indexes its own footprint once: it spawns the boss and the gatekeepers on their
  * landmarks, finds its gate poddoors (id BOUNTY_LAIR_GATE_ID), and keeps the boss, the gatekeepers and the goons to
- * the rooms they started in. When the last gatekeeper dies, the gate opens. When the last boss dies (the mech, then
- * the don who climbs out of it), the trophy drops where he fell, unless the boss's own death dropped it through
- * bounty_lair_drop_trophy().
+ * the rooms they started in. Gatekeepers that are human NPCs are queued (spawn_human_npc(), a body or two a tick);
+ * until each order has built its body, it counts as a gatekeeper standing, so the gate never opens on an empty back
+ * office. When the last gatekeeper dies, the gate opens. When the last boss dies (the mech, then the don who climbs
+ * out of it), the trophy drops where he fell, unless the boss's own death dropped it through bounty_lair_drop_trophy().
  *
  * ## The lair clock (SSbounty_lairs)
  *
@@ -88,8 +89,8 @@
 	close(BOUNTY_CLOSE_LAIR_GONE)
 	return FALSE
 
-/// Dead, and only dead: the trophy pays in full, anything else pays nothing
-/datum/criminal_bounty/kill_only/board_share_for(state, worst_state)
+/// Dead, and only dead: the trophy pays in full, anything else pays nothing (a boss brought in cuffed pays nothing: his trophy pays)
+/datum/criminal_bounty/kill_only/board_share_for(state)
 	return state == BOUNTY_STATE_DEAD ? 100 : 0
 
 /// The pad takes its trophy only: the one it dropped, or any trophy bound to it, lying on the pad's own tile
@@ -274,12 +275,33 @@
 		return FALSE
 	return TRUE
 
+/// Whether `candidate` is a lair boss: a /mob/living/basic/bounty_lair_boss (the don's mech), or the don on foot (a person)
+/proc/bounty_is_lair_boss(mob/living/candidate)
+	return istype(candidate, /mob/living/basic/bounty_lair_boss) || istype(candidate, /mob/living/carbon/human/npc/bounty_mafia/don)
+
+/// The weakref to the posting a lair boss is wanted on, or null (not a lair boss, or an admin spawn)
+/proc/bounty_lair_boss_posting_ref(mob/living/boss)
+	if(istype(boss, /mob/living/basic/bounty_lair_boss))
+		var/mob/living/basic/bounty_lair_boss/machine = boss
+		return machine.posting_ref
+	if(istype(boss, /mob/living/carbon/human/npc/bounty_mafia/don))
+		var/mob/living/carbon/human/npc/bounty_mafia/don/person = boss
+		return person.posting_ref
+	return null
+
+/// Makes `boss` wanted on the posting `posting_ref` points at. Does nothing to a mob that isn't a lair boss.
+/proc/bounty_lair_set_boss_posting(mob/living/boss, datum/weakref/posting_ref)
+	if(istype(boss, /mob/living/basic/bounty_lair_boss))
+		var/mob/living/basic/bounty_lair_boss/machine = boss
+		machine.posting_ref = posting_ref
+	else if(istype(boss, /mob/living/carbon/human/npc/bounty_mafia/don))
+		var/mob/living/carbon/human/npc/bounty_mafia/don/person = boss
+		person.posting_ref = posting_ref
+
 /// The open kill-only bounty a lair boss is wanted on (its posting_ref), or null
 /proc/bounty_kill_posting_of(mob/living/boss)
-	if(!istype(boss, /mob/living/basic/bounty_lair_boss))
-		return null
-	var/mob/living/basic/bounty_lair_boss/lair_boss = boss
-	var/datum/criminal_bounty/kill_only/posting = lair_boss.posting_ref?.resolve()
+	var/datum/weakref/posting_ref = bounty_lair_boss_posting_ref(boss)
+	var/datum/criminal_bounty/kill_only/posting = posting_ref?.resolve()
 	if(!istype(posting) || !posting.is_open())
 		return null
 	return posting
@@ -329,6 +351,11 @@
 	var/list/lair_gate_doors = list()
 	/// Weakrefs to its living gatekeepers; the gate opens when the last one is gone
 	var/list/lair_gatekeepers = list()
+	/// Gatekeepers still in the human NPC spawn queue: a key per order -> the order (/datum/human_npc_order). Each counts
+	/// as a gatekeeper standing until it has built its body (or failed to).
+	var/list/lair_pending_gatekeepers = list()
+	/// Makes the keys of lair_pending_gatekeepers
+	var/lair_spawn_serial = 0
 	/// Weakrefs to the bosses it is waiting on (the mech, then the don who climbs out of it)
 	var/list/lair_bosses = list()
 	/// The gate is open: it stays open, and the gatekeepers never come back
@@ -357,6 +384,7 @@
 
 /obj/structure/overmap/space_ruin/bounty_lair/Destroy()
 	lair_unhook_mobs()
+	lair_cancel_pending_gatekeepers()
 	lair_clear_timers()
 	if(lair_release_timer)
 		deltimer(lair_release_timer)
@@ -550,9 +578,15 @@
 			log_mapping("BOUNTY LAIR: [name] has a boss landmark with no mob type at [AREACOORD(home)]")
 			continue
 		var/datum/npc_spawn_context/context = new(src, null, "boss")
-		var/mob/living/boss = spawn_npc_in_zone(boss_type, home, context, FALSE)
+		var/mob/living/boss
+		if(ispath(boss_type, /mob/living/carbon/human/npc))
+			// One body, wanted before the fight can start: built now
+			var/datum/human_npc_order/order = spawn_human_npc(boss_type, home, context = context, immediate = TRUE)
+			boss = order?.spawned_ref?.resolve()
+		else
+			boss = spawn_npc_in_zone(boss_type, home, context, FALSE)
+			context.finalize()
 		lair_adopt_boss(boss)
-		context.finalize()
 
 	for(var/obj/effect/landmark/bounty_lair_gatekeeper/mark as anything in keeper_marks)
 		if(QDELETED(mark))
@@ -566,17 +600,24 @@
 			log_mapping("BOUNTY LAIR: [name] has a gatekeeper landmark with no mob type at [AREACOORD(home)]")
 			continue
 		var/datum/npc_spawn_context/context = new(src, null, "boss")
+		if(ispath(keeper_type, /mob/living/carbon/human/npc))
+			// People are queued, never a room of them in one tick: it holds the gate from now, and is watched once built
+			lair_spawn_serial++
+			var/key = "[lair_spawn_serial]"
+			var/datum/human_npc_order/order = spawn_human_npc(keeper_type, home, CALLBACK(src, PROC_REF(lair_on_gatekeeper_built), key), context = context)
+			lair_pending_gatekeepers[key] = order
+			continue
 		var/mob/living/keeper = spawn_npc_in_zone(keeper_type, home, context, FALSE)
 		lair_add_gatekeeper(keeper)
 		context.finalize()
 
 	lair_leash_goons()
-	lair_goon_timer = addtimer(CALLBACK(src, PROC_REF(lair_leash_goons)), BOUNTY_LAIR_GOON_LEASH_DELAY, TIMER_STOPPABLE)
+	lair_goon_timer = addtimer(CALLBACK(src, PROC_REF(lair_settle)), BOUNTY_LAIR_GOON_LEASH_DELAY, TIMER_STOPPABLE)
 	// Nobody left to hold the gate (none mapped, or it was opened before a reload): it stands open
-	if(lair_gate_open || !length(lair_gatekeepers))
+	if(lair_gate_open || (!length(lair_gatekeepers) && !lair_pending_gatekeeper_count()))
 		lair_open_gate(silent = TRUE)
 	lair_link_done = TRUE
-	log_game("BOUNTY: [name] linked its interior: [length(lair_bosses)] boss(es), [length(lair_gatekeepers)] gatekeeper(s), [length(lair_gate_doors)] gate door(s)")
+	log_game("BOUNTY: [name] linked its interior: [length(lair_bosses)] boss(es), [length(lair_gatekeepers)] gatekeeper(s) and [lair_pending_gatekeeper_count()] on their way, [length(lair_gate_doors)] gate door(s)")
 
 /**
  * The interior is being given back while the bounty is open (nothing does this while it is mission-locked, so this is
@@ -585,6 +626,7 @@
 /obj/structure/overmap/space_ruin/bounty_lair/proc/lair_on_unloading(datum/source)
 	SIGNAL_HANDLER
 	lair_unhook_mobs()
+	lair_cancel_pending_gatekeepers()
 	lair_clear_timers()
 	lair_gate_doors = list()
 	lair_last_death_spot = null
@@ -599,9 +641,7 @@
 /obj/structure/overmap/space_ruin/bounty_lair/proc/lair_adopt_boss(mob/living/boss)
 	if(QDELETED(boss))
 		return FALSE
-	if(istype(boss, /mob/living/basic/bounty_lair_boss))
-		var/mob/living/basic/bounty_lair_boss/lair_boss = boss
-		lair_boss.posting_ref = posting_ref
+	bounty_lair_set_boss_posting(boss, posting_ref)
 	lair_bosses |= WEAKREF(boss)
 	lair_watch(boss, PROC_REF(lair_on_boss_gone))
 	lair_leash(boss)
@@ -637,7 +677,7 @@
 	if(!posting || lair_boss_killed)
 		return
 	var/standing = FALSE
-	for(var/mob/living/basic/bounty_lair_boss/boss as anything in lair_bosses_inside())
+	for(var/mob/living/boss as anything in lair_bosses_inside())
 		if(boss.stat == DEAD)
 			continue
 		if(!boss.weak_reference || !(boss.weak_reference in lair_bosses))
@@ -673,13 +713,13 @@
 	log_game("BOUNTY: [name]'s boss is dead but there was no safe floor for its trophy; closing its bounty")
 	posting.close(BOUNTY_CLOSE_LAIR_GONE)
 
-/// Every lair boss standing in its footprint
+/// Every lair boss standing in its footprint (bounty_is_lair_boss())
 /obj/structure/overmap/space_ruin/bounty_lair/proc/lair_bosses_inside()
 	. = list()
 	if(!footprint)
 		return
-	for(var/mob/living/basic/bounty_lair_boss/boss in GLOB.mob_living_list)
-		if(!QDELETED(boss) && footprint.contains_turf(get_turf(boss)))
+	for(var/mob/living/boss as anything in GLOB.mob_living_list)
+		if(!QDELETED(boss) && bounty_is_lair_boss(boss) && footprint.contains_turf(get_turf(boss)))
 			. += boss
 
 /// A trophy already bound to `posting` near where the boss fell (a boss's death that made its own)
@@ -699,8 +739,8 @@
 	if(QDELETED(keeper))
 		return FALSE
 	lair_gatekeepers |= WEAKREF(keeper)
-	// Troopers delete themselves on death and leave a corpse spawner: either signal counts, whichever comes first.
-	// An admin deleting one counts as gone too: a gate that never opens is worse.
+	// A person dies in place (COMSIG_LIVING_DEATH); a mob deleted on death, or by an admin, counts as gone too, whichever
+	// signal comes first: a gate that never opens is worse.
 	lair_watch(keeper, PROC_REF(lair_on_gatekeeper_gone))
 	lair_leash(keeper)
 	return TRUE
@@ -713,7 +753,7 @@
 	lair_gatekeepers -= source.weak_reference
 	lair_check_gate()
 
-/// Opens the gate if no gatekeeper is left standing. Returns TRUE if it opened now.
+/// Opens the gate if no gatekeeper is left standing, and none is still on its way. Returns TRUE if it opened now.
 /obj/structure/overmap/space_ruin/bounty_lair/proc/lair_check_gate()
 	if(lair_gate_open)
 		return FALSE
@@ -723,8 +763,47 @@
 			lair_gatekeepers -= ref
 			continue
 		return FALSE
+	if(lair_pending_gatekeeper_count())
+		return FALSE
 	lair_open_gate()
 	return TRUE
+
+/**
+ * How many queued gatekeepers are still to be built. An order that was cancelled, or built nothing, is dropped here;
+ * one that built its body has already moved to lair_gatekeepers (lair_on_gatekeeper_built()).
+ */
+/obj/structure/overmap/space_ruin/bounty_lair/proc/lair_pending_gatekeeper_count()
+	. = 0
+	for(var/key in lair_pending_gatekeepers.Copy())
+		var/datum/human_npc_order/order = lair_pending_gatekeepers[key]
+		if(QDELETED(order) || order.done)
+			lair_pending_gatekeepers -= key
+			continue
+		.++
+
+/// A queued gatekeeper (`key`) was built: it holds the gate from now, kept to its room, unless the gate opened meanwhile
+/obj/structure/overmap/space_ruin/bounty_lair/proc/lair_on_gatekeeper_built(key, mob/living/keeper)
+	if(QDELETED(src))
+		return
+	var/known = !isnull(lair_pending_gatekeepers[key])
+	lair_pending_gatekeepers -= key
+	if(QDELETED(keeper))
+		lair_check_gate()
+		return
+	lair_leash(keeper)
+	if(!known || lair_gate_open || !lair_posting())
+		return
+	lair_add_gatekeeper(keeper)
+
+/// Calls off every gatekeeper still in the spawn queue (the interior is going, or the lair is)
+/obj/structure/overmap/space_ruin/bounty_lair/proc/lair_cancel_pending_gatekeepers()
+	var/list/orders = list()
+	for(var/key in lair_pending_gatekeepers)
+		orders += lair_pending_gatekeepers[key]
+	lair_pending_gatekeepers = list()
+	for(var/datum/human_npc_order/order as anything in orders)
+		if(!QDELETED(order) && !order.done)
+			qdel(order)
 
 /// Opens its gate poddoors, the ones in its own footprint only, and tells everyone inside unless `silent`
 /obj/structure/overmap/space_ruin/bounty_lair/proc/lair_open_gate(silent = FALSE)
@@ -757,9 +836,15 @@
 	lair_mob.AddElement(/datum/element/bounty_lair_room_leash, home.type)
 	return TRUE
 
+/// Once every marker has spawned (the zone resolver retries for up to a minute, then the people are queued): the late goons
+/// are kept to their rooms, and a gatekeeper order that never built a body stops holding the gate
+/obj/structure/overmap/space_ruin/bounty_lair/proc/lair_settle()
+	lair_goon_timer = null
+	lair_leash_goons()
+	lair_check_gate()
+
 /// Keeps every living goon of its kind in the room it stands in. Runs at the link, and again once every marker has spawned.
 /obj/structure/overmap/space_ruin/bounty_lair/proc/lair_leash_goons()
-	lair_goon_timer = null
 	var/goon_type = lair_kind?.goon_type
 	if(!goon_type || !footprint || !loaded)
 		return 0
@@ -774,13 +859,16 @@
 /**
  * Keeps a lair mob in the room (area) it started in: it won't step out of it on its own, so it fights from the
  * doorway and a fight never drags the next room in (balance/lairs.md 9.2). Moves it doesn't make itself are never
- * stopped (pulled, thrown, or dead), and once it is out of its room it walks freely, so it can never be stuck.
+ * stopped (pulled, carried or wheeled on what it is buckled to, thrown, shoved, or dead), and once it is out of its
+ * room it walks freely, so it can never be stuck.
  */
 /datum/element/bounty_lair_room_leash
 	element_flags = ELEMENT_BESPOKE
 	argument_hash_start_idx = 2
 	/// The area type it is kept to. A type, not the area: a lair's areas are per-load instances, and no ref is held.
 	var/home_area_type
+	/// REF() of each mob shoved -> the world.time of the shove: the push of a shove is someone else's move
+	var/list/shoved_at = list()
 
 /datum/element/bounty_lair_room_leash/Attach(datum/target, home_area_type)
 	. = ..()
@@ -788,14 +876,20 @@
 		return ELEMENT_INCOMPATIBLE
 	src.home_area_type = home_area_type
 	RegisterSignal(target, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(on_pre_move), override = TRUE)
+	RegisterSignal(target, COMSIG_LIVING_DISARM_HIT, PROC_REF(on_shoved), override = TRUE)
 
 /datum/element/bounty_lair_room_leash/Detach(datum/source)
-	UnregisterSignal(source, COMSIG_MOVABLE_PRE_MOVE)
+	UnregisterSignal(source, list(COMSIG_MOVABLE_PRE_MOVE, COMSIG_LIVING_DISARM_HIT))
+	shoved_at -= REF(source)
 	return ..()
+
+/datum/element/bounty_lair_room_leash/proc/on_shoved(mob/living/source, mob/living/attacker, zone, obj/item/weapon)
+	SIGNAL_HANDLER
+	shoved_at[REF(source)] = world.time
 
 /datum/element/bounty_lair_room_leash/proc/on_pre_move(mob/living/source, atom/new_location)
 	SIGNAL_HANDLER
-	if(source.stat == DEAD || source.pulledby || source.throwing)
+	if(source.stat == DEAD || source.pulledby || source.buckled || source.throwing || shoved_at[REF(source)] == world.time)
 		return NONE
 	var/area/here = get_area(source)
 	if(here?.type != home_area_type)
@@ -916,7 +1010,7 @@
 	trophy_type = /obj/item/bounty_proof/trophy/mafia_don
 	mugshot_icon = 'icons/mob/rideables/mecha.dmi'
 	mugshot_state = "mauler"
-	goon_type = /mob/living/basic/trooper/russian/mafia
+	goon_type = /mob/living/carbon/human/npc/bounty_mafia
 	gate_message = "The garage door grinds open."
 
 /**

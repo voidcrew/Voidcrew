@@ -12,7 +12,7 @@
  * - /datum/ambient_site_kind/planet and its subtypes: which camps roll on which planet types and
  *   how often (spec 4.1), and how many people they have. The spot finders the core's does not
  *   cover (a rock face with ore, a lava bank, open water) sit beside each camp's realize().
- * - /mob/living/basic/ambient_npc/planet: the killable planet person every PB NPC builds on. Loot
+ * - /mob/living/carbon/human/npc/ambient_npc/planet: the killable planet person every PB NPC builds on. Loot
  *   drops once, the body falls over, they fight back (or run) when attacked, a camp fights
  *   together, and a camp that watches for strangers does it in watch().
  * - Shared activities: fight, flee, follow, camp_chore and nap.
@@ -129,14 +129,14 @@
 	)
 	field_chance = 10
 	spot_room = 1
-	npc_type = /mob/living/basic/ambient_npc/planet/miner
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/planet/miner
 
 /// Owner item 7: a cannibal cooking a man over a fire. Jungle worlds.
 /datum/ambient_site_kind/planet/cannibal
 	name = "cannibal's fire"
 	planet_chances = list(/datum/overmap/planet/jungle = 8)
 	spot_room = 2
-	npc_type = /mob/living/basic/ambient_npc/planet/cannibal
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/planet/cannibal
 
 /// Owner item 8: a band of hunters with spears. Jungle worlds; bigger bands deeper out.
 /datum/ambient_site_kind/planet/tribal
@@ -145,7 +145,7 @@
 	min_npcs = 3
 	max_npcs = 5
 	spot_room = 3
-	npc_type = /mob/living/basic/ambient_npc/planet/tribal
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/planet/tribal
 
 /datum/ambient_site_kind/planet/tribal/npc_count(band)
 	switch(band)
@@ -159,14 +159,14 @@
 /datum/ambient_site_kind/planet/lava_fisher
 	name = "lava fisher's bank"
 	planet_chances = list(/datum/overmap/planet/lava = 15)
-	npc_type = /mob/living/basic/ambient_npc/planet/lava_fisher
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/planet/lava_fisher
 
 /// Owner item 10: a fisher in a boat out on the ocean. Beach worlds.
 /datum/ambient_site_kind/planet/boat_fisher
 	name = "fishing boat"
 	planet_chances = list(/datum/overmap/planet/beach = 18)
 	spot_on_water = TRUE
-	npc_type = /mob/living/basic/ambient_npc/planet/boat_fisher
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/planet/boat_fisher
 
 /// Owner item 11: a peddler crossing the planet with a pack pony, and a guard deeper out.
 /datum/ambient_site_kind/planet/peddler
@@ -178,14 +178,15 @@
 		/datum/overmap/planet/ice = 6,
 		/datum/overmap/planet/wasteland = 6,
 	)
-	min_npcs = 2
-	max_npcs = 3
+	min_npcs = 1
+	max_npcs = 2
 	spot_room = 1
-	npc_type = /mob/living/basic/ambient_npc/planet/peddler
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/planet/peddler
 
-// The peddler and the pony; a guard joins them in yellow and red
+// The peddler; a guard joins them in yellow and red. The pony is an animal, not one of the site's people
+// (planet_peddler.dm, caravan_pony()).
 /datum/ambient_site_kind/planet/peddler/npc_count(band)
-	return (band == ZONE_YELLOW || band == ZONE_RED) ? 3 : 2
+	return (band == ZONE_YELLOW || band == ZONE_RED) ? 2 : 1
 
 // =========================================================================
 // HELPERS
@@ -198,7 +199,7 @@
 	if(!middle || !islist(SSmobs.clients_by_zlevel) || middle.z > length(SSmobs.clients_by_zlevel))
 		return
 	for(var/mob/living/player in SSmobs.clients_by_zlevel[middle.z])
-		if(player.stat == DEAD || !player.client || istype(player, /mob/living/basic/ambient_npc))
+		if(player.stat == DEAD || !player.client || istype(player, /mob/living/carbon/human/npc/ambient_npc))
 			continue
 		var/turf/where = get_turf(player)
 		if(where && get_dist(where, middle) <= range)
@@ -223,6 +224,24 @@
 	var/area/tile_area = get_area(tile)
 	return !tile_area || istype(tile_area, /area/ruin) || istype(tile_area, /area/shuttle)
 
+/**
+ * Whether one of `thrower`'s own camp (an ambient NPC of the same place) stands between them and
+ * `target`, so a throw or a shot would hit them first. Nobody passes through a thrown spear: they
+ * hold it instead. Bodies lying down are passed over, as a throw passes over them.
+ */
+/proc/ambient_camp_mate_in_line(mob/living/carbon/human/npc/ambient_npc/thrower, atom/target)
+	var/turf/start = get_turf(thrower)
+	var/turf/finish = get_turf(target)
+	if(!start || !finish || !thrower.place)
+		return FALSE
+	for(var/turf/line_turf as anything in get_line(start, finish))
+		if(line_turf == start || line_turf == finish)
+			continue
+		for(var/mob/living/carbon/human/npc/ambient_npc/other in line_turf)
+			if(other != thrower && other.place == thrower.place && other.stat != DEAD && other.body_position == STANDING_UP)
+				return TRUE
+	return FALSE
+
 /// A square leash of `radius` around `center`, as list(min x, min y, max x, max y, z)
 /proc/ambient_square_bounds(turf/center, radius)
 	center = get_turf(center)
@@ -235,12 +254,12 @@
 // =========================================================================
 
 /**
- * Someone living on a planet or an asteroid: killable (health scaled by band where they spawn,
- * site.spawn_npc()), their loot dropped once, their body falling over. Fighters fight back when
- * attacked and their camp joins in; everyone else runs. A camp that watches for strangers does it
- * in watch(), about every two seconds while they are awake.
+ * Someone living on a planet or an asteroid: a real body, dressed by band where they spawn (their
+ * outfit table's kit in yellow and red, site.spawn_npc()), their loot dropped once. Fighters fight
+ * back with the real weapon they carry and their camp joins in; everyone else runs. A camp that
+ * watches for strangers does it in watch(), about every two seconds while they are awake.
  */
-/mob/living/basic/ambient_npc/planet
+/mob/living/carbon/human/npc/ambient_npc/planet
 	name = "drifter"
 	desc = "Someone living rough."
 	dialogue_file = AMBIENT_STRINGS_PLANETS
@@ -253,7 +272,7 @@
 	var/fights_back = FALSE
 	/// Joins in when someone at their camp is attacked
 	var/joins_camp_fights = FALSE
-	/// The real item they fight with (its numbers, bounty_real_weapon()); null for fists
+	/// The type of the real weapon they fight with, which their outfit gives them (a belt, a hand); null for fists
 	var/weapon_type
 	/// What they hold when nothing is going on (a spear, a club), or null
 	var/idle_held
@@ -263,38 +282,29 @@
 	var/flee_below = 0
 	/// Their camp looks out for strangers (watch())
 	var/watches = FALSE
-	/// Asleep: they see nothing until woken
-	var/sleeping = FALSE
 
-/mob/living/basic/ambient_npc/planet/Initialize(mapload)
+/mob/living/carbon/human/npc/ambient_npc/planet/Initialize(mapload, datum/human_npc_order/order)
 	. = ..()
-	arm(weapon_type)
 	show_idle_held()
 
-/// Their blows hit like `item_type` (null: fists), and it is the weapon they show in a fight
-/mob/living/basic/ambient_npc/planet/proc/arm(item_type)
-	weapon_type = item_type
-	var/datum/bounty_real_weapon/weapon = bounty_real_weapon(item_type)
-	weapon.apply_melee(src)
-
-/// Back to holding what they hold when nothing is going on
-/mob/living/basic/ambient_npc/planet/proc/show_idle_held()
+/// Back to holding what they hold when nothing is going on, putting their weapon away
+/mob/living/carbon/human/npc/ambient_npc/planet/proc/show_idle_held()
 	if(stat == DEAD)
 		return
 	set_held(idle_held)
 
-// A body lies down, and gets up again if they are revived
-/mob/living/basic/ambient_npc/planet/look_dead()
-	. = ..()
-	transform = matrix().Turn(90)
+/// The weapon they fight with, if they have it in hand
+/mob/living/carbon/human/npc/ambient_npc/planet/proc/held_weapon()
+	if(!weapon_type)
+		return null
+	for(var/obj/item/held in held_items)
+		if(istype(held, weapon_type))
+			return held
+	return null
 
-/mob/living/basic/ambient_npc/planet/look_alive()
+/mob/living/carbon/human/npc/ambient_npc/planet/Life(seconds_per_tick = SSMOBS_DT, times_fired)
 	. = ..()
-	transform = matrix()
-
-/mob/living/basic/ambient_npc/planet/Life(seconds_per_tick = SSMOBS_DT, times_fired)
-	. = ..()
-	if(!watches || sleeping || stat != CONSCIOUS || fading || !place || HAS_TRAIT(src, TRAIT_AI_PAUSED))
+	if(!watches || IsSleeping() || stat != CONSCIOUS || fading || !place || HAS_TRAIT(src, TRAIT_AI_PAUSED))
 		return
 	watch()
 
@@ -302,23 +312,24 @@
  * Looks out for strangers: `players`, or the players near them when null (tests pass their own).
  * Override. Runs from Life(), so it must not sleep.
  */
-/mob/living/basic/ambient_npc/planet/proc/watch(list/players)
+/mob/living/carbon/human/npc/ambient_npc/planet/proc/watch(list/players)
 	return
 
-/// Wakes them from a nap
-/mob/living/basic/ambient_npc/planet/proc/wake_up()
-	if(!sleeping)
+/// Done napping, if they are awake: up off the mat. Sleep itself only ends as anyone's does (tg's
+/// Sleeping running out, or someone shaking them awake).
+/mob/living/carbon/human/npc/ambient_npc/planet/proc/wake_up()
+	if(IsSleeping())
 		return
-	sleeping = FALSE
 	if(istype(activity, /datum/ambient_activity/nap))
 		end_activity()
 
-/// Whether they could go after `target`: someone alive and near, never one of their own camp
-/mob/living/basic/ambient_npc/planet/proc/can_fight(mob/living/target)
-	if(!fights_back || QDELETED(target) || !isliving(target) || target.stat == DEAD || target == src)
+/// Whether they could go after `target`: someone up and near, never one of their own camp
+/mob/living/carbon/human/npc/ambient_npc/planet/proc/can_fight(mob/living/target)
+	// Someone already down is left there (npc_target_stat): they fight people, they don't finish them
+	if(!fights_back || QDELETED(target) || !isliving(target) || target.stat > npc_target_stat || target == src)
 		return FALSE
-	if(istype(target, /mob/living/basic/ambient_npc))
-		var/mob/living/basic/ambient_npc/other = target
+	if(istype(target, /mob/living/carbon/human/npc/ambient_npc))
+		var/mob/living/carbon/human/npc/ambient_npc/other = target
 		if(other.place == place)
 			return FALSE
 	var/turf/here = get_turf(src)
@@ -326,7 +337,7 @@
 	return here && there && here.z == there.z && get_dist(here, there) <= PLANET_NPC_CHASE_RANGE
 
 /// Goes after `target`, unless already fighting them. Returns the fight, or null.
-/mob/living/basic/ambient_npc/planet/proc/engage(mob/living/target)
+/mob/living/carbon/human/npc/ambient_npc/planet/proc/engage(mob/living/target)
 	if(!can_fight(target))
 		return null
 	var/datum/ambient_activity/fight/current = activity
@@ -336,36 +347,41 @@
 	return start_activity(new /datum/ambient_activity/fight(src, target))
 
 /// Everyone at their camp who fights joins them against `target`
-/mob/living/basic/ambient_npc/planet/proc/camp_alert(mob/living/target)
+/mob/living/carbon/human/npc/ambient_npc/planet/proc/camp_alert(mob/living/target)
 	if(!place)
 		return
-	for(var/mob/living/basic/ambient_npc/planet/mate in place.living_npcs())
+	for(var/mob/living/carbon/human/npc/ambient_npc/planet/mate in place.living_npcs())
 		if(mate == src || !mate.joins_camp_fights || istype(mate.activity, /datum/ambient_activity/fight))
 			continue
 		mate.engage(target)
 
-/// One blow at `target`, with their weapon's own numbers and one of its verbs
-/mob/living/basic/ambient_npc/planet/proc/strike(mob/living/target)
-	var/datum/bounty_real_weapon/weapon = bounty_real_weapon(weapon_type)
-	weapon.pick_verb(src)
-	melee_attack(target, null, TRUE)
+/// One blow at `target`: a click with the weapon in hand (or a fist), through the real attack chain
+/mob/living/carbon/human/npc/ambient_npc/planet/proc/strike(mob/living/target)
+	var/obj/item/weapon = held_weapon()
+	if(weapon)
+		human_npc_ready_item(src, weapon)
+		human_npc_ready_weapon(src, weapon)
+	else if(!human_npc_ready_empty_hand(src))
+		return
+	zone_selected = human_npc_pick_aim_zone()
+	ai_controller?.ai_interact(target, combat_mode = TRUE)
 
 /// How far they could throw something right now (their spear), or 0
-/mob/living/basic/ambient_npc/planet/proc/throw_reach()
+/mob/living/carbon/human/npc/ambient_npc/planet/proc/throw_reach()
 	return 0
 
 /// A try at hitting `target` from where they stand (a thrown spear). TRUE if they did something.
-/mob/living/basic/ambient_npc/planet/proc/try_ranged(mob/living/target)
+/mob/living/carbon/human/npc/ambient_npc/planet/proc/try_ranged(mob/living/target)
 	return FALSE
 
 /// Runs from `threat`
-/mob/living/basic/ambient_npc/planet/proc/run_from(atom/threat)
+/mob/living/carbon/human/npc/ambient_npc/planet/proc/run_from(atom/threat)
 	if(istype(activity, /datum/ambient_activity/flee))
 		return activity
 	return start_activity(new /datum/ambient_activity/flee(src, threat))
 
 // Fighters fight and their camp joins in; everyone else says something and gets away
-/mob/living/basic/ambient_npc/planet/react_attacked(atom/attacker)
+/mob/living/carbon/human/npc/ambient_npc/planet/react_attacked(atom/attacker)
 	if(stat != CONSCIOUS || fading)
 		return
 	var/mob/living/foe = isliving(attacker) ? attacker : null
@@ -381,7 +397,7 @@
 	camp_alert(foe)
 
 // No sheltering from the weather in the middle of a fight
-/mob/living/basic/ambient_npc/planet/react_storm(datum/weather/storm)
+/mob/living/carbon/human/npc/ambient_npc/planet/react_storm(datum/weather/storm)
 	if(istype(activity, /datum/ambient_activity/fight) || istype(activity, /datum/ambient_activity/flee))
 		return
 	return ..()
@@ -390,7 +406,7 @@
  * Whether `user`'s crew has had `what` from this site yet; marks it if not. TRUE only the first
  * time for a crew, for as long as the site lasts (the planet's life).
  */
-/mob/living/basic/ambient_npc/planet/proc/first_for_crew(mob/user, what)
+/mob/living/carbon/human/npc/ambient_npc/planet/proc/first_for_crew(mob/user, what)
 	var/datum/ambient_place/site/site = place
 	if(!istype(site) || !user)
 		return FALSE
@@ -425,7 +441,7 @@
 	/// The walk to the target failed too often: they give up
 	var/gave_up = FALSE
 
-/datum/ambient_activity/fight/New(mob/living/basic/ambient_npc/new_doer, atom/target)
+/datum/ambient_activity/fight/New(mob/living/carbon/human/npc/ambient_npc/new_doer, atom/target)
 	. = ..()
 	target_ref = WEAKREF(target)
 
@@ -437,11 +453,12 @@
 	return target
 
 /datum/ambient_activity/fight/setup()
-	var/mob/living/basic/ambient_npc/planet/fighter = doer
+	var/mob/living/carbon/human/npc/ambient_npc/planet/fighter = doer
 	var/mob/living/target = target()
 	if(!istype(fighter) || !target || !fighter.can_fight(target))
 		return FALSE
 	fighter.stand_up()
+	fighter.set_pace(running = TRUE)
 	fighter.set_held(fighter.weapon_type)
 	next_blow = world.time + PLANET_NPC_FIRST_BLOW_DELAY
 	last_reachable = world.time
@@ -450,11 +467,11 @@
 
 /// Heads for the target: near enough to throw for someone who can, right beside them otherwise
 /datum/ambient_activity/fight/proc/chase(mob/living/target)
-	var/mob/living/basic/ambient_npc/planet/fighter = doer
+	var/mob/living/carbon/human/npc/ambient_npc/planet/fighter = doer
 	go_to(target, max(1, fighter.throw_reach()))
 
 /datum/ambient_activity/fight/act(seconds)
-	var/mob/living/basic/ambient_npc/planet/fighter = doer
+	var/mob/living/carbon/human/npc/ambient_npc/planet/fighter = doer
 	var/mob/living/target = target()
 	if(gave_up || !target || !fighter.can_fight(target))
 		return AMBIENT_STEP_DONE
@@ -486,10 +503,11 @@
 	arrived = FALSE
 
 /datum/ambient_activity/fight/finish()
-	var/mob/living/basic/ambient_npc/planet/fighter = doer
+	var/mob/living/carbon/human/npc/ambient_npc/planet/fighter = doer
 	. = ..()
 	if(istype(fighter) && !QDELETED(fighter))
 		fighter.show_idle_held()
+		fighter.set_pace(running = FALSE)
 
 /// Running from something: well away from it, a breather, and away again if it follows
 /datum/ambient_activity/flee
@@ -500,7 +518,7 @@
 	/// What they run from
 	var/datum/weakref/threat_ref
 
-/datum/ambient_activity/flee/New(mob/living/basic/ambient_npc/new_doer, atom/threat)
+/datum/ambient_activity/flee/New(mob/living/carbon/human/npc/ambient_npc/new_doer, atom/threat)
 	. = ..()
 	threat_ref = WEAKREF(threat)
 
@@ -510,6 +528,7 @@
 	set_duration()
 	doer.stand_up()
 	doer.speak_context("flee", threat_ref?.resolve(), force = TRUE)
+	doer.set_pace(running = TRUE)
 	return TRUE
 
 /// Sends them somewhere away from the threat they could get to. FALSE when there is nowhere.
@@ -538,6 +557,11 @@
 		doer.setDir(pick(GLOB.cardinals))
 	return AMBIENT_STEP_CONTINUE
 
+/datum/ambient_activity/flee/finish()
+	if(!QDELETED(doer))
+		doer.set_pace(running = FALSE)
+	return ..()
+
 /**
  * Keeping near someone (a caravan's leader, a hunting partner) until they are gone or it ends.
  * `keep` is how near; `duration` 0 follows for as long as the leader is there.
@@ -548,7 +572,7 @@
 	/// How near they keep
 	var/keep = 2
 
-/datum/ambient_activity/follow/New(mob/living/basic/ambient_npc/new_doer, atom/leader, keep = 2, duration = 0)
+/datum/ambient_activity/follow/New(mob/living/carbon/human/npc/ambient_npc/new_doer, atom/leader, keep = 2, duration = 0)
 	. = ..()
 	src.keep = keep
 	if(duration)
@@ -559,7 +583,7 @@
 	var/mob/living/leader = anchor()
 	if(!isliving(leader) || leader.stat == DEAD)
 		return null
-	var/mob/living/basic/ambient_npc/npc_leader = leader
+	var/mob/living/carbon/human/npc/ambient_npc/npc_leader = leader
 	if(istype(npc_leader) && npc_leader.fading)
 		return null
 	return leader
@@ -693,7 +717,7 @@
 	. = ..()
 	if(QDELETED(doer))
 		return
-	var/mob/living/basic/ambient_npc/planet/planet_npc = doer
+	var/mob/living/carbon/human/npc/ambient_npc/planet/planet_npc = doer
 	if(istype(planet_npc))
 		planet_npc.show_idle_held()
 	else if(held_look)
@@ -737,25 +761,25 @@
 			best_distance = distance
 	return best
 
+// They lie down and go to sleep, as anyone does (tg's resting and Sleeping): asleep they snore by
+// themselves, see nothing, and wake when the sleep runs out or someone shakes them.
 /datum/ambient_activity/nap/arrive()
-	var/mob/living/basic/ambient_npc/planet/sleeper = doer
 	doer.set_held(null)
 	doer.manual_emote("lies down.")
-	animate(doer, transform = matrix().Turn(90), time = 0.5 SECONDS)
-	if(istype(sleeper))
-		sleeper.sleeping = TRUE
+	doer.set_resting(TRUE, silent = TRUE)
+	doer.Sleeping(max(1 SECONDS, ends_at - world.time))
 
+// Awake again before it is over (shaken, or the sleep ran out early): a turn over, and up
 /datum/ambient_activity/nap/act(seconds)
-	if(prob(4))
-		doer.manual_emote(pick("snores.", "turns over."))
+	if(!doer.IsSleeping())
+		if(prob(30))
+			doer.manual_emote("turns over.")
+		return AMBIENT_STEP_DONE
 	return AMBIENT_STEP_CONTINUE
 
 /datum/ambient_activity/nap/finish()
-	var/mob/living/basic/ambient_npc/planet/sleeper = doer
-	if(istype(sleeper) && !QDELETED(sleeper))
-		sleeper.sleeping = FALSE
-		if(sleeper.stat != DEAD)
-			animate(sleeper, transform = matrix(), time = 0.5 SECONDS)
+	if(!QDELETED(doer) && doer.stat == CONSCIOUS)
+		doer.set_resting(FALSE, silent = TRUE)
 	return ..()
 
 // =========================================================================

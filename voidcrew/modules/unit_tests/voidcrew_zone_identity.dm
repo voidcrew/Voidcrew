@@ -188,12 +188,12 @@
 	var/obj/machinery/mission_pad/pad = allocate(/obj/machinery/mission_pad, deck)
 	var/datum/criminal_bounty/posting = board_test_posting(2) // BOUNTY_TIER_WANTED
 	var/datum/bounty_record/record = posting.record
-	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, field)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, field)
 	TEST_ASSERT(istext(posting.turn_in(pad, ship)), "A criminal absent from the pad was accepted")
 	TEST_ASSERT_EQUAL(crew.reputation, 0, "A refused turn-in earned reputation")
 	var/list/card = posting.board_ui_entry(ship, pad)
 	TEST_ASSERT_EQUAL(card["reputation_gain"], 2, "The wanted card lost what it is worth")
-	criminal.body_go_down()
+	criminal.adjustBruteLoss(110) // into tg crit
 	TEST_ASSERT_EQUAL(record.board_work_zone, 2, "Capture did not bind its actual field band")
 	TEST_ASSERT_EQUAL(crew.reputation, 0, "Capture earned reputation before a paying turn-in")
 	criminal.forceMove(deck)
@@ -234,7 +234,7 @@
 		var/turf/field = make_zone_turf(locate(home.x + band, home.y, home.z), band)
 		for(var/index in 1 to 3)
 			var/datum/criminal_bounty/posting = board_test_posting(3) // BOUNTY_TIER_MOST_WANTED
-			var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, field)
+			var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, field)
 			criminal.death()
 			TEST_ASSERT_EQUAL(posting.record.board_work_zone, band, "Death did not bind its field band")
 			criminal.forceMove(deck)
@@ -253,8 +253,8 @@
 	tier_posting.record.status = "escaped"
 	TEST_ASSERT_EQUAL(tier_posting.board_claim_zone_work(ship), 0, "An escaped prisoner earned reputation")
 	TEST_ASSERT(!tier_posting.record.board_reputation_claimed, "An unpaid escape consumed a reputation claim")
-	var/mob/living/basic/bounty_criminal/admin_spawn = allocate(/mob/living/basic/bounty_criminal, home)
-	admin_spawn.body_go_down()
+	var/mob/living/carbon/human/npc/bounty_criminal/admin_spawn = allocate(/mob/living/carbon/human/npc/bounty_criminal, home)
+	admin_spawn.adjustBruteLoss(110) // into tg crit
 	TEST_ASSERT_NULL(admin_spawn.posting(), "An admin spawn acquired a posting")
 	TEST_ASSERT_EQUAL(crew.reputation, 20, "An admin spawn earned reputation")
 
@@ -265,8 +265,8 @@
 	var/obj/structure/overmap/ship/ship = paid_ship(deck, home)
 	var/obj/machinery/mission_pad/pad = allocate(/obj/machinery/mission_pad, deck)
 	var/datum/criminal_bounty/posting = board_test_posting(2, null, 1000, 0, "normal")
-	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, field)
-	criminal.ai_surrender()
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, field)
+	criminal.npc_surrender() // tg *surrender
 	TEST_ASSERT_EQUAL(posting.record.board_work_zone, 2, "Surrender did not bind the field band")
 	criminal.forceMove(deck)
 	TEST_ASSERT(islist(posting.turn_in(pad, ship)), "An uncuffed surrendered criminal was not paid")
@@ -276,8 +276,8 @@
 	var/turf/field = make_zone_turf(run_loc_floor_bottom_left, 2)
 	var/datum/criminal_bounty/posting = board_test_posting(2)
 	var/datum/bounty_record/record = posting.record
-	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, field)
-	criminal.body_go_down()
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, field)
+	criminal.adjustBruteLoss(110) // into tg crit
 	TEST_ASSERT_EQUAL(record.board_work_zone, 2, "The first sighting did not bind its capture band")
 	TEST_ASSERT(posting.relist("slipped away"), "The escape did not start relisting")
 	TEST_ASSERT_NULL(record.board_work_zone, "An escaped sighting kept its old work band")
