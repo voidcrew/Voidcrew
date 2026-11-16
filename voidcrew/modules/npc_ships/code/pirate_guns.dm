@@ -18,6 +18,8 @@ GLOBAL_LIST_INIT(pirate_gun_handlings, init_pirate_gun_handlings())
 	. = list()
 	// Most specific first: pistols are automatic guns too, and every gun type is a /obj/item/gun.
 	for(var/handling_type in list(
+		/datum/pirate_gun_handling/plasma/rifle, // plasma_weapons module (plasma_pirates.dm)
+		/datum/pirate_gun_handling/plasma,
 		/datum/pirate_gun_handling/shotgun,
 		/datum/pirate_gun_handling/pistol,
 		/datum/pirate_gun_handling/smg,
