@@ -220,9 +220,9 @@ const Recipe = (props: RecipeProps) => {
       <CustomPrint design={design} available={available} />
     </div>
   );
-
-  // VOIDCREW EDIT ADDITION: the tutorial checklist outlines the design it points at.
+  // VOIDCREW EDIT ADDITION START - the tutorial checklist outlines the design it points at
   return (
     <TutorialFocus id={`imprinter_${design.id}`}>{recipe}</TutorialFocus>
   );
+  // VOIDCREW EDIT ADDITION END
 };

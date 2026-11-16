@@ -419,11 +419,11 @@ const DesignBrowserTab = <T extends Design = Design>(
         )}
     </div>
   );
-
-  // VOIDCREW EDIT ADDITION
+  // VOIDCREW EDIT ADDITION START - the tutorial checklist pulses this tab
   return (
     <TutorialFocus id={tabFocused ? tutorialFocus : ''}>{tab}</TutorialFocus>
   );
+  // VOIDCREW EDIT ADDITION END
 };
 
 type CategoryViewProps<T extends Design = Design> = {

@@ -157,7 +157,8 @@ ADMIN_VERB(create_command_report, R_ADMIN, "Create Command Report", "Create a co
 				chosen_color = "red"
 			else if(command_name == WIZARD_PRESET)
 				chosen_color = "purple"
-		priority_announce(command_report_content, subheader == ""? null : subheader, report_sound, has_important_message = TRUE, color_override = chosen_color)
+		// VOIDCREW EDIT CHANGE: unnamed announcements say "Sector Broadcast" now, so name any other chosen sender explicitly.
+		priority_announce(command_report_content, subheader == ""? null : subheader, report_sound, sender_override = (command_name == CENTCOM_PRESET ? null : "[command_name] Update"), has_important_message = TRUE, color_override = chosen_color)
 
 	if(!announce_contents || print_report)
 		print_command_report(command_report_content, "[announce_contents ? "" : "Classified "][command_name] Update", !announce_contents)

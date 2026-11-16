@@ -664,7 +664,7 @@
 	unwatch()
 	watched_ref = WEAKREF(beast)
 	RegisterSignal(beast, COMSIG_MOVABLE_MOVED, PROC_REF(on_beast_moved))
-	RegisterSignal(beast, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING), PROC_REF(on_beast_gone))
+	RegisterSignals(beast, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING), PROC_REF(on_beast_gone))
 
 /obj/structure/hunting_lure_stake/proc/unwatch()
 	var/mob/living/beast = watched_ref?.resolve()

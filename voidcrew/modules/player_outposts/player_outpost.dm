@@ -298,7 +298,7 @@ GLOBAL_LIST_EMPTY(player_outposts)
 	resident_clearance[founder_ckey] = resident_access_revision
 	register_founding_crew(founding_crew)
 
-	priority_announce("[founder_name]'s crew has founded the outpost [name] in [founded_zone == ZONE_GREEN ? "patrolled" : "unpatrolled"] space.", "Colonial Registry")
+	priority_announce("[founder_name]'s crew has founded the outpost [name] in [founded_zone == ZONE_GREEN ? "patrolled" : "unpatrolled"] space.", sender_override = "Colonial Registry")
 	log_shuttle("PLAYER OUTPOST: [key_name(founder)] founded '[name]' ([shell.name]) at zone [founded_zone]")
 	message_admins("[key_name_admin(founder)] founded player outpost '[name]'")
 	return TRUE
@@ -500,7 +500,7 @@ GLOBAL_LIST_EMPTY(player_outposts)
 		return FALSE
 	if(!COOLDOWN_FINISHED(src, rename_cooldown))
 		return FALSE
-	priority_announce("The outpost [name] has been renamed to [new_name].", "Colonial Registry")
+	priority_announce("The outpost [name] has been renamed to [new_name].", sender_override = "Colonial Registry")
 	message_admins("[key_name_admin(user)] renamed player outpost '[name]' to '[new_name]'")
 	name = new_name
 	display_name = new_name
@@ -688,7 +688,7 @@ GLOBAL_LIST_EMPTY(player_outposts)
 /obj/structure/overmap/dynamic/player_outpost/proc/abandon(mob/user, admin_override = FALSE)
 	if(admin_override ? !check_rights_for(user?.client, R_ADMIN) : !is_owner(user))
 		return
-	priority_announce("The outpost [name] has been abandoned by its owner. Salvage rights unclaimed.", "Colonial Registry")
+	priority_announce("The outpost [name] has been abandoned by its owner. Salvage rights unclaimed.", sender_override = "Colonial Registry")
 	message_admins("[key_name_admin(user)] abandoned player outpost '[name]'")
 	// Intake closes and the prisoners are transferred out (outpost_prison_economy.dm).
 	running_prison()?.on_outpost_abandoned()
