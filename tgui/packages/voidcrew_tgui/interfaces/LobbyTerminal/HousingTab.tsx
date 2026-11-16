@@ -10,6 +10,7 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 
+import { sfx, useChanged, useScreen } from './motion';
 import { usePager } from './nav';
 import {
   BODY_Y,
@@ -20,6 +21,7 @@ import {
   bodyRows,
   cut,
   Field,
+  FlashAt,
   Key,
   NameLine,
   Pager,
@@ -27,6 +29,7 @@ import {
   Slab,
   safe,
   useGrid,
+  WipeAt,
   wrapMax,
 } from './term';
 import type { LobbyData, Outpost, OutpostMode } from './types';
@@ -140,6 +143,7 @@ export function HousingTab() {
   const [sent, setSent] = useState<{ at: number | null } | null>(null);
   const lastWheel = useRef(0);
   const left = useCountdown(outposts);
+  useScreen('housing', 0);
 
   // A sent move-in: every key is dead until the notice changes or 4 seconds pass.
   useEffect(() => {
@@ -267,6 +271,15 @@ export function HousingTab() {
         right
         onPage={(to) => turn(to)}
       />,
+      // A page turn wipes the blocks only.
+      <WipeAt
+        key="turn"
+        x={1}
+        y={BODY_Y}
+        w={61}
+        h={M - 2.5 - BODY_Y}
+        k={pg}
+      />,
     );
   }
 
@@ -316,6 +329,13 @@ function OutpostBlock(props: {
   const keyY = y0 + h - p - 1.5;
   const dead = !open || busy;
   const locked = v.act === 'code' && lock > 0;
+  // A request went out: the block's bar flashes once.
+  const asked = !!o.asked;
+  useChanged(asked, (_, now) => {
+    if (now) {
+      sfx('ok', { own: true });
+    }
+  });
 
   let keys: ReactNode = null;
   if (v.act === 'move') {
@@ -399,9 +419,10 @@ function OutpostBlock(props: {
       ) : (
         <NameLine x={3} y={y0 + p} w={NAME_W} text={name} />
       )}
-      <Put x={3} y={resY} cls="dim">
+      <Put x={3} y={resY} cls="dim" pulse={o.residents}>
         {residents(o.residents)}
       </Put>
+      <FlashAt x={1} y={y0} w={61} h={h} k={asked} bar />
       {!!v.why && (
         <Put x={3} y={resY + 1} cls="amb">
           {cut(v.why, NAME_W)}

@@ -28,6 +28,7 @@ import {
   Slab,
   safe,
   useGrid,
+  WipeAt,
   wrap,
   wrapMax,
 } from './term';
@@ -197,6 +198,10 @@ export function Bill(props: { ctx: YardCtx }) {
       </Slab>,
     );
   });
+  // A page of lines turning wipes the lines only.
+  out.push(
+    <WipeAt key="turn" x={1} y={y} w={W} h={per * pitch} k={pg} />,
+  );
   y += per * pitch;
 
   // The rule, then TOTAL, ON ACCOUNT and SHORT under the same columns.
@@ -219,6 +224,7 @@ export function Bill(props: { ctx: YardCtx }) {
         values={bill.total}
         cls="amb"
         big={!tight}
+        pulse
       />,
     );
   } else {
@@ -246,7 +252,9 @@ export function Bill(props: { ctx: YardCtx }) {
         </RPut>,
       );
     } else if (ledgerOk) {
-      out.push(<ClassFigures key="af" y={y} set="R" values={ctx.account} />);
+      out.push(
+        <ClassFigures key="af" y={y} set="R" values={ctx.account} pulse />,
+      );
     }
     y += 1;
   }
@@ -265,6 +273,7 @@ export function Bill(props: { ctx: YardCtx }) {
         values={bill.short}
         cls="inva"
         big={!tight}
+        pulse
       />,
     );
     y += sh;

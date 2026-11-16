@@ -22,6 +22,7 @@ import {
   Slab,
   safe,
   useGrid,
+  WipeAt,
   wrapMax,
 } from './term';
 import type { Hull } from './types';
@@ -235,6 +236,8 @@ export function Hulls(props: { ctx: YardCtx }) {
         right
         onPage={(to) => turn(to)}
       />
+      {/* A page turn wipes the blocks only. */}
+      <WipeAt x={1} y={BODY_Y} w={61} h={rows - 2.5 - BODY_Y} k={pg} />
     </div>
   );
 }

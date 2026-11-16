@@ -14,6 +14,7 @@
 import { type CSSProperties, type ReactNode, useEffect, useState } from 'react';
 import { resolveAsset } from 'tgui/assets';
 
+import { Wipe } from './motion';
 import { useGrid, Well } from './term';
 import type { ShipFit } from './YardTab';
 
@@ -83,8 +84,14 @@ export function ShipPic(props: {
   fit: ShipFit;
   /** Slot key of the room to mark (the fit's current room), or null. */
   hiSlot?: string | null;
+  /**
+   * Counts options taken on the fit. When it changes, a cover the colour of the well retracts
+   * top to bottom over the marked room (the whole picture when no room is marked: a new
+   * finish), showing what was fitted.
+   */
+  took?: number;
 }) {
-  const { x, y, w, h, fit, hiSlot } = props;
+  const { x, y, w, h, fit, hiSlot, took } = props;
   const { cw, ch, lw, s } = useGrid();
   const pv = fit.hull.preview as PreviewData | null;
   const themeKey = fit.finish?.id || '';
@@ -191,6 +198,17 @@ export function ShipPic(props: {
     );
   }
 
+  const left = Math.round((sw - iw) / 2);
+  const top = Math.round((sh - ih) / 2);
+  // The cover keeps inside the well: a room at the picture's edge never spills past it.
+  const room = mark
+    ? {
+        left: Math.max(0, left + mark.l),
+        top: Math.max(0, top + mark.t),
+        width: Math.min(sw, left + mark.l + mark.w) - Math.max(0, left + mark.l),
+        height: Math.min(sh, top + mark.t + mark.h) - Math.max(0, top + mark.t),
+      }
+    : { left: 0, top: 0, width: sw, height: sh };
   return (
     <Well x={x} y={y} w={w} h={h}>
       <div
@@ -198,12 +216,15 @@ export function ShipPic(props: {
           position: 'absolute',
           width: iw,
           height: ih,
-          left: Math.round((sw - iw) / 2),
-          top: Math.round((sh - ih) / 2),
+          left,
+          top,
         }}
       >
         {layers}
       </div>
+      {took !== undefined && (
+        <Wipe k={took} kind="slot" tone="well" z={2} style={room} />
+      )}
     </Well>
   );
 }

@@ -43,6 +43,7 @@ import { Bill } from './Bill';
 import { Fit } from './Fit';
 import { Hulls } from './Hulls';
 import { LeaveCrew } from './LeaveCrew';
+import { noteFounding, quietDialogClose, useScreen } from './motion';
 import { useBack } from './nav';
 import {
   BODY_Y,
@@ -724,6 +725,8 @@ export function YardTab(props: { home: number }) {
   }, [sent, noticeAt]);
 
   const send = (ask: FoundAsk, leave: boolean) => {
+    // The CONFIRMED box that answers this starts a long job (motion.ts).
+    noteFounding();
     store.sent = { at: noticeAt, t: Date.now() };
     rerender((n) => n + 1);
     act(ask.action, { ...ask.params, leave_crew: leave ? 1 : 0 });
@@ -776,6 +779,15 @@ export function YardTab(props: { home: number }) {
     // The hull left the shelf.
     screen = 'hulls';
   }
+  // Each screen is a step further in: going on wipes forward, BACK and an earlier crumb wipe
+  // back, and the hull stepper turns a page.
+  const onRecord = screen === 'hulls' && !!hull;
+  useScreen(
+    `shipyard/${onRecord ? 'record' : screen}`,
+    onRecord ? 2 : { home: 0, hulls: 1, fit: 3, bill: 4 }[screen],
+    onRecord && hull ? hull.id : '',
+    onRecord && hull ? catalog.indexOf(hull) : 0,
+  );
   let body: ReactNode;
   if (screen === 'home') {
     body = <YardHome ctx={ctx} />;
@@ -800,6 +812,8 @@ export function YardTab(props: { home: number }) {
           label={leave.label}
           onStay={() => set({ leave: null })}
           onGo={() => {
+            // Answered, not backed out of: the box goes without the back sound.
+            quietDialogClose();
             set({ leave: null });
             send(leave, true);
           }}

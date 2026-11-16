@@ -16,6 +16,7 @@
  */
 import { type ReactNode, useMemo, useState } from 'react';
 
+import { sfxInstead } from './motion';
 import { usePager } from './nav';
 import { ShipPic } from './ShipPic';
 import {
@@ -33,6 +34,7 @@ import {
   Slab,
   safe,
   useGrid,
+  WipeAt,
   wrap,
   wrapMax,
 } from './term';
@@ -278,6 +280,8 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
 
   const { nOpt, Dwant } = useMemo(() => measure(hull), [hull]);
   const rg = regimeOf(B, nOpt, Dwant, n);
+  /** Options taken so far on this screen: each one is shown being fitted in the picture. */
+  const [took, setTook] = useState(0);
 
   // Local: the option focused (shown), the options page, and focus claims. Reset a step.
   const stepKey = `${hull.id}:${at}`;
@@ -349,6 +353,9 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
       goStep(at + 1);
       return;
     }
+    // The part seating, in place of the key press; the picture shows it going in.
+    sfxInstead('slot');
+    setTook((t) => t + 1);
     const slot = step.slot;
     ctx.set((v) => {
       const mine = v.fitHull === hull.id;
@@ -428,6 +435,7 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
         h={rg.T}
         fit={shownFit}
         hiSlot={step?.slot ?? null}
+        took={took}
       />,
     );
     // Spec 3.5 caps the pitch at 1.75; a tall picture left the column half empty, so it
@@ -593,8 +601,22 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
     }
   }
 
-  // The total strip: what the fit as taken costs now, in set F.
+  // A step change, and a page of options turning, wipe the options and the description only:
+  // the picture and the steps stay, with the marker on the new room.
   const yK = M - 3.25;
+  out.push(
+    <WipeAt
+      key="turn"
+      x={1}
+      y={yO}
+      w={W}
+      h={yK - 0.25 - yO}
+      k={`${stepKey}:${page}`}
+      n={at * 1000 + page}
+    />,
+  );
+
+  // The total strip: what the fit as taken costs now, in set F.
   const due = partsOf(bill.total) > 0;
   if (due) {
     const short = ctx.ledger === 'ok' ? bill.short : {};
@@ -613,6 +635,7 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
         set="F"
         values={bill.total}
         cls={cls}
+        pulse
       />,
     );
   } else {

@@ -138,6 +138,7 @@ export function YardHome(props: { ctx: YardCtx }) {
               values={account}
               big
               zero
+              pulse
             />
           </>
         )}
@@ -152,7 +153,12 @@ export function YardHome(props: { ctx: YardCtx }) {
               </Put>
             ))}
             {PART_CLASSES.map((k, i) => (
-              <Put key={`n${k}`} x={COMPACT_AT[i] + k.length + 1} y={y0 + 1.125}>
+              <Put
+                key={`n${k}`}
+                x={COMPACT_AT[i] + k.length + 1}
+                y={y0 + 1.125}
+                pulse={account[k] || 0}
+              >
                 {fig(account[k]) || '0'}
               </Put>
             ))}
