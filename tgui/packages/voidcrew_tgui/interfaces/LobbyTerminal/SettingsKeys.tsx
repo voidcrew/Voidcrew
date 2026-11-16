@@ -559,10 +559,12 @@ export function SettingsKeys() {
           .map(([id, info]) => {
             const NAME = upper(info.name || id);
             const keys = bindsOf(block, id);
+            const all = keys.map(upper).join(' ');
             return {
               key: id,
               name: NAME,
-              desc: info.description || '',
+              // Keys too long for the row are cut there; the strip then shows them whole.
+              desc: all.length > VALUE_W ? all : info.description || '',
               onPress: () => sub(<KeyEdit id={id} />, NAME, id),
               value: (ty: number, focused: boolean) => (
                 <Put
@@ -571,9 +573,7 @@ export function SettingsKeys() {
                   cls={keys.length ? (focused ? 'wht' : '') : 'faint'}
                   pulse={keys.join(' ')}
                 >
-                  {keys.length
-                    ? cut(keys.map(upper).join(' '), VALUE_W)
-                    : EMPTY}
+                  {keys.length ? cut(all, VALUE_W) : EMPTY}
                 </Put>
               ),
             };
