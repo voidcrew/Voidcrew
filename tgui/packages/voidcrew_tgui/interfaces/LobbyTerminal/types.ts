@@ -58,6 +58,8 @@ export type ShellData = {
    * play but the terminal is not on screen yet, 2 play it now.
    */
   boot?: 0 | 1 | 2;
+  /** 1: ask the first-time WELCOME (Welcome.tsx). */
+  welcome?: 0 | 1;
 };
 
 export type ShellStatic = {

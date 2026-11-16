@@ -40,6 +40,7 @@ import {
   useBoxInside,
 } from './term';
 import type { LobbyData, TabId } from './types';
+import { Welcome } from './Welcome';
 import { YardTab } from './YardTab';
 
 const FONT = 'VCR';
@@ -249,6 +250,16 @@ export function LobbyTerminal() {
   const notice = data.notice;
   const confirmed = !!notice && notice.kind === 'ok';
 
+  // The first-time WELCOME box, once the start-up screen is done. Gone here at once when
+  // answered or put off; the server stops sending welcome too.
+  const [welcomeGone, setWelcomeGone] = useState(false);
+  const welcomeOpen =
+    !!data.welcome && !data.boot && !welcomeGone && !confirmed;
+  const welcomeLater = () => {
+    setWelcomeGone(true);
+    act('welcome_later');
+  };
+
   const switchTab = (next: TabId) => {
     if (next === tab && next === 'shipyard') {
       setYardHome(yardHome + 1);
@@ -259,6 +270,9 @@ export function LobbyTerminal() {
     openScreen(next);
     setObserveOpen(false);
     setMenuOpen(false);
+    if (welcomeOpen) {
+      welcomeLater();
+    }
     if (confirmed && notice) {
       act('dismiss', { at: notice.at });
     }
@@ -306,6 +320,9 @@ export function LobbyTerminal() {
     onObserve: () => {
       setMenuOpen(false);
       setObserveOpen(true);
+      if (welcomeOpen) {
+        welcomeLater();
+      }
     },
   };
 
@@ -389,6 +406,12 @@ export function LobbyTerminal() {
                   {!!reg.bar && !!menuOpen && (
                     <MenuPopup onClose={() => setMenuOpen(false)} />
                   )}
+                  {!!welcomeOpen && (
+                    <Welcome
+                      onLater={welcomeLater}
+                      onClose={() => setWelcomeGone(true)}
+                    />
+                  )}
                 </Region>
                 {!!reg.bar && (
                   <Region {...reg.bar}>
@@ -398,6 +421,9 @@ export function LobbyTerminal() {
                       menuOpen={menuOpen}
                       onMenu={() => {
                         setObserveOpen(false);
+                        if (welcomeOpen) {
+                          welcomeLater();
+                        }
                         setMenuOpen(!menuOpen);
                       }}
                     />
