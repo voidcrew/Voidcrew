@@ -17,11 +17,14 @@ import {
   Box,
   BOX_Y,
   bodyRows,
+  CLASS_EDGES,
   ClassFigures,
   ClassHeads,
   cut,
+  fig,
   HRule,
   Key,
+  PART_CLASSES,
   Pager,
   Put,
   RPut,
@@ -174,6 +177,15 @@ export function Bill(props: { ctx: YardCtx }) {
     const h = pitch >= 1.25 ? pitch - 0.25 : 1;
     const ty = ly + (h - 1) / 2;
     const odd = ((pg - 1) * per + j) % 2 === 1;
+    // The name takes the row's free width: up to two cells before its first figure or word.
+    let start = WORD_END - (line.cost ? 0 : (line.word || '').length);
+    if (line.cost) {
+      const i = PART_CLASSES.findIndex((k) => !!fig(line.cost?.[k]));
+      if (i >= 0) {
+        start = CLASS_EDGES.R[i] + 1 - fig(line.cost[PART_CLASSES[i]]).length;
+      }
+    }
+    const nameW = Math.max(NAME_W, start - 5);
     out.push(
       <Slab
         key={`l${j}${line.kind}${line.id}`}
@@ -185,7 +197,7 @@ export function Bill(props: { ctx: YardCtx }) {
         alt={h < 1.25 && odd}
       >
         <Put x={3} y={ty}>
-          {cut(safe(line.name).toUpperCase(), NAME_W)}
+          {cut(safe(line.name).toUpperCase(), nameW)}
         </Put>
         {line.cost ? (
           <ClassFigures y={ty} set="R" values={line.cost} cls="amb" />
