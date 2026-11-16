@@ -7,7 +7,6 @@
 		/obj/projectile/beam/laser/hellfire,
 		/obj/projectile/beam/laser/heavylaser,
 		/obj/projectile/beam/laser/musket,
-		/obj/projectile/beam/laser/outpost,
 		/obj/projectile/beam/scatter,
 		/obj/projectile/beam/weak/penetrator,
 		/obj/projectile/beam/practice,
