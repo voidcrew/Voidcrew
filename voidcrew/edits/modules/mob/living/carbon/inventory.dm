@@ -9,4 +9,7 @@
 /mob/living/carbon/proc/log_internals_cutoff(reason)
 	var/obj/item/tank/closing = external || internal
 	var/atom/tank_loc = closing.loc
-	log_shuttle("INTERNALS CUTOFF: [key_name(src)] at [AREACOORD(src)] reason=[reason] tank=[closing.type] ([external ? "external" : "internal"]) tank_loc=[tank_loc] ([tank_loc?.type]) loc_is_mob=[tank_loc == src ? "yes" : "NO"] apparatus=[can_breathe_internals() || "NONE"] mask=[wear_mask ? "[wear_mask.type] up=[wear_mask.up] flags=[wear_mask.clothing_flags]" : "NONE"] head=[head ? "[head.type] flags=[head.clothing_flags]" : "NONE"] tube=[can_breathe_tube() ? "yes" : "no"] stat=[stat]")
+	// The mask and head slots take things that aren't clothing (a cigar, a bucket), which have no up or clothing_flags
+	var/obj/item/clothing/mask_clothes = istype(wear_mask, /obj/item/clothing) ? wear_mask : null
+	var/obj/item/clothing/head_clothes = istype(head, /obj/item/clothing) ? head : null
+	log_shuttle("INTERNALS CUTOFF: [key_name(src)] at [AREACOORD(src)] reason=[reason] tank=[closing.type] ([external ? "external" : "internal"]) tank_loc=[tank_loc] ([tank_loc?.type]) loc_is_mob=[tank_loc == src ? "yes" : "NO"] apparatus=[can_breathe_internals() || "NONE"] mask=[wear_mask ? "[wear_mask.type] up=[mask_clothes?.up] flags=[mask_clothes?.clothing_flags]" : "NONE"] head=[head ? "[head.type] flags=[head_clothes?.clothing_flags]" : "NONE"] tube=[can_breathe_tube() ? "yes" : "no"] stat=[stat]")

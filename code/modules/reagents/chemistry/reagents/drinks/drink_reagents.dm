@@ -656,7 +656,7 @@
 	. = ..()
 	affected_mob.adjust_drowsiness(3 SECONDS * REM * seconds_per_tick)
 	var/need_mob_update
-	switch(affected_mob.mob_mood.sanity_level)
+	switch(affected_mob.mob_mood ? affected_mob.mob_mood.sanity_level : SANITY_LEVEL_NEUTRAL) // VOIDCREW EDIT CHANGE: no mood datum (human NPCs, voidcrew/modules/human_npcs) reads as neutral
 		if (SANITY_LEVEL_GREAT to SANITY_LEVEL_NEUTRAL)
 			need_mob_update = affected_mob.adjustBruteLoss(-1.5 * REM * seconds_per_tick, updating_health = FALSE)
 		if (SANITY_LEVEL_DISTURBED to SANITY_LEVEL_UNSTABLE)

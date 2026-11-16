@@ -1,0 +1,25 @@
+The art in this module comes from Shiptest (https://github.com/shiptest-ss13/Shiptest), taken on
+2026-11-08 at commit 000f892ae9. Shiptest licenses its assets CC BY-SA 3.0
+(https://creativecommons.org/licenses/by-sa/3.0/) unless a file says otherwise, and none of these
+files says otherwise; they are used here under that licence. The Heater and Scorcher sprites were
+added by thearbiber in Shiptest PR #6745 ("New frontie/indie PDW: Heater and Scorcher"). Each DMI
+holds only the states these guns use, copied pixel for pixel, apart from the renames listed.
+
+Icons (Shiptest paths)
+icons/scorcher.dmi           - states heater and scorcher from
+                               icons/obj/guns/manufacturer/frontier_import/48x32.dmi, with
+                               heater_mag_heater_mag renamed heater_mag and scorcher_mag_heater_mag
+                               renamed scorcher_mag, the overlay names our gun code draws.
+icons/scorcher_lefthand.dmi  - states heater and scorcher from
+                               icons/obj/guns/manufacturer/frontier_import/lefthand.dmi.
+icons/scorcher_righthand.dmi - states heater and scorcher from
+                               icons/obj/guns/manufacturer/frontier_import/righthand.dmi.
+icons/scorcher_onmob.dmi     - states heater and scorcher from
+                               icons/obj/guns/manufacturer/frontier_import/onmob.dmi.
+icons/magazines.dmi          - states heater_mag-1 and heater_mag-0 from icons/obj/ammunition/ammo.dmi,
+                               renamed heater_mag-full and heater_mag-empty.
+
+Sounds
+None copied. Shiptest's Heater fire and reload sounds (sound/weapons/gun/rifle/skm_smg.ogg,
+sound/weapons/gun/smg/cm5_reload.ogg, cm5_unload.ogg) have no recorded source, so the guns use
+/tg/station's own SMG and MOD flamethrower sounds instead.
