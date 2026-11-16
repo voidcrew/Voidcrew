@@ -856,6 +856,9 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 	if(QDELETED(owner))
 		return
 	owner.blended = FALSE
+	// Out of the act, the coat over its chrome comes off and the chrome shows (C0, bounty_chrome.dm). Decoys never drop the act.
+	if(!decoy && !leaving)
+		bounty_chrome_bare(owner)
 	REMOVE_TRAIT(owner, TRAIT_NO_CONTAINMENT, BOUNTY_OUTPOST_TRAIT)
 	REMOVE_TRAIT(owner, TRAIT_NO_STORAGE_INSERT, BOUNTY_OUTPOST_TRAIT)
 	if(added_turret_faction)
@@ -1401,6 +1404,15 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 		return ..()
 	show_warrant(interacting_with, user)
 	return ITEM_INTERACT_SUCCESS
+
+/// Its bounty closed: it burns away, wherever it is. Whoever carries it is told; on the floor, the room sees it.
+/obj/item/paper/bounty_warrant/proc/burn_up()
+	var/mob/living/holder = get(src, /mob/living)
+	if(holder)
+		to_chat(holder, span_notice("[src] curls up and burns away."))
+	else if(isturf(loc))
+		visible_message(span_notice("[src] curls up and burns away."), vision_distance = COMBAT_MESSAGE_RANGE)
+	qdel(src)
 
 /**
  * `user` holds the warrant up to `target`.

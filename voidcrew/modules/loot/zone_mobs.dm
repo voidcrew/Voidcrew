@@ -134,5 +134,8 @@
 		// A wave never lands a pod or digs up under someone's feet
 		if(tile.is_blocked_turf(exclude_mobs = !wave))
 			continue
+		// Nor drops one into lava, water or a pit
+		if(wave && (islava(tile) || ischasm(tile) || istype(tile, /turf/open/water)))
+			continue
 		result += tile
 	return result

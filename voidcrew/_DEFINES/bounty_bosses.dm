@@ -13,10 +13,14 @@
 
 /// Brute and burn a boss takes, as a multiple of a person's, through its physiology (npc_damage_taken, defaults 1.5). Its armour does the rest. (phase D)
 #define BOUNTY_BOSS_DAMAGE_TAKEN 0.6
-/// Its combat stimulant: one at the start of a fight, a second for its second wind (defaults 1.6, CR-4). Ephedrine: baton resistance, speed and quicker recovery from stuns, never immunity, so a crew can still stun and cuff a worn-out boss. (phase D)
+/// Its combat stimulant, used through combat sense's rule (human_npc_combat_sense.dm) when it tires in a fight, never while one is still in its blood (C8; it used to inject at the start of a fight, defaults 1.6, CR-4). Ephedrine: baton resistance, speed and quicker recovery from stuns, never immunity, so a crew can still stun and cuff a worn-out boss. (phase D)
 #define BOUNTY_BOSS_STIMULANT /obj/item/reagent_containers/hypospray/medipen/stimpack
-/// How many of BOUNTY_BOSS_STIMULANT it carries. (phase D)
+/// How many of BOUNTY_BOSS_STIMULANT it carries: one for when it first tires, one for a long fight (an ephedrine pen lasts about 100 s). (phase D)
 #define BOUNTY_BOSS_STIMULANTS 2
+/// Its combat stimpack, one per kit beside BOUNTY_BOSS_STIMULANTS: stimulants and omnizine, used through the same combat sense rule as the others, never while a stimulant is still in its blood
+#define BOUNTY_BOSS_COMBAT_STIMULANT /obj/item/reagent_containers/hypospray/medipen/stimpack/traitor
+/// The cell in the standard core of a mini-boss's MODsuit (bounty_suits.dm): about 2 hours of a suit running at tg's base drain. The suit doesn't run while its wearer is dormant.
+#define BOUNTY_BOSS_MODSUIT_CELL /obj/item/stock_parts/power_store/cell/bluespace
 /// Worn out: stamina loss over this share of its max stamina... (phase D, CB-2)
 #define BOUNTY_BOSS_WORN_OUT_STAMINA 0.5
 /// ...or health under this share of its max health. (phase D, CB-2)
@@ -60,6 +64,33 @@
 /// A spot any player within this many tiles can see is in view. (phase D)
 #define BOUNTY_BOSS_REINFORCE_SIGHT 13
 
+// ===== HURT FROM WHERE IT CAN'T REACH (review r1 F4, r2) =====
+
+/// Someone who hurt it from where it can't get at them (behind glass, a shut door or a gap, or off its site) is shunned this long: it doesn't go after them, and it keeps out of their sight
+#define BOUNTY_BOSS_SHUN_TIME (60 SECONDS)
+/// How far it walks for cover, in steps
+#define BOUNTY_BOSS_COVER_RANGE 7
+/// How far a shooter is taken to see, for cover, at the least: one farther off sees as far as a clear line from them goes (a scope, or a shot from across the site)
+#define BOUNTY_BOSS_COVER_SIGHT 9
+/// How far it works out its walk to someone behind something, in tiles, and how long that walk holds while it stands on the same tile. Someone farther off is in reach if the walk gets it at least half this much closer to them.
+#define BOUNTY_BOSS_REACH_RANGE 10
+#define BOUNTY_BOSS_REACH_RETHINK (2 SECONDS)
+/// It says a line as it breaks for cover at most this often
+#define BOUNTY_BOSS_COVER_BARK_COOLDOWN (30 SECONDS)
+
+// ===== GORILLA ARMS THROUGH GLASS =====
+
+/// The tell before its Gorilla Arms go at a window, grille, table or door: the fist drawn back, the pistons heard, the tile lit. At least 0.8 s (decision 5).
+#define BOUNTY_BOSS_SMASH_WINDUP (0.9 SECONDS)
+/// What one Gorilla Arms punch does to a structure, used only to count the punches something takes. The punch itself is the implant's (CYBERWARE_GORILLA_STRUCTURE_DAMAGE, which ware_military_arms.dm undefines); a test checks the two agree.
+#define BOUNTY_BOSS_SMASH_BLOW 40
+/// It only goes at something it breaks in this many punches; anything tougher, it goes round or takes cover
+#define BOUNTY_BOSS_SMASH_MOST_BLOWS 6
+/// The pause after the tell before its next ability may start
+#define BOUNTY_BOSS_SMASH_RECOVER (1 SECONDS)
+/// The tell's glow and floor mark: the piston punch's orange
+#define BOUNTY_BOSS_SMASH_COLOR "#ff8a1f"
+
 // ===== SUMMONED THINGS: CAPS AND LIFETIMES (P4) =====
 
 /// Fire pools (flamer floors and molotovs) burning at once, server-wide
@@ -74,6 +105,20 @@
 #define BOUNTY_BOSS_BARRICADE_LIFE (90 SECONDS)
 /// Fire stacks (tg's) a boss's burning floor adds every second to anyone standing in it. (phase D, CB-8)
 #define BOUNTY_BOSS_FIRE_TICK_STACKS 1
+
+// ===== EACH KIT'S ANSWER TO A DISABLER (C8) =====
+// Real gear a player can own too, worn and locked to the body like the rest of the kit (D3). Measured in
+// the port's boss model: a solo hunter with a disabler stamcritted any of them in about two seconds before.
+
+/// The Juggernaut's tower shield, held from the start and raised as its fight starts: raised, it stops every shot from the half of the map the Juggernaut faces (the Phalanx buckler's own rule, loot/uniques/armory.dm). Flank it.
+#define BOUNTY_JUGGERNAUT_SHIELD /obj/item/shield/riot/phalanx_buckler
+/// The Heavy's coat: an ablative trenchcoat with its hood up, energy and laser armour 60 on every limb and its head, and half of all beams that hit it reflected (tg's own). Bullets go through it. Bring lethal, or a lot of shots.
+#define BOUNTY_HEAVY_COAT /obj/item/clothing/suit/hooded/ablative
+/// The Demolitionist's implant: tg's CNS rebooter, one neural load (cyberware_component.dm). Its first stamina crit of a minute lasts a second, then six seconds of stun immunity; cuff it on the second.
+#define BOUNTY_DEMOLITIONIST_REBOOTER /obj/item/organ/cyberimp/brain/anti_stun
+/// The Ghost's cover from stun fire (combat sense): how many steps it runs for cover, and how many runs it makes in one exchange of fire. Corner it.
+#define BOUNTY_GHOST_COVER_STEPS 5
+#define BOUNTY_GHOST_COVER_MOVES 4
 
 // ===== JUGGERNAUT =====
 
@@ -95,27 +140,37 @@
 #define BOUNTY_JUGGERNAUT_WALL_STAMINA 30
 #define BOUNTY_JUGGERNAUT_WALL_PARALYZE (1 SECONDS)
 #define BOUNTY_JUGGERNAUT_WALL_KNOCKDOWN (3 SECONDS)
-/// Slam: both fists up, a red ring
-#define BOUNTY_JUGGERNAUT_SLAM_WINDUP (0.7 SECONDS)
+/// Slam: both fists up, a red ring. 0.7 -> 0.8 s after review r2, long enough to step out of on sight.
+#define BOUNTY_JUGGERNAUT_SLAM_WINDUP (0.8 SECONDS)
 #define BOUNTY_JUGGERNAUT_SLAM_COOLDOWN (7 SECONDS)
 #define BOUNTY_JUGGERNAUT_SLAM_DAMAGE 20
 #define BOUNTY_JUGGERNAUT_SLAM_KNOCKDOWN (1.5 SECONDS)
 
 // ===== PYROMANIAC =====
 
-/// Its torch: lit, and it never goes out (a real tg torch, held from the start: it doesn't holster)
-#define BOUNTY_PYROMANIAC_TORCH /obj/item/flashlight/flare/torch/everburning
-/// Flamer: a pilot light hiss, an orange cone
-#define BOUNTY_PYROMANIAC_FLAMER_WINDUP (0.5 SECONDS)
+/// Its flamethrower: tg's, igniter and full plasma tank fitted, held from the start (it doesn't holster)
+#define BOUNTY_PYROMANIAC_FLAMETHROWER /obj/item/flamethrower/full/tank/bounty_boss
+/// The bottle in its other hand: tg's molotov, filled with welding fuel
+#define BOUNTY_PYROMANIAC_MOLOTOV_BOTTLE /obj/item/reagent_containers/cup/glass/bottle/molotov/bounty_boss
+/// Flamer: the pilot light, an orange line on the floor. 0.5 -> 0.8 s after review r2, long enough to step out of on sight.
+#define BOUNTY_PYROMANIAC_FLAMER_WINDUP (0.8 SECONDS)
 #define BOUNTY_PYROMANIAC_FLAMER_COOLDOWN (5 SECONDS)
 #define BOUNTY_PYROMANIAC_FLAMER_RANGE 3
-/// Full width of the cone, in degrees
-#define BOUNTY_PYROMANIAC_FLAMER_ARC 90
+/// Tank pressure (kPa) under which its flamethrower is dry and it won't sweep
+#define BOUNTY_PYROMANIAC_FLAMER_EMPTY ONE_ATMOSPHERE
+/// The flamethrower stays lit this long after a sweep, then it shuts the valve
+#define BOUNTY_PYROMANIAC_FLAMER_SHUTOFF (1 SECONDS)
 #define BOUNTY_PYROMANIAC_FLAMER_DAMAGE 18
-/// Fire stacks (tg's) the jet puts on anyone in the cone. (phase D, CB-8)
+/// Fire stacks (tg's) the jet puts on anyone on its line. (phase D, CB-8)
 #define BOUNTY_PYROMANIAC_FLAMER_STACKS 4
-/// How long the floor the cone covered keeps burning
+/// How long the floor the line covered keeps burning
 #define BOUNTY_PYROMANIAC_FLAMER_FLOOR (4 SECONDS)
+/// Sweeps a plasma tank feeds before the flamethrower runs dry and it changes tanks
+#define BOUNTY_PYROMANIAC_FLAMER_SWEEPS 4
+/// Full plasma tanks it carries in its bag for the change
+#define BOUNTY_PYROMANIAC_SPARE_TANKS 2
+/// The tank change: it stops to wrench the empty off and fit a full one, at least this long, open the whole time
+#define BOUNTY_PYROMANIAC_RELOAD_TIME (3 SECONDS)
 /// Molotov: a lit rag, the throw, a ring where it lands
 #define BOUNTY_PYROMANIAC_MOLOTOV_WINDUP (0.7 SECONDS)
 #define BOUNTY_PYROMANIAC_MOLOTOV_COOLDOWN (7 SECONDS)
@@ -124,6 +179,17 @@
 /// Fire stacks (tg's) the bursting bottle puts on anyone it splashes. (phase D, CB-8)
 #define BOUNTY_PYROMANIAC_MOLOTOV_STACKS 3
 #define BOUNTY_PYROMANIAC_MOLOTOV_POOL (8 SECONDS)
+/// Smoke (C9): tg's smoke grenade, two in its pockets, on tg's shortest timed fuse (a screwdriver setting a player can pick too)
+#define BOUNTY_PYROMANIAC_SMOKE /obj/item/grenade/smokebomb/bounty_boss
+#define BOUNTY_PYROMANIAC_SMOKE_FUSE (3 SECONDS)
+/// It takes a grenade out and stands this long, then pulls the pin and throws (the Heavy's barrier grenade wind-up)
+#define BOUNTY_PYROMANIAC_SMOKE_WINDUP (0.6 SECONDS)
+/// Longer than the cloud lasts (tg's 16 s), so it never stacks one on the last
+#define BOUNTY_PYROMANIAC_SMOKE_COOLDOWN (20 SECONDS)
+/// The furthest shooter it throws at; the nearest is anyone past its flamer's reach
+#define BOUNTY_PYROMANIAC_SMOKE_RANGE 7
+/// How long after a hit from someone past its flamer's reach it still answers with smoke (stun fire counts while its combat sense says it is under fire)
+#define BOUNTY_PYROMANIAC_SMOKE_HURT_WINDOW (3 SECONDS)
 
 // ===== DEMOLITIONIST =====
 
@@ -158,8 +224,8 @@
 
 /// Its blade: a real combat knife, carried in a pocket until the fight starts, and every cut it lands is the knife's (CB-9)
 #define BOUNTY_GHOST_KNIFE /obj/item/knife/combat
-/// Dash: a blur line to the target, the Cascade lattice firing as it goes (OC-6 ruling)
-#define BOUNTY_GHOST_DASH_WINDUP (0.3 SECONDS)
+/// Dash: a blur line to the target, the Cascade lattice firing as it goes (OC-6 ruling). 0.3 -> 0.6 s after review r2: at 0.3 s only someone already moving could step off the line.
+#define BOUNTY_GHOST_DASH_WINDUP (0.6 SECONDS)
 #define BOUNTY_GHOST_DASH_COOLDOWN (5 SECONDS)
 #define BOUNTY_GHOST_DASH_RANGE 5
 /// Cloak: a shimmer, then a faint distortion. Only how it looks: nothing misses it for it (OC-6 ruling, CB-12)
@@ -214,3 +280,7 @@
 #define BB_BOUNTY_BOSS_FALL_BACK_FROM "BB_bounty_boss_fall_back_from"
 /// world.time a Heavy's belt change in progress gives up
 #define BB_BOUNTY_BOSS_RELOAD_UNTIL "BB_bounty_boss_reload_until"
+/// Where it is walking to, to go through the window, door or wall in its way
+#define BB_BOUNTY_BOSS_SPOT "BB_bounty_boss_spot"
+/// Where it is walking to, out of the sight of someone it can't get at
+#define BB_BOUNTY_BOSS_COVER "BB_bounty_boss_cover"

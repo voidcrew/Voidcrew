@@ -12,7 +12,7 @@
  *   carries on itself the way a player does: a medipen through the human NPC base's
  *   human_npc_treat_self ("use in hand"), a bruise pack, ointment, suture or mesh clicked on itself on its
  *   worst limb (tg's own self-treatment delay). No heal comes from anywhere else.
- * - Injectors (bounty_ai_use_injector()): a boss's stimulant at the start of a fight, a meek criminal's
+ * - Injectors (bounty_ai_use_injector()): a meek criminal's
  *   stimpack as it bolts: a real pen, used on itself.
  */
 
