@@ -2494,7 +2494,7 @@
    "hash": "336e2080d817089c",
    "name": "plasma cartridge",
    "rank": 1,
-   "reason": "Loads the Cinder (yellow) and the Furnace (red); takes the lower. Single use, pressed from 3 plasma sheets.",
+   "reason": "Loads the Cinder (yellow) and the Furnace (red); takes the lower. Single use, printed from 3 plasma sheets.",
    "tier": "yellow"
   }
  },

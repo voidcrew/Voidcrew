@@ -12,15 +12,13 @@
 
 /// Mol one plasma sheet gives (a sheet grinds to 20 u, 1 u boils to 1 mol)
 #define PLASMA_MOL_PER_SHEET 20
-/// Plasma sheets pressed or printed into one cartridge
+/// Plasma sheets printed into one cartridge
 #define PLASMA_CARTRIDGE_SHEETS 3
 /// Mol of plasma a cartridge (and a gun's sealed chamber) holds
 #define PLASMA_CARTRIDGE_CAPACITY (PLASMA_CARTRIDGE_SHEETS * PLASMA_MOL_PER_SHEET)
 /// Iron in a cartridge's jacket. A cartridge is made of this and nothing else, whatever made it,
 /// so a lathe or recycler never gets plasma back out of one.
 #define PLASMA_CARTRIDGE_IRON HALF_SHEET_MATERIAL_AMOUNT
-/// Time to press a cartridge by hand from the crafting menu
-#define PLASMA_PRESS_TIME (3 SECONDS)
 /// do_after to seat a cartridge in a pistol
 #define PLASMA_LOAD_DELAY_PISTOL (1 SECONDS)
 /// do_after to seat a cartridge in a rifle
@@ -166,8 +164,6 @@
 #define PLASMA_SOUND_FURNACE_WARN 'sound/effects/clock_tick.ogg'
 /// A limb with no flesh (robotic, bone, stone) melting off
 #define PLASMA_SOUND_METAL_MELT 'sound/items/tools/welder2.ogg'
-/// A cartridge pressed by hand
-#define PLASMA_SOUND_PRESS 'sound/items/tools/welder.ogg'
 /// Hot slag in a wound quenched with water, an extinguisher or cryo
 #define PLASMA_SOUND_QUENCH 'sound/effects/wounds/sizzle1.ogg'
 /// A bead of slag picked out of a wound

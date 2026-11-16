@@ -117,21 +117,10 @@
 	for(var/obj/item/stack/stack in feeds)
 		TEST_ASSERT_EQUAL(stack.get_amount(), 5, "[stack.type] was used up on a cartridge or gun")
 
-/// The hand press and the lathe: the right inputs, and three sheets always make one full cartridge
+/// The lathe only: no crafting recipe makes a cartridge, and three sheets always make one full cartridge
 /datum/unit_test/voidcrew_plasma_cartridge_making/Run()
-	var/datum/crafting_recipe/plasma_cartridge/by_sheet = new
-	TEST_ASSERT_EQUAL(by_sheet.result, /obj/item/plasma_cartridge, "the press recipe makes the wrong thing")
-	TEST_ASSERT_EQUAL(by_sheet.reqs[/obj/item/stack/sheet/mineral/plasma], 3, "the press recipe doesn't take three plasma sheets")
-	TEST_ASSERT_EQUAL(by_sheet.reqs[/obj/item/stack/sheet/iron], 1, "the press recipe doesn't take one iron sheet")
-	TEST_ASSERT_EQUAL(length(by_sheet.reqs), 2, "the press recipe takes something extra")
-	TEST_ASSERT_EQUAL(by_sheet.time, 3 SECONDS, "pressing by hand doesn't take 3 seconds")
-	TEST_ASSERT(!length(by_sheet.tool_behaviors) && !length(by_sheet.tool_paths), "pressing by hand needs a tool")
-	qdel(by_sheet)
-	var/datum/crafting_recipe/plasma_cartridge/ore/by_ore = new
-	TEST_ASSERT_EQUAL(by_ore.reqs[/obj/item/stack/ore/plasma], 6, "the ore recipe doesn't take six plasma ore")
-	TEST_ASSERT_EQUAL(by_ore.reqs[/obj/item/stack/sheet/iron], 1, "the ore recipe doesn't take one iron sheet")
-	TEST_ASSERT_EQUAL(length(by_ore.reqs), 2, "the ore recipe takes something extra")
-	qdel(by_ore)
+	for(var/datum/crafting_recipe/recipe_type as anything in subtypesof(/datum/crafting_recipe))
+		TEST_ASSERT(!ispath(initial(recipe_type.result), /obj/item/plasma_cartridge), "[recipe_type] crafts a plasma cartridge")
 
 	var/datum/design/design = SSresearch.techweb_design_by_id("vc_plasma_cartridge")
 	TEST_ASSERT_NOTNULL(design, "no plasma cartridge design")
@@ -166,7 +155,7 @@
 	TEST_ASSERT_NOTNULL(printed, "the lathe didn't print a cartridge")
 	TEST_ASSERT_EQUAL(printed.stored, PLASMA_CARTRIDGE_CAPACITY, "a printed cartridge isn't full")
 
-	// Printed or pressed, it is iron only: a recycled cartridge gives back no plasma
+	// Printed or made any other way, it is iron only: a recycled cartridge gives back no plasma
 	TEST_ASSERT_EQUAL(length(printed.custom_materials), 1, "a printed cartridge is made of more than iron")
 	TEST_ASSERT_EQUAL(printed.custom_materials[iron], PLASMA_CARTRIDGE_IRON, "a printed cartridge has the wrong iron")
 	var/obj/item/plasma_cartridge/pressed = allocate(/obj/item/plasma_cartridge)

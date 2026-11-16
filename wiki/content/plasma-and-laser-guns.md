@@ -5,7 +5,7 @@ order: 1.2
 blurb: The Kestrel and Hornet lasers, the Cinder and Furnace plasma guns, plasma cartridges, plasma burns and keeping a Furnace cool.
 ---
 
-Four frontier guns turn up at traders and in loot. The Kestrel and Hornet are ordinary laser guns that charge in a recharger. The Cinder pistol and Furnace rifle fire bolts of burning plasma, and they load plasma cartridges you press from plasma sheets or ore. See [Weapons & Gear](weapons-and-gear.md) for the rest of the armoury.
+Four frontier guns turn up at traders and in loot. The Kestrel and Hornet are ordinary laser guns that charge in a recharger. The Cinder pistol and Furnace rifle fire bolts of burning plasma, and they load plasma cartridges printed on a protolathe or bought at a counter. See [Weapons & Gear](weapons-and-gear.md) for the rest of the armoury.
 
 ## The guns
 
@@ -40,7 +40,6 @@ Plasma and frontier guns cannot be crafted, printed or ordered through cargo, an
 
 A plasma gun fires from the cartridge seated behind its grip. A cartridge comes full and is used up: nothing refills it.
 
-- **Press by hand:** in the crafting menu (Weapon Ammo), 3 plasma sheets and 1 iron sheet, or 6 plasma ore and 1 iron sheet. No tools, about 3 seconds.
 - **Print:** a protolathe prints them once the ship has researched Ballistic Ammunition. Each takes 3 sheets of plasma and half a sheet of iron.
 - **Buy:** see the table above.
 - **Load:** use a cartridge on the gun. A seated cartridge comes out first: back to your hand if it has plasma left, onto the floor if it is spent.
@@ -49,7 +48,7 @@ A plasma gun fires from the cartridge seated behind its grip. A cartridge comes 
 
 A spent cartridge is scrap iron for a lathe or recycler; no plasma comes back out of it. Sheets, ore, liquid plasma and plasma gas do nothing to a gun or a cartridge. Rechargers do not work on plasma guns, and an EMP does not drain them.
 
-Plasma ore turns up in every zone, so a crew that mines can keep a plasma gun loaded.
+Plasma ore turns up in every zone, so a crew that mines and runs a protolathe can keep a plasma gun loaded.
 
 ## Plasma bolts
 
