@@ -2259,8 +2259,9 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		var/own_glide = LAZYACCESS(track.glides, "[frames[at + SANDY_FRAME_INDEX]]")
 		if(own_glide) // a corpse sliding: as long as the game took over it
 			time = own_glide * world.tick_lag
-		// A move's first pose due sooner (an execution started as the step landed): the glide is done by then.
-		if(track.events && track.event_at <= length(track.events))
+		// A move's first pose due sooner (an execution started as the step landed): the glide is done by then. Not a
+		// corpse's slide: its fall plays over the slide, as it did.
+		if(!own_glide && track.events && track.event_at <= length(track.events))
 			var/list/next_event = track.events[track.event_at]
 			var/due = (next_event[1] - frame) * world.tick_lag
 			if(due >= 0 && due < time)
@@ -2268,11 +2269,11 @@ GLOBAL_LIST_EMPTY(sandy_replay_stopped_clocks)
 		// It shoots sooner (it stepped and stopped to fire): it is on the tile by the frame its muzzle flash and bullet are
 		// drawn on it, or they are drawn ahead of the gun while it is still gliding there.
 		var/shot_frame = shooting_at(track, frames[at + SANDY_FRAME_INDEX], frames[at + SANDY_FRAME_X], frames[at + SANDY_FRAME_Y])
-		if(shot_frame)
+		if(shot_frame && !own_glide)
 			time = min(time, max((shot_frame - frame) * world.tick_lag, 0))
 		// A surger who starts a finisher as he lands (a dash straight into an execution): the move's pictures, his blades
 		// and the slashes are drawn on that tile from their first frame, and he was still gliding in under them.
-		if(track.surger)
+		if(track.surger && !own_glide)
 			var/posed_frame = posed_at(frames[at + SANDY_FRAME_INDEX], frames[at + SANDY_FRAME_X], frames[at + SANDY_FRAME_Y])
 			if(posed_frame)
 				time = min(time, max((posed_frame - frame) * world.tick_lag, world.tick_lag / 2))
