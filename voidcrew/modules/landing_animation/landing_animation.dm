@@ -44,8 +44,8 @@
 /// How long the picture covers a landed hull while its lighting is rebuilt
 #define LANDING_LIGHTING_SETTLE (2 SECONDS)
 /// Chance an edge tile kicks up a puff of dust, and the most puffs one landing makes
-#define LANDING_DUST_CHANCE 30
-#define LANDING_DUST_MAX 18
+#define LANDING_DUST_CHANCE 20
+#define LANDING_DUST_MAX 12
 /// How far from the hull people on the ground feel and hear it land or leave
 #define LANDING_HEAR_RANGE 12
 
