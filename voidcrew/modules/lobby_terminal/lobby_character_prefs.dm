@@ -1,8 +1,9 @@
 /**
  * # Dock terminal: CHARACTER preference adapters (package C1)
  *
- * Owns /datum/preferences/var/lobby_char_writes, the flag-gated /datum/preference/is_accessible()
- * override that lets the terminal write character prefs whatever tg's window last showed,
+ * Owns /datum/preferences/var/lobby_char_writes (and SETTINGS' lobby_game_writes), the flag-gated
+ * /datum/preference/is_accessible() override that lets the terminal write character and game prefs
+ * whatever tg's window last showed,
  * the /datum/preferences/ui_act() and update_preference() overrides that tell the terminal when
  * tg's window changed something, lobby_compile_char() and the null-safe slot switch.
  */
@@ -13,6 +14,9 @@
 	/// player whose tg window was last on game settings can still edit their character from the
 	/// terminal. Cleared after every use and at the top of every char_act().
 	var/lobby_char_writes = 0
+	/// The mirror for game preferences (lobby_settings.dm): set (1) only while SETTINGS reads or
+	/// writes them, so they stay accessible while tg's window is on the character tab.
+	var/lobby_game_writes = 0
 
 /**
  * The current_window trap. tg hides every character preference while its window is on the game
@@ -27,13 +31,22 @@
 		. = ..()
 		preferences.current_window = real_window
 		return .
+	// SETTINGS: tg hides every game preference while its window is on the character tab.
+	if(preferences?.lobby_game_writes && savefile_identifier == PREFERENCE_PLAYER && preferences.current_window == PREFERENCE_TAB_CHARACTER_PREFERENCES)
+		var/real_window = preferences.current_window
+		preferences.current_window = PREFERENCE_TAB_GAME_PREFERENCES
+		. = ..()
+		preferences.current_window = real_window
+		return .
 	return ..()
 
-/// tg's window changed something: the terminal re-reads it (coalesced in char_changed()).
+/// tg's window changed something: the terminal re-reads it (coalesced in char_changed() and settings_changed()).
 /datum/preferences/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
 	if(.)
-		lobby_terminal_of()?.char_changed()
+		var/datum/lobby_terminal/terminal = lobby_terminal_of()
+		terminal?.char_changed()
+		terminal?.settings_changed()
 
 /**
  * Writes made outside ui_act reach the terminal too: tg's recolour menu writes the loadout from a
@@ -42,8 +55,10 @@
  */
 /datum/preferences/update_preference(datum/preference/preference, preference_value)
 	. = ..()
-	if(. && !lobby_char_writes)
-		lobby_terminal_of()?.char_changed()
+	if(. && !lobby_char_writes && !lobby_game_writes)
+		var/datum/lobby_terminal/terminal = lobby_terminal_of()
+		terminal?.char_changed()
+		terminal?.settings_changed()
 
 /// The dock terminal of the client these prefs belong to, or null (no client, or a unit test's mock client).
 /datum/preferences/proc/lobby_terminal_of()

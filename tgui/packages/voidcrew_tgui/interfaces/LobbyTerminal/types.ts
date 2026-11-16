@@ -24,7 +24,7 @@ export type Notice = {
   at: number;
 };
 
-export type TabId = 'crews' | 'shipyard' | 'housing' | 'character';
+export type TabId = 'crews' | 'shipyard' | 'housing' | 'character' | 'settings';
 
 /** bezel.json from the art package (all numbers are 1x pixels). Null: placeholder bezel. */
 export type BezelSpec = {
@@ -434,13 +434,58 @@ export type CellBox = { x: number; y: number; w: number; h: number };
 
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// SETTINGS (lobby_settings.dm). One-off pushes on settings_open and after every change.
+
+/** How a game preference is edited, from its DM type. */
+export type SettingKind =
+  | 'toggle'
+  | 'choice'
+  | 'number'
+  | 'color'
+  | 'text'
+  | 'other';
+
+/** One game preference the player can see, as tg's game preferences page would list it. */
+export type SettingRow = {
+  /** savefile_key; also the key of tg's TSX feature registry (name, category, description). */
+  key: string;
+  kind: SettingKind;
+  /** compile_ui_data(): 0/1 for a toggle, the serialized choice, a number, '#rrggbb'. */
+  value: string | number;
+  /** number: the preference's limits. */
+  min?: number;
+  max?: number;
+  step?: number;
+  /** choice: the values, when preferences.json has no choices for the key. */
+  choices?: string[];
+  /** text: the longest value the server keeps. */
+  max_length?: number;
+  /** TRUE: shown but not editable here (tg's window disables it too, e.g. BYOND members only). */
+  locked?: BooleanLike;
+};
+
+export type SettingsBlock = {
+  /** Bumped on every push. */
+  rev: number;
+  rows: SettingRow[];
+};
+
+export type SettingsData = {
+  /** One-off push: every accessible game preference. Kept between pushes. */
+  settings?: SettingsBlock;
+  /** Counts saves of the game preferences to disk (one-off push); a change shows SAVED. */
+  settings_saved?: number;
+};
+
 export type LobbyData = ShellData &
   ShellStatic &
   CrewsData &
   YardData &
   YardStatic &
   HousingData &
-  CharacterData;
+  CharacterData &
+  SettingsData;
 
 /**
  * Every action and its params. Shell actions are handled in lobby_bezel.dm; prefixed ones
