@@ -17,7 +17,8 @@ GLOBAL_VAR(hv_vis_spray_origin)
 
 /obj/effect/decal/cleanable/blood
 	/// Hyperviolence visuals: the paint-in, drip or creep this decal is in the middle of. Keyframes, each
-	/// list(transform, alpha, the world.time it is reached, easing); the first is where it starts.
+	/// list(transform, alpha, the world.time it is reached, easing, how long the step takes at normal speed); the
+	/// first is where it starts.
 	var/list/hv_vis_painting
 
 /**
@@ -28,9 +29,15 @@ GLOBAL_VAR(hv_vis_spray_origin)
 /obj/effect/decal/cleanable/blood/proc/hv_vis_paint(list/keys)
 	var/reached = world.time
 	var/list/timed = list()
+	// In a Sandevistan field (cyberware/ware_sandy_timestop.dm) the paint runs slow.
+	var/list/times = list()
 	for(var/list/key as anything in keys)
-		reached += key[3]
-		timed += list(list(key[1], key[2], reached, key[4]))
+		times += key[3]
+	var/list/real = cyberware_dilated_steps(src, times)
+	for(var/i in 1 to length(keys))
+		var/list/key = keys[i]
+		reached += real ? real[i] : key[3]
+		timed += list(list(key[1], key[2], reached, key[4], key[3]))
 	hv_vis_painting = timed
 	hv_vis_paint_on()
 
@@ -58,6 +65,9 @@ GLOBAL_VAR(hv_vis_spray_origin)
 	var/matrix/from = behind[1]
 	var/matrix/current = from.Interpolate(ahead[1], progress)
 	animate(src, transform = current, alpha = behind[2] + (ahead[2] - behind[2]) * progress, time = 0, tag = HV_VIS_TAG_PAINT)
+	if(now < behind[3]) // held by a frozen moment before it starts
+		animate(transform = current, alpha = behind[2], time = behind[3] - now)
+		now = behind[3]
 	animate(transform = ahead[1], alpha = ahead[2], time = ahead[3] - now, easing = ahead[4])
 	for(var/i in heading + 1 to length(keys))
 		var/list/key = keys[i]
@@ -77,11 +87,15 @@ GLOBAL_VAR(hv_vis_spray_origin)
 			return (1 - cos(progress * 180)) / 2
 	return progress
 
-/// tg has just stopped every animation on the decal: carry on with its paint.
+/// tg has just stopped every animation on the decal: carry on with its paint. A decal a Sandevistan replay is drawing
+/// as it was (cyberware/ware_sandy_replay.dm) takes the colour and the paint on its real look, not on the recorded one.
 /obj/effect/decal/cleanable/blood/update_blood_color()
+	var/datum/sandy_replay_track/replayed = sandy_replay_masks ? sandy_replay_unmask(src) : null
 	. = ..()
 	if(hv_vis_painting)
 		hv_vis_paint_on()
+	if(replayed)
+		sandy_replay_remask(replayed)
 
 /mob/living/hv_blood_throw(spray_dir, strength = 3)
 	var/turf/previous_origin = GLOB.hv_vis_spray_origin

@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 // Pictures for the Mantis line's gore. Nothing here changes who gets hit, when or how hard: the
 // mechanics call in after they have happened. One-shot holders and temp visuals only; every animate()
 // on a mob here is relative and parallel and ends where it began, so tg's offsets, lying turn and #509's
@@ -507,3 +510,5 @@
 
 #undef MANTIS_LEAP_GLIDE
 #undef MANTIS_SPURT_WAIT
+
+#undef animate

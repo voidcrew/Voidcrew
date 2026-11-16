@@ -229,7 +229,8 @@
  * player's is. Returns that delay.
  */
 /proc/bounty_ai_note_step(mob/living/mover, direction)
-	var/delay = max(mover.cached_multiplicative_slowdown, world.tick_lag)
+	// Its own clock's delay: a slow-mo pushes BB_BOUNTY_NEXT_STEP_AT back, so the slow-mo's drag on the walk isn't counted twice
+	var/delay = max(cyberware_undilated_slowdown(mover), world.tick_lag)
 	if(ISDIAGONALDIR(direction))
 		delay *= sqrt(2)
 	var/datum/ai_controller/controller = mover.ai_controller

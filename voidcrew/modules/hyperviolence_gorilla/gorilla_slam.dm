@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 /**
  * # The grab-slam
  *
@@ -1052,3 +1055,5 @@
 #undef SLAM_EASE_IN
 #undef SLAM_EASE_SINE
 #undef SLAM_WAIST_Y
+
+#undef animate

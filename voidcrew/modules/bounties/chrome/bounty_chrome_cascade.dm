@@ -60,6 +60,14 @@
 		return FALSE
 	return ..()
 
+/datum/bounty_chrome_move/cascade/tell(atom/target)
+	cyberware_time_untint(owner) // its glow shows through a Sandevistan's slowed world (ware_sandy_timestop.dm)
+	return ..()
+
+/datum/bounty_chrome_move/cascade/clear_tell()
+	. = ..()
+	cyberware_time_retint(owner)
+
 /datum/bounty_chrome_move/cascade/tell_text(atom/target)
 	return "[owner]'s spine lights up with a rising whine."
 

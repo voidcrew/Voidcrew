@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 /**
  * # The piston punch's arm
  *
@@ -304,3 +307,5 @@
 	return TRUE
 
 #undef GORILLA_THRUST_FILTER
+
+#undef animate

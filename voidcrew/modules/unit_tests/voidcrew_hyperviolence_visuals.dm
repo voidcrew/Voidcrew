@@ -461,3 +461,13 @@
 	TEST_ASSERT(length(victim._active_timers), "Nothing will take the flash off")
 	sleep(1 SECONDS)
 	TEST_ASSERT_NULL(victim.get_filter("hv_vis_flash"), "The flash stayed on")
+
+/// A body a finisher rig hides behind its puppets doesn't flash: the puppets do
+/datum/unit_test/voidcrew_hv_visuals/no_flash_when_hidden
+
+/datum/unit_test/voidcrew_hv_visuals/no_flash_when_hidden/Run()
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 1))
+	victim.add_filter("chrome_rig_hide", 1, color_matrix_filter(list(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,0, 0,0,0,0)))
+	victim.hv_vis_flash()
+	TEST_ASSERT_NULL(victim.get_filter("hv_vis_flash"), "A body hidden by a rig flashed")
+	victim.remove_filter("chrome_rig_hide")
