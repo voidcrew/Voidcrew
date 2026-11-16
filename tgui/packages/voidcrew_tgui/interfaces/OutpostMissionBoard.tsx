@@ -15,6 +15,7 @@ import type { BooleanLike } from 'tgui-core/react';
 
 import { useBackend } from '../../tgui/backend';
 import { Window } from '../../tgui/layouts';
+import { TutorialFocus } from '../components/TutorialFocus';
 
 type RewardItem = {
   name: string;
@@ -64,6 +65,8 @@ type Data = {
   crew_ships: { ref: string; name: string }[];
   crew_ship_ref: string | null;
   reputation?: Reputation | null;
+  /** The tutorial checklist's focus key for this window (TutorialFocus), or null. */
+  tutorial_focus?: string | null;
 };
 
 const ARCHETYPE_ICONS = {
@@ -202,20 +205,22 @@ const OfferCard = (props: { offer: Offer; canAccept: boolean }) => {
           </Stack>
         </Stack.Item>
         <Stack.Item>
-          <Button
-            icon="file-signature"
-            disabled={!canAccept}
-            tooltip={
-              canAccept
-                ? undefined
-                : data.ship_name && data.ship_mission_slots_free <= 0
-                  ? 'Docket full.'
-                  : 'Order declined.'
-            }
-            onClick={() => act('accept', { ref: offer.ref })}
-          >
-            Accept
-          </Button>
+          <TutorialFocus id={canAccept ? 'board_accept' : ''}>
+            <Button
+              icon="file-signature"
+              disabled={!canAccept}
+              tooltip={
+                canAccept
+                  ? undefined
+                  : data.ship_name && data.ship_mission_slots_free <= 0
+                    ? 'Docket full.'
+                    : 'Order declined.'
+              }
+              onClick={() => act('accept', { ref: offer.ref })}
+            >
+              Accept
+            </Button>
+          </TutorialFocus>
         </Stack.Item>
       </Stack>
     </Section>
@@ -269,7 +274,9 @@ const ShipMissionRow = (props: { mission: ShipMission }) => {
         {!canTurnIn && mission.turn_in_hint ? (
           <Tooltip content={mission.turn_in_hint}>{turnInButton}</Tooltip>
         ) : (
-          turnInButton
+          <TutorialFocus id={canTurnIn ? 'board_turn_in' : ''}>
+            {turnInButton}
+          </TutorialFocus>
         )}
       </Stack.Item>
     </Stack>

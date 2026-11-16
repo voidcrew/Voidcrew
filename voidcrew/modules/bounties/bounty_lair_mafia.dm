@@ -2500,3 +2500,19 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	return SUBTREE_RETURN_FINISH_PLANNING
 
 #undef BOUNTY_MAFIA_BUSY_TRAIT
+
+// A slow-mo field pushes their own clocks back with the rest of their deadlines (ware_sandy_timestop.dm, push_deadlines())
+/mob/living/carbon/human/npc/bounty_mafia/cyberware_push_clocks(push)
+	. = ..()
+	var/now = world.time
+	if(mafia_ready_at > now)
+		mafia_ready_at += push
+	if(mafia_aim_until > now)
+		mafia_aim_until += push
+	if(mafia_next_pull_at > now)
+		mafia_next_pull_at += push
+
+/mob/living/carbon/human/npc/bounty_mafia/don/cyberware_push_clocks(push)
+	. = ..()
+	if(don_dazed_until > world.time)
+		don_dazed_until += push

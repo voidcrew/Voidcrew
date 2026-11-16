@@ -74,10 +74,12 @@
 		particles.spawning = 0
 
 /// Grey dust kicked up by a landing or a take-off.
-/proc/cyberware_grey_dust(turf/where)
+/proc/cyberware_grey_dust(turf/where, shift_w = 0, shift_z = 0)
 	if(isnull(where))
 		return null
 	var/obj/effect/temp_visual/mook_dust/dust = new(where)
+	dust.pixel_w += shift_w
+	dust.pixel_z += shift_z
 	dust.color = list(0.45, 0.45, 0.45, 0.45, 0.45, 0.45, 0.2, 0.2, 0.2, 0.33, 0.33, 0.35)
 	return dust
 
@@ -708,9 +710,13 @@
 	duration = 0.4 SECONDS
 	layer = BELOW_MOB_LAYER
 
-/obj/effect/temp_visual/circle_wave/cyberware_slam/Initialize(mapload, reach = 2)
+/// `shift_w`, `shift_z`: pixels from the middle of its tile (a blow on a body drawn off its tile).
+/obj/effect/temp_visual/circle_wave/cyberware_slam/Initialize(mapload, reach = 2, shift_w = 0, shift_z = 0)
 	amount_to_scale = reach + 0.5
-	return ..()
+	pixel_w += shift_w
+	pixel_z += shift_z
+	. = ..()
+	sandy_replay_made(src) // a Sandevistan replay plays the ring again (ware_sandy_replay.dm)
 
 /// The same ring drawn on the floor, under everyone and everything standing in its way, whichever side of the
 /// landing they are on. The Piledriver's own; the plain one is also what a Gorilla fist throws.
@@ -727,7 +733,9 @@
 	randomdir = FALSE
 	duration = 8 SECONDS
 
-/obj/effect/temp_visual/cyberware_impact_cracks/Initialize(mapload, state = "damaged1", peak_alpha = 255)
+/obj/effect/temp_visual/cyberware_impact_cracks/Initialize(mapload, state = "damaged1", peak_alpha = 255, shift_w = 0, shift_z = 0)
+	pixel_w += shift_w
+	pixel_z += shift_z
 	. = ..()
 	var/turf/here = loc
 	// Nothing to crack in space, open air or a chasm.
@@ -735,6 +743,7 @@
 		return INITIALIZE_HINT_QDEL
 	icon_state = state
 	alpha = peak_alpha
+	sandy_replay_made(src) // a Sandevistan replay plays the cracks again, from this look (ware_sandy_replay.dm)
 	animate(src, alpha = peak_alpha, time = duration - 2 SECONDS)
 	animate(alpha = 0, time = 2 SECONDS)
 
@@ -919,10 +928,11 @@
 /// Layers on the cradle: the rig over the ware, both over the patient.
 #define RIG_LAYER (ABOVE_MOB_LAYER + 0.02)
 #define RIG_WARE_LAYER (ABOVE_MOB_LAYER + 0.01)
-/// The gripper's tip, as pixel offsets of the carried ware's centre on the cradle tile.
-#define RIG_WARE_X 4
-#define RIG_WARE_PARKED_Y 19
-#define RIG_WARE_WORK_Y 2
+/// The gripper's tip, as pixel offsets of the carried ware's centre on the cradle tile:
+/// tucked in the rig's head, then down on the patient's chest. Matches the rig sheet's gripper.
+#define RIG_WARE_X 1
+#define RIG_WARE_PARKED_Y 21
+#define RIG_WARE_WORK_Y -4
 /// How long each move of the rig takes, matching its art.
 #define RIG_GRIP_TIME (0.6 SECONDS)
 #define RIG_PRESS_TIME (0.4 SECONDS)
@@ -940,6 +950,11 @@
 
 /obj/machinery/chrome_cradle/update_overlays()
 	. = ..()
+	// The plinth and mast the rig stands on, behind the slab and under the patient.
+	var/mutable_appearance/frame = mutable_appearance(CHROME_CRADLE_RIG_ICON, "frame", layer - 0.01)
+	frame.pixel_x = -16
+	frame.pixel_y = -16
+	. += frame
 	if(rig_phase)
 		return
 	// The parked rig, over whoever lies on the slab.
@@ -994,7 +1009,10 @@
 	carried.transform = matrix().Scale(0.45)
 	carried.pixel_x = RIG_WARE_X
 	carried.pixel_y = RIG_WARE_PARKED_Y
+	// It comes out of the head: unseen at first, in view as it clears the pod.
+	carried.alpha = 0
 	animate(carried, pixel_y = RIG_WARE_WORK_Y, time = RIG_GRIP_TIME, easing = CUBIC_EASING | EASE_OUT)
+	animate(carried, alpha = 255, time = 0.1 SECONDS, flags = ANIMATION_PARALLEL)
 	rig_ware_ref = WEAKREF(carried)
 
 /// The sequence is over, done or not: the rig pulls back and parks.

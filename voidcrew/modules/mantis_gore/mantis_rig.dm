@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 /**
  * # The blade rig: the impale and the scissor, drawn around the victim
  *
@@ -253,6 +256,7 @@
 
 /datum/mantis_rig/Destroy()
 	reveal()
+	hv_exec_bar_lean(bearer)
 	for(var/key in puppets)
 		qdel(puppets[key])
 	puppets = null
@@ -320,6 +324,7 @@
 	body.pixel_y = body_row
 	body.pixel_w = base_w + lean_w + body.shift_w
 	body.pixel_z = base_z + lean_z + body.shift_z
+	cyberware_time_rig_picture(body, bearer) // a Sandevistan user's edge glow takes the new look (ware_sandy_timestop.dm)
 
 /**
  * The bearer's pixel_x and pixel_y under the rig's own lean: without a #509 finisher's lean (pose_user()), which
@@ -359,6 +364,8 @@
 	picture.pixel_w = base_w + lean_w + picture.shift_w
 	picture.pixel_z = base_z + lean_z + picture.shift_z
 	puppets[key] = picture
+	// In a Sandevistan slow-mo it looks like whose it is: the victim's blood, or a piece of the bearer
+	cyberware_time_rig_picture(picture, (key in list("wound", "drip")) ? victim : bearer)
 	return picture
 
 /**
@@ -438,6 +445,7 @@
 	dress()
 	lean_w = spec[MANTIS_RIG_BEARER_W] + extra_w
 	lean_z = spec[MANTIS_RIG_BEARER_Z] + extra_z
+	hv_exec_bar_lean(bearer, lean_w, lean_z, time) // the bar over them goes with the lunge (hyperviolence/finishers/finisher_bar.dm)
 	for(var/key in puppets)
 		var/obj/effect/abstract/mantis_puppet/picture = puppets[key]
 		var/to_w = base_w + lean_w + picture.shift_w
@@ -517,6 +525,8 @@
 	spray.pixel_w = base_w + lean_w - ICON_SIZE_X
 	spray.pixel_z = base_z + lean_z - ICON_SIZE_Y + own_y() - spray.pixel_y
 	QDEL_IN(spray, lifetime)
+	if(blood)
+		cyberware_time_rig_picture(spray, victim) // tinted with the world in a Sandevistan slow-mo, like all blood
 	return spray
 
 /**
@@ -566,3 +576,5 @@
 
 #undef MANTIS_RIG_HIDE_FILTER
 #undef MANTIS_RIG_LAYER_STEP
+
+#undef animate

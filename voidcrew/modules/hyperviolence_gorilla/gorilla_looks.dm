@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 /**
  * # Gorilla Arms looks
  *
@@ -171,3 +174,5 @@ GLOBAL_LIST_INIT(gorilla_hand_points, list(
 	. = ..()
 	if(iscarbon(was_on) && !QDELETED(was_on))
 		was_on.gorilla_update_snap_overlays()
+
+#undef animate

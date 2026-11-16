@@ -123,6 +123,10 @@
 #define MANTIS_IMPALE_DROP_BEAT (0.3 SECONDS)
 /// From the pull-back to the blades coming out and the body dropping.
 #define MANTIS_IMPALE_PULL_BEAT (0.3 SECONDS)
+/// The shortest time someone on the floor takes to be swung up onto the blades (longer when the lunging body
+/// glides in for longer), and the steps it is drawn in.
+#define MANTIS_IMPALE_HOIST (0.35 SECONDS)
+#define MANTIS_IMPALE_HOIST_STEPS 4
 
 /// Pixels under a body's middle that it is tipped about: its feet (mantis_tip_matrix()).
 #define MANTIS_TIP_FEET (ICON_SIZE_Y / 2 - 4)
@@ -164,10 +168,11 @@
 /// Brute to the neck when the head won't come off.
 #define MANTIS_SCISSOR_FALLBACK_DAMAGE 25
 /// Where a head cut off by the scissor is drawn on its tile: pixels out from the middle toward the side the
-/// head lay, where the neck was, then where it comes to rest, and how far below the middle.
+/// head lay, where the neck was, then where it comes to rest, and how far below the middle. It rolls out and down
+/// off the neck and stays clear of the tile's edge.
 #define MANTIS_HEAD_ROLL_FROM 7
-#define MANTIS_HEAD_ROLL_TO 11
-#define MANTIS_HEAD_ROLL_DROP 5
+#define MANTIS_HEAD_ROLL_TO 8
+#define MANTIS_HEAD_ROLL_DROP 7
 
 // ---- Blood on the blades ----
 /// How long a drenched blade drips.

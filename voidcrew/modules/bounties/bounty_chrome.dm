@@ -1084,7 +1084,7 @@ GLOBAL_LIST_EMPTY(bounty_chrome_organ_facts)
 	if(target)
 		npc.face_atom(target)
 	move.tell(target)
-	tell_timer = addtimer(CALLBACK(src, PROC_REF(finish_tell), tell_serial), max(move.tell_time, BOUNTY_CHROME_TELL_MIN), TIMER_STOPPABLE | TIMER_DELETE_ME)
+	tell_timer = addtimer(CALLBACK(src, PROC_REF(finish_tell), tell_serial), cyberware_dilated_time(parent, max(move.tell_time, BOUNTY_CHROME_TELL_MIN)), TIMER_STOPPABLE | TIMER_DELETE_ME)
 	return TRUE
 
 /// The tell under `serial` is over: the move fires, if its owner can still act
@@ -1448,3 +1448,33 @@ GLOBAL_LIST_EMPTY(bounty_chrome_organ_facts)
 	if(isturf(npc.loc) && !npc.buckled && npc.body_position == STANDING_UP)
 		npc.face_atom(reader)
 	npc.say(pick("Who said you could scan me?", "Stop reading me, creep.", "Quit scanning me.", "Eyes off my chrome."), forced = "bounty chrome read")
+
+// ===== IN A SLOW-MO =====
+
+/// A slow-mo field took `push` deciseconds from the bearer (ware_sandy_timestop.dm, push_deadlines()): the moves'
+/// own clocks that haven't run out yet move back by as much.
+/datum/component/bounty_chrome/proc/cyberware_push_clocks(push)
+	if(next_move_at > world.time)
+		next_move_at += push
+	for(var/datum/bounty_chrome_move/move as anything in moves)
+		move.cyberware_push_clocks(push)
+
+/// This move's own clocks, pushed back `push` deciseconds by a slow-mo. Most moves have none.
+/datum/bounty_chrome_move/proc/cyberware_push_clocks(push)
+	return
+
+/datum/bounty_chrome_move/gorilla_punch/cyberware_push_clocks(push)
+	if(opens_at > world.time)
+		opens_at += push
+
+/datum/bounty_chrome_move/gorilla_grab/cyberware_push_clocks(push)
+	if(grab_ready_at > world.time)
+		grab_ready_at += push
+
+/datum/bounty_chrome_move/mantis_lunge/cyberware_push_clocks(push)
+	if(opens_at > world.time)
+		opens_at += push
+
+/datum/bounty_chrome_move/cascade/cyberware_push_clocks(push)
+	if(next_strafe_at > world.time)
+		next_strafe_at += push

@@ -254,3 +254,29 @@
 /// frame (ware_military_body.dm) and the Strut frame (ware_models_b.dm); the
 /// gate itself is in ware_military_body.dm.
 #define TRAIT_CYBERWARE_UNBREAKABLE_BONES "cyberware_unbreakable_bones"
+
+/// A Mantis Blade cutting: a sound effect key, one of its files picked each time (ware_military_arms.dm).
+#define CYBERWARE_MANTIS_SLASH_SOUND "cyberware_mantis_slash"
+
+// A Sandevistan's own sounds (ware_sandy_sound.dm). The user's play to him alone and are never slowed or recorded; the
+// external one is what everyone else near hears.
+/// The user's surge coming on.
+#define SANDEVISTAN_ACTIVATION_SOUND 'voidcrew/sound/cyberware/sandevistan_activation.ogg'
+/// Loops to the user for as long as his slow-mo runs.
+#define SANDEVISTAN_LOOP_SOUND 'voidcrew/sound/cyberware/sandevistan_loop.ogg'
+/// The user's slow-mo ending.
+#define SANDEVISTAN_DEACTIVATE_SOUND 'voidcrew/sound/cyberware/sandevistan_deactivate.ogg'
+/// The loop climbs in pitch as the slow-mo runs out: this frequency multiplier at its end, 1 at its start,
+/// most of the climb in the last third (1 + (END - 1) * progress squared).
+#define SANDEVISTAN_PITCH_END 1.4
+/// How often the playing loop's pitch is updated.
+#define SANDEVISTAN_PITCH_UPDATE (0.5 SECONDS)
+/// What everyone else near hears, from the surger's tile, as he surges and bursts off, and the replay's viewers: a sound
+/// effect key, one of its files picked each time (/datum/sound_effect/sandevistan_external).
+#define SANDEVISTAN_EXTERNAL_SOUND "sandevistan_external"
+/// The external cue's volume, live and in the replay.
+#define SANDEVISTAN_EXTERNAL_VOLUME 75
+/// Its pitch spread, in hundredths either way.
+#define SANDEVISTAN_EXTERNAL_SPREAD 6
+/// While a surger keeps moving, his burst cues come at most this often (live, and on the replay's clock).
+#define SANDEVISTAN_BURST_GAP (0.4 SECONDS)
