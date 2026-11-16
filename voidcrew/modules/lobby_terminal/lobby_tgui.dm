@@ -97,6 +97,7 @@ GLOBAL_DATUM_INIT(lobby_terminal_state, /datum/ui_state/lobby_terminal, new)
 /datum/lobby_terminal/ui_static_data(mob/user)
 	var/list/data = list()
 	data["wiki"] = !!CONFIG_GET(string/wikiurl)
+	data["rules"] = !!CONFIG_GET(string/rulesurl)
 	data["localhost_admin"] = !!(user.client?.is_localhost() && check_rights_for(user.client, R_SERVER))
 	data["port"] = html_decode(station_name())
 	// Whether a player who observes can come back this round (voidcrew/edits/mobs/ghost_respawn.dm).

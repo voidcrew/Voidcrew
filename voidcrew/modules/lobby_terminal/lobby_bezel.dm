@@ -125,6 +125,10 @@
 			if(CONFIG_GET(string/wikiurl))
 				user.client?.wiki()
 			return FALSE
+		if("rules")
+			if(CONFIG_GET(string/rulesurl))
+				user.client?.rules()
+			return FALSE
 		if("polls")
 			if(!polls_state)
 				return FALSE

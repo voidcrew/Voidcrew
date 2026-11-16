@@ -137,9 +137,9 @@ type Util = {
 };
 
 /**
- * WIKI, POLLS, MANIFEST, SETTINGS, CHANGELOG. SETTINGS opens the terminal's SETTINGS screen (lit
- * while it is open); WIKI opens the game's own window. POLLS, MANIFEST and CHANGELOG are
- * switched off for now and draw dead.
+ * WIKI, RULES, POLLS, MANIFEST, SETTINGS, CHANGELOG. SETTINGS opens the terminal's SETTINGS
+ * screen (lit while it is open); WIKI and RULES open the server's pages in the player's
+ * browser. POLLS, MANIFEST and CHANGELOG are switched off for now and draw dead.
  */
 function utilities(
   data: LobbyData,
@@ -147,6 +147,7 @@ function utilities(
 ): Util[] {
   return [
     { label: 'WIKI', action: 'wiki', state: data.wiki ? 'idle' : 'dead' },
+    { label: 'RULES', action: 'rules', state: data.rules ? 'idle' : 'dead' },
     { label: 'POLLS', action: 'polls', state: 'dead' },
     { label: 'MANIFEST', action: 'manifest', state: 'dead' },
     {
@@ -195,21 +196,23 @@ export function SideMenu(props: MenuProps) {
   const fullName = safe(data.char_name).toUpperCase();
   // Up to two lines under CHARACTER; a second line pushes the rule and the list down a row.
   const name = fullName ? wrapMax(fullName, 15, 2) : [];
-  // The foot of the menu carries the server's credit line, not the station name.
-  const port = wrapMax(CREDIT, 17, 3);
-  // The credit's last line sits half a row above the box's foot.
-  const portY = boxH - 0.5 - port.length;
   // Without the top key, everything under it moves up into its place.
   const top = hasTop(data);
   const dy = top ? 0 : -2.25;
   // The rule sits a quarter row under the name, as the name sits a quarter row under CHARACTER.
   const ruleY = 15.25 + dy + Math.max(0, name.length - 1);
   // Utility rows: 1.25 rows each when the menu has room (as in the approved stills), else 1.
-  // The credit and half a row are always kept free above the foot.
   const start = canStart(data);
   const utils = utilities(data, props);
   const items = utils.length + (start ? 1 : 0);
-  const room = boxH - (port.length + 0.5) - 0.5 - (ruleY + 0.5);
+  // The foot of the menu carries the server's credit line, with half a row free above it. On a
+  // short menu where the list would run into it, the credit gives way.
+  const credit = wrapMax(CREDIT, 17, 3);
+  const roomWith = boxH - (credit.length + 0.5) - 0.5 - (ruleY + 0.5);
+  const port = roomWith >= items ? credit : [];
+  const room = port.length ? roomWith : boxH - 0.5 - (ruleY + 0.5);
+  // The credit's last line sits half a row above the box's foot.
+  const portY = boxH - 0.5 - port.length;
   const step = room >= items * 1.25 ? 1.25 : 1;
   return (
     <>
@@ -369,8 +372,10 @@ export function MenuPopup(
   const { onClose } = props;
   const { data, act } = useBackend<LobbyData>();
   const { rows } = useGrid();
-  const y = rows - 6;
   const items = utilities(data, props);
+  // One row an item and half a row above and below.
+  const h = items.length + 1;
+  const y = rows - h;
   const first = items.findIndex((u) => u.state !== 'dead');
   return (
     <>
@@ -382,8 +387,8 @@ export function MenuPopup(
         }}
       />
       <div className="lt-dialog">
-        <Box x={44} y={y} w={19} h={6} tone="bg" bright />
-        <WipeAt x={44} y={y} w={19} h={6} k={0} kind="screen" first z={9} />
+        <Box x={44} y={y} w={19} h={h} tone="bg" bright />
+        <WipeAt x={44} y={y} w={19} h={h} k={0} kind="screen" first z={9} />
         <FocusScope>
           <Back fn={onClose} />
           {items.map((u, i) => (

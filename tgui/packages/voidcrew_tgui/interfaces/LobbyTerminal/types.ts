@@ -64,6 +64,8 @@ export type ShellData = {
 
 export type ShellStatic = {
   wiki: BooleanLike;
+  /** The server has a rules address: RULES is live. */
+  rules?: BooleanLike;
   localhost_admin: BooleanLike;
   /** Station name, shown at the foot of the side menu. */
   port: string | null;
