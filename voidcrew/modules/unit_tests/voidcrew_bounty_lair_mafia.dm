@@ -359,14 +359,17 @@
 	controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, hunter)
 	var/datum/ai_behavior/bounty_mafia_fire/fire = GET_AI_BEHAVIOR(/datum/ai_behavior/bounty_mafia_fire)
 
-	// A pistol volley: no aim, one pull of the real gun (its three-round burst), then a pause before the next
+	// A pistol volley: no aim, a string of single pulls of the real gun (voidcrew_bounty_guns_club counts them), then a pause before the next
 	var/rounds_before = gun.get_ammo()
 	TEST_ASSERT(fire.setup(controller, BB_BASIC_MOB_CURRENT_TARGET), "The gunman's volley didn't start")
 	TEST_ASSERT(!gunman.mafia_aim_until, "The pistol aims before it fires")
-	var/flags = fire.perform(0.1, controller, BB_BASIC_MOB_CURRENT_TARGET)
-	TEST_ASSERT(flags & AI_BEHAVIOR_SUCCEEDED, "The pistol volley wasn't one pull")
+	var/flags = NONE
+	for(var/pull in 1 to 6) // BOUNTY_MOBSTER_PISTOL_VOLLEY
+		gunman.mafia_next_pull_at = 0
+		flags = fire.perform(0.1, controller, BB_BASIC_MOB_CURRENT_TARGET)
+	TEST_ASSERT(flags & AI_BEHAVIOR_SUCCEEDED, "The pistol volley wasn't a string of six pulls")
 	fire.finish_action(controller, TRUE, BB_BASIC_MOB_CURRENT_TARGET)
-	TEST_ASSERT(gunman.mafia_next_volley_at >= world.time + 8, "The gunman has no pause between volleys") // BOUNTY_MOBSTER_PISTOL_COOLDOWN
+	TEST_ASSERT(gunman.mafia_next_volley_at >= world.time + 20, "The gunman has no pause between volleys") // BOUNTY_MOBSTER_PISTOL_STRING_PAUSE
 	TEST_ASSERT(!fire.setup(controller, BB_BASIC_MOB_CURRENT_TARGET), "The gunman started a volley before his pause was over")
 	sleep(0.5 SECONDS)
 	TEST_ASSERT(gun.get_ammo() < rounds_before, "The pull didn't fire the gunman's Stechkin")
