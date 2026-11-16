@@ -52,8 +52,8 @@
 
 /// The main trader also posts contracts; stalls and guards don't.
 /datum/vc_tutorial_step/contract_take/highlight_filter(mob/user, atom/candidate)
-	if(istype(candidate, /mob/living/basic/outpost_trader))
-		var/mob/living/basic/outpost_trader/trader = candidate
+	if(istype(candidate, /mob/living/carbon/human/npc/ambient_npc/outpost/trader))
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = candidate
 		return !isnull(trader.outpost) && trader.outpost.trader == trader
 	return TRUE
 

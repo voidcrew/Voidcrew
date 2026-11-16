@@ -303,7 +303,7 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	key = TUTORIAL_STEP_CONTRACT_TAKE
 	name = "Take a contract"
 	text = "Open the contract board and press Accept Mission on a contract. At an outpost, the main trader has Contracts."
-	highlight_types = list(/obj/machinery/computer/mission_board, /mob/living/basic/outpost_trader)
+	highlight_types = list(/obj/machinery/computer/mission_board, /mob/living/carbon/human/npc/ambient_npc/outpost/trader)
 	ui_focus = list("board" = "board_accept")
 
 /datum/vc_tutorial_step/contract_take/availability(mob/user)
@@ -706,14 +706,14 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	key = TUTORIAL_STEP_TRADE_BUY
 	name = "Buy something"
 	text = "Click a trader, pick Trade and buy from their stock."
-	highlight_types = list(/mob/living/basic/outpost_trader)
+	highlight_types = list(/mob/living/carbon/human/npc/ambient_npc/outpost/trader)
 	ui_focus = list("trader" = "trader_buy")
 
 /datum/vc_tutorial_step/trade_sell
 	key = TUTORIAL_STEP_TRADE_SELL
 	name = "Sell something"
 	text = "Open a trader's Buys tab and sell what they want while carrying it. They won't buy back shop goods."
-	highlight_types = list(/mob/living/basic/outpost_trader)
+	highlight_types = list(/mob/living/carbon/human/npc/ambient_npc/outpost/trader)
 	ui_focus = list("trader" = "trader_sell")
 
 // ---------------------------------------------------------------------------
@@ -865,12 +865,12 @@ GLOBAL_LIST_INIT(tutorial_categories, list(
 	key = TUTORIAL_STEP_CHROME_BUY
 	name = "Buy chrome"
 	text = "Halcyon's general store sells a little street chrome. The Back Bay at Quartermain Depot sells more, and the Chop Shop in the red zone sells the rest."
-	highlight_types = list(/mob/living/basic/outpost_trader)
+	highlight_types = list(/mob/living/carbon/human/npc/ambient_npc/outpost/trader)
 	ui_focus = list("trader" = "trader_chrome_tab")
 
 /// Only traders whose shelf holds chrome.
 /datum/vc_tutorial_step/chrome_buy/highlight_filter(mob/user, atom/candidate)
-	var/mob/living/basic/outpost_trader/trader = candidate
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = candidate
 	if(!istype(trader))
 		return FALSE
 	return tutorial_shop_sells_chrome(trader.shop)
