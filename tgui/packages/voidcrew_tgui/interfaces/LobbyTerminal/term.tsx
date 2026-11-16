@@ -1044,8 +1044,8 @@ export const PART_CLASSES: PartClass[] = ['combat', 'science', 'trade', 'misc'];
  * the bill. F: the fit's total strip.
  */
 export const CLASS_EDGES: Record<'R' | 'F', number[]> = {
-  R: [36, 44, 52, 60],
-  F: [14, 22, 29, 36],
+  R: [35, 44, 52, 60],
+  F: [13, 22, 29, 36],
 };
 
 /** A parts figure: a whole number, `9999+` above 9999, nothing for zero. */
