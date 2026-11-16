@@ -17,6 +17,7 @@ import {
   type Section,
   useChar,
   useListPager,
+  useWheel,
   WORK_W,
   WORK_X,
 } from './CharFrame';
@@ -174,6 +175,7 @@ export function CharFile(props: {
   );
   const pg = Math.min(page, pages - 1);
   useListPager(pg, pages, setPage);
+  const wheel = useWheel();
   const listTop = paged ? BODY_Y + plan.pv + 2.25 : plan.top;
   const shownSlots = slots
     .map((s, i) => [s, i] as [string | null, number])
@@ -341,7 +343,16 @@ export function CharFile(props: {
 
   return (
     <>
-      <IdColumn pv={plan.pv}>{files}</IdColumn>
+      <IdColumn pv={plan.pv}>
+        {/* The mouse wheel turns the pages of FILES, one a notch. */}
+        <div
+          onWheel={wheel(
+            pages > 1 ? (by) => setPage(clamp(pg + by, 0, pages - 1)) : null,
+          )}
+        >
+          {files}
+        </div>
+      </IdColumn>
       {ghost || (
         <>
           {nameNode}

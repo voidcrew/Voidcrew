@@ -17,6 +17,7 @@
 import {
   createContext,
   type ReactNode,
+  type WheelEvent as ReactWheelEvent,
   useContext,
   useEffect,
   useRef,
@@ -348,6 +349,23 @@ export function useListPager(
   set: (p: number) => void,
 ) {
   usePager(pages > 1 ? (step) => set(clamp(page + step, 0, pages - 1)) : null);
+}
+
+/**
+ * The mouse wheel for a paged list (as CREWS and SETTINGS have it): one page a notch, at most
+ * one turn every 150 ms. Call it before any early return; `wheel(turn)` gives the handler for
+ * the list's wrapper, turn(1) the next page. A null turn (one page) does nothing.
+ */
+export function useWheel() {
+  const last = useRef(0);
+  return (turn: ((by: 1 | -1) => void) | null) => (e: ReactWheelEvent) => {
+    const now = Date.now();
+    if (!turn || !e.deltaY || now - last.current < 150) {
+      return;
+    }
+    last.current = now;
+    turn(e.deltaY > 0 ? 1 : -1);
+  };
 }
 
 /**

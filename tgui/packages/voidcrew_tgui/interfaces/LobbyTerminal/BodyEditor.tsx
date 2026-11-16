@@ -20,6 +20,9 @@ import {
   planId,
   q,
   useChar,
+  useLatePager,
+  useListPager,
+  useWheel,
   WORK_W,
   WORK_X,
 } from './CharFrame';
@@ -364,6 +367,8 @@ export function SpeciesPick() {
     Math.max(0, Math.floor(list.indexOf(value) / per)),
   );
   const pg = Math.min(page, pages - 1);
+  useListPager(pg, pages, setPage);
+  const wheel = useWheel();
   const slice = list.slice(pg * per, pg * per + per);
   const step = (by: number) => {
     const n = list.length;
@@ -379,7 +384,12 @@ export function SpeciesPick() {
   const descRows = Math.floor(M - 1.25 - descY - (pages > 1 ? 1.25 : 0));
   const desc = safe(String(cat?.species?.[over]?.desc ?? ''));
   return (
-    <>
+    // The mouse wheel turns the pages, one a notch.
+    <div
+      onWheel={wheel(
+        pages > 1 ? (by) => setPage(clamp(pg + by, 0, pages - 1)) : null,
+      )}
+    >
       <Big x={WORK_X} y={3.125} scale={1.25} cls="wht lt-name">
         {'SPECIES'}
       </Big>
@@ -456,10 +466,10 @@ export function SpeciesPick() {
       />
       {!list.length && (
         <Put x={WORK_X} y={5.375} cls="dim">
-          {'NO MATCH'}
+          {'NO MATCH.'}
         </Put>
       )}
-    </>
+    </div>
   );
 }
 
@@ -695,6 +705,9 @@ export function BodyEditor(props: {
   // First focus: NAME when BODY opens; a row coming back from its picker; nothing on a group switch.
   const [fresh, setFresh] = useState(true);
   const [page, setPage] = useState(0);
+  // PageUp and PageDown turn the rows' pages (set below, once the pages are known).
+  const pager = useLatePager();
+  const wheel = useWheel();
 
   const set = (key: string, value: unknown) => act('char_set', { key, value });
   // The species changed, with or without the dialog.
@@ -741,6 +754,7 @@ export function BodyEditor(props: {
   });
 
   if (subOpen) {
+    pager.current = null;
     return <IdColumn pv={plan.pv}>{idList}</IdColumn>;
   }
 
@@ -764,6 +778,12 @@ export function BodyEditor(props: {
   }
   const pages = Math.ceil(keys.length / per);
   const pg = Math.min(page, Math.max(0, pages - 1));
+  const turnTo = (p: number) => {
+    setFresh(false);
+    setPage(clamp(p, 0, pages - 1));
+  };
+  const turn = pages > 1 ? (by: number) => turnTo(pg + by) : null;
+  pager.current = turn;
   const shownKeys = keys.slice(pg * per, pg * per + per);
   const y0 = BODY_Y + fixed;
   // One value size for the page: 1.25x when the rows are tall and every value fits it whole,
@@ -985,13 +1005,14 @@ export function BodyEditor(props: {
       {group === 'identity' && (
         <NameRow auto={!quiet && fresh && !from ? 5 : undefined} />
       )}
-      {rows}
+      {/* The mouse wheel turns the rows' pages, one a notch. */}
+      <div onWheel={wheel(turn)}>{rows}</div>
       <Pager
         x={62}
         y={M - 2.25}
         page={pg + 1}
         pages={pages}
-        onPage={(p) => setPage(p - 1)}
+        onPage={(p) => turnTo(p - 1)}
         right
       />
       {/* The other group, or another page of rows, turns the page of the rows only. */}

@@ -26,6 +26,7 @@ import {
   q,
   useChar,
   useLatePager,
+  useWheel,
   WORK_W,
   WORK_X,
 } from './CharFrame';
@@ -247,6 +248,7 @@ export function KitEditor() {
   const [catPage, setCatPage] = useState<number | null>(null);
   const [fresh, setFresh] = useState(true);
   const pager = useLatePager();
+  const wheel = useWheel();
 
   const tabs: LoadoutCategory[] = catalog?.loadout?.loadout_tabs || [];
   if (!char || !tabs.length) {
@@ -374,12 +376,18 @@ export function KitEditor() {
   }
 
   // PageUp and PageDown turn the categories here; the item list below takes them when it pages.
-  pager.current =
-    paged && !subOpen
-      ? (step) => setCatPage(clamp(cpg + step, 0, catPages - 1))
-      : null;
+  const catTurn = paged
+    ? (step: number) => setCatPage(clamp(cpg + step, 0, catPages - 1))
+    : null;
+  pager.current = subOpen ? null : catTurn;
+  // The mouse wheel over the categories turns their pages, one a notch.
+  const idColumn = (
+    <IdColumn pv={plan.pv}>
+      <div onWheel={wheel(catTurn)}>{idList}</div>
+    </IdColumn>
+  );
   if (subOpen) {
-    return <IdColumn pv={plan.pv}>{idList}</IdColumn>;
+    return idColumn;
   }
 
   // ---- work column: the items
@@ -453,11 +461,15 @@ export function KitEditor() {
   }
   const pg = Math.min(page, pages.length - 1);
   const lines = pages[pg] || [];
-  if (pages.length > 1) {
-    pager.current = (step) => {
-      setFresh(false);
-      setPage(clamp(pg + step, 0, pages.length - 1));
-    };
+  const turn =
+    pages.length > 1
+      ? (step: number) => {
+          setFresh(false);
+          setPage(clamp(pg + step, 0, pages.length - 1));
+        }
+      : null;
+  if (turn) {
+    pager.current = turn;
   }
 
   const rows: ReactNode[] = [];
@@ -641,7 +653,7 @@ export function KitEditor() {
   const empty = open < 0 && !items.length;
   return (
     <>
-      <IdColumn pv={plan.pv}>{idList}</IdColumn>
+      {idColumn}
       {empty ? (
         <>
           <Slab x={WORK_X} y={BODY_Y} w={WORK_W} h={4.75} variant="block" dead />
@@ -654,7 +666,8 @@ export function KitEditor() {
           />
         </>
       ) : (
-        rows
+        // The mouse wheel over the items turns their pages, one a notch.
+        <div onWheel={wheel(turn)}>{rows}</div>
       )}
       <Pager
         x={62}

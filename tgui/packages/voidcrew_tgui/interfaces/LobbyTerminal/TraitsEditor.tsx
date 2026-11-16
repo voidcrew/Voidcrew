@@ -13,7 +13,7 @@ import { useBackend } from 'tgui/backend';
 import type { Quirk } from 'tgui/interfaces/PreferencesMenu/types';
 
 import { fileColours } from './BodyEditor';
-import { clamp, useChar, useLatePager } from './CharFrame';
+import { clamp, useChar, useLatePager, useWheel } from './CharFrame';
 import { ColourPanel, ListPicker } from './CharPickers';
 import { parseHex } from './ColorEntry';
 import { sfx, sfxInstead, useChanged } from './motion';
@@ -181,6 +181,7 @@ export function TraitsEditor() {
   /** Presses the rules refused: each one draws the reason again. */
   const [refused, setRefused] = useState(0);
   const pager = useLatePager();
+  const wheel = useWheel();
   // A trait was taken: the accepted sound (its row flashes below).
   useChanged((char?.quirks || []).length, (was, now) => {
     if (now > was) {
@@ -303,13 +304,14 @@ export function TraitsEditor() {
   }
   const pg = Math.min(page, pages.length - 1);
   const onPage = pages[pg] || [];
-  pager.current =
+  const turn =
     pages.length > 1 && !subOpen
-      ? (step) => {
+      ? (step: number) => {
           setFresh(false);
           setPage(clamp(pg + step, 0, pages.length - 1));
         }
       : null;
+  pager.current = turn;
 
   // The panel shows the focused row; on entry the first row.
   const panelKey =
@@ -555,7 +557,8 @@ export function TraitsEditor() {
       })}
       <HRule x={LX} y={4.75} w={LW} />
       {keys.length ? (
-        rows
+        // The mouse wheel turns the pages, one a notch.
+        <div onWheel={wheel(turn)}>{rows}</div>
       ) : (
         <>
           <Slab x={LX} y={5.25} w={LW} h={4.75} variant="block" dead />
