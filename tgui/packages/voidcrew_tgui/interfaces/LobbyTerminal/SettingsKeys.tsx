@@ -334,7 +334,7 @@ function ResetAllConfirm(props: { onClose: () => void; onReset: () => void }) {
   const { onClose, onReset } = props;
   const { cols } = useGrid();
   useBack(onClose);
-  const w = 37;
+  const w = 39;
   const x = Math.floor((cols - w) / 2);
   const y = BODY_Y + 2;
   return (
