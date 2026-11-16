@@ -351,6 +351,8 @@
 	data["isNotCrew"] = !is_crew_member(user)
 	data["isAbandoned"] = current_ship.abandoned
 	data["isRetired"] = current_ship.retired_by_checkpoint || current_ship.checkpoint_rebuilding
+	// The tutorial checklist's pulsing button, if any (tutorials/tutorial_highlights.dm).
+	data["tutorial_focus"] = tutorial_ui_focus(user, "helm")
 
 	data["integrity"] = current_ship.get_integrity_percent()
 	data["overhealth"] = current_ship.get_overhealth_percent()

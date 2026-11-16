@@ -10,6 +10,7 @@ import type { BooleanLike } from 'tgui-core/react';
 
 import { useBackend } from '../../tgui/backend';
 import { Window } from '../../tgui/layouts';
+import { TutorialFocus } from '../components/TutorialFocus';
 
 type Floor = {
   id: number;
@@ -24,6 +25,8 @@ type Data = {
   moving: BooleanLike;
   linked: BooleanLike;
   floors: Floor[];
+  /** The tutorial checklist's focus key for this window (TutorialFocus), or null. */
+  tutorial_focus?: string | null;
 };
 
 export const OutpostElevator = (props) => {
@@ -49,39 +52,47 @@ export const OutpostElevator = (props) => {
               <Stack vertical>
                 {floors.map((floor) => (
                   <Stack.Item key={floor.id}>
-                    <Button
-                      fluid
-                      ellipsis
-                      fontSize="14px"
-                      bold
-                      textAlign="left"
-                      icon={
-                        floor.your_ship
-                          ? 'star'
-                          : floor.locked
-                            ? 'lock'
-                            : 'circle'
+                    <TutorialFocus
+                      id={
+                        floor.id === 0 && current_floor !== 0
+                          ? 'elevator_concourse'
+                          : ''
                       }
-                      color={floor.your_ship ? 'good' : 'default'}
-                      selected={floor.id === current_floor}
-                      disabled={
-                        !floor.occupied ||
-                        !!floor.locked ||
-                        floor.id === current_floor
-                      }
-                      tooltip={
-                        floor.id === current_floor
-                          ? 'You are here.'
-                          : !floor.occupied
-                            ? 'Nothing is docked at this berth.'
-                            : floor.locked
-                              ? 'Crew only.'
-                              : undefined
-                      }
-                      onClick={() => act('goto', { id: floor.id })}
                     >
-                      {`${floor.name}${floor.your_ship ? ' (your ship)' : ''}`}
-                    </Button>
+                      <Button
+                        fluid
+                        ellipsis
+                        fontSize="14px"
+                        bold
+                        textAlign="left"
+                        icon={
+                          floor.your_ship
+                            ? 'star'
+                            : floor.locked
+                              ? 'lock'
+                              : 'circle'
+                        }
+                        color={floor.your_ship ? 'good' : 'default'}
+                        selected={floor.id === current_floor}
+                        disabled={
+                          !floor.occupied ||
+                          !!floor.locked ||
+                          floor.id === current_floor
+                        }
+                        tooltip={
+                          floor.id === current_floor
+                            ? 'You are here.'
+                            : !floor.occupied
+                              ? 'Nothing is docked at this berth.'
+                              : floor.locked
+                                ? 'Crew only.'
+                                : undefined
+                        }
+                        onClick={() => act('goto', { id: floor.id })}
+                      >
+                        {`${floor.name}${floor.your_ship ? ' (your ship)' : ''}`}
+                      </Button>
+                    </TutorialFocus>
                   </Stack.Item>
                 ))}
               </Stack>

@@ -19,6 +19,7 @@ import type { BooleanLike } from 'tgui-core/react';
 
 import { useBackend } from '../../tgui/backend';
 import { Window } from '../../tgui/layouts';
+import { TutorialFocus } from '../components/TutorialFocus';
 
 type RewardItem = {
   name: string;
@@ -120,6 +121,8 @@ type Data = {
   wanted?: WantedEntry[];
   // Static data: record id -> base64 mugshot, never sent in the live data
   wanted_mugshots?: Record<string, string>;
+  /** The tutorial checklist's focus key for this window (TutorialFocus), or null. */
+  tutorial_focus?: string | null;
 };
 
 /** One wanted criminal on the board: a public bounty or this ship's private offer. */
@@ -407,12 +410,22 @@ const MissionBoardContent = () => {
           >
             Available ({offered.length})
           </Tabs.Tab>
-          <Tabs.Tab
-            selected={currentTab === 'active'}
-            onClick={() => setCurrentTab('active')}
+          <TutorialFocus
+            id={
+              currentTab === 'active'
+                ? ''
+                : has_active_bounty
+                  ? ['board_active_tab', 'board_turn_in', 'board_bounty']
+                  : ['board_active_tab', 'board_turn_in']
+            }
           >
-            Active ({activeCount})
-          </Tabs.Tab>
+            <Tabs.Tab
+              selected={currentTab === 'active'}
+              onClick={() => setCurrentTab('active')}
+            >
+              Active ({activeCount})
+            </Tabs.Tab>
+          </TutorialFocus>
         </Tabs>
       </Stack.Item>
 
@@ -539,6 +552,7 @@ const MissionCard = (props: MissionCardProps) => {
   const { active_count, max_missions } = data;
 
   const canAccept = !isActive && active_count < max_missions;
+  const canTurnIn = !!mission.can_complete || padContents.length > 0;
 
   // Format time remaining
   const formatTime = (deciseconds: number) => {
@@ -589,38 +603,44 @@ const MissionCard = (props: MissionCardProps) => {
           </LabeledList>
           <Divider />
           {mission.requires_item ? (
-            <Button
-              icon="check"
-              color="good"
-              disabled={!mission.can_complete && padContents.length === 0}
-              onClick={() => act('turn_in', { ref: mission.ref })}
-            >
-              Turn In
-            </Button>
+            <TutorialFocus id={canTurnIn ? 'board_turn_in' : ''}>
+              <Button
+                icon="check"
+                color="good"
+                disabled={!canTurnIn}
+                onClick={() => act('turn_in', { ref: mission.ref })}
+              >
+                Turn In
+              </Button>
+            </TutorialFocus>
           ) : (
-            <Button
-              icon="check"
-              color="good"
-              disabled={!mission.can_complete}
-              onClick={() => act('turn_in', { ref: mission.ref })}
-            >
-              Complete
-            </Button>
+            <TutorialFocus id={mission.can_complete ? 'board_turn_in' : ''}>
+              <Button
+                icon="check"
+                color="good"
+                disabled={!mission.can_complete}
+                onClick={() => act('turn_in', { ref: mission.ref })}
+              >
+                Complete
+              </Button>
+            </TutorialFocus>
           )}
         </>
       )}
 
       {!isActive && (
-        <Button
-          fluid
-          icon="plus"
-          color="good"
-          disabled={!canAccept}
-          tooltip={canAccept ? undefined : 'Mission slots full'}
-          onClick={() => act('accept', { ref: mission.ref })}
-        >
-          Accept Mission
-        </Button>
+        <TutorialFocus id={canAccept ? 'board_accept' : ''}>
+          <Button
+            fluid
+            icon="plus"
+            color="good"
+            disabled={!canAccept}
+            tooltip={canAccept ? undefined : 'Mission slots full'}
+            onClick={() => act('accept', { ref: mission.ref })}
+          >
+            Accept Mission
+          </Button>
+        </TutorialFocus>
       )}
     </Section>
   );
@@ -742,16 +762,18 @@ const BountyCard = (props: BountyCardProps) => {
           {bounty.is_hunting ? (
             <Stack>
               <Stack.Item grow>
-                <Button
-                  fluid
-                  icon="crosshairs"
-                  color="green"
-                  disabled={!hasPad}
-                  tooltip={hasPad ? undefined : 'No mission pad'}
-                  onClick={() => act('turn_in_bounty', { ref: bounty.ref })}
-                >
-                  Turn In Key
-                </Button>
+                <TutorialFocus id={hasPad ? 'board_bounty' : ''}>
+                  <Button
+                    fluid
+                    icon="crosshairs"
+                    color="green"
+                    disabled={!hasPad}
+                    tooltip={hasPad ? undefined : 'No mission pad'}
+                    onClick={() => act('turn_in_bounty', { ref: bounty.ref })}
+                  >
+                    Turn In Key
+                  </Button>
+                </TutorialFocus>
               </Stack.Item>
               {!bounty.has_tracking && (
                 <Stack.Item>
@@ -775,16 +797,18 @@ const BountyCard = (props: BountyCardProps) => {
               </Stack.Item>
             </Stack>
           ) : (
-            <Button
-              fluid
-              icon="skull"
-              color={canAccept ? 'caution' : 'gray'}
-              disabled={!canAccept}
-              tooltip={getDisabledReason()}
-              onClick={() => act('accept_bounty', { ref: bounty.ref })}
-            >
-              {bounty.was_abandoned ? 'Abandoned' : 'Accept Bounty'}
-            </Button>
+            <TutorialFocus id={canAccept ? 'board_bounty' : ''}>
+              <Button
+                fluid
+                icon="skull"
+                color={canAccept ? 'caution' : 'gray'}
+                disabled={!canAccept}
+                tooltip={getDisabledReason()}
+                onClick={() => act('accept_bounty', { ref: bounty.ref })}
+              >
+                {bounty.was_abandoned ? 'Abandoned' : 'Accept Bounty'}
+              </Button>
+            </TutorialFocus>
           )}
         </Flex.Item>
       </Flex>
