@@ -418,6 +418,7 @@ GLOBAL_LIST_EMPTY(ambient_ship_places)
 		ready_for_space(FALSE)
 		return FALSE
 	exempt_npc_zone()
+	note_rescue_zone()
 	on_joined(ship)
 	speak_context("accepted", leader, force = TRUE)
 	log_game("AMBIENT: [src] agreed to join the [ship.name], asked by [key_name(leader)] at [AREACOORD(src)]")
@@ -455,6 +456,7 @@ GLOBAL_LIST_EMPTY(ambient_ship_places)
 	routine = deckhand_routine.Copy()
 	dialogue_section = "deckhand"
 	log_game("AMBIENT: [src] came aboard the [ship.name] as a deckhand")
+	note_rescuers(ship)
 	// Rescued: a thank-you for whoever brought them in, and more now and then
 	var/context = "aboard"
 	if(gives_gifts && !gifts_given)
@@ -527,7 +529,12 @@ GLOBAL_LIST_EMPTY(ambient_ship_places)
 
 /// Let go at a trader outpost by `user`: a goodbye, and they are off
 /mob/living/carbon/human/npc/ambient_npc/stray/proc/dismiss(mob/living/user)
-	speak_context("dismissed", user, force = TRUE)
+	// Rescued and brought somewhere safe: their crew is owed for it (rescue_reputation.dm)
+	var/list/lines = claim_rescue(user) ? ambient_dialogue_lines(dialogue_file, origin_section, "delivered") : null
+	if(length(lines))
+		say_line(fill_line(pick(lines), user))
+	else
+		speak_context("dismissed", user, force = TRUE)
 	var/obj/structure/overmap/ship/ship = get_ship()
 	log_game("AMBIENT: [src] left the [ship?.name || "ship"], let go by [key_name(user)]")
 	start_activity(new /datum/ambient_activity/leave(src, null, 3 SECONDS))
