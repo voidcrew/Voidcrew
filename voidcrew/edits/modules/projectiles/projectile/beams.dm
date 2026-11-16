@@ -53,3 +53,98 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/laser/heavy
 	projectile = /obj/projectile/beam/laser/heavylaser/mech
+
+// Coloured lasers draw a beam in their own bolt's colours instead of tg's red one.
+
+/obj/effect/projectile/tracer/laser/amber
+	icon = 'voidcrew/icons/obj/guns/laser_tracers.dmi'
+	icon_state = "beam_amber"
+
+/obj/effect/projectile/muzzle/laser/amber
+	icon = 'voidcrew/icons/obj/guns/laser_tracers.dmi'
+	icon_state = "muzzle_amber"
+
+/obj/effect/projectile/impact/laser/amber
+	icon = 'voidcrew/icons/obj/guns/laser_tracers.dmi'
+	icon_state = "impact_amber"
+
+/obj/effect/projectile/tracer/laser/plasma
+	icon = 'voidcrew/icons/obj/guns/laser_tracers.dmi'
+	icon_state = "beam_plasma"
+
+/obj/effect/projectile/muzzle/laser/plasma
+	icon = 'voidcrew/icons/obj/guns/laser_tracers.dmi'
+	icon_state = "muzzle_plasma"
+
+/obj/effect/projectile/impact/laser/plasma
+	icon = 'voidcrew/icons/obj/guns/laser_tracers.dmi'
+	icon_state = "impact_plasma"
+
+/obj/effect/projectile/tracer/laser/violet
+	icon = 'voidcrew/icons/obj/guns/laser_tracers.dmi'
+	icon_state = "beam_violet"
+
+/obj/effect/projectile/muzzle/laser/violet
+	icon = 'voidcrew/icons/obj/guns/laser_tracers.dmi'
+	icon_state = "muzzle_violet"
+
+/obj/effect/projectile/impact/laser/violet
+	icon = 'voidcrew/icons/obj/guns/laser_tracers.dmi'
+	icon_state = "impact_violet"
+
+/obj/effect/projectile/tracer/laser/crimson
+	icon = 'voidcrew/icons/obj/guns/laser_tracers.dmi'
+	icon_state = "beam_crimson"
+
+/obj/effect/projectile/muzzle/laser/crimson
+	icon = 'voidcrew/icons/obj/guns/laser_tracers.dmi'
+	icon_state = "muzzle_crimson"
+
+/obj/effect/projectile/impact/laser/crimson
+	icon = 'voidcrew/icons/obj/guns/laser_tracers.dmi'
+	icon_state = "impact_crimson"
+
+/obj/projectile/beam/laser/carbine
+	tracer_type = /obj/effect/projectile/tracer/laser/amber
+	muzzle_type = /obj/effect/projectile/muzzle/laser/amber
+	impact_type = /obj/effect/projectile/impact/laser/amber
+	hitscan_light_color_override = LIGHT_COLOR_ORANGE
+	muzzle_flash_color_override = LIGHT_COLOR_ORANGE
+	impact_light_color_override = LIGHT_COLOR_ORANGE
+
+/obj/projectile/beam/laser/carbine/cybersun
+	tracer_type = /obj/effect/projectile/tracer/laser/plasma
+	muzzle_type = /obj/effect/projectile/muzzle/laser/plasma
+	impact_type = /obj/effect/projectile/impact/laser/plasma
+	hitscan_light_color_override = LIGHT_COLOR_FIRE
+	muzzle_flash_color_override = LIGHT_COLOR_FIRE
+	impact_light_color_override = LIGHT_COLOR_FIRE
+
+/obj/projectile/beam/laser/cybersun
+	tracer_type = /obj/effect/projectile/tracer/laser/plasma
+	muzzle_type = /obj/effect/projectile/muzzle/laser/plasma
+	impact_type = /obj/effect/projectile/impact/laser/plasma
+	hitscan_light_color_override = LIGHT_COLOR_FIRE
+	muzzle_flash_color_override = LIGHT_COLOR_FIRE
+	impact_light_color_override = LIGHT_COLOR_FIRE
+
+/obj/projectile/beam/laser/musket
+	tracer_type = /obj/effect/projectile/tracer/laser/violet
+	muzzle_type = /obj/effect/projectile/muzzle/laser/violet
+	impact_type = /obj/effect/projectile/impact/laser/violet
+	hitscan_light_color_override = COLOR_STRONG_VIOLET
+	muzzle_flash_color_override = COLOR_STRONG_VIOLET
+	impact_light_color_override = COLOR_STRONG_VIOLET
+
+/obj/projectile/beam/laser/hellfire
+	tracer_type = /obj/effect/projectile/tracer/laser/crimson
+	muzzle_type = /obj/effect/projectile/muzzle/laser/crimson
+	impact_type = /obj/effect/projectile/impact/laser/crimson
+	hitscan_light_color_override = "#FF969D"
+	muzzle_flash_color_override = "#FF969D"
+	impact_light_color_override = "#FF969D"
+
+/obj/projectile/beam/laser/flare
+	tracer_type = /obj/effect/projectile/tracer/laser/crimson
+	muzzle_type = /obj/effect/projectile/muzzle/laser/crimson
+	impact_type = /obj/effect/projectile/impact/laser/crimson
