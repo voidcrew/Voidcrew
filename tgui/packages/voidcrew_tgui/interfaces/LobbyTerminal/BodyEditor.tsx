@@ -30,6 +30,7 @@ import {
 import { ColourPanel, ListPicker } from './CharPickers';
 import { parseHex } from './ColorEntry';
 import { sfx, useChanged } from './motion';
+import { FocusGroup } from './nav';
 import {
   Big,
   BODY_Y,
@@ -717,6 +718,7 @@ export function BodyEditor(props: {
         h={gh}
         variant="block"
         on={g === group}
+        entry={g === group}
         onClick={() => {
           // A group press leaves an open picker or colour panel.
           if (subOpen) {
@@ -738,7 +740,11 @@ export function BodyEditor(props: {
 
   if (subOpen) {
     pager.current = null;
-    return <IdColumn pv={plan.pv}>{idList}</IdColumn>;
+    return (
+      <IdColumn pv={plan.pv}>
+        <FocusGroup>{idList}</FocusGroup>
+      </IdColumn>
+    );
   }
 
   // ---- work column: the rows
@@ -985,12 +991,16 @@ export function BodyEditor(props: {
 
   return (
     <>
-      <IdColumn pv={plan.pv}>{idList}</IdColumn>
-      {group === 'identity' && (
-        <NameRow auto={!quiet && fresh && !from ? 5 : undefined} />
-      )}
-      {/* The mouse wheel turns the rows' pages, one a notch. */}
-      <div onWheel={wheel(turn)}>{rows}</div>
+      <IdColumn pv={plan.pv}>
+        <FocusGroup>{idList}</FocusGroup>
+      </IdColumn>
+      <FocusGroup>
+        {group === 'identity' && (
+          <NameRow auto={!quiet && fresh && !from ? 5 : undefined} />
+        )}
+        {/* The mouse wheel turns the rows' pages, one a notch. */}
+        <div onWheel={wheel(turn)}>{rows}</div>
+      </FocusGroup>
       <Pager
         x={62}
         y={M - 2.25}

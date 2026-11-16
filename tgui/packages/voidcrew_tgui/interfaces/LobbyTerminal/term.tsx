@@ -421,6 +421,7 @@ export function Slab(
     activate: () => onClick?.(),
     auto: props.auto,
     edge: props.edge,
+    entry: props.entry,
   });
   const was = useRef(false);
   useEffect(() => {

@@ -50,7 +50,10 @@ export type FocusOpts = {
   edge?: Partial<Record<Dir, () => boolean>>;
   /** A tab: keeps the focus while the screen under it changes, and switches on arrow focus. */
   tab?: boolean;
-  /** The open tab: an arrow move into the tab row from outside it lands here, not on the nearest tab. */
+  /**
+   * The open tab: an arrow move into the tab row from outside it lands here, not on the nearest
+   * tab. In a FocusGroup: the item a sideways move into the group lands on (the open category).
+   */
   entry?: boolean;
   /** Lit by the mouse only; the arrow keys pass it by (a cycler's < and >, which Left/Right drive). */
   mouseOnly?: boolean;
@@ -68,6 +71,8 @@ type Item = {
   el: () => HTMLElement | null;
   /** The FocusScope it sits in; only the newest open scope's items take the focus. */
   scope: string;
+  /** The FocusGroup it sits in, if any. */
+  group?: string;
   opts: RefObject<FocusOpts>;
 };
 
@@ -89,6 +94,7 @@ type Nav = {
 
 const NavContext = createContext<Nav | null>(null);
 const ScopeContext = createContext('root');
+const GroupContext = createContext<string | undefined>(undefined);
 
 // ---------------------------------------------------------------------------
 // Input lock
@@ -482,10 +488,41 @@ export function NavProvider(props: ProviderProps) {
         const into = items.get(best)?.opts.current;
         if (into?.tab && !item.opts.current.tab && !into.entry) {
           const open = live().find(
-            (id) => items.get(id)?.opts.current.entry && boxOf(items.get(id)),
+            (id) =>
+              items.get(id)?.opts.current.tab &&
+              items.get(id)?.opts.current.entry &&
+              boxOf(items.get(id)),
           );
           if (open) {
             best = open;
+          }
+        }
+        // Sideways into a FocusGroup from outside it (a list into its rows, or back): the group's
+        // entry item, else its first item in reading order, not the nearest one.
+        const group = items.get(best)?.group;
+        const sideways = dir === 'left' || dir === 'right';
+        if (
+          sideways &&
+          group &&
+          item.group !== group &&
+          !(fromZone !== toZone && toZone === 'main')
+        ) {
+          let pick: string | null = null;
+          let pickAt = Infinity;
+          for (const id of live()) {
+            const it = items.get(id);
+            const box = it?.group === group ? boxOf(it) : null;
+            if (!box) {
+              continue;
+            }
+            const at = it?.opts.current.entry ? -Infinity : box.t * 10000 + box.l;
+            if (at < pickAt) {
+              pickAt = at;
+              pick = id;
+            }
+          }
+          if (pick) {
+            best = pick;
           }
         }
         nav.focus(best, 'key');
@@ -626,6 +663,7 @@ export function useFocusable<T extends HTMLElement>(
 ) {
   const nav = useContext(NavContext);
   const scope = useContext(ScopeContext);
+  const group = useContext(GroupContext);
   const id = useId();
   const ref = useRef<T | null>(null);
   const optsRef = useRef(opts);
@@ -636,9 +674,9 @@ export function useFocusable<T extends HTMLElement>(
     if (!enabled || !register || !unregister) {
       return;
     }
-    register(id, { el: () => ref.current, opts: optsRef, scope });
+    register(id, { el: () => ref.current, opts: optsRef, scope, group });
     return () => unregister(id);
-  }, [enabled, register, unregister, scope]);
+  }, [enabled, register, unregister, scope, group]);
   const focused = enabled && !!nav && nav.focused === id;
   return {
     ref,
@@ -647,6 +685,18 @@ export function useFocusable<T extends HTMLElement>(
     /** Moves the focus here, for things that want it after a click. */
     take: () => nav?.focus(id, 'claim'),
   };
+}
+
+/**
+ * A block of items that is entered as one (a category list, the rows beside it): an arrow move
+ * sideways into it from outside lands on its `entry` item, else on its first item, instead of
+ * the nearest one. Moves inside it, and up or down into it, are unchanged.
+ */
+export function FocusGroup(props: { children: ReactNode }) {
+  const id = useId();
+  return (
+    <GroupContext.Provider value={id}>{props.children}</GroupContext.Provider>
+  );
 }
 
 /**

@@ -14,7 +14,7 @@ import {
 } from 'react';
 
 import { clamp, useListPager } from './CharFrame';
-import { useBack } from './nav';
+import { FocusGroup, useBack } from './nav';
 import {
   BODY_Y,
   Field,
@@ -187,6 +187,7 @@ function CategoryList(props: {
             h={SLAB_H}
             variant="block"
             on={on}
+            entry={on}
             auto={on ? (bump ? 5 : claim) : undefined}
             onClick={() => onCat(c.id)}
           >
@@ -394,8 +395,9 @@ export function SettingsColumns(props: {
       onCat(id);
     }
   };
+  // The search field and the list are entered as one: sideways from the rows, the open category.
   const list = (
-    <>
+    <FocusGroup>
       {!!onFind && (
         <div ref={findBox}>
           <Field
@@ -420,7 +422,7 @@ export function SettingsColumns(props: {
         claim={focusKey || find ? undefined : 5}
         bump={bump}
       />
-    </>
+    </FocusGroup>
   );
   if (subOpen) {
     // The same tree shape as below, so the list stays mounted and keeps the focus where it was.
@@ -466,7 +468,7 @@ export function SettingsColumns(props: {
     <>
       {list}
       <div onWheel={onWheel} onMouseLeave={() => setSeen(null)}>
-        {drawn}
+        <FocusGroup>{drawn}</FocusGroup>
       </div>
       {!rows.length && (!!empty || !!find) && (
         <NameLine

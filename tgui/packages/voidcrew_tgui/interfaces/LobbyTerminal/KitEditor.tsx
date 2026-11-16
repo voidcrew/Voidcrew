@@ -34,6 +34,7 @@ import {
 import { ColourPanel, ListPicker } from './CharPickers';
 import { ItemPic } from './ItemPic';
 import { sfxInstead } from './motion';
+import { FocusGroup } from './nav';
 import {
   FlashAt,
   BODY_Y,
@@ -329,6 +330,7 @@ export function KitEditor() {
           variant="row"
           alt={k % 2 === 1}
           on={idx === open}
+          entry={idx === open}
           onClick={() => {
             // A category press leaves an open COLOUR, STYLE or NAME panel for that category.
             if (subOpen) {
@@ -383,7 +385,9 @@ export function KitEditor() {
   // The mouse wheel over the categories turns their pages, one a notch.
   const idColumn = (
     <IdColumn pv={plan.pv}>
-      <div onWheel={wheel(catTurn)}>{idList}</div>
+      <div onWheel={wheel(catTurn)}>
+        <FocusGroup>{idList}</FocusGroup>
+      </div>
     </IdColumn>
   );
   if (subOpen) {
@@ -678,7 +682,9 @@ export function KitEditor() {
         </>
       ) : (
         // The mouse wheel over the items turns their pages, one a notch.
-        <div onWheel={wheel(turn)}>{rows}</div>
+        <div onWheel={wheel(turn)}>
+          <FocusGroup>{rows}</FocusGroup>
+        </div>
       )}
       <Pager
         x={62}
