@@ -380,17 +380,21 @@ export function Key(
     w: number;
     h?: number;
     label: string;
+    /** Colour class of the label at rest (focus, lit and on states override it). */
+    labelCls?: Cls | string;
     right?: string;
     rightCls?: Cls | string;
     kind: KeyKind;
     state?: KeyState;
     onClick: () => void;
-    /** A layout zone for the keyboard rules; carried as a data attribute. */
+    /** A layout zone for the keyboard rules (nav.tsx FocusOpts.zone). */
     zone?: string;
     title?: string;
   },
 ) {
-  const { x, y, w, label, right, rightCls, kind, onClick, zone, title } = props;
+  const { x, y, w, label, labelCls, right, rightCls, kind, onClick, zone } =
+    props;
+  const { title } = props;
   const state = props.state || 'idle';
   const h = props.h ?? (kind === 'big' ? 2 : kind === 'plain' ? 1 : 1.5);
   const { cw, ch, lw } = useGrid();
@@ -419,6 +423,7 @@ export function Key(
     edge: props.edge,
     tab: props.tab,
     mouseOnly: props.mouseOnly,
+    zone,
   });
   const box = rect(x, y, w, h, cw, ch);
   // Border widths, so the label sits on the grid inside the padding box.
@@ -452,7 +457,12 @@ export function Key(
       }
       onMouseEnter={focus.onMouseEnter}
     >
-      <span style={{ left: px(lx - bl), top: px(ty) }}>{label}</span>
+      <span
+        className={cx(state === 'dead' ? undefined : labelCls)}
+        style={{ left: px(lx - bl), top: px(ty) }}
+      >
+        {label}
+      </span>
       {!!right && (
         <span
           className={cx(rightCls)}
@@ -1288,6 +1298,9 @@ export const TERM_CSS = `
 .lt-tui .lt-boxs-bg { background: var(--lt-bg); }
 .lt-tui .lt-dialog { position: absolute; left: 0; top: 0; z-index: 8; }
 .lt-tui .lt-dialog-block { position: absolute; }
+.lt-tui .lt-dimsheet { position: absolute; inset: 0; z-index: 7; background: rgba(5,1,11,.65); }
+.lt-tui .lt-sheet { position: absolute; inset: 0; z-index: 7; }
+.lt-tui .lt-emblem { position: absolute; z-index: 2; }
 .lt-tui .lt-rule { background: var(--lt-edge); }
 .lt-tui .lt-pager { cursor: pointer; z-index: 5; }
 .lt-tui .lt-box { border-style: solid; border-color: var(--lt-edge); }

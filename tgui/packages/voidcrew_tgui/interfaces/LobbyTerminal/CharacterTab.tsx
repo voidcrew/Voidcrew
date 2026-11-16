@@ -88,8 +88,12 @@ function topRole(char: CharData, stat?: CharStatic) {
   return best;
 }
 
-export function CharacterTab(props: { home: number }) {
-  const { home } = props;
+/**
+ * auto: the shell opened this before the round, not the player. The server may draw less of the
+ * preview for that until the player turns it or edits anything.
+ */
+export function CharacterTab(props: { home: number; auto?: boolean }) {
+  const { home, auto } = props;
   const { act, data } = useBackend<LobbyData>();
   const { cols, rows } = useGrid();
   const narrow = LEGACY_NARROW;
@@ -99,7 +103,7 @@ export function CharacterTab(props: { home: number }) {
   const [dir, setDir] = useState<CharDir>(2);
 
   useEffect(() => {
-    act('char_open');
+    act('char_open', auto ? { auto: 1 } : {});
   }, []);
   useEffect(() => {
     setSection(null);

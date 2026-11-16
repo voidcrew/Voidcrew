@@ -44,6 +44,10 @@ export type ShellData = {
   polls: 0 | 1 | 2;
   /** Position in the popcap queue, 0 when not queued. */
   queue: number;
+  /** First in the popcap queue and a place is free: JOIN reads NOW. */
+  queue_go?: BooleanLike;
+  /** The active character's name; "" until prefs_ready. */
+  char_name?: string;
   /** Admins before the round: [players ready, admins ready, admins]. Null otherwise. */
   admin_ready: [number, number, number] | null;
   notice: Notice | null;
@@ -59,8 +63,10 @@ export type ShellData = {
 export type ShellStatic = {
   wiki: BooleanLike;
   localhost_admin: BooleanLike;
-  /** Port name for the header, or null (header reads "BERTH OFFICE"). */
+  /** Station name, shown at the foot of the side menu. */
   port: string | null;
+  /** Whether a player who observes can come back: not at all, as the same character, or as a new one. */
+  respawn?: 'none' | 'same' | 'new';
   bezel: BezelSpec | null;
 };
 
@@ -388,7 +394,10 @@ export type LobbyData = ShellData &
 export type LobbyActions = {
   join: Record<string, never>;
   ready: Record<string, never>;
+  /** Kept for the classic path; the page sends observe_confirm. */
   observe: Record<string, never>;
+  /** OBSERVE after the in-terminal confirm. */
+  observe_confirm: Record<string, never>;
   character: Record<string, never>;
   settings: Record<string, never>;
   wiki: Record<string, never>;
@@ -396,7 +405,8 @@ export type LobbyActions = {
   manifest: Record<string, never>;
   changelog: Record<string, never>;
   start_now: Record<string, never>;
-  dismiss: Record<string, never>;
+  /** Clears the notice; with at, only the notice set at that world.time. */
+  dismiss: { at?: number };
   /** Client display metrics, logged once per load. */
   metrics: {
     dpr: number;
@@ -405,6 +415,7 @@ export type LobbyActions = {
     s: number;
     cols: number;
     rows: number;
+    mode: 'side' | 'bar';
   };
   crew_sign_on: { ship: string; job: string };
   crew_code: { ship: string; code: string };
@@ -423,7 +434,7 @@ export type LobbyActions = {
   home_move_in: { outpost: string; code?: string };
   home_request: { outpost: string };
   /** Sends char, char_static and preferences.json; queues the preview. */
-  char_open: Record<string, never>;
+  char_open: { auto?: 0 | 1 };
   /** Saves, then switches to that slot (1-based). There is no delete (Q5). */
   char_slot: { slot: number };
   /** One PREFERENCE_CHARACTER preference. confirm is only set by the server's own re-run. */
