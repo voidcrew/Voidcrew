@@ -180,7 +180,10 @@
 	TEST_ASSERT(length(effects_on(berth_turfs)) > 0, "Takeoff left no climbing picture")
 	var/datum/landing_view/ascent/climb = ship.launch_view
 	TEST_ASSERT_NOTNULL(climb, "Takeoff shows the people aboard nothing")
-	TEST_ASSERT(length(climb.close.parts) > 0, "The ground is not there under the hull the moment it lifts")
+	// The ground it stood on is drawn over the next few ticks: the hull itself still hides it
+	var/drawn_by = world.time + 3 SECONDS
+	UNTIL(length(climb.close.parts) || QDELETED(climb) || world.time > drawn_by)
+	TEST_ASSERT(length(climb.close.parts) > 0, "The ground is not there under the hull soon after it lifts")
 	masked = climb.masked.Copy()
 	hull_turfs = climb.hull_turfs.Copy()
 	ship.state = "flying" // OVERMAP_SHIP_FLYING
