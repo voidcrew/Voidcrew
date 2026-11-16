@@ -7383,6 +7383,7 @@
 #include "voidcrew\modules\intents\intent_component.dm"
 #include "voidcrew\modules\intents\keybindings.dm"
 #include "voidcrew\modules\intents\preferences.dm"
+#include "voidcrew\modules\landing_animation\landing_animation.dm"
 #include "voidcrew\modules\lich\lich_abilities.dm"
 #include "voidcrew\modules\lich\lich_loot.dm"
 #include "voidcrew\modules\lich\lich_mob.dm"

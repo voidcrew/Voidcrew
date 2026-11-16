@@ -2352,6 +2352,7 @@
 	// broadcast and once plain from the echo. Only refusals get a return value now.
 	ship_notify("Initiating docking sequence. Docking in [DOCK_WARMUP_TIME / 10] seconds.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	dock_warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_dock_warmup), dock_to_use, WEAKREF(to_dock)), DOCK_WARMUP_TIME, TIMER_STOPPABLE)
+	start_landing_animation(to_dock, dock_to_use, DOCK_WARMUP_TIME) // voidcrew/modules/landing_animation
 	return null
 
 /**
@@ -2407,6 +2408,7 @@
 	// Start dock warmup
 	ship_notify("Destination loaded. Docking in [DOCK_WARMUP_TIME / 10] seconds.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	dock_warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_dock_warmup), dock_to_use, WEAKREF(source)), DOCK_WARMUP_TIME, TIMER_STOPPABLE)
+	start_landing_animation(source, dock_to_use, DOCK_WARMUP_TIME) // voidcrew/modules/landing_animation
 
 /**
  * Requests generation of an ungenerated site's interior WITHOUT holding the helm:
