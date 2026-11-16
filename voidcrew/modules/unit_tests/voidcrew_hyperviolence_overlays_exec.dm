@@ -263,3 +263,37 @@
 	TEST_ASSERT_EQUAL(misses, 0, "[misses] of [HV_AIMED_PART_TRIES] finisher blows struck another part than the head")
 
 #undef HV_AIMED_PART_TRIES
+
+/// A body that lost several limbs gets every empty sleeve cut, and no sleeve mask is drawn on screen: each one is a
+/// hidden render target ("*...") cut out through a filter on the jumpsuit or suit. A mask stacked on another mask as a
+/// plain overlay is not part of that render target and showed as a white limb.
+/datum/unit_test/hv_sleeve_masks_stay_hidden
+
+/datum/unit_test/hv_sleeve_masks_stay_hidden/Run()
+	var/mob/living/carbon/human/consistent/body = allocate(/mob/living/carbon/human/consistent)
+	body.equip_to_slot_or_del(new /obj/item/clothing/under/color/grey(body), ITEM_SLOT_ICLOTHING)
+	body.equip_to_slot_or_del(new /obj/item/clothing/suit/apron(body), ITEM_SLOT_OCLOTHING)
+	for(var/zone in list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_R_LEG))
+		var/obj/item/bodypart/limb = body.get_bodypart(zone)
+		TEST_ASSERT(limb.dismember(), "Fixture: the [zone] would not come off")
+	var/list/missing = body.hv_sleeve_mask_zones()
+	TEST_ASSERT_EQUAL(length(missing), 3, "Fixture: the body is not missing three limbs ([english_list(missing)])")
+	for(var/layer in list(UNIFORM_LAYER, SUIT_LAYER))
+		var/mutable_appearance/worn = body.overlays_standing[layer]
+		TEST_ASSERT(istype(worn), "Fixture: nothing drawn at layer [layer]")
+		var/list/sources = list()
+		for(var/i in 1 to length(worn.filters))
+			var/worn_filter = worn.filters[i]
+			if(worn_filter:render_source)
+				sources += worn_filter:render_source
+		var/list/masked_states = list()
+		for(var/child in worn.overlays)
+			if(!findtext("[child:icon]", "sleeve_masks"))
+				continue
+			var/target = child:render_target
+			TEST_ASSERT(copytext(target, 1, 2) == "*", "A sleeve mask ([child:icon_state]) at layer [layer] is drawn on screen")
+			TEST_ASSERT(target in sources, "A sleeve mask ([child:icon_state]) at layer [layer] cuts nothing")
+			TEST_ASSERT(!length(child:overlays), "A sleeve mask at layer [layer] carries [length(child:overlays)] more mask(s) as plain overlays, drawn on screen")
+			masked_states += child:icon_state
+		for(var/zone in missing)
+			TEST_ASSERT("missing_[zone]" in masked_states, "The [zone] sleeve is not cut at layer [layer] ([english_list(masked_states)])")

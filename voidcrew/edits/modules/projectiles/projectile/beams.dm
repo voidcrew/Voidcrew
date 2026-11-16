@@ -54,6 +54,21 @@
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/laser/heavy
 	projectile = /obj/projectile/beam/laser/heavylaser/mech
 
+// A hitscan beam ends its tracer at impact_x/y. tg puts that at the clicked pixel for the target clicked on, as if
+// the body stood upright, and half a tile past where the beam crossed into the tile for anything else. A body
+// lying down is turned on its side and drawn in the low half of its tile, so either point often sits on the
+// empty floor beside it, and an automatic gun fires every shot at the same clicked pixel. A beam that hit a
+// lying body ends on that body instead. Damage and the hit itself are unchanged; this only moves the tracer's end.
+/obj/projectile/on_hit(atom/target, blocked = 0, pierce_hit)
+	. = ..()
+	if(!hitscan || . != BULLET_ACT_HIT || !isliving(target))
+		return
+	var/mob/living/lying = target
+	if(lying.body_position != LYING_DOWN)
+		return
+	impact_x = clamp(isnull(impact_x) ? 0 : impact_x, lying.pixel_x - 12, lying.pixel_x + 12)
+	impact_y = clamp(isnull(impact_y) ? 0 : impact_y, lying.pixel_y - 3, lying.pixel_y + 3)
+
 // Coloured lasers draw a beam in their own bolt's colours instead of tg's red one.
 
 /obj/effect/projectile/tracer/laser/amber

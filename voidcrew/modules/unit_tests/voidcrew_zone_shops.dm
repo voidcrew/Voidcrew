@@ -166,11 +166,17 @@
 		/datum/shop_sku/ripperdoc/cascade = 3,
 		/datum/shop_sku/ripperdoc/mantis_scorch = 3,
 		/datum/shop_sku/ripperdoc/monowire_live = 3,
+		// plasma_weapons module (plasma_shop.dm)
+		/datum/shop_sku/outfitter/kestrel = 1,
+		/datum/shop_sku/outfitter/cinder = 1,
+		/datum/shop_sku/outfitter/plasma_cartridge = 1,
+		/datum/shop_sku/black_market/hornet = 1,
+		/datum/shop_sku/black_market/rotating/furnace = 2,
 	)
 
 /datum/unit_test/voidcrew_zone_shops/catalog/Run()
 	var/list/expected = expected_tags()
-	TEST_ASSERT_EQUAL(length(expected), 140, "The retained permission catalog is incomplete")
+	TEST_ASSERT_EQUAL(length(expected), 145, "The retained permission catalog is incomplete")
 	var/datum/voidcrew_crew_record/crew = allocate(/datum/voidcrew_crew_record)
 	for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku))
 		var/permission = expected[sku_type] || 0
