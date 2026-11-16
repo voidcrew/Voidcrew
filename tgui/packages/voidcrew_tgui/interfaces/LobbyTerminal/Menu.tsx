@@ -139,7 +139,8 @@ type Util = {
 
 /**
  * WIKI, POLLS, MANIFEST, SETTINGS, CHANGELOG. SETTINGS opens the terminal's SETTINGS screen (lit
- * while it is open); the others open the game's own windows.
+ * while it is open); WIKI opens the game's own window. POLLS, MANIFEST and CHANGELOG are
+ * switched off for now and draw dead.
  */
 function utilities(
   data: LobbyData,
@@ -147,13 +148,8 @@ function utilities(
 ): Util[] {
   return [
     { label: 'WIKI', action: 'wiki', state: data.wiki ? 'idle' : 'dead' },
-    {
-      label: 'POLLS',
-      action: 'polls',
-      state: data.polls ? 'idle' : 'dead',
-      right: data.polls === 2 ? 'NEW' : undefined,
-    },
-    { label: 'MANIFEST', action: 'manifest', state: 'idle' },
+    { label: 'POLLS', action: 'polls', state: 'dead' },
+    { label: 'MANIFEST', action: 'manifest', state: 'dead' },
     {
       label: 'SETTINGS',
       action: 'settings',
@@ -164,7 +160,7 @@ function utilities(
           : 'idle',
       onClick: settings?.onSettings,
     },
-    { label: 'CHANGELOG', action: 'changelog', state: 'idle' },
+    { label: 'CHANGELOG', action: 'changelog', state: 'dead' },
   ];
 }
 
@@ -352,7 +348,6 @@ export function KeyBar(
         w={6}
         kind="box"
         label="MENU"
-        labelCls={data.polls === 2 ? 'amb' : undefined}
         state={menuOpen ? 'lit' : 'idle'}
         zone="menu"
         onClick={onMenu}

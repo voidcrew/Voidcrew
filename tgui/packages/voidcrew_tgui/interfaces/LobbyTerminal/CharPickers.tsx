@@ -135,6 +135,7 @@ export function ListPicker(props: PickerProps) {
   }, [value]);
   const pg = Math.min(page, pages - 1);
   useListPager(pg, pages, setPage);
+  const lastWheel = useRef(0);
   const slice = list.slice(pg * per, (pg + 1) * per);
 
   const step = (by: number) => {
@@ -146,7 +147,17 @@ export function ListPicker(props: PickerProps) {
   };
 
   return (
-    <>
+    // The mouse wheel turns the pages, one a notch.
+    <div
+      onWheel={(e) => {
+        const now = Date.now();
+        if (pages <= 1 || !e.deltaY || now - lastWheel.current < 150) {
+          return;
+        }
+        lastWheel.current = now;
+        setPage(Math.max(0, Math.min(pages - 1, pg + (e.deltaY > 0 ? 1 : -1))));
+      }}
+    >
       <Head x={x} label={label} w={findOn ? 13 : w - 7} />
       {!!findOn && (
         <Field
@@ -242,7 +253,7 @@ export function ListPicker(props: PickerProps) {
       />
       {/* A page turn wipes the rows only. */}
       <WipeAt x={x} y={5.25} w={w} h={M - 2.5 - 5.25} k={pg} />
-    </>
+    </div>
   );
 }
 

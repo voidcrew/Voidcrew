@@ -539,6 +539,8 @@ export function SettingsKeys() {
   const catalog = useKeysCatalog();
   const { sub, from, setCrumb } = useSettings();
   const [open, setOpen] = useState<string | null>(null);
+  const [find, setFind] = useState('');
+  const needle = find.trim().toUpperCase();
   const block = data.settings_keys;
 
   useEffect(() => {
@@ -549,12 +551,17 @@ export function SettingsKeys() {
   const cats = catalog ? keyCats(catalog) : [];
   const cat = cats.some((c) => c.id === open) ? open : cats[0]?.id || null;
   useEffect(() => {
-    setCrumb(cat ? cut(upper(cat), 13) : '');
-  }, [cat]);
+    setCrumb(needle ? 'SEARCH' : cat ? cut(upper(cat), 13) : '');
+  }, [cat, needle]);
 
   const rows: SettingsRowSpec[] =
     catalog && cat && block
-      ? Object.entries(catalog[cat] || {})
+      ? (needle
+          ? Object.values(catalog)
+              .flatMap((group) => Object.entries(group))
+              .filter(([id, info]) => upper(info.name || id).includes(needle))
+          : Object.entries(catalog[cat] || {})
+        )
           .sort((a, b) => byName(a[1].name, b[1].name))
           .map(([id, info]) => {
             const NAME = upper(info.name || id);
@@ -587,6 +594,8 @@ export function SettingsKeys() {
       onCat={setOpen}
       rows={rows}
       focusKey={from}
+      find={find}
+      onFind={setFind}
       empty={catalog && block ? undefined : 'FETCHING KEYS.'}
     />
   );

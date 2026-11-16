@@ -14,8 +14,10 @@ import {
 } from 'react';
 
 import { clamp, useListPager } from './CharFrame';
+import { useBack } from './nav';
 import {
   BODY_Y,
+  Field,
   Key,
   NameLine,
   Pager,
@@ -38,9 +40,10 @@ export const VALUE_W = 18;
 /** The description strip: two lines this wide from NAME_X. */
 export const DESC_W = 43;
 
-/** The rows' top; the list's first slab sits under the group switch. */
+/** The rows' top; the search field sits under the group switch, the list's first slab under it. */
 const ROWS_Y = BODY_Y;
-const LIST_Y = BODY_Y + 2;
+const FIND_Y = BODY_Y + 1.75;
+const LIST_Y = BODY_Y + 3.5;
 const SLAB_H = 1.5;
 const SLAB_PITCH = 1.75;
 
@@ -148,8 +151,10 @@ function CategoryList(props: {
   cat: string | null;
   onCat: (id: string) => void;
   claim?: number;
+  /** Bumped to give the open category the focus again (Escape on a row). */
+  bump?: number;
 }) {
-  const { cats, cat, onCat, claim } = props;
+  const { cats, cat, onCat, claim, bump = 0 } = props;
   const { rows: M } = useGrid();
   const bottom = M - 1.25;
   const fitAll = Math.floor((bottom - LIST_Y + 0.25) / SLAB_PITCH);
@@ -175,14 +180,14 @@ function CategoryList(props: {
         const on = c.id === cat;
         return (
           <Slab
-            key={c.id}
+            key={on ? `${c.id}:${bump}` : c.id}
             x={LIST_X}
             y={y}
             w={LIST_W}
             h={SLAB_H}
             variant="block"
             on={on}
-            auto={on ? claim : undefined}
+            auto={on ? (bump ? 5 : claim) : undefined}
             onClick={() => onCat(c.id)}
           >
             <Put x={LIST_X + 1} y={y + 0.25} cls={on ? 'wht' : ''}>
@@ -222,8 +227,10 @@ function SettingRow(props: {
   alt: boolean;
   auto?: number;
   onSeen: (key: string) => void;
+  /** Told when the row gains or loses the focus. */
+  onFocused: (on: boolean) => void;
 }) {
-  const { spec, y, h, alt, auto, onSeen } = props;
+  const { spec, y, h, alt, auto, onSeen, onFocused } = props;
   const [focused, setFocused] = useState(false);
   const lines = nameLines(spec.name);
   const ty = y + 0.125;
@@ -243,6 +250,7 @@ function SettingRow(props: {
         auto={auto}
         onFocus={(on) => {
           setFocused(on);
+          onFocused(on);
           if (on) {
             onSeen(spec.key);
           }
@@ -312,18 +320,42 @@ export function SettingsColumns(props: {
   focusKey?: string | null;
   /** Drawn in the work column when there are no rows (dim, one line). */
   empty?: string;
+  /**
+   * The search text and its setter. While it is not empty the caller passes the matching rows
+   * of every category, and no category is marked.
+   */
+  find?: string;
+  onFind?: (text: string) => void;
 }) {
-  const { cats, cat, onCat, rows, focusKey, empty } = props;
+  const { cats, cat, onCat, rows, focusKey, empty, onFind } = props;
+  const find = props.find || '';
   const { subOpen, closeSub } = useSettings();
   const { rows: M } = useGrid();
   const [page, setPage] = useState(0);
   const [seen, setSeen] = useState<string | null>(null);
+  /** The focus is on a row; Escape then goes up to the list before it leaves the screen. */
+  const [inRows, setInRows] = useState(false);
+  const [bump, setBump] = useState(0);
 
-  // A new category starts on its first page with no description.
+  // A new category or search starts on its first page with no description.
   useEffect(() => {
     setPage(0);
     setSeen(null);
-  }, [cat]);
+  }, [cat, find]);
+  useEffect(() => {
+    if (subOpen) {
+      setInRows(false);
+    }
+  }, [subOpen]);
+  useBack(
+    subOpen
+      ? null
+      : find
+        ? () => onFind?.('')
+        : inRows
+          ? () => setBump((n) => n + 1)
+          : null,
+  );
 
   const heights = rows.map((r) => rowHeight(r.name));
   const total = heights.reduce((a, b) => a + b, 0);
@@ -350,17 +382,38 @@ export function SettingsColumns(props: {
     if (subOpen) {
       closeSub();
     }
+    if (find) {
+      onFind?.('');
+    }
     if (id !== cat) {
       onCat(id);
     }
   };
   const list = (
-    <CategoryList
-      cats={cats}
-      cat={cat}
-      onCat={onCatPress}
-      claim={focusKey ? undefined : 5}
-    />
+    <>
+      {!!onFind && (
+        <Field
+          x={LIST_X}
+          y={FIND_Y}
+          w={LIST_W}
+          h={1.25}
+          value={find}
+          max={24}
+          hint="SEARCH"
+          onChange={(v) => onFind(v.toUpperCase())}
+          onEnter={() =>
+            (document.activeElement as HTMLElement | null)?.blur()
+          }
+        />
+      )}
+      <CategoryList
+        cats={cats}
+        cat={find ? null : cat}
+        onCat={onCatPress}
+        claim={focusKey || find ? undefined : 5}
+        bump={bump}
+      />
+    </>
   );
   if (subOpen) {
     // The same tree shape as below, so the list stays mounted and keeps the focus where it was.
@@ -380,6 +433,7 @@ export function SettingsColumns(props: {
         alt={n % 2 === 1}
         auto={spec.claim || spec.key === focusKey ? 5 : undefined}
         onSeen={setSeen}
+        onFocused={setInRows}
       />
     );
     y += h;
@@ -394,12 +448,12 @@ export function SettingsColumns(props: {
     <>
       {list}
       <div onWheel={onWheel}>{drawn}</div>
-      {!rows.length && !!empty && (
+      {!rows.length && (!!empty || !!find) && (
         <NameLine
           x={NAME_X}
           y={ROWS_Y + 0.625}
           w={DESC_W}
-          text={empty}
+          text={empty || 'NO MATCH.'}
           cls="dim"
         />
       )}

@@ -785,6 +785,8 @@ type FieldProps = Pick<NavProps, 'auto'> & {
   pulse?: unknown;
   /** Text at 1.25x, matching Big values beside it. */
   big?: boolean;
+  /** A word shown faint while the field is empty (in place of the dots). */
+  hint?: string;
   onChange: (value: string) => void;
   onEnter: () => void;
 };
@@ -876,8 +878,10 @@ export function Field(props: FieldProps) {
     <>
       <Band x={x} y={y} w={w} h={h} tone="field" dead={disabled} />
       {!value && !disabled && (
-        <Put x={x + 1} y={y + (h - 1) / 2} cls="dim">
-          {'.'.repeat(Math.max(0, w - 2))}
+        <Put x={x + 1} y={y + (h - 1) / 2} cls={props.hint ? 'faint' : 'dim'}>
+          {props.hint
+            ? props.hint.slice(0, Math.max(0, w - 2))
+            : '.'.repeat(Math.max(0, w - 2))}
         </Put>
       )}
       {/* The input covers the band, its text one cell in from both ends, so the focus ring

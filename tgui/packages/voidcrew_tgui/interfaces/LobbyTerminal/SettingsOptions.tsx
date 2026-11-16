@@ -320,6 +320,8 @@ export function SettingsOptions() {
     setDrag((d) => (d && !d.held ? null : d));
   }, [rev]);
   const rows = data.settings?.rows || [];
+  const [find, setFind] = useState('');
+  const needle = find.trim().toUpperCase();
 
   const items = rows.map((row) => ({ row, ...featureOf(row.key) }));
   const cats: SettingsCat[] = Array.from(new Set(items.map((it) => it.cat)))
@@ -328,8 +330,8 @@ export function SettingsOptions() {
   const cat = cats.some((c) => c.id === open) ? open : cats[0]?.id || null;
 
   useEffect(() => {
-    setCrumb(cat || '');
-  }, [cat]);
+    setCrumb(needle ? 'SEARCH' : cat || '');
+  }, [cat, needle]);
   useEffect(() => {
     setTyping(null);
     setBack(null);
@@ -339,7 +341,9 @@ export function SettingsOptions() {
     act('settings_set', { key, value });
 
   const specs: SettingsRowSpec[] = items
-    .filter((it) => it.cat === cat)
+    .filter((it) =>
+      needle ? upper(it.name).includes(needle) : it.cat === cat,
+    )
     .sort((a, b) => byName(a.name, b.name))
     .map(({ row, name, desc }) => {
       const key = row.key;
@@ -593,6 +597,8 @@ export function SettingsOptions() {
       onCat={setOpen}
       rows={specs}
       focusKey={from}
+      find={find}
+      onFind={setFind}
       empty={data.settings ? undefined : 'FETCHING SETTINGS.'}
     />
   );
