@@ -106,9 +106,13 @@ SUBSYSTEM_DEF(ticker)
 					continue
 				music += S
 
-	var/old_login_music = trim(file2text("data/last_round_lobby_music.txt"))
+	// VOIDCREW EDIT CHANGE START - the file holds a full path (and old files hold several lines), but music holds bare filenames
+	var/list/old_login_lines = splittext(trim(file2text("data/last_round_lobby_music.txt")), "\n")
+	var/old_login_music = trim(old_login_lines[length(old_login_lines)])
+	var/list/old_login_parts = splittext(old_login_music, "/")
 	if(length(music) > 1)
-		music -= old_login_music
+		music -= old_login_parts[length(old_login_parts)]
+	// VOIDCREW EDIT CHANGE END
 
 	for(var/S in music)
 		var/list/L = splittext(S,".")
@@ -866,6 +870,7 @@ SUBSYSTEM_DEF(ticker)
 		if(pref_volume > 0)
 			SEND_SOUND(M.client, sound(round_end_sound, volume = pref_volume))
 
+	fdel("data/last_round_lobby_music.txt") // VOIDCREW EDIT ADDITION - text2file appends; keep only this round's song
 	text2file(login_music, "data/last_round_lobby_music.txt")
 
 /datum/controller/subsystem/ticker/proc/choose_round_end_song()
