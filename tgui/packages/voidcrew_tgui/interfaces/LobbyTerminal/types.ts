@@ -323,9 +323,12 @@ export type CharData = {
 };
 
 export type CharStatic = {
-  /** [category, examples] in GLOB.job_categories order; examples from the roundstart job pool. */
-  roles: [category: string, examples: string][];
-  /** Recolourable loadout item path -> number of GAGS colour slots. */
+  /**
+   * [category, berth titles] in GLOB.job_categories order. Up to 6 titles from the roundstart
+   * job pool, the most common first. A category with no berth on any starting ship is left out.
+   */
+  roles: [category: string, titles: string[]][];
+  /** Recolourable loadout item path -> number of colour slots (GAGS slots; the lipstick has 1). */
   kit_colors: Record<string, number>;
 };
 
@@ -491,6 +494,10 @@ export type LobbyActions = {
   /** Renaming is on (Q2). An empty name clears it. */
   char_kit_name: { path: string; name: string };
   char_kit_skin: { path: string; skin: string };
+  /** A packed accessory: flips over or under the suit. */
+  char_kit_layer: { path: string };
+  /** The packed lipstick: where it sits. */
+  char_kit_lip: { path: string; style: 'Upper' | 'Middle' | 'Lower' };
   /** Preview only: which category's uniform the mannequin wears. */
   char_dress: { category: string };
   /** Asks for that facing when it isn't cached for the current look. */
