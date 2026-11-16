@@ -3138,7 +3138,7 @@
 	// The first custom name is free and quiet; changing an established identity is
 	// broadcast galaxy-wide so a rename can't quietly shed a reputation.
 	if(renamed_once)
-		priority_announce("The vessel formerly registered as [old_name] has been renamed to [new_name].", "Galactic Registry")
+		priority_announce("The vessel formerly registered as [old_name] has been renamed to [new_name].", sender_override = "Galactic Registry")
 	renamed_once = TRUE
 
 	ship_notify("Vessel registry updated: [old_name] is now registered as [new_name].", "SHIP SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
