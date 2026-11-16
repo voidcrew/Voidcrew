@@ -12,6 +12,7 @@ import {
 } from 'tgui-core/components';
 import { useBackend } from '../../tgui/backend';
 import { Window } from '../../tgui/layouts';
+import { TutorialFocus } from '../components/TutorialFocus';
 
 interface BaseSurveyData {
   ref_id: string;
@@ -71,6 +72,7 @@ interface SurveyTarget {
 }
 
 interface Data {
+  tutorial_focus?: string | null;
   archiveMode: number;
   researchLinked: number;
   bankedPoints: number;
@@ -161,6 +163,18 @@ export const SurveyComputer = () => {
 
   const currentThemeColors = theme ? getThemeColors(theme) : undefined;
 
+  // Tutorial checklist: lead to the Research tab (print) or the Surveying tab (start).
+  const tutorialFocus = data.tutorial_focus || '';
+  const researchTabFocus =
+    tab !== 9 &&
+    (tutorialFocus === 'survey_research_tab' ||
+      (tutorialFocus === 'survey_print' && data.bankedPoints > 0))
+      ? tutorialFocus
+      : '';
+  const surveyTabFocus =
+    tab !== 1 && tutorialFocus === 'survey_start' ? tutorialFocus : '';
+  const menuFocus = researchTabFocus || surveyTabFocus;
+
   if (data.archiveMode) {
     return <SurveyArchive />;
   }
@@ -176,179 +190,183 @@ export const SurveyComputer = () => {
         <Stack fill scrollable fillPositionedParent>
           <Stack.Item>
             <Section fill>
-              <Collapsible
-                backgroundColor={currentThemeColors?.collapsible}
-                textColor={currentThemeColors?.collapsibleText}
-              >
-                <Stack vertical>
-                  <Section
-                    title="Software"
-                    textAlign="center"
-                    mt={1}
-                    mb={0}
-                    pb={0}
-                  />
-                  <Stack.Item mt={0} pt={0}>
-                    {' '}
-                    <Tabs vertical verticalAlign="middle">
-                      <Tabs.Tab
-                        icon="rocket"
-                        mt={1}
-                        mb={1}
-                        selected={tab === 1}
-                        key={1}
-                        onClick={() => {
-                          setTab(1);
-                        }}
-                      >
-                        Surveying
-                      </Tabs.Tab>
-                      <Tabs.Tab
-                        icon="flask"
-                        mt={1}
-                        mb={1}
-                        selected={tab === 9}
-                        key={9}
-                        onClick={() => {
-                          setTab(9);
-                        }}
-                      >
-                        Research
-                      </Tabs.Tab>
-                      <Tabs.Tab
-                        icon="wrench"
-                        mt={1}
-                        mb={1}
-                        selected={tab === 10}
-                        key={10}
-                        onClick={() => {
-                          setTab(10);
-                        }}
-                      >
-                        Settings
-                      </Tabs.Tab>
-                    </Tabs>
-                  </Stack.Item>
-                  <Section
-                    title="Celestials"
-                    textAlign="center"
-                    mb={0}
-                    pb={0}
-                  />
-                  <Stack.Item pt={0} mt={0}>
-                    <Tabs vertical verticalAlign="middle">
-                      <Tabs.Tab
-                        icon="globe"
-                        mt={1}
-                        mb={1}
-                        textColor={
-                          currentCelestialType &&
-                          currentCelestialType === 'planets'
-                            ? 'green'
-                            : undefined
-                        }
-                        selected={tab === 2}
-                        key={2}
-                        onClick={() => {
-                          setTab(2);
-                        }}
-                      >
-                        Planets
-                      </Tabs.Tab>
-                      <Tabs.Tab
-                        icon="atom"
-                        mt={1}
-                        mb={1}
-                        textColor={
-                          currentCelestialType &&
-                          currentCelestialType === 'nebulas'
-                            ? 'green'
-                            : undefined
-                        }
-                        selected={tab === 3}
-                        key={3}
-                        onClick={() => {
-                          setTab(3);
-                        }}
-                      >
-                        Nebulas
-                      </Tabs.Tab>
-                      <Tabs.Tab
-                        icon="bolt"
-                        mt={1}
-                        mb={1}
-                        textColor={
-                          currentCelestialType &&
-                          currentCelestialType === 'electric_storms'
-                            ? 'green'
-                            : undefined
-                        }
-                        selected={tab === 4}
-                        key={4}
-                        onClick={() => {
-                          setTab(4);
-                        }}
-                      >
-                        Electric Storms
-                      </Tabs.Tab>
-                      <Tabs.Tab
-                        icon="power-off"
-                        mt={1}
-                        mb={1}
-                        textColor={
-                          currentCelestialType &&
-                          currentCelestialType === 'emp_storms'
-                            ? 'green'
-                            : undefined
-                        }
-                        selected={tab === 5}
-                        key={5}
-                        onClick={() => {
-                          setTab(5);
-                        }}
-                      >
-                        EMP Storms
-                      </Tabs.Tab>
-                      <Tabs.Tab
-                        icon="meteor"
-                        mt={1}
-                        mb={1}
-                        textColor={
-                          currentCelestialType &&
-                          currentCelestialType === 'asteroids'
-                            ? 'green'
-                            : undefined
-                        }
-                        selected={tab === 6}
-                        key={6}
-                        onClick={() => {
-                          setTab(6);
-                        }}
-                      >
-                        Asteroids
-                      </Tabs.Tab>
-                      <Tabs.Tab
-                        icon="sun"
-                        mt={1}
-                        mb={1}
-                        textColor={
-                          currentCelestialType &&
-                          currentCelestialType === 'stars'
-                            ? 'green'
-                            : undefined
-                        }
-                        selected={tab === 7}
-                        key={7}
-                        onClick={() => {
-                          setTab(7);
-                        }}
-                      >
-                        Stars
-                      </Tabs.Tab>
-                    </Tabs>
-                  </Stack.Item>
-                </Stack>
-              </Collapsible>
+              <TutorialFocus id={menuFocus}>
+                <Collapsible
+                  backgroundColor={currentThemeColors?.collapsible}
+                  textColor={currentThemeColors?.collapsibleText}
+                >
+                  <Stack vertical>
+                    <Section
+                      title="Software"
+                      textAlign="center"
+                      mt={1}
+                      mb={0}
+                      pb={0}
+                    />
+                    <Stack.Item mt={0} pt={0}>
+                      {' '}
+                      <Tabs vertical verticalAlign="middle">
+                        <TutorialFocus id={surveyTabFocus} key={1}>
+                          <Tabs.Tab
+                            icon="rocket"
+                            mt={1}
+                            mb={1}
+                            selected={tab === 1}
+                            onClick={() => {
+                              setTab(1);
+                            }}
+                          >
+                            Surveying
+                          </Tabs.Tab>
+                        </TutorialFocus>
+                        <TutorialFocus id={researchTabFocus} key={9}>
+                          <Tabs.Tab
+                            icon="flask"
+                            mt={1}
+                            mb={1}
+                            selected={tab === 9}
+                            onClick={() => {
+                              setTab(9);
+                            }}
+                          >
+                            Research
+                          </Tabs.Tab>
+                        </TutorialFocus>
+                        <Tabs.Tab
+                          icon="wrench"
+                          mt={1}
+                          mb={1}
+                          selected={tab === 10}
+                          key={10}
+                          onClick={() => {
+                            setTab(10);
+                          }}
+                        >
+                          Settings
+                        </Tabs.Tab>
+                      </Tabs>
+                    </Stack.Item>
+                    <Section
+                      title="Celestials"
+                      textAlign="center"
+                      mb={0}
+                      pb={0}
+                    />
+                    <Stack.Item pt={0} mt={0}>
+                      <Tabs vertical verticalAlign="middle">
+                        <Tabs.Tab
+                          icon="globe"
+                          mt={1}
+                          mb={1}
+                          textColor={
+                            currentCelestialType &&
+                            currentCelestialType === 'planets'
+                              ? 'green'
+                              : undefined
+                          }
+                          selected={tab === 2}
+                          key={2}
+                          onClick={() => {
+                            setTab(2);
+                          }}
+                        >
+                          Planets
+                        </Tabs.Tab>
+                        <Tabs.Tab
+                          icon="atom"
+                          mt={1}
+                          mb={1}
+                          textColor={
+                            currentCelestialType &&
+                            currentCelestialType === 'nebulas'
+                              ? 'green'
+                              : undefined
+                          }
+                          selected={tab === 3}
+                          key={3}
+                          onClick={() => {
+                            setTab(3);
+                          }}
+                        >
+                          Nebulas
+                        </Tabs.Tab>
+                        <Tabs.Tab
+                          icon="bolt"
+                          mt={1}
+                          mb={1}
+                          textColor={
+                            currentCelestialType &&
+                            currentCelestialType === 'electric_storms'
+                              ? 'green'
+                              : undefined
+                          }
+                          selected={tab === 4}
+                          key={4}
+                          onClick={() => {
+                            setTab(4);
+                          }}
+                        >
+                          Electric Storms
+                        </Tabs.Tab>
+                        <Tabs.Tab
+                          icon="power-off"
+                          mt={1}
+                          mb={1}
+                          textColor={
+                            currentCelestialType &&
+                            currentCelestialType === 'emp_storms'
+                              ? 'green'
+                              : undefined
+                          }
+                          selected={tab === 5}
+                          key={5}
+                          onClick={() => {
+                            setTab(5);
+                          }}
+                        >
+                          EMP Storms
+                        </Tabs.Tab>
+                        <Tabs.Tab
+                          icon="meteor"
+                          mt={1}
+                          mb={1}
+                          textColor={
+                            currentCelestialType &&
+                            currentCelestialType === 'asteroids'
+                              ? 'green'
+                              : undefined
+                          }
+                          selected={tab === 6}
+                          key={6}
+                          onClick={() => {
+                            setTab(6);
+                          }}
+                        >
+                          Asteroids
+                        </Tabs.Tab>
+                        <Tabs.Tab
+                          icon="sun"
+                          mt={1}
+                          mb={1}
+                          textColor={
+                            currentCelestialType &&
+                            currentCelestialType === 'stars'
+                              ? 'green'
+                              : undefined
+                          }
+                          selected={tab === 7}
+                          key={7}
+                          onClick={() => {
+                            setTab(7);
+                          }}
+                        >
+                          Stars
+                        </Tabs.Tab>
+                      </Tabs>
+                    </Stack.Item>
+                  </Stack>
+                </Collapsible>
+              </TutorialFocus>
             </Section>
           </Stack.Item>
           <Stack.Item width="100%">
@@ -548,31 +566,39 @@ const Surveying = () => {
         {selectedTarget?.status === 'unsurveyed' ? (
           <Box mb={1}>Research: {selectedTarget.points}</Box>
         ) : null}
-        <Button
-          lineHeight={3}
-          backgroundColor={currentThemeColors?.button}
-          textColor={currentThemeColors?.buttonText}
-          minWidth={30}
-          textAlign="center"
-          icon="globe"
-          fontSize={3}
-          tooltip={currentOption.tooltip ? currentOption.tooltip : undefined}
-          disabled={
-            shipMoving === 0 ? true : currentOption.disabled ? true : false
+        <TutorialFocus
+          id={
+            currentOption.action === 'survey' && shipMoving !== 0
+              ? 'survey_start'
+              : ''
           }
-          onClick={() => {
-            if (!currentOption.action) {
-              return;
-            }
-            if (currentOption.action === 'survey') {
-              act('survey', { target_ref: selectedTarget?.ref });
-            } else {
-              act(currentOption.action);
-            }
-          }}
         >
-          {currentOption.content}
-        </Button>
+          <Button
+            lineHeight={3}
+            backgroundColor={currentThemeColors?.button}
+            textColor={currentThemeColors?.buttonText}
+            minWidth={30}
+            textAlign="center"
+            icon="globe"
+            fontSize={3}
+            tooltip={currentOption.tooltip ? currentOption.tooltip : undefined}
+            disabled={
+              shipMoving === 0 ? true : currentOption.disabled ? true : false
+            }
+            onClick={() => {
+              if (!currentOption.action) {
+                return;
+              }
+              if (currentOption.action === 'survey') {
+                act('survey', { target_ref: selectedTarget?.ref });
+              } else {
+                act(currentOption.action);
+              }
+            }}
+          >
+            {currentOption.content}
+          </Button>
+        </TutorialFocus>
       </Stack.Item>
     </Stack>
   );
@@ -1313,26 +1339,28 @@ const Research = () => {
   return (
     <Stack vertical>
       <Stack.Item>
-        <Button
-          lineHeight={3}
-          ml="10%"
-          mr="10%"
-          fluid
-          mt="10%"
-          mb="10%"
-          textAlign="center"
-          backgroundColor={currentThemeColors?.button}
-          textColor={currentThemeColors?.buttonText}
-          icon="print"
-          fontSize={3}
-          disabled={!bankedPoints || bankedPoints === 0 ? true : false}
-          onClick={() => {
-            act('printResearch');
-          }}
-        >
-          {' '}
-          Print
-        </Button>
+        <TutorialFocus id={bankedPoints > 0 ? 'survey_print' : ''}>
+          <Button
+            lineHeight={3}
+            ml="10%"
+            mr="10%"
+            fluid
+            mt="10%"
+            mb="10%"
+            textAlign="center"
+            backgroundColor={currentThemeColors?.button}
+            textColor={currentThemeColors?.buttonText}
+            icon="print"
+            fontSize={3}
+            disabled={!bankedPoints || bankedPoints === 0 ? true : false}
+            onClick={() => {
+              act('printResearch');
+            }}
+          >
+            {' '}
+            Print
+          </Button>
+        </TutorialFocus>
       </Stack.Item>
       <Stack.Item>
         <NoticeBox

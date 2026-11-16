@@ -20,6 +20,8 @@
 #define OUTPOST_CHANGELING_EARLY_BURST 3
 /// Seconds a host may spend out of the cell block before the specimen is lost
 #define OUTPOST_CHANGELING_HOST_LOST_AFTER 60
+/// A host with a body, down on their bunk, is knocked flat this long by each heave of the specimen
+#define OUTPOST_CHANGELING_HOST_KNOCKDOWN (6 SECONDS)
 /// The host's sentence is held at least this long, so they are not released mid-incubation
 #define OUTPOST_CHANGELING_HOST_SENTENCE_HOLD 600
 

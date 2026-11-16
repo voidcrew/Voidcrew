@@ -1599,6 +1599,7 @@
 /// Otherwise its unexpected-deletion stack trace aborts callers inside try/catch,
 /// leaving a hull-less overmap ship behind that continues to pin its landing site.
 /obj/structure/overmap/ship/proc/detach_shuttle()
+	roundend_note_departed_ship(src) // keeps its row in the round-end report, voidcrew/modules/roundend
 	ship_metric_removed(src) // the last moment the hull still has its metrics id
 	var/obj/docking_port/mobile/voidcrew/owned_shuttle = shuttle
 	shuttle = null
@@ -3138,7 +3139,7 @@
 	// The first custom name is free and quiet; changing an established identity is
 	// broadcast galaxy-wide so a rename can't quietly shed a reputation.
 	if(renamed_once)
-		priority_announce("The vessel formerly registered as [old_name] has been renamed to [new_name].", "Galactic Registry")
+		priority_announce("The vessel formerly registered as [old_name] has been renamed to [new_name].", sender_override = "Galactic Registry")
 	renamed_once = TRUE
 
 	ship_notify("Vessel registry updated: [old_name] is now registered as [new_name].", "SHIP SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)

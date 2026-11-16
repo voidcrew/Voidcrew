@@ -92,6 +92,9 @@
 	var/slag = 0
 	/// Seconds of heat left
 	var/heat = 0
+	/// world.time of the last tick. A body whose Life() paused (a dormant human NPC, human_npc.dm) froze the heat
+	/// while the client-side glow kept cooling; the first tick after the pause re-times the glow from the heat.
+	var/last_tick_at = 0
 	/// Healing held back while slag is in
 	var/stored_healing = 0
 
@@ -390,6 +393,9 @@
 /datum/wound/burn/flesh/plasma/handle_process(seconds_per_tick, times_fired)
 	if(!victim || HAS_TRAIT(victim, TRAIT_STASIS))
 		return ..()
+	// More than a few ticks missed: Life() was paused
+	var/paused = last_tick_at && world.time - last_tick_at > 5 SECONDS
+	last_tick_at = world.time
 	var/held_damage = flesh_damage
 	var/held_infestation = infestation
 	// Bank healing before tg's tick so its heal step has nothing to spend while slag is in.
@@ -409,6 +415,8 @@
 	if(QDELETED(src) || !victim || !limb)
 		return
 	process_shedding(seconds_per_tick)
+	if(paused && !QDELETED(src) && heat > 0)
+		update_look()
 
 // On a stasis bed tg's tick doesn't run: the slag cools with no cooking, and stored healing stays stored.
 /datum/wound/burn/flesh/plasma/on_stasis(seconds_per_tick, times_fired)

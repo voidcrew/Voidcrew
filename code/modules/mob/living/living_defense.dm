@@ -110,8 +110,10 @@
 		if (SUPPRESSED_QUIET)
 			to_chat(src, span_userdanger("You're shot by \a [proj][organ_hit_text]!"))
 		if (SUPPRESSED_NONE)
-			visible_message(span_danger("[src] is hit by \a [proj][organ_hit_text]!"), \
-					span_userdanger("You're hit by \a [proj][organ_hit_text]!"), null, COMBAT_MESSAGE_RANGE)
+			// VOIDCREW EDIT CHANGE START: hold the hit line so the wound lines of this shot join it (voidcrew/modules/hyperviolence/hitlines)
+			// original: visible_message(span_danger("[src] is hit by \a [proj][organ_hit_text]!"), span_userdanger("You're hit by \a [proj][organ_hit_text]!"), null, COMBAT_MESSAGE_RANGE)
+			hv_hold_attack_message("[src] is hit by \a [proj][organ_hit_text]!", "You're hit by \a [proj][organ_hit_text]!")
+			// VOIDCREW EDIT CHANGE END
 			if(is_blind())
 				to_chat(src, span_userdanger("You feel something hit you[organ_hit_text]!"))
 
@@ -238,8 +240,10 @@
 		log_hit_combat(throwingdatum?.get_thrower(), thrown_item)
 		return ..()
 
-	visible_message(span_danger("[src] is hit by [thrown_item]!"),
-		span_userdanger("You're hit by [thrown_item]!"))
+	// VOIDCREW EDIT CHANGE START: hold the hit line so the wound lines of this throw join it (voidcrew/modules/hyperviolence/hitlines)
+	// original: visible_message(span_danger("[src] is hit by [thrown_item]!"), span_userdanger("You're hit by [thrown_item]!"))
+	hv_hold_attack_message("[src] is hit by [thrown_item]!", "You're hit by [thrown_item]!", vision_range = DEFAULT_MESSAGE_RANGE)
+	// VOIDCREW EDIT CHANGE END
 	if(!thrown_item.throwforce)
 		log_hit_combat(throwingdatum?.get_thrower(), thrown_item)
 		return
@@ -416,13 +420,11 @@
 		playsound(src, user.attack_sound, 50, TRUE, TRUE)
 
 	user.do_attack_animation(src)
-	visible_message(
-		span_danger("[user] [user.attack_verb_continuous] [src]!"),
-		span_userdanger("[user] [user.attack_verb_continuous] you!"),
-		null,
-		COMBAT_MESSAGE_RANGE,
-		user,
-	)
+	// VOIDCREW EDIT CHANGE START: hold the attack line so the wound lines of this blow join it (voidcrew/modules/hyperviolence/hitlines)
+	// original: visible_message(span_danger("[user] [user.attack_verb_continuous] [src]!"), span_userdanger("[user] [user.attack_verb_continuous] you!"), null, COMBAT_MESSAGE_RANGE, user)
+	// original: to_chat(user, span_danger("You [user.attack_verb_simple] [src]!")) (sent after the armor check, not on a dismemberment)
+	hv_hold_attack_message("[user] [user.attack_verb_continuous] [src]!", "[user] [user.attack_verb_continuous] you!", "You [user.attack_verb_simple] [src]!", user)
+	// VOIDCREW EDIT CHANGE END
 
 	var/dam_zone = dismembering_strike(user, pick(BODY_ZONE_CHEST, BODY_ZONE_PRECISE_L_HAND, BODY_ZONE_PRECISE_R_HAND, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
 	if(!dam_zone) //Dismemberment successful
@@ -430,7 +432,7 @@
 
 	var/armor_block = run_armor_check(user.zone_selected, MELEE, armour_penetration = user.armour_penetration)
 
-	to_chat(user, span_danger("You [user.attack_verb_simple] [src]!"))
+	// VOIDCREW EDIT REMOVAL: the attacker's "You [verb] [src]!" line is held with the attack line above (voidcrew/modules/hyperviolence/hitlines)
 	var/damage_done = apply_damage(
 		damage = damage,
 		damagetype = user.melee_damage_type,

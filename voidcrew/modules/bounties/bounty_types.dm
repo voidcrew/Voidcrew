@@ -68,6 +68,8 @@ GLOBAL_LIST_EMPTY(bounty_prisoner_pool)
 	var/style
 	/// BOUNTY_KIT_* for a mini-boss, else null
 	var/kit
+	/// The chrome they carry (BOUNTY_CHROME_* keys), rolled once with the record, or null (bounty_chrome.dm). Real implants in their body; a prisoner's isn't installed.
+	var/list/chrome
 	/// Distinguishing features, as P1's feature keys; feature_lines() turns them into examine lines
 	var/list/features
 	/// What carries into the prison beyond the tier: P1's trait keys, which P7's danger helpers read
@@ -140,7 +142,7 @@ GLOBAL_LIST_EMPTY(bounty_prisoner_pool)
 	var/placement_kind
 	/// Weakref to where the criminal is: the overmap object of the planet, ruin, pirate ship or trader outpost
 	var/datum/weakref/site_ref
-	/// Weakref to the criminal's mob while its site is loaded (/mob/living/basic/bounty_criminal)
+	/// Weakref to the criminal's mob while its site is loaded (/mob/living/carbon/human/npc/bounty_criminal)
 	var/datum/weakref/criminal_ref
 	/// Weakref to the ship a private offer is for; null for a public bounty
 	var/datum/weakref/private_to
@@ -152,9 +154,9 @@ GLOBAL_LIST_EMPTY(bounty_prisoner_pool)
 	var/value = 0
 	/// world.time it comes off the board
 	var/expires_at = 0
-	/// Weakrefs to its decoys at a trader outpost (/mob/living/basic/bounty_criminal/decoy)
+	/// Weakrefs to its decoys at a trader outpost (/mob/living/carbon/human/npc/bounty_criminal/decoy)
 	var/list/decoys = list()
-	/// Weakrefs to the criminal's companions (/mob/living/basic/bounty_companion)
+	/// Weakrefs to the criminal's companions (/mob/living/carbon/human/npc/bounty_companion)
 	var/list/companions = list()
 	/// The sighting marker hunters' GPS units point to
 	var/obj/effect/bounty_sighting/marker
@@ -167,29 +169,26 @@ GLOBAL_LIST_EMPTY(bounty_prisoner_pool)
 
 /// The criminal's mob, if its site is loaded and it still exists
 /datum/criminal_bounty/proc/criminal()
-	var/mob/living/basic/bounty_criminal/criminal = criminal_ref?.resolve()
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = criminal_ref?.resolve()
 	return QDELETED(criminal) ? null : criminal
 
 // ===== THE CRIMINALS =====
 
 /**
- * A wanted criminal, while its site is loaded. Its own mob family: not an outpost prisoner (a
- * caught criminal becomes a new prisoner, rebuilt from the record) and never under
- * /mob/living/basic/boss (megafauna are banned from outposts). No AI controller until P3 gives it
- * one. Built-in values are set by P2 in bounty_criminal.dm.
+ * A wanted criminal, while its site is loaded: a real human body (/mob/living/carbon/human/npc, the
+ * human NPC base) driven by the bounty AI. Its crit, stamina, cuffs, wounds, death and revival are
+ * tg's, as for a player; only its AI and the bounty rules on top are its own. Not an outpost
+ * prisoner: a caught criminal becomes a new prisoner, rebuilt from the record. Built-in values are
+ * set by P2 in bounty_criminal.dm.
  */
-/mob/living/basic/bounty_criminal
+/mob/living/carbon/human/npc/bounty_criminal
 	/// Who they are (/datum/bounty_record)
 	var/datum/bounty_record/record
 	/// Weakref to the posting they are wanted on (/datum/criminal_bounty); null for an admin spawn with none
 	var/datum/weakref/posting_ref
-	/// At or below the downed line: floored, harmless and draggable until they recover (P2)
-	var/downed = FALSE
 	/// Hidden in a locker, a crate, as a potted plant or in the dark (P3)
 	var/hidden = FALSE
-	/// The restraints on them, held in their contents (P2), or null
-	var/obj/item/restraints/handcuffs/restraints
-	/// Weakrefs to their companions (/mob/living/basic/bounty_companion)
+	/// Weakrefs to their companions (/mob/living/carbon/human/npc/bounty_companion)
 	var/list/companions = list()
 	/// Blending in at a trader outpost: the fugitive and its decoys idle, talk and move the same way (P6, P3)
 	var/blended = FALSE
@@ -197,42 +196,40 @@ GLOBAL_LIST_EMPTY(bounty_prisoner_pool)
 	var/list/grudge = list()
 	/// Their leash, list(min_x, min_y, max_x, max_y, z), or null for none (P2's leash_ok())
 	var/list/site_bounds
-	/// The worst capture state they have reached (BOUNTY_STATE_*): once downed or dead, the pay share never rises again. P2 writes it, P5 pays on it.
-	var/worst_state = BOUNTY_STATE_FREE
 
 /// The posting they are wanted on, if it still exists
-/mob/living/basic/bounty_criminal/proc/posting()
+/mob/living/carbon/human/npc/bounty_criminal/proc/posting()
 	var/datum/criminal_bounty/posting = posting_ref?.resolve()
 	return QDELETED(posting) ? null : posting
 
 /// A meek criminal: runs, hides, blends in. P2 sets its body, P3 its AI.
-/mob/living/basic/bounty_criminal/meek
+/mob/living/carbon/human/npc/bounty_criminal/meek
 
 /// A normal criminal: found doing something, fights back. P2 sets its body, P3 its AI.
-/mob/living/basic/bounty_criminal/normal
+/mob/living/carbon/human/npc/bounty_criminal/normal
 
 /// A mini-boss: the base of the five kits. P4 sets its body and AI in bounty_boss.dm.
-/mob/living/basic/bounty_criminal/boss
+/mob/living/carbon/human/npc/bounty_criminal/boss
 
-/mob/living/basic/bounty_criminal/boss/juggernaut
-/mob/living/basic/bounty_criminal/boss/pyromaniac
-/mob/living/basic/bounty_criminal/boss/demolitionist
-/mob/living/basic/bounty_criminal/boss/ghost
-/mob/living/basic/bounty_criminal/boss/heavy
+/mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut
+/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac
+/mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist
+/mob/living/carbon/human/npc/bounty_criminal/boss/ghost
+/mob/living/carbon/human/npc/bounty_criminal/boss/heavy
 
 /**
  * A patron at a trader outpost who shares some of the fugitive's features. Same body, same
  * blended-in mode and same examine layout as the fugitive, so nothing about it gives the fugitive
  * away; only what a warrant does to it differs. P6 owns its behaviour (bounty_outpost.dm).
  */
-/mob/living/basic/bounty_criminal/decoy
+/mob/living/carbon/human/npc/bounty_criminal/decoy
 
 /**
  * Someone with a normal criminal: fights beside them, is not a bounty and pays nothing. P3 owns it
  * (bounty_companions.dm) and sets its built-in values.
  */
-/mob/living/basic/bounty_companion
-	/// Weakref to the criminal they are with (/mob/living/basic/bounty_criminal)
+/mob/living/carbon/human/npc/bounty_companion
+	/// Weakref to the criminal they are with (/mob/living/carbon/human/npc/bounty_criminal)
 	var/datum/weakref/leader_ref
 
 // ===== OBJECTS =====

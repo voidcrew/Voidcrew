@@ -104,6 +104,10 @@
 		/datum/shop_sku/general/lighter,
 		/datum/shop_sku/general/cards,
 		/datum/shop_sku/general/plushie,
+		/datum/shop_sku/general/walkman,
+		/datum/shop_sku/general/blank_cassette,
+		/datum/shop_sku/general/mixtape,
+		/datum/shop_sku/general/cassette_deck,
 		// Ship Sundries
 		/datum/shop_sku/general/floor_tiles,
 		/datum/shop_sku/general/iron_sheets,
@@ -495,6 +499,32 @@
 	item_path = /obj/item/toy/plush/lizard_plushie
 	price_credits = 120
 
+/datum/shop_sku/general/walkman
+	category = "Galley & Comforts"
+	item_path = /obj/item/walkman
+	price_credits = 150
+
+/datum/shop_sku/general/blank_cassette
+	category = "Galley & Comforts"
+	item_path = /obj/item/cassette_tape/blank
+	price_credits = 20
+	stock_min = 4
+	stock_max = 8
+
+/datum/shop_sku/general/mixtape
+	category = "Galley & Comforts"
+	item_path = /obj/item/cassette_tape/mixtape
+	price_credits = 40
+	stock_min = 3
+	stock_max = 6
+
+/datum/shop_sku/general/cassette_deck
+	category = "Galley & Comforts"
+	item_path = /obj/item/cassette_deck
+	price_credits = 200
+	stock_min = 1
+	stock_max = 2
+
 // ===== SHIP SUNDRIES =====
 
 /datum/shop_sku/general/floor_tiles
@@ -694,6 +724,38 @@
 	pay_credits = 150
 	demand_min = 5
 	demand_max = 8
+
+// Barnaby sends anything Pike wants for the wall next door, so a trophy fish
+// never goes in the chowder for less by accident.
+/datum/shop_buyback/general/fresh_catch/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	return !claimed_by_buyback_family(offered, /datum/shop_buyback/bait)
+
+/**
+ * Whether any ledger entry under `family` (a /datum/shop_buyback base type)
+ * would take `offered`. A catch-all entry ("any fish", "any produce", "any
+ * dish") calls this to step aside for the specific entries that pay more, so
+ * a rare item can't be sold cheap by surprise and the two lists never drift:
+ * adding a rare entry excludes it from the catch-all automatically.
+ *
+ * Asks real matches() on one cached prototype per entry, so conditions like a
+ * potency floor or an excluded subtype carry over exactly.
+ */
+/proc/claimed_by_buyback_family(obj/item/offered, family)
+	var/static/list/prototypes_by_family = list()
+	var/list/prototypes = prototypes_by_family[family]
+	if(isnull(prototypes))
+		prototypes = list()
+		for(var/datum/shop_buyback/entry_type as anything in subtypesof(family))
+			if(!initial(entry_type.item_path))
+				continue
+			prototypes += new entry_type
+		prototypes_by_family[family] = prototypes
+	for(var/datum/shop_buyback/prototype as anything in prototypes)
+		if(prototype.matches(offered))
+			return TRUE
+	return FALSE
 
 /datum/shop_buyback/general/bear_pelt
 	name = "bear hide"

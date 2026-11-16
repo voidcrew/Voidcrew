@@ -187,8 +187,6 @@
 		cooldown_time = ranged_cooldown,\
 		burst_shots = burst_shots,\
 	)
-	// In a red zone it carries a Furnace instead (plasma_weapons module)
-	arm_plasma_rifle()
 
 // ==================== CHIEF AUDITOR (IRS) ====================
 
@@ -225,8 +223,6 @@
 		cooldown_time = ranged_cooldown,\
 		burst_shots = burst_shots,\
 	)
-	// In a red zone it carries a Furnace instead (plasma_weapons module)
-	arm_plasma_rifle()
 
 // ==================== THE BLACK KNIGHT (Medieval) ====================
 

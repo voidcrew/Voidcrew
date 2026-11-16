@@ -9,7 +9,7 @@
 
 /// Whether `thing` is one of the ambient NPCs this door keeps out
 /proc/outpost_staff_door_blocks(atom/thing)
-	return istype(thing, /mob/living/basic/ambient_npc)
+	return istype(thing, /mob/living/carbon/human/npc/ambient_npc)
 
 /obj/machinery/door/airlock/centcom/outpost_staff/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
 	if(outpost_staff_door_blocks(pass_info.requester_ref?.resolve()))

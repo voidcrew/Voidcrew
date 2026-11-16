@@ -29,8 +29,14 @@
 		var/bought = initial(buyback_path.item_path)
 		if(!bought)
 			continue
+		// The outfitter's listed rows (#516) take any item, then only the exact types in their wanted list
+		var/list/wanted
+		if(ispath(buyback_path, /datum/shop_buyback/outfitter/listed))
+			var/datum/shop_buyback/outfitter/listed/listed = new buyback_path
+			wanted = listed.wanted_cache || list()
+			qdel(listed)
 		for(var/item_path in sold)
-			if(item_path == bought || (initial(buyback_path.match_subtypes) && ispath(item_path, bought)))
+			if(wanted ? wanted[item_path] : (item_path == bought || (initial(buyback_path.match_subtypes) && ispath(item_path, bought))))
 				TEST_FAIL("[buyback_path] buys back [item_path]")
 
 	for(var/datum/shop_sku/sku_path as anything in subtypesof(/datum/shop_sku/peddler))

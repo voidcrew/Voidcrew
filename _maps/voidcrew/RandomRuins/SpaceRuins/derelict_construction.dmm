@@ -36,7 +36,7 @@
 /area/ruin/space/has_grav/derelictconstruction)
 "fa" = (
 /obj/structure/lattice,
-/mob/living/basic/trooper/pirate/ranged/space,
+/obj/effect/spawner/human_npc/ruin/pirate/space/gunner,
 /turf/template_noop,
 /area/space/nearstation)
 "gi" = (
@@ -438,7 +438,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/derelictconstruction)
 "Za" = (
-/mob/living/basic/trooper/pirate/melee/space,
+/obj/effect/spawner/human_npc/ruin/pirate/space,
 /obj/structure/lattice/catwalk,
 /turf/template_noop,
 /area/ruin/space/has_grav/derelictconstruction)

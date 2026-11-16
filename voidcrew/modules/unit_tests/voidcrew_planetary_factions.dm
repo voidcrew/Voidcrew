@@ -288,9 +288,10 @@
 	distant_planet.enable_planetary_faction()
 
 	// This represents a mob already initialized from a preloaded ruin before the planet's
-	// footprint was enabled. The mapped override replaces its normal type factions.
-	var/mob/living/simple_animal/hostile/asteroid/hermit/survivor/mapped_hermit = allocate(
-		/mob/living/simple_animal/hostile/asteroid/hermit/survivor,
+	// footprint was enabled. The mapped override replaces its normal type factions. Hermits are
+	// human NPCs (voidcrew/modules/human_npcs/ruins/), natives of their planet like the fauna.
+	var/mob/living/carbon/human/npc/ruin/hermit/mapped_hermit = allocate(
+		/mob/living/carbon/human/npc/ruin/hermit,
 		run_loc_floor_bottom_left,
 	)
 	mapped_hermit.faction = list("saloon", "[REF(mapped_hermit)]")

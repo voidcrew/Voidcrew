@@ -288,7 +288,7 @@
 	var/turf/start = locate(run_loc_floor_bottom_left.x, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
 	var/turf/door_turf = locate(run_loc_floor_top_right.x, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
 	allocate(/obj/machinery/door/airlock, door_turf)
-	var/mob/living/basic/ambient_npc/mechanic = allocate(/mob/living/basic/ambient_npc, start)
+	var/mob/living/carbon/human/npc/ambient_npc/mechanic = allocate(/mob/living/carbon/human/npc/ambient_npc, start)
 	mechanic.AddComponent(/datum/component/outpost_ambient_worker, list(
 		/datum/outpost_ambient_work/weld = 3,
 		/datum/outpost_ambient_work/wrench = 2,

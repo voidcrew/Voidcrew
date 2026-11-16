@@ -35,11 +35,11 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	trouble_fund(home, 0)
 	// One by the bookcases in the yard's corner, one in front of the office windows
-	var/mob/living/basic/outpost_prisoner/corner = trouble_prisoner(prison, prison_spot(home, 3, 8))
-	var/mob/living/basic/outpost_prisoner/watcher = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/corner = trouble_prisoner(prison, prison_spot(home, 3, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/watcher = trouble_prisoner(prison, prison_spot(home, 8, 8))
 
 	// A hulk in the office behind the wall: outside the cell block and out of their sight, so nobody runs.
-	var/mob/living/basic/outpost_experiment/hulk/hulk = allocate(/mob/living/basic/outpost_experiment/hulk, prison_spot(home, 3, 3), prison, null)
+	var/mob/living/carbon/human/hulk = experiment_form_body(prison, prison_spot(home, 3, 3), "hulk")
 	TEST_ASSERT(!prison.in_cell_block(hulk), "The office counts as the cell block")
 	TEST_ASSERT(!can_see(corner, hulk, 7) && !can_see(watcher, hulk, 7), "The test spots in the yard can see the office corner")
 	prison.experiment_creature_appeared(hulk, "hulk")
@@ -54,7 +54,7 @@
 	prison.creature_panic_tick(1)
 	TEST_ASSERT(watcher.is_panicking(), "A creature in sight within range did not frighten a prisoner")
 	TEST_ASSERT(istype(watcher.activity, /datum/prisoner_activity/creature_panic), "A frightened prisoner did not run ([watcher.activity?.type])")
-	TEST_ASSERT_EQUAL(watcher.speed, 1.3, "A running prisoner moves at [watcher.speed], not 1.3") // OUTPOST_PANIC_FLEE_SPEED
+	TEST_ASSERT_EQUAL(watcher.move_intent, MOVE_INTENT_RUN, "A frightened prisoner is not running")
 	if(!can_see(corner, hulk, 7))
 		TEST_ASSERT(!corner.is_panicking(), "A creature out of sight frightened a prisoner")
 
@@ -66,7 +66,7 @@
 	prison.creature_panic_tick(2)
 	TEST_ASSERT(!watcher.is_panicking(), "A prisoner was still frightened a minute after the creature went out of sight")
 	TEST_ASSERT(!istype(watcher.activity, /datum/prisoner_activity/creature_panic), "A calm prisoner kept running")
-	TEST_ASSERT_EQUAL(watcher.speed, 2, "A calm prisoner kept running at [watcher.speed]")
+	TEST_ASSERT_EQUAL(watcher.move_intent, MOVE_INTENT_WALK, "A calm prisoner kept running")
 	prison.calm_from_panic(corner)
 
 	// Loose in the cell block, it frightens everyone, however far off and out of sight.
@@ -121,7 +121,7 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	trouble_fund(home, 0)
 	var/turf/middle = prison_spot(home, 9, 8)
-	var/mob/living/basic/outpost_prisoner/runner = trouble_prisoner(prison, middle)
+	var/mob/living/carbon/human/npc/outpost_prisoner/runner = trouble_prisoner(prison, middle)
 	var/datum/outpost_prison_cell/own = runner.cell
 	TEST_ASSERT_NOTNULL(own, "The test prisoner has no cell")
 	var/obj/structure/chair/seat = own.chair()
@@ -130,7 +130,7 @@
 
 	// Across the yard from their cell: home is safe, and they run for their cell's chair.
 	var/far_x = own.door_turf.x < middle.x ? 15 : 3
-	var/mob/living/basic/outpost_experiment/hulk/hulk = allocate(/mob/living/basic/outpost_experiment/hulk, prison_spot(home, far_x, 8), prison, null)
+	var/mob/living/carbon/human/hulk = experiment_form_body(prison, prison_spot(home, far_x, 8), "hulk")
 	prison.experiment_creature_appeared(hulk, "hulk")
 	var/datum/prisoner_activity/creature_panic/panic = runner.activity
 	TEST_ASSERT(istype(panic), "A prisoner in the yard with a hulk loose in it did not run ([runner.activity?.type])")
@@ -188,17 +188,17 @@
 	TEST_ASSERT_NOTNULL(home, "The rioter test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	trouble_fund(home, 0)
-	var/mob/living/basic/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 10, 8))
 	set_moods(list(first, second), 20)
 
 	// Two fighters who roll to run: the fight is over, and they run like anyone.
 	prison.forced_creature_reaction = "flee"
 	TEST_ASSERT_NOTNULL(prison.start_fight(first, second), "The test fight did not start")
-	var/mob/living/basic/outpost_experiment/hulk/hulk = allocate(/mob/living/basic/outpost_experiment/hulk, prison_spot(home, 9, 10), prison, null)
+	var/mob/living/carbon/human/hulk = experiment_form_body(prison, prison_spot(home, 9, 10), "hulk")
 	prison.experiment_creature_appeared(hulk, "hulk")
 	TEST_ASSERT(!length(prison.fights), "Two fighters who ran from a hulk kept fighting")
-	for(var/mob/living/basic/outpost_prisoner/fighter as anything in list(first, second))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/fighter as anything in list(first, second))
 		TEST_ASSERT(fighter.trouble != "fight", "[fighter] is still fighting") // PRISONER_TROUBLE_FIGHT
 		TEST_ASSERT(istype(fighter.activity, /datum/prisoner_activity/creature_panic), "[fighter] did not run from the hulk ([fighter.activity?.type])")
 
@@ -225,7 +225,7 @@
 	TEST_ASSERT_NOTNULL(first.creature_retreat_spot, "A rioter who rolled to run did not run")
 	TEST_ASSERT(get_dist(first.creature_retreat_spot, hulk) > get_dist(first, hulk), "The rioter ran toward the hulk")
 	TEST_ASSERT(prison.in_cell_block(first.creature_retreat_spot), "The rioter ran out of the cell block")
-	TEST_ASSERT_EQUAL(first.speed, 1.3, "A running rioter moves at [first.speed], not 1.3") // OUTPOST_PANIC_FLEE_SPEED
+	TEST_ASSERT_EQUAL(first.move_intent, MOVE_INTENT_RUN, "A rioter running from the hulk is not running")
 
 	// The roll runs out, and the next one sends them at it, shiv and all.
 	first.creature_reaction_until = 0
@@ -261,8 +261,8 @@
 	TEST_ASSERT_NOTNULL(home, "The shelter test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	trouble_fund(home, 0)
-	var/mob/living/basic/outpost_prisoner/subject = trouble_prisoner(prison, prison_spot(home, 12, 8))
-	var/mob/living/basic/outpost_prisoner/hider = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/subject = trouble_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/hider = trouble_prisoner(prison, prison_spot(home, 8, 8))
 
 	// While the serum works, nothing waits for it: no protective custody, incidents and wing events
 	// can come, a riot can start, and the guards stay on duty.
@@ -298,7 +298,7 @@
 	door.bolt()
 	prison.refresh_reach()
 	TEST_ASSERT(hider.is_confined(), "The hider is not shut in their cell")
-	var/mob/living/basic/outpost_experiment/hulk/hulk = allocate(/mob/living/basic/outpost_experiment/hulk, prison_spot(home, 9, 9), prison, null)
+	var/mob/living/carbon/human/hulk = experiment_form_body(prison, prison_spot(home, 9, 9), "hulk")
 	prison.experiment_creature_appeared(hulk, "hulk")
 	TEST_ASSERT(hider.is_panicking(), "A hulk loose in the yard did not frighten a prisoner in their cell")
 	TEST_ASSERT(hider.sheltering_from_creature(), "A frightened prisoner bolted in their own cell is not sheltering")

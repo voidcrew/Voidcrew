@@ -52,6 +52,11 @@
 
 /// Most slag decals in the world at once; the oldest goes first
 #define PLASMA_SLAG_GLOBAL_CAP 150
+/// A no-flesh limb's pool: it grows in this many steps this far apart, crusts, then sets into slag
+#define PLASMA_DRY_POOL_STEPS 4
+#define PLASMA_DRY_POOL_STEP_TIME (0.1 SECONDS)
+#define PLASMA_DRY_POOL_COOL (1.2 SECONDS)
+#define PLASMA_DRY_POOL_SET (3.5 SECONDS)
 
 /// Per limb and facing, from the approved storyboard (melt_v4.py), in the body sprite's pixels from its top left:
 /// list(pool column standing, limb middle x lying, limb middle y lying, list(drops: list(release time cs, size, x, start row)))
@@ -108,8 +113,22 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	// The melt sound below is the only one: no tg dismember sound (see plasma_melt_in_progress())
 	melt.sound_effect = null
 	GLOB.plasma_melt_no_splatter = WEAKREF(victim)
+	// Hyperviolence (#512): a melt is dry. hv_sever_spray holds back the spray a lost limb throws and the reel
+	// a body gives (wire_seams.dm), and the stump is drawn seared, as a hot wire's is. TRAIT_HV_CLEAN_CUT
+	// isn't used: mid clean cut the wire's own apply_dismember() would take the limb instead of the melt.
+	var/old_sever_spray = victim.hv_sever_spray
+	victim.hv_sever_spray = 0
+	LAZYSET(victim.hv_stump_burnt, zone, TRUE)
 	melt.apply_dismember(limb, WOUND_BURN, FALSE, attack_direction)
 	GLOB.plasma_melt_no_splatter = null
+	if(!QDELETED(victim))
+		victim.hv_sever_spray = old_sever_spray
+		if(victim.get_bodypart(zone) == limb)
+			LAZYREMOVE(victim.hv_stump_burnt, zone)
+		else
+			// drop_limb() marked the stump fresh (wet); a seared stump never was
+			LAZYREMOVE(victim.hv_stump_torn_at, zone)
+			victim.hv_update_gore_overlays()
 	// tg leaves an ash pile from the burnt limb; the slag is the remains here
 	for(var/obj/effect/decal/cleanable/ash/pile in where)
 		if(!(pile in old_ash))
@@ -121,6 +140,9 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 		if(!QDELETED(thing) && thing.loc != victim)
 			dropped[thing] = may_drop[thing]
 	new /datum/plasma_melt(victim, zone, drawn, worn_look, shoes_look, dropped)
+	if(ishuman(victim))
+		// Hyperviolence (#512) cut the sleeve the moment the arm came off; it stays until the melt burns it
+		victim.hv_update_gore_overlays()
 	if(!TIMER_COOLDOWN_RUNNING(victim, COOLDOWN_PLASMA_MELT_SOUND))
 		TIMER_COOLDOWN_START(victim, COOLDOWN_PLASMA_MELT_SOUND, 0.5 SECONDS)
 		playsound(victim, 'voidcrew/modules/plasma_weapons/sound/plasma_melt.ogg', 60, TRUE)
@@ -136,21 +158,36 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	var/mob/living/carbon/victim = limb.owner
 	var/zone = limb.body_zone
 	var/turf/where = get_turf(victim)
+	// where the limb runs off, taken before it comes off: a lost leg drops the body
+	var/list/spot = plasma_melt_floor_spot(victim, zone)
+	var/pool_x = spot[1] + victim.pixel_x + victim.pixel_w
+	var/pool_y = spot[2] + victim.pixel_y + victim.pixel_z
 	var/list/old_ash = list()
 	for(var/obj/effect/decal/cleanable/ash/pile in where)
 		old_ash += pile
 	var/datum/wound/loss/melt = new
 	melt.sound_effect = null
 	GLOB.plasma_melt_no_splatter = WEAKREF(victim)
+	// Hyperviolence (#512), as in plasma_melt_limb(): no reel, spray or hit-stop, and a seared stump, not a wet one
+	var/old_sever_spray = victim.hv_sever_spray
+	victim.hv_sever_spray = 0
+	LAZYSET(victim.hv_stump_burnt, zone, TRUE)
 	melt.apply_dismember(limb, WOUND_BURN, FALSE, attack_direction)
 	GLOB.plasma_melt_no_splatter = null
+	if(!QDELETED(victim))
+		victim.hv_sever_spray = old_sever_spray
+		if(victim.get_bodypart(zone) == limb)
+			LAZYREMOVE(victim.hv_stump_burnt, zone)
+		else
+			LAZYREMOVE(victim.hv_stump_torn_at, zone)
+			victim.hv_update_gore_overlays()
 	for(var/obj/effect/decal/cleanable/ash/pile in where)
 		if(!(pile in old_ash))
 			qdel(pile)
 	if(QDELETED(victim) || victim.get_bodypart(zone) == limb)
 		return FALSE
-	plasma_slag_at(where)
-	do_sparks(3, FALSE, victim)
+	plasma_dry_pool(where, pool_x, pool_y)
+	new /obj/effect/temp_visual/plasma_dry_sparks(where)
 	if(!TIMER_COOLDOWN_RUNNING(victim, COOLDOWN_PLASMA_MELT_SOUND))
 		TIMER_COOLDOWN_START(victim, COOLDOWN_PLASMA_MELT_SOUND, 0.5 SECONDS)
 		playsound(victim, PLASMA_SOUND_METAL_MELT, 60, TRUE)
@@ -248,11 +285,10 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 		if(LAZYACCESS(victim.plasma_melts, zone) == src)
 			LAZYREMOVE(victim.plasma_melts, zone)
 		UnregisterSignal(victim, list(COMSIG_CARBON_POST_ATTACH_LIMB, COMSIG_QDELETING, COMSIG_MOVABLE_MOVED))
-		if(sleeve_burned && ishuman(victim) && !QDELETED(victim))
-			sleeve_burned = FALSE
-			var/mob/living/carbon/human/wearer = victim
-			wearer.update_worn_undersuit()
-			wearer.update_worn_oversuit()
+		// with the melt gone, #512 masks the arm like any other lost arm (or not at all, if it came back)
+		sleeve_burned = FALSE
+		if(ishuman(victim) && !QDELETED(victim))
+			victim.hv_update_gore_overlays()
 	victim = null
 	start_turf = null
 	for(var/obj/item/thing as anything in hidden_items)
@@ -442,6 +478,10 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 /// Hides an item tg dropped off the melting limb until it falls out of the melt. Only its look changes; anyone who
 /// picks it up or moves it gets it back at once.
 /datum/plasma_melt/proc/hide_item(obj/item/thing, kind)
+	// A human NPC's gear is locked to its body (human_npc_gear.dm) and is deleted the tick it lands on the floor.
+	// A look-alike that can't be touched falls out of the melt in its place and sinks into the slag.
+	if(HAS_TRAIT(thing, TRAIT_HUMAN_NPC_GEAR) && isturf(thing.loc))
+		thing = new /obj/item/plasma_melt_lost_gear(thing.loc, thing)
 	hidden_items[thing] = kind
 	thing.alpha = 0
 	RegisterSignals(thing, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING), PROC_REF(on_hidden_item_moved))
@@ -526,16 +566,25 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 		if(hidden_items[thing] != "landed" && (!kind || hidden_items[thing] == kind))
 			reveal_item(thing)
 
-/// Burns the jumpsuit and coat sleeves away at this missing arm (masked on the worn overlays, see plasma_mask_burned_sleeves).
-/// The sleeve mask leaves out every pixel over the chest: where the arm hangs across the torso (the near arm facing
-/// east or west) the cloth under it is the shirt, and cutting it would bare the chest in the shape of the lost arm.
+/// Burns the jumpsuit and coat sleeves away at this missing arm. Hyperviolence (#512) does the cutting, with the mask it
+/// uses for every lost arm (hv_mask_sleeves()); that mask leaves the chest's own pixels alone, so no chest is bared.
 /datum/plasma_melt/proc/burn_sleeve()
 	if(sleeve_burned || !ishuman(victim))
 		return
 	sleeve_burned = TRUE
 	var/mob/living/carbon/human/wearer = victim
-	wearer.update_worn_undersuit()
-	wearer.update_worn_oversuit()
+	wearer.hv_update_gore_overlays()
+
+// Hyperviolence (#512) cuts a lost arm's sleeve off the jumpsuit and suit at once (sleeve_mask.dm). A melting arm keeps
+// its sleeve until the sleeve burns (burn_sleeve()), so the melt plays on the arm as it was dressed. Under #512 this is the
+// only sleeve cut: #540's own jumpsuit and coat masks are left out here, and the redraws go through
+// hv_update_gore_overlays() so #512's record of what it last cut stays true.
+/mob/living/carbon/human/hv_sleeve_mask_zones()
+	. = ..()
+	for(var/zone in plasma_melts)
+		var/datum/plasma_melt/melt = plasma_melts[zone]
+		if(melt.is_arm() && !melt.sleeve_burned)
+			. -= zone
 
 /// Where the pool lies on the victim's turf: in front of the feet standing, under the limb's place lying
 /datum/plasma_melt/proc/find_pool_spot()
@@ -630,6 +679,11 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 
 /// Under the limb's place on the body as it lies or stands now, as offsets for the pool tile
 /datum/plasma_melt/proc/spot_now()
+	return plasma_melt_floor_spot(victim, zone)
+
+/// Where a melting `zone` of `victim` runs onto the floor, as it stands or lies now, as offsets for the pool tile: in
+/// front of the feet standing, under the limb's place lying (an arm out past it, so the torso doesn't cover the pool)
+/proc/plasma_melt_floor_spot(mob/living/carbon/victim, zone)
 	var/list/geometry = GLOB.plasma_melt_geometry[zone]?["[victim.dir]"]
 	if(!geometry)
 		return list(0, 0)
@@ -638,7 +692,8 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	var/u = geometry[2] - 15.5
 	var/v = 15.5 - geometry[3]
 	var/matrix/turn = victim.transform
-	return list(round(turn.a * u + turn.b * v + turn.c + 0.5), round(turn.d * u + turn.e * v + turn.f + 5.5 + plasma_melt_lying_side(turn, u, v) * lying_front()))
+	var/front = (zone == BODY_ZONE_R_ARM || zone == BODY_ZONE_L_ARM) ? PLASMA_MELT_POOL_FRONT_LYING : 0
+	return list(round(turn.a * u + turn.b * v + turn.c + 0.5), round(turn.d * u + turn.e * v + turn.f + 5.5 + plasma_melt_lying_side(turn, u, v) * front))
 
 /datum/plasma_melt/proc/make_pool()
 	if(!isopenturf(start_turf))
@@ -728,44 +783,6 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	slag.pixel_x = clamp(px, -16, 16)
 	slag.pixel_y = clamp(py, -16, 16)
 	return slag
-
-// ===== Sleeve =====
-
-/// A plasma-melted arm takes its sleeves with it: tg keeps the jumpsuit and coat sleeves on a missing arm, so mask
-/// them off the uniform and suit overlays the way tg masks gloves on a missing hand. Only arms that melted, and only
-/// until they come back.
-/mob/living/carbon/human/update_worn_undersuit(update_obscured = TRUE)
-	. = ..(update_obscured)
-	plasma_mask_burned_sleeves(UNIFORM_LAYER)
-
-/mob/living/carbon/human/update_worn_oversuit(update_obscured = TRUE)
-	. = ..(update_obscured)
-	plasma_mask_burned_sleeves(SUIT_LAYER)
-
-/// Cuts every burned sleeve out of the worn overlay at `layer`
-/mob/living/carbon/human/proc/plasma_mask_burned_sleeves(layer)
-	var/list/burned = list()
-	for(var/zone in plasma_melts)
-		var/datum/plasma_melt/melt = plasma_melts[zone]
-		if(melt.sleeve_burned)
-			burned += zone
-	if(!length(burned))
-		return
-	var/mutable_appearance/worn_overlay = overlays_standing[layer]
-	if(!istype(worn_overlay))
-		return
-	remove_overlay(layer)
-	var/static/atom/movable/sleeve_mask
-	if(isnull(sleeve_mask))
-		sleeve_mask = new(null)
-	for(var/zone in burned)
-		sleeve_mask.icon = PLASMA_MELT_ZONE_ICON(zone)
-		sleeve_mask.icon_state = "[zone]_sleeve_mask"
-		sleeve_mask.render_target = "*PlasmaSleeve [REF(src)] [zone] [layer]"
-		worn_overlay.add_overlay(sleeve_mask)
-		worn_overlay.filters += filter(type = "alpha", render_source = sleeve_mask.render_target, flags = MASK_INVERSE)
-	overlays_standing[layer] = worn_overlay
-	apply_overlay(layer)
 
 // ===== Effects =====
 
@@ -860,6 +877,48 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 	if(alpha > 0)
 		add_overlay(emissive_appearance(icon, mask_state, src, alpha = alpha))
 
+/// The pool of a limb with no flesh (plasma_melt_limb_dry()): the metal or bone runs out at once, crusts and sets into slag
+/proc/plasma_dry_pool(turf/open/where, px, py)
+	if(!isopenturf(where))
+		return null
+	var/obj/effect/plasma_melt_pool/pool = new(where)
+	pool.pixel_x = clamp(px, -16, 16)
+	pool.pixel_y = clamp(py, -16, 16)
+	for(var/step in 1 to PLASMA_DRY_POOL_STEPS)
+		var/grow_to = round(step * PLASMA_MELT_POOL_STEPS / PLASMA_DRY_POOL_STEPS)
+		addtimer(CALLBACK(pool, TYPE_PROC_REF(/obj/effect/plasma_melt_pool, grow), grow_to), (step - 1) * PLASMA_DRY_POOL_STEP_TIME)
+	addtimer(CALLBACK(pool, TYPE_PROC_REF(/obj/effect/plasma_melt_pool, start_cooling)), PLASMA_DRY_POOL_COOL)
+	addtimer(CALLBACK(pool, TYPE_PROC_REF(/obj/effect/plasma_melt_pool, set_slag)), PLASMA_DRY_POOL_SET)
+	return pool
+
+/// The sparks of a limb with no flesh melting off. tg's do_sparks() sparks drift for two seconds with their light on;
+/// these burst once where the limb was and go out. They still heat the floor as sparks do, so they can light a fire.
+/obj/effect/temp_visual/plasma_dry_sparks
+	icon = 'icons/effects/effects.dmi'
+	icon_state = "sparks"
+	layer = ABOVE_MOB_LAYER
+	duration = 0.7 SECONDS
+	light_system = OVERLAY_LIGHT
+	light_range = 1.5
+	light_power = 0.8
+	light_color = LIGHT_COLOR_FIRE
+	light_on = TRUE
+
+/obj/effect/temp_visual/plasma_dry_sparks/Initialize(mapload)
+	. = ..()
+	flick(icon_state, src)
+	playsound(src, SFX_SPARKS, 100, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+	var/turf/open/where = loc
+	if(isopenturf(where))
+		where.hotspot_expose(1000, 100)
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, set_light_power), 0.4), 0.2 SECONDS)
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, set_light_on), FALSE), 0.4 SECONDS)
+
+/// The pool sets into a lasting slag decal where it lies
+/obj/effect/plasma_melt_pool/proc/set_slag()
+	plasma_slag_at(get_turf(src), pixel_x, pixel_y)
+	qdel(src)
+
 /// Light at the melting limb
 /obj/effect/plasma_melt_light
 	anchored = TRUE
@@ -918,3 +977,30 @@ GLOBAL_DATUM(plasma_melt_no_splatter, /datum/weakref)
 #undef PLASMA_MELT_DROP_TILE
 #undef PLASMA_MELT_GLIDE_WAIT
 #undef PLASMA_SLAG_GLOBAL_CAP
+#undef PLASMA_DRY_POOL_STEPS
+#undef PLASMA_DRY_POOL_STEP_TIME
+#undef PLASMA_DRY_POOL_COOL
+#undef PLASMA_DRY_POOL_SET
+
+/// The look of a human NPC's locked gear (human_npc_gear.dm) falling out of a melt. It can't be clicked, picked up or
+/// moved, and sinks into the slag a moment after it lands, so the gear is never loot.
+/obj/item/plasma_melt_lost_gear
+	item_flags = ABSTRACT
+	anchored = TRUE
+	move_resist = INFINITY
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
+
+/obj/item/plasma_melt_lost_gear/Initialize(mapload, obj/item/gear)
+	. = ..()
+	if(gear)
+		appearance = gear.appearance
+		base_pixel_x = gear.base_pixel_x
+		base_pixel_y = gear.base_pixel_y
+		base_pixel_z = gear.base_pixel_z
+		icon_angle = gear.icon_angle
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	addtimer(CALLBACK(src, PROC_REF(sink)), 2.6 SECONDS)
+
+/obj/item/plasma_melt_lost_gear/proc/sink()
+	animate(src, alpha = 0, time = 0.6 SECONDS, flags = ANIMATION_PARALLEL)
+	QDEL_IN(src, 0.6 SECONDS)

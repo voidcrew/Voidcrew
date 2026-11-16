@@ -7,6 +7,14 @@
 		if(istype(thing, type))
 			.++
 
+/// How many sleeve masks (Hyperviolence's or any other) cut `overlay`
+/proc/voidcrew_plasma_sleeve_filters(mutable_appearance/overlay)
+	. = 0
+	for(var/i in 1 to length(overlay?.filters))
+		var/sleeve_filter = overlay.filters[i]
+		if(findtext("[sleeve_filter:render_source]", "sleeve"))
+			.++
+
 /// Whether `victim` draws any overlay from the melt icon
 /proc/voidcrew_plasma_melt_drawn(mob/living/carbon/victim)
 	for(var/mutable_appearance/overlay as anything in victim.overlays)
@@ -129,36 +137,37 @@
 		if(istype(thing, /obj/effect/decal/cleanable) || istype(thing, /obj/effect/plasma_melt_pool) || istype(thing, /obj/effect/plasma_melt_light) || istype(thing, /obj/effect/temp_visual))
 			qdel(thing)
 
-/// A melted arm burns its jumpsuit sleeve away; a melted leg doesn't touch the uniform. Putting the arm back
-/// brings the sleeve back and takes the stump off the body.
+/// A melted arm burns its jumpsuit and coat sleeves away once it runs, cut by Hyperviolence's (#512) lost-limb mask and
+/// nothing else; a melted leg burns no sleeve. Putting the arm back brings the sleeves back and takes the stump off.
 /datum/unit_test/voidcrew_plasma_melt_sleeve
 
 /datum/unit_test/voidcrew_plasma_melt_sleeve/Run()
 	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent)
 	victim.equipOutfit(/datum/outfit/job/assistant/consistent)
-	var/mutable_appearance/uniform = victim.overlays_standing[UNIFORM_LAYER]
-	TEST_ASSERT_NOTNULL(uniform, "The test body has no jumpsuit drawn")
-	var/filters_before = length(uniform.filters)
+	victim.equip_to_slot_or_del(new /obj/item/clothing/suit/costume/irs(victim), ITEM_SLOT_OCLOTHING)
+	TEST_ASSERT_NOTNULL(victim.overlays_standing[UNIFORM_LAYER], "The test body has no jumpsuit drawn")
+	TEST_ASSERT_NOTNULL(victim.overlays_standing[SUIT_LAYER], "The test body has no coat drawn")
+
+	TEST_ASSERT(plasma_melt_limb(victim.get_bodypart(BODY_ZONE_R_ARM), SOUTH), "The arm did not melt off")
+	var/datum/plasma_melt/arm_melt = victim.plasma_melts[BODY_ZONE_R_ARM]
+	TEST_ASSERT_NOTNULL(arm_melt, "The melted arm has no melt on the body")
+	TEST_ASSERT(!(BODY_ZONE_R_ARM in victim.hv_sleeve_mask_zones()), "The sleeves burned before the arm started melting")
+	TEST_ASSERT_EQUAL(voidcrew_plasma_sleeve_filters(victim.overlays_standing[UNIFORM_LAYER]), 0, "The jumpsuit sleeve was cut before the arm started melting")
+	TEST_ASSERT_EQUAL(voidcrew_plasma_sleeve_filters(victim.overlays_standing[SUIT_LAYER]), 0, "The coat sleeve was cut before the arm started melting")
+	arm_melt.pose_melt()
+	TEST_ASSERT(arm_melt.sleeve_burned, "The melting arm did not burn its sleeves")
+	TEST_ASSERT(BODY_ZONE_R_ARM in victim.hv_sleeve_mask_zones(), "The burned sleeves are not masked")
+	TEST_ASSERT_EQUAL(voidcrew_plasma_sleeve_filters(victim.overlays_standing[UNIFORM_LAYER]), 1, "The jumpsuit sleeve is not cut by exactly one mask")
+	TEST_ASSERT_EQUAL(voidcrew_plasma_sleeve_filters(victim.overlays_standing[SUIT_LAYER]), 1, "The coat sleeve is not cut by exactly one mask")
+	victim.update_worn_undersuit()
+	victim.update_worn_oversuit()
+	TEST_ASSERT_EQUAL(voidcrew_plasma_sleeve_filters(victim.overlays_standing[UNIFORM_LAYER]), 1, "Redrawing the jumpsuit lost or doubled the sleeve mask")
+	TEST_ASSERT_EQUAL(voidcrew_plasma_sleeve_filters(victim.overlays_standing[SUIT_LAYER]), 1, "Redrawing the coat lost or doubled the sleeve mask")
 
 	TEST_ASSERT(plasma_melt_limb(victim.get_bodypart(BODY_ZONE_L_LEG), SOUTH), "The leg did not melt off")
 	var/datum/plasma_melt/leg_melt = victim.plasma_melts[BODY_ZONE_L_LEG]
 	leg_melt.pose_melt()
 	TEST_ASSERT(!leg_melt.sleeve_burned, "A melted leg burned a sleeve")
-	uniform = victim.overlays_standing[UNIFORM_LAYER]
-	TEST_ASSERT_EQUAL(length(uniform.filters), filters_before, "A melted leg masked the uniform")
-
-	TEST_ASSERT(plasma_melt_limb(victim.get_bodypart(BODY_ZONE_R_ARM), SOUTH), "The arm did not melt off")
-	var/datum/plasma_melt/arm_melt = victim.plasma_melts[BODY_ZONE_R_ARM]
-	TEST_ASSERT_NOTNULL(arm_melt, "The melted arm has no melt on the body")
-	uniform = victim.overlays_standing[UNIFORM_LAYER]
-	TEST_ASSERT_EQUAL(length(uniform.filters), filters_before, "The sleeve burned before the arm started melting")
-	arm_melt.pose_melt()
-	TEST_ASSERT(arm_melt.sleeve_burned, "The melting arm did not burn its sleeve")
-	uniform = victim.overlays_standing[UNIFORM_LAYER]
-	TEST_ASSERT_EQUAL(length(uniform.filters), filters_before + 1, "The burned sleeve is not masked off the uniform")
-	victim.update_worn_undersuit()
-	uniform = victim.overlays_standing[UNIFORM_LAYER]
-	TEST_ASSERT_EQUAL(length(uniform.filters), filters_before + 1, "Redrawing the jumpsuit lost or doubled the sleeve mask")
 
 	arm_melt.pose_stump("stump", FALSE)
 	TEST_ASSERT(length(arm_melt.shown), "The cooled stump is not drawn")
@@ -166,8 +175,7 @@
 	TEST_ASSERT_NOTNULL(victim.get_bodypart(BODY_ZONE_R_ARM), "The arm did not regrow")
 	TEST_ASSERT(QDELETED(arm_melt), "The arm's melt outlived the regrown arm")
 	TEST_ASSERT_NULL(LAZYACCESS(victim.plasma_melts, BODY_ZONE_R_ARM), "The body still tracks a melt on the regrown arm")
-	uniform = victim.overlays_standing[UNIFORM_LAYER]
-	TEST_ASSERT_EQUAL(length(uniform.filters), filters_before, "The sleeve mask stayed after the arm came back")
+	TEST_ASSERT(!(BODY_ZONE_R_ARM in victim.hv_sleeve_mask_zones()), "The sleeve mask stayed after the arm came back")
 
 	victim.regenerate_limb(BODY_ZONE_L_LEG)
 	TEST_ASSERT(QDELETED(leg_melt), "The leg's melt outlived the regrown leg")
@@ -251,6 +259,28 @@
 		if(istype(thing, /obj/effect/decal/cleanable) || istype(thing, /obj/effect/plasma_melt_pool) || istype(thing, /obj/effect/plasma_melt_light) || istype(thing, /obj/effect/temp_visual))
 			qdel(thing)
 
+/// Hyperviolence (#512): a melted limb throws no blood, and its stump is seared shut, never wet
+/datum/unit_test/voidcrew_plasma_melt_dry
+
+/datum/unit_test/voidcrew_plasma_melt_dry/Run()
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent)
+	var/turf/where = get_turf(victim)
+	TEST_ASSERT(plasma_melt_limb(victim.get_bodypart(BODY_ZONE_L_ARM), EAST), "The arm did not melt off")
+	var/blood = 0
+	for(var/turf/near in range(3, where))
+		blood += voidcrew_plasma_melt_count(near, /obj/effect/decal/cleanable/blood)
+	TEST_ASSERT_EQUAL(blood, 0, "The melt threw blood")
+	TEST_ASSERT(LAZYACCESS(victim.hv_stump_burnt, BODY_ZONE_L_ARM), "The melted arm's stump isn't seared")
+	TEST_ASSERT(!victim.hv_stump_is_fresh(BODY_ZONE_L_ARM), "The melted arm's stump is wet")
+	TEST_ASSERT_NULL(victim.hv_sever_spray, "The melt left the body's sever spray held back")
+
+	for(var/zone in victim.plasma_melts)
+		qdel(victim.plasma_melts[zone])
+	for(var/turf/near in range(3, where))
+		for(var/obj/effect/thing in near)
+			if(istype(thing, /obj/effect/decal/cleanable) || istype(thing, /obj/effect/plasma_melt_pool) || istype(thing, /obj/effect/plasma_melt_light))
+				qdel(thing)
+
 /// A burnt sleeve never bares the chest: the arm sleeve masks leave out every pixel the chest draws, in every facing
 /datum/unit_test/voidcrew_plasma_melt_sleeve_mask
 
@@ -282,7 +312,15 @@
 	var/turf/where = get_turf(victim)
 	TEST_ASSERT(plasma_melt_limb(robot_arm, SOUTH), "the robot arm did not melt off")
 	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_R_ARM), "the melted robot arm is still attached")
-	TEST_ASSERT(voidcrew_plasma_melt_count(where, /obj/effect/decal/cleanable/plasma_slag) > 0, "a melted robot arm left no slag")
+	var/obj/effect/plasma_melt_pool/pool = locate() in where
+	TEST_ASSERT_NOTNULL(pool, "a melted robot arm left no slag pool")
+	TEST_ASSERT(pool.pixel_y < 0, "a standing body's dry melt pool lies under the body, not in front of its feet")
+	var/pool_x = pool.pixel_x
+	var/pool_y = pool.pixel_y
+	pool.set_slag()
+	var/obj/effect/decal/cleanable/plasma_slag/slag = locate() in where
+	TEST_ASSERT_NOTNULL(slag, "the dry melt pool set into no slag")
+	TEST_ASSERT(slag.pixel_x == pool_x && slag.pixel_y == pool_y, "the slag set somewhere other than the pool")
 	TEST_ASSERT(!length(victim.plasma_melts), "a robot arm melted with the flesh look")
 	TEST_ASSERT(!voidcrew_plasma_melt_drawn(victim), "a robot arm's melt drew flesh on the body")
 	for(var/obj/effect/decal/cleanable/leftover in where)

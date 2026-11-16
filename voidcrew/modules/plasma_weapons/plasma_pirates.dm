@@ -1,170 +1,353 @@
-// Package: P6 NPCs. The plasma pistol and plasma rifle pirate loadouts.
+// Package: P6 NPCs. Plasma pirates on human NPC bodies (PR #512).
 //
-// Yellow- and red-zone pirate gunners can roll a Cinder, red-zone ones a Furnace, and the red-zone
-// Director Prime and Chief Auditor carry a Furnace. Their bolts are the real plasma bolts. Like every
-// pirate gun these are hand sprites: nothing drops. Pirates are basic mobs firing through
-// /datum/component/pirate_gun with no gun object, so a Furnace pirate keeps the rifle's heat on the component:
-// the same heat a shot, the same cooling where it stands, the same overheat shutdown. When its coils are white-hot
-// it vents and never times it, so it always gets the vent left to run out. Every block is a world.time deadline
-// checked when it next tries to fire, so nothing can leave it stuck.
+// Human pirates hold real guns chosen by their faction's outfit table (human_npc_outfits_pirates.dm) and
+// fire them through /datum/pirate_gun_handling (npc_ships/code/pirate_guns.dm). Here:
+// - yellow- and red-zone gunners of the six gun-carrying factions can be dressed with a Cinder, red-zone
+//   ones with a Furnace (weights as S12: Cinder 2, Furnace 1 next to the faction's own guns); green-zone
+//   pirates never carry plasma;
+// - the red-zone Director Prime and Chief Auditor carry a Furnace; both may drop the Old Furnace, but
+//   only when met in a red zone;
+// - a plasma gunner changes cartridges for real (load_cartridge(), a do_after), carrying a spare;
+// - a Furnace runs the real heat model in its hands, so the pirate minds it: once the coils are white-hot it
+//   starts a vent with the player's vent key (start_vent()) and never times it, so it always gets the vent left
+//   to run out: no gold, no fumbled gas. If it overheats anyway it waits out the lockout like a player, backing
+//   off from whoever is close. Both end on the gun's own deadlines, so nothing can leave it stuck.
+// NPC gear is locked to the body (human_npc_gear.dm), so none of this becomes loot.
 //
-// Both ways an NPC gets one are off while PLASMA_NPC_GUNS is 0; the heat code stays for when they come back.
+// No pirate is dressed with a plasma gun while PLASMA_NPC_GUNS is 0; the handling and heat code stays for when they come back.
 
-/datum/pirate_gun_loadout/plasma_pistol
-	energy_shots = 15
-	burst = 2
-	burst_delay = 0.5 SECONDS
-	cooldown = 6 SECONDS
-	reload_time = 3 SECONDS
-	reload_sound = 'voidcrew/modules/plasma_weapons/sound/flask_load.ogg'
-	reload_lines = list("Changing cartridges!", "Cartridge is dry!", "Cover me!")
+/// Coil heat at which a pirate vents its Furnace: white-hot, the last glow before an overheat
+#define PIRATE_PLASMA_VENT_HEAT PLASMA_HEAT_STEP_3
+/// Blackboard: TRUE while it waits out an overheat
+#define BB_PIRATE_PLASMA_COOLING "pirate_plasma_cooling"
+/// It backs away from a target closer than this while its coils cool
+#define PIRATE_PLASMA_BACK_OFF_RANGE 5
 
-/datum/pirate_gun_loadout/plasma_rifle
-	energy_shots = 12
-	burst = 1
-	cooldown = 4 SECONDS
-	reload_time = 4 SECONDS
-	reload_sound = 'voidcrew/modules/plasma_weapons/sound/flask_load.ogg'
-	reload_lines = list("Venting!", "She's cooking!", "New cartridge!")
+// ===== HANDLING =====
 
-/// The overmap zone `gunner` was spawned for, or null if it isn't known yet
-/proc/plasma_pirate_zone(mob/living/gunner)
-	var/datum/npc_spawn_context/context = gunner?.get_npc_spawn_context()
-	if(!context)
-		return null
-	return context.zone_type || SSovermap_zones?.get_zone_type_anywhere(context.source_turf)
+/// The Cinder: a pair every six seconds.
+/datum/pirate_gun_handling/plasma
+	gun_type = /obj/item/gun/energy/plasma_weapon
+	shots = 2
+	shot_gap = 0.5 SECONDS
+	volley_gap = 6 SECONDS
+	reload_lines = list("Changing cartridges!", "Cover me!")
+	dry_lines = list("Cartridge is dry!", "Out of plasma!")
 
-/// `weights` with the plasma loadouts added for a gunner from a yellow or red zone. Never changes `weights`.
-/proc/plasma_pirate_gun_weights(mob/living/gunner, list/weights)
-	if(!PLASMA_NPC_GUNS)
-		return weights
-	var/zone = plasma_pirate_zone(gunner)
-	if(zone != ZONE_YELLOW && zone != ZONE_RED)
-		return weights
-	var/list/plasma_weights = weights.Copy()
-	plasma_weights[/datum/pirate_gun_loadout/plasma_pistol] = 2
-	if(zone == ZONE_RED)
-		plasma_weights[/datum/pirate_gun_loadout/plasma_rifle] = 1
-	return plasma_weights
+/// The Furnace: one bolt every four seconds.
+/datum/pirate_gun_handling/plasma/rifle
+	gun_type = /obj/item/gun/energy/plasma_weapon/rifle
+	shots = 1
+	volley_gap = 4 SECONDS
 
-/// Hands a red-zone boss a Furnace in place of its stock shot. Returns the loadout, or null.
-/mob/living/basic/trooper/pirate/faction/boss/proc/arm_plasma_rifle()
-	if(!PLASMA_NPC_GUNS || plasma_pirate_zone(src) != ZONE_RED)
-		return null
-	. = pirate_crew_arm(src, /datum/pirate_gun_loadout/plasma_rifle)
-	if(!. || !l_hand)
+// ===== ARMING: cartridges and heat =====
+
+/// A plasma gun it holds, or null
+/proc/pirate_plasma_held_gun(mob/living/carbon/npc)
+	for(var/obj/item/gun/energy/plasma_weapon/gun in npc.held_items)
+		return gun
+	return null
+
+/// A spare cartridge it carries with at least a shot in it for `gun`, or null
+/proc/pirate_plasma_spare_cartridge(mob/living/carbon/npc, obj/item/gun/energy/plasma_weapon/gun)
+	var/obj/item/ammo_casing/energy/shot = length(gun.ammo_type) ? gun.ammo_type[gun.select] : null
+	var/needed = max(shot?.e_cost, 1)
+	for(var/obj/item/plasma_cartridge/cartridge in npc.get_all_contents_type(/obj/item/plasma_cartridge))
+		if(cartridge == gun.cartridge || cartridge.loc == gun || cartridge.stored < needed)
+			continue
+		if(npc.is_holding(cartridge) || human_npc_can_draw(npc, cartridge))
+			return cartridge
+	return null
+
+/// Says one of `lines`, if it can talk
+/proc/pirate_plasma_shout(mob/living/carbon/npc, list/lines)
+	if(length(lines) && human_npc_can_talk(npc))
+		INVOKE_ASYNC(npc, TYPE_PROC_REF(/atom/movable, say), pick(lines))
+
+// A plasma gunner minds its coils and changes its own cartridges before the base arming (draw a knife when dry)
+/datum/ai_planning_subtree/human_npc_arm/pirate_crew/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+	var/mob/living/carbon/npc = controller.pawn
+	var/obj/item/gun/energy/plasma_weapon/gun = pirate_plasma_held_gun(npc)
+	if(isnull(gun) || HAS_TRAIT(npc, TRAIT_HANDS_BLOCKED) || LAZYLEN(npc.do_afters))
+		controller.clear_blackboard_key(BB_PIRATE_PLASMA_COOLING)
+		return ..()
+	. = pirate_plasma_mind_heat(controller, npc, gun)
+	if(.)
 		return
-	// The Furnace takes both hands: whatever was in the other one goes
-	l_hand = null
-	if(use_dynamic_appearance)
-		apply_dynamic_human_appearance(src, mob_spawn_path = mob_spawner, r_hand = r_hand)
+	if(gun.can_shoot() || world.time < controller.blackboard[BB_HUMAN_NPC_ARMING_RETRY_AT])
+		return ..()
+	if(!gun.can_fire_heat())
+		// The second after a vent: it waits for its gun
+		controller.queue_behavior(/datum/ai_behavior/npc_combat_sense_hold)
+		return SUBTREE_RETURN_FINISH_PLANNING
+	if(isnull(pirate_plasma_spare_cartridge(npc, gun)))
+		return ..()
+	controller.queue_behavior(/datum/ai_behavior/pirate_plasma_reload)
+	if(prob(PIRATE_CREW_RELOAD_BARK_CHANCE))
+		var/datum/pirate_gun_handling/handling = pirate_gun_handling_for(gun)
+		pirate_plasma_shout(npc, handling.reload_lines)
+	return SUBTREE_RETURN_FINISH_PLANNING
 
-// A boss's zone can resolve after Initialize; the weapon ladder runs again when it does.
-/mob/living/basic/trooper/pirate/faction/boss/interdyne/apply_npc_weapon_ladder()
+/**
+ * A Furnace's heat, as its holder sees the coils glow. White-hot, it vents (and never times the vent). While the
+ * gun is locked from an overheat it backs off from whoever it is fighting, or holds, until the gun comes back.
+ * Returns SUBTREE_RETURN_FINISH_PLANNING while it is busy with its gun.
+ */
+/datum/ai_planning_subtree/human_npc_arm/pirate_crew/proc/pirate_plasma_mind_heat(datum/ai_controller/controller, mob/living/carbon/npc, obj/item/gun/energy/plasma_weapon/gun)
+	if(!gun.uses_heat)
+		return
+	// Ends a lockout or a vent that has run its time, and brings the heat up to now
+	var/can_fire = gun.can_fire_heat()
+	gun.cool_to_now()
+	if(!gun.is_shut_down())
+		controller.clear_blackboard_key(BB_PIRATE_PLASMA_COOLING)
+		if(can_fire && gun.barrel_heat >= PIRATE_PLASMA_VENT_HEAT)
+			controller.queue_behavior(/datum/ai_behavior/pirate_plasma_vent)
+			return SUBTREE_RETURN_FINISH_PLANNING
+		return
+	if(!controller.blackboard[BB_PIRATE_PLASMA_COOLING])
+		controller.set_blackboard_key(BB_PIRATE_PLASMA_COOLING, TRUE)
+		pirate_plasma_shout(npc, list("She's cooking!", "Too hot!", "Cover me, she's cooking!"))
+	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	if(!QDELETED(target) && get_dist(npc, target) < PIRATE_PLASMA_BACK_OFF_RANGE)
+		controller.queue_behavior(/datum/ai_behavior/step_away, BB_BASIC_MOB_CURRENT_TARGET)
+	else
+		controller.queue_behavior(/datum/ai_behavior/npc_combat_sense_hold)
+	return SUBTREE_RETURN_FINISH_PLANNING
+
+/// A player's vent: the vent key on the gun in the active hand (start_vent(), plasma_heat.dm). It never taps.
+/datum/ai_behavior/pirate_plasma_vent
+	action_cooldown = 0.5 SECONDS
+
+/datum/ai_behavior/pirate_plasma_vent/perform(seconds_per_tick, datum/ai_controller/controller)
+	var/mob/living/carbon/npc = controller.pawn
+	var/obj/item/gun/energy/plasma_weapon/gun = pirate_plasma_held_gun(npc)
+	if(isnull(gun) || !human_npc_ready_item(npc, gun))
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+	if(!gun.start_vent(npc))
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+	pirate_plasma_shout(npc, list("Venting!"))
+	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+
+/**
+ * A player's cartridge change, one step per action: take the spare in the free hand, click the gun with it
+ * (load_cartridge(): a do_after, and the spent cartridge comes out). Fails, and the base arming draws a knife, if
+ * it has no spare or no hand free.
+ */
+/datum/ai_behavior/pirate_plasma_reload
+	action_cooldown = 0.8 SECONDS
+	/// Gives up after this long, so a cartridge that won't go in can't hold the NPC forever
+	var/give_up_after = 8 SECONDS
+
+/datum/ai_behavior/pirate_plasma_reload/setup(datum/ai_controller/controller)
 	. = ..()
-	if(.)
-		arm_plasma_rifle()
+	var/mob/living/carbon/npc = controller.pawn
+	var/obj/item/gun/energy/plasma_weapon/gun = pirate_plasma_held_gun(npc)
+	if(isnull(gun))
+		return FALSE
+	controller.set_blackboard_key(BB_HUMAN_NPC_RELOAD_UNTIL, world.time + give_up_after)
+	npc.visible_message(span_notice("[npc] changes the cartridge in [gun]."))
 
-/mob/living/basic/trooper/pirate/faction/boss/irs/apply_npc_weapon_ladder()
+/datum/ai_behavior/pirate_plasma_reload/perform(seconds_per_tick, datum/ai_controller/controller)
+	var/mob/living/carbon/npc = controller.pawn
+	var/obj/item/gun/energy/plasma_weapon/gun = pirate_plasma_held_gun(npc)
+	if(isnull(gun) || world.time >= controller.blackboard[BB_HUMAN_NPC_RELOAD_UNTIL])
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+	if(gun.can_shoot())
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
+	var/obj/item/plasma_cartridge/cartridge = pirate_plasma_spare_cartridge(npc, gun)
+	if(isnull(cartridge))
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+	if(!npc.is_holding(cartridge))
+		if(!human_npc_take_in_hand(npc, cartridge))
+			return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+		return AI_BEHAVIOR_DELAY
+	if(!human_npc_ready_item(npc, cartridge))
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+	controller.ai_interact(target = gun, combat_mode = FALSE)
+	return AI_BEHAVIOR_DELAY
+
+/datum/ai_behavior/pirate_plasma_reload/finish_action(datum/ai_controller/controller, succeeded)
 	. = ..()
-	if(.)
-		arm_plasma_rifle()
+	// A change that got nowhere isn't tried again straight away; the NPC fights with what it has.
+	controller.set_blackboard_key(BB_HUMAN_NPC_ARMING_RETRY_AT, succeeded ? 0 : world.time + 10 SECONDS)
 
-// The Old Furnace is a red-zone prize: a boss met anywhere else loses the roll before its loot is set
+// ===== DRESSING =====
+
+/datum/human_npc_outfit_table/pirate
+	/// This faction's Cinder gunner, for yellow- and red-zone crews. Null: the faction carries no plasma.
+	var/plasma_pistol_outfit
+	/// This faction's Furnace gunner, for red-zone crews
+	var/plasma_rifle_outfit
+	/// What its boss wears in a red zone, if that differs. Null: `boss` everywhere.
+	var/list/red_boss
+	/// Choice lists with the plasma gunners added, by "list ref-zone"; built on first use
+	var/list/plasma_choices
+
+// Yellow and red: a regular gunner may be a plasma gunner, and a red-zone boss may carry its Furnace.
+/datum/human_npc_outfit_table/pirate/outfits_for(mob/living/carbon/human/npc/npc, zone)
+	. = ..()
+	if(!PLASMA_NPC_GUNS || (zone != ZONE_YELLOW && zone != ZONE_RED))
+		return
+	var/rank = npc?.npc_rank || HUMAN_NPC_RANK_REGULAR
+	if(rank >= HUMAN_NPC_RANK_BOSS)
+		if(zone == ZONE_RED && length(red_boss))
+			return red_boss
+		return
+	if(rank >= HUMAN_NPC_RANK_ELITE || !plasma_pistol_outfit)
+		return
+	var/list/choices = .
+	// A crew's duelists stay duelists
+	if(!length(choices) || choices == melee)
+		return
+	return plasma_gunner_choices(choices, zone)
+
+/// `choices` with this faction's plasma gunners added for `zone`. Never changes `choices`.
+/datum/human_npc_outfit_table/pirate/proc/plasma_gunner_choices(list/choices, zone)
+	var/key = "[REF(choices)]-[zone]"
+	var/list/cached = LAZYACCESS(plasma_choices, key)
+	if(cached)
+		return cached
+	cached = choices.Copy()
+	cached[plasma_pistol_outfit] = 2
+	if(zone == ZONE_RED && plasma_rifle_outfit)
+		cached[plasma_rifle_outfit] = 1
+	LAZYSET(plasma_choices, key, cached)
+	return cached
+
+/datum/human_npc_outfit_table/pirate/silverscale
+	plasma_pistol_outfit = /datum/outfit/piratecorpse/faction/silverscale/ranged/cinder
+	plasma_rifle_outfit = /datum/outfit/piratecorpse/faction/silverscale/ranged/furnace
+
+/datum/human_npc_outfit_table/pirate/skeleton
+	plasma_pistol_outfit = /datum/outfit/piratecorpse/faction/skeleton/ranged/cinder
+	plasma_rifle_outfit = /datum/outfit/piratecorpse/faction/skeleton/ranged/furnace
+
+/datum/human_npc_outfit_table/pirate/grey
+	plasma_pistol_outfit = /datum/outfit/piratecorpse/faction/grey/ranged/cinder
+	plasma_rifle_outfit = /datum/outfit/piratecorpse/faction/grey/ranged/furnace
+
+/datum/human_npc_outfit_table/pirate/lustrous
+	plasma_pistol_outfit = /datum/outfit/piratecorpse/faction/lustrous/ranged/cinder
+	plasma_rifle_outfit = /datum/outfit/piratecorpse/faction/lustrous/ranged/furnace
+
+/datum/human_npc_outfit_table/pirate/interdyne
+	plasma_pistol_outfit = /datum/outfit/piratecorpse/faction/interdyne/ranged/cinder
+	plasma_rifle_outfit = /datum/outfit/piratecorpse/faction/interdyne/ranged/furnace
+	red_boss = list(/datum/outfit/piratecorpse/faction/interdyne/prime/armed/furnace = 1)
+
+/datum/human_npc_outfit_table/pirate/irs
+	plasma_pistol_outfit = /datum/outfit/piratecorpse/faction/irs/ranged/cinder
+	plasma_rifle_outfit = /datum/outfit/piratecorpse/faction/irs/ranged/furnace
+	red_boss = list(/datum/outfit/piratecorpse/faction/irs/chief/armed/furnace = 1)
+
+// The gunners: the gun, a spare cartridge, and a knife for when the plasma runs out.
+
+/datum/outfit/piratecorpse/faction/silverscale/ranged/cinder
+	name = "Human NPC: Silverscale Marksman (Cinder)"
+	r_hand = /obj/item/gun/energy/plasma_weapon/pistol
+	l_pocket = /obj/item/plasma_cartridge
+	r_pocket = /obj/item/knife/combat/survival
+
+/datum/outfit/piratecorpse/faction/silverscale/ranged/furnace
+	name = "Human NPC: Silverscale Marksman (Furnace)"
+	r_hand = /obj/item/gun/energy/plasma_weapon/rifle
+	l_pocket = /obj/item/plasma_cartridge
+	r_pocket = /obj/item/knife/combat/survival
+
+/datum/outfit/piratecorpse/faction/skeleton/ranged/cinder
+	name = "Human NPC: Skeleton Gunner (Cinder)"
+	r_hand = /obj/item/gun/energy/plasma_weapon/pistol
+	l_pocket = /obj/item/plasma_cartridge
+	r_pocket = /obj/item/knife/combat/survival
+
+/datum/outfit/piratecorpse/faction/skeleton/ranged/furnace
+	name = "Human NPC: Skeleton Gunner (Furnace)"
+	r_hand = /obj/item/gun/energy/plasma_weapon/rifle
+	l_pocket = /obj/item/plasma_cartridge
+	r_pocket = /obj/item/knife/combat/survival
+
+/datum/outfit/piratecorpse/faction/grey/ranged/cinder
+	name = "Human NPC: Grey Tider Gunner (Cinder)"
+	r_hand = /obj/item/gun/energy/plasma_weapon/pistol
+	l_pocket = /obj/item/plasma_cartridge
+	r_pocket = /obj/item/knife/combat/survival
+
+/datum/outfit/piratecorpse/faction/grey/ranged/furnace
+	name = "Human NPC: Grey Tider Gunner (Furnace)"
+	r_hand = /obj/item/gun/energy/plasma_weapon/rifle
+	l_pocket = /obj/item/plasma_cartridge
+	r_pocket = /obj/item/knife/combat/survival
+
+/datum/outfit/piratecorpse/faction/lustrous/ranged/cinder
+	name = "Human NPC: Lustrous Coruscant (Cinder)"
+	r_hand = /obj/item/gun/energy/plasma_weapon/pistol
+	l_pocket = /obj/item/plasma_cartridge
+	r_pocket = /obj/item/knife/combat/survival
+
+/datum/outfit/piratecorpse/faction/lustrous/ranged/furnace
+	name = "Human NPC: Lustrous Coruscant (Furnace)"
+	r_hand = /obj/item/gun/energy/plasma_weapon/rifle
+	l_pocket = /obj/item/plasma_cartridge
+	r_pocket = /obj/item/knife/combat/survival
+
+/datum/outfit/piratecorpse/faction/interdyne/ranged/cinder
+	name = "Human NPC: Interdyne Pharmacist (Cinder)"
+	r_hand = /obj/item/gun/energy/plasma_weapon/pistol
+	l_pocket = /obj/item/plasma_cartridge
+	r_pocket = /obj/item/knife/combat/survival
+
+/datum/outfit/piratecorpse/faction/interdyne/ranged/furnace
+	name = "Human NPC: Interdyne Pharmacist (Furnace)"
+	r_hand = /obj/item/gun/energy/plasma_weapon/rifle
+	l_pocket = /obj/item/plasma_cartridge
+	r_pocket = /obj/item/knife/combat/survival
+
+/datum/outfit/piratecorpse/faction/irs/ranged/cinder
+	name = "Human NPC: IRS Agent (Cinder)"
+	r_hand = /obj/item/gun/energy/plasma_weapon/pistol
+	l_pocket = /obj/item/plasma_cartridge
+	r_pocket = /obj/item/knife/combat/survival
+
+/datum/outfit/piratecorpse/faction/irs/ranged/furnace
+	name = "Human NPC: IRS Agent (Furnace)"
+	r_hand = /obj/item/gun/energy/plasma_weapon/rifle
+	l_pocket = /obj/item/plasma_cartridge
+	r_pocket = /obj/item/knife/combat/survival
+
+// The red-zone bosses: a Furnace in place of the laser, the spare cartridge on the belt.
+
+/datum/outfit/piratecorpse/faction/interdyne/prime/armed/furnace
+	name = "Human NPC: Interdyne Director Prime (Furnace)"
+	r_hand = /obj/item/gun/energy/plasma_weapon/rifle
+	belt = /obj/item/plasma_cartridge
+
+/datum/outfit/piratecorpse/faction/irs/chief/armed/furnace
+	name = "Human NPC: IRS Chief Auditor (Furnace)"
+	r_hand = /obj/item/gun/energy/plasma_weapon/rifle
+	belt = /obj/item/plasma_cartridge
+
+// ===== THE OLD FURNACE =====
+
+/mob/living/carbon/human/npc/faction_pirate/interdyne/boss
+	rare_loot_pool = list(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace)
+
+/mob/living/carbon/human/npc/faction_pirate/irs/boss
+	rare_loot_pool = list(/obj/item/gun/energy/plasma_weapon/rifle/old_furnace)
+
+// The Old Furnace is a red-zone prize: a boss met anywhere else never drops it
+/mob/living/carbon/human/npc/faction_pirate/npc_roll_death_loot()
+	. = ..()
+	if(npc_home_zone() != ZONE_RED)
+		var/list/rolled = .
+		rolled -= /obj/item/gun/energy/plasma_weapon/rifle/old_furnace
+
+// The same for the legacy basic-mob bosses (faction_pirate_bosses.dm)
 /mob/living/basic/trooper/pirate/faction/boss/initialize_weapon_loot(zone)
 	if(!weapon_loot_initialized && zone != ZONE_RED && rolled_rare_loot)
 		rolled_rare_loot -= /obj/item/gun/energy/plasma_weapon/rifle/old_furnace
 	return ..()
 
-// A Furnace pirate vents its rifle as it changes cartridges
-/datum/component/pirate_gun/reload_effects()
-	. = ..()
-	if(!istype(loadout, /datum/pirate_gun_loadout/plasma_rifle))
-		return
-	var/mob/living/owner = parent
-	if(QDELETED(owner) || owner.stat != CONSCIOUS)
-		return
-	plasma_vent_puff(get_turf(owner))
-
-// A plasma pirate's shots carry as far as a player's (plasma_weapons_far_sound()), and a Furnace's heat up
-/datum/component/pirate_gun/shoot_once(fire_serial)
-	. = ..()
-	if(!.)
-		return
-	plasma_heat_shot()
-	var/obj/item/gun/energy/plasma_weapon/gun_path = loadout.gun_type
-	if(ispath(gun_path, /obj/item/gun/energy/plasma_weapon))
-		plasma_weapons_far_sound(parent, initial(gun_path.far_fire_sound))
-
-/datum/component/pirate_gun
-	/// Furnace heat, for a plasma rifle loadout
-	var/plasma_heat = 0
-	/// world.time cooling was last applied up to
-	var/plasma_heat_at = 0
-	/// world.time the running vent's sweep ends and its heat comes off, or 0
-	var/plasma_vent_done_at = 0
-	/// world.time until which the vent blocks firing
-	var/plasma_vent_until = 0
-	/// world.time until which an overheat blocks firing, or 0
-	var/plasma_shutdown_until = 0
-
-/// The Furnace's heat a shot, or 0 for a loadout that doesn't heat
-/datum/component/pirate_gun/proc/plasma_heat_per_shot()
-	var/obj/item/gun/energy/plasma_weapon/gun_path = loadout?.gun_type
-	if(!ispath(gun_path, /obj/item/gun/energy/plasma_weapon))
-		return 0
-	return initial(gun_path.uses_heat) ? initial(gun_path.heat_per_shot) : 0
-
-/// Brings the heat up to now: cooling, a finished vent's heat, a finished shutdown
-/datum/component/pirate_gun/proc/plasma_heat_update()
-	if(plasma_shutdown_until && world.time >= plasma_shutdown_until)
-		plasma_shutdown_until = 0
-		plasma_heat = PLASMA_OVERHEAT_END_HEAT
-		plasma_heat_at = world.time
-	if(plasma_vent_done_at && world.time >= plasma_vent_done_at)
-		plasma_vent_done_at = 0
-		plasma_heat = max(plasma_heat - PLASMA_VENT_COOL, 0)
-	var/elapsed = (world.time - plasma_heat_at) / (1 SECONDS)
-	plasma_heat_at = world.time
-	if(plasma_shutdown_until || elapsed <= 0 || plasma_heat <= 0)
-		return
-	plasma_heat = plasma_heat_cooled(plasma_heat, plasma_heat_cool_rate(get_turf(parent)), elapsed)
-
-/// TRUE while the Furnace's heat keeps it from firing. Starts a vent when the coils are white-hot.
-/datum/component/pirate_gun/proc/plasma_heat_blocks()
-	if(!plasma_heat_per_shot())
-		return FALSE
-	plasma_heat_update()
-	if(plasma_shutdown_until || world.time < plasma_vent_until)
-		return TRUE
-	if(plasma_heat < PLASMA_HEAT_STEP_3)
-		return FALSE
-	// An NPC vents and lets it run out: the heat comes off when the sweep ends, then it vents a moment longer
-	plasma_vent_done_at = world.time + PLASMA_VENT_SWEEP
-	plasma_vent_until = plasma_vent_done_at + PLASMA_VENT_NONE_LOCK
-	next_fire_at = max(next_fire_at, plasma_vent_until)
-	var/mob/living/owner = parent
-	playsound(owner, PLASMA_SOUND_VENT_GRACE, 50, TRUE)
-	plasma_vent_puff(get_turf(owner))
-	return TRUE
-
-/// A Furnace shot's heat, and the overheat if it brings the barrel to the max
-/datum/component/pirate_gun/proc/plasma_heat_shot()
-	var/per_shot = plasma_heat_per_shot()
-	if(!per_shot)
-		return
-	plasma_heat_update()
-	plasma_heat += per_shot
-	if(plasma_heat < PLASMA_HEAT_MAX)
-		return
-	plasma_heat = PLASMA_HEAT_MAX
-	plasma_shutdown_until = world.time + PLASMA_OVERHEAT_SHUTDOWN
-	next_fire_at = max(next_fire_at, plasma_shutdown_until)
-	var/mob/living/owner = parent
-	owner.visible_message(span_warning("[owner]'s rifle coils lock up!"))
-	playsound(owner, PLASMA_SOUND_FURNACE_OVERHEAT, 50, TRUE)
-
-/datum/component/pirate_gun/try_fire(atom/target)
-	if(plasma_heat_blocks())
-		return FALSE
-	return ..()
+#undef PIRATE_PLASMA_VENT_HEAT
+#undef BB_PIRATE_PLASMA_COOLING
+#undef PIRATE_PLASMA_BACK_OFF_RANGE

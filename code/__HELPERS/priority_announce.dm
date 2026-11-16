@@ -13,6 +13,11 @@
 #define CHAT_ALERT_DEFAULT_SPAN(string) ("<div class='chat_alert_default'>" + string + "</div>")
 #define CHAT_ALERT_COLORED_SPAN(color, string) ("<div class='chat_alert_" + color + "'>" + string + "</div>")
 
+// VOIDCREW EDIT ADDITION START: default sender and sound for announcements without their own (no Central Command in Voidcrew).
+#define VOIDCREW_ANNOUNCEMENT_SENDER "Sector Broadcast"
+#define VOIDCREW_ANNOUNCEMENT_SOUND 'sound/items/radio/radio_receive.ogg'
+// VOIDCREW EDIT ADDITION END
+
 #define ANNOUNCEMENT_COLORS list("default", "green", "blue", "pink", "yellow", "orange", "red", "purple")
 
 /**
@@ -52,7 +57,7 @@
 	var/list/announcement_strings = list()
 
 	if(!sound)
-		sound = SSstation.announcer.get_rand_alert_sound()
+		sound = VOIDCREW_ANNOUNCEMENT_SOUND // Voidcrew: a short radio click instead of tg's attention chime.
 	else if(SSstation.announcer.event_sounds[sound])
 		sound = SSstation.announcer.event_sounds[sound]
 
@@ -89,9 +94,9 @@
 
 	if(isnull(sender_override) && players == GLOB.player_list)
 		if(length(title) > 0)
-			GLOB.news_network.submit_article(title + "<br><br>" + text, "[command_name()]", NEWSCASTER_STATION_ANNOUNCEMENTS, null)
+			GLOB.news_network.submit_article(title + "<br><br>" + text, VOIDCREW_ANNOUNCEMENT_SENDER, NEWSCASTER_STATION_ANNOUNCEMENTS, null)
 		else
-			GLOB.news_network.submit_article(text, "[command_name()] Update", NEWSCASTER_STATION_ANNOUNCEMENTS, null)
+			GLOB.news_network.submit_article(text, VOIDCREW_ANNOUNCEMENT_SENDER, NEWSCASTER_STATION_ANNOUNCEMENTS, null)
 
 // VOIDCREW EDIT END
 /proc/print_command_report(text = "", title = null, announce=TRUE)
@@ -181,7 +186,7 @@
 /proc/generate_unique_announcement_header(title, sender_override)
 	var/list/returnable_strings = list()
 	if(isnull(sender_override))
-		returnable_strings += MAJOR_ANNOUNCEMENT_TITLE("[command_name()] Update")
+		returnable_strings += MAJOR_ANNOUNCEMENT_TITLE(VOIDCREW_ANNOUNCEMENT_SENDER) // VOIDCREW EDIT: was "[command_name()] Update"
 	else
 		returnable_strings += MAJOR_ANNOUNCEMENT_TITLE(sender_override)
 
@@ -213,3 +218,5 @@
 #undef MINOR_ANNOUNCEMENT_TEXT
 #undef CHAT_ALERT_DEFAULT_SPAN
 #undef CHAT_ALERT_COLORED_SPAN
+#undef VOIDCREW_ANNOUNCEMENT_SENDER // VOIDCREW EDIT ADDITION
+#undef VOIDCREW_ANNOUNCEMENT_SOUND // VOIDCREW EDIT ADDITION
