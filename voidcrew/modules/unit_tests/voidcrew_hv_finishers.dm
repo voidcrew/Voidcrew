@@ -280,6 +280,8 @@
 	TEST_ASSERT_NOTNULL(bar, "the finisher put up no bar")
 	TEST_ASSERT_EQUAL(bar.loc, get_turf(matriarch), "the bar isn't over the matriarch")
 	TEST_ASSERT_EQUAL(bar.owner, matriarch, "the bar follows the wrong mob")
+	TEST_ASSERT(bar.rest_z > 0, "the bar has no rest height over the matriarch ([bar.rest_z])")
+	TEST_ASSERT_EQUAL(bar.pixel_z, bar.rest_z, "the bar started below its rest height and would climb across the body ([bar.pixel_z] vs [bar.rest_z])")
 	// A map object, not a client image: whoever has the tile in view sees it
 	TEST_ASSERT(bar.invisibility <= bystander.see_invisible, "a bystander can't see the bar")
 	TEST_ASSERT(can_see(bystander, bar, world.view), "the bar is out of the bystander's sight")
@@ -299,3 +301,28 @@
 	again.interrupt(3) // HV_FINISHER_DAMAGED
 	TEST_ASSERT(second_bar.ending, "the bar outlived the interrupt")
 	TEST_ASSERT(findtext(second_bar.icon_state, "_fail"), "an interrupted bar doesn't look failed")
+
+/// A bar stands over a body a move has leaned off its tile, goes with the lean, and comes back when the lean ends.
+/datum/unit_test/voidcrew_hv_finisher/bar_follows_lean
+
+/datum/unit_test/voidcrew_hv_finisher/bar_follows_lean/Run()
+	var/mob/living/carbon/human/killer = allocate(/mob/living/carbon/human/consistent, spot(0, 0))
+	var/obj/effect/abstract/hv_exec_bar/bar = hv_exec_bar_start(killer, 2 SECONDS)
+	TEST_ASSERT_NOTNULL(bar, "Test fixture: no bar")
+	TEST_ASSERT(bar.rest_z > 0 && bar.pixel_z == bar.rest_z, "A bar over a standing body didn't start at its rest height ([bar.pixel_z] vs [bar.rest_z])")
+	hv_exec_bar_lean(killer, 12, -3)
+	TEST_ASSERT(bar.pixel_x == 12 && bar.pixel_y == -3, "A bar didn't go with its body's lean ([bar.pixel_x], [bar.pixel_y])")
+	TEST_ASSERT_EQUAL(bar.pixel_z, bar.rest_z, "A sideways lean moved the bar's height ([bar.pixel_z] vs [bar.rest_z])")
+	var/list/existing = list()
+	existing[killer] = list(bar)
+	killer.progressbars = existing
+	var/obj/effect/abstract/hv_exec_bar/second = hv_exec_bar_start(killer, 2 SECONDS)
+	killer.progressbars = null
+	TEST_ASSERT(second.pixel_x == 12 && second.pixel_y == -3, "A bar started over a leaning body stands over the tile ([second.pixel_x], [second.pixel_y])")
+	TEST_ASSERT_EQUAL(second.rest_z, bar.rest_z + 6, "A stacked bar didn't sit one bar higher ([second.rest_z] vs [bar.rest_z])") // HV_EXEC_BAR_HEIGHT
+	TEST_ASSERT_EQUAL(second.pixel_z, second.rest_z, "A stacked bar didn't start at its stacked height ([second.pixel_z] vs [second.rest_z])")
+	hv_exec_bar_lean(killer)
+	TEST_ASSERT(bar.pixel_x == 0 && bar.pixel_y == 0, "A bar stayed off the tile after the lean ended")
+	TEST_ASSERT_NULL(killer.hv_exec_lean, "The lean was kept on the body after it ended")
+	qdel(bar)
+	qdel(second)

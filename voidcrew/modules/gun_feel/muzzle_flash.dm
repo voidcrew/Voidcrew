@@ -118,3 +118,6 @@
 	if(ismovable(loc))
 		var/atom/movable/shooter = loc
 		shooter.vis_contents += src
+	// Made inside the shooter, where a Sandevistan's field sees nothing: its recording takes the turned plume here,
+	// once it is whole, so a replayed shot keeps it (ware_sandy_replay.dm).
+	sandy_replay_made(src)

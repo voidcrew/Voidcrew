@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 // The scissor: both blades out, head aimed, a swing at someone adjacent who is dying. The blades rise,
 // catch the light, then come down and close on the neck, one blade behind it and one in front, and #509's
 // decapitation takes the head. The bearer is drawn by the blade rig (mantis_rig.dm) from the raise to the
@@ -127,15 +130,49 @@
 
 // ---- The wind-up -----------------------------------------------------------
 
-/// Someone on the floor is turned so their head lies toward [bearer], the way tg turns someone dragged.
-/// Straight above or below them, the head goes to the left, where the blades are drawn to close on it.
+/// How long the bearer takes to haul a body round end for end, and in how many steps it is drawn.
+#define MANTIS_SCISSOR_HAUL_TIME (0.45 SECONDS)
+#define MANTIS_SCISSOR_HAUL_STEPS 6
+
+/**
+ * Someone on the floor is turned so their head lies toward [bearer], the way tg turns someone dragged.
+ * Straight above or below them, the head goes to the left, where the blades are drawn to close on it.
+ * Already lying that way, they stay as they are. Lying the other way, they are hauled round end for end:
+ * tg's own turn for that is a flip in one frame, so the picture swings them round about their middle instead,
+ * the head passing on the bearer's side (below, unless the bearer stands above them). tg's lying angle is set
+ * at once, so the body is really lying the new way the whole time; only the drawing takes the time.
+ */
 /proc/mantis_turn_head_toward(mob/living/victim, mob/living/bearer)
 	if(victim.body_position != LYING_DOWN || !victim.rotate_on_lying || !victim.lying_angle)
 		return
-	if(bearer.x == victim.x)
-		victim.set_lying_angle(LYING_ANGLE_WEST)
+	var/new_angle = LYING_ANGLE_WEST
+	if(bearer.x != victim.x)
+		new_angle = bearer.x > victim.x ? LYING_ANGLE_EAST : LYING_ANGLE_WEST
+	var/old_angle = victim.lying_angle
+	if(new_angle == old_angle)
 		return
-	victim.set_lying_angle(bearer.x > victim.x ? LYING_ANGLE_EAST : LYING_ANGLE_WEST)
+	var/matrix/was = matrix(victim.transform)
+	victim.set_lying_angle(new_angle)
+	if(victim.lying_angle != new_angle || REVERSE_ANGLE(new_angle) != old_angle)
+		return
+	// Head east (90) to head west (270) through head down (180) is clockwise; through head up it is the other way.
+	var/through_top = bearer.y > victim.y
+	var/turn = (old_angle == LYING_ANGLE_EAST) ? 180 : -180
+	if(through_top)
+		turn = -turn
+	// tg's turn, read before the steps below: each animate() leaves the var at its own end.
+	var/matrix/lying = matrix(victim.transform)
+	// The picture as tg had it, at once (tg's own turn already jumped), then round in even steps that ease in and out.
+	animate(victim, transform = was, time = 0)
+	for(var/i in 1 to MANTIS_SCISSOR_HAUL_STEPS)
+		var/matrix/step = matrix(was)
+		step.Turn(turn * (1 - cos(180 * i / MANTIS_SCISSOR_HAUL_STEPS)) / 2)
+		if(i == MANTIS_SCISSOR_HAUL_STEPS)
+			step = lying
+		animate(transform = step, time = MANTIS_SCISSOR_HAUL_TIME / MANTIS_SCISSOR_HAUL_STEPS)
+
+#undef MANTIS_SCISSOR_HAUL_TIME
+#undef MANTIS_SCISSOR_HAUL_STEPS
 
 /// Both blades rise. A glint runs along them, and the victim shudders.
 /datum/hv_finisher_stage/windup/mantis
@@ -346,3 +383,5 @@
 /// The bearer straightens up out of the cut.
 /datum/hv_finisher_stage/recover/mantis
 	duration = 0.5 SECONDS
+
+#undef animate

@@ -361,8 +361,17 @@
  * guard while nothing else is going on. update_icon_state() only consults it
  * when sword_color_icon is set, which it never is here.
  */
+/datum/sound_effect/cyberware_mantis_slash
+	key = CYBERWARE_MANTIS_SLASH_SOUND
+	file_paths = list(
+		'voidcrew/sound/cyberware/mantis_slash_1.ogg',
+		'voidcrew/sound/cyberware/mantis_slash_2.ogg',
+		'voidcrew/sound/cyberware/mantis_slash_3.ogg',
+	)
+
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis
 	name = "mantis blade"
+	hitsound = CYBERWARE_MANTIS_SLASH_SOUND
 	desc = "A forearm's length of hardlight ground to a monomolecular edge. It comes out of the housing already swinging."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware_weapons.dmi'
 	icon_state = "mantis"
@@ -423,10 +432,9 @@
 	// The worn housing sprite carries the folded blade, so it hides while the blade is out.
 	hide_worn_while_deployed = TRUE
 	items_to_create = list(/obj/item/melee/energy/blade/hardlight/cyberware_mantis)
-	// A blade sliding out of a forearm housing and snapping back into it, the
-	// cursed katana's pair (mining_loot/cursed_katana.dm), not a baton's ratchet.
-	extend_sound = 'sound/items/unsheath.ogg'
-	retract_sound = 'sound/items/sheath.ogg'
+	// The housing opening and the blade sliding out, and the blade locking back into it.
+	extend_sound = 'voidcrew/sound/cyberware/mantis_draw.ogg'
+	retract_sound = 'voidcrew/sound/cyberware/mantis_sheathe.ogg'
 	actions_types = list(
 		/datum/action/item_action/organ_action/toggle/toolkit,
 		/datum/action/cooldown/cyberware/mantis_lunge,
@@ -730,7 +738,7 @@
 			span_userdanger("[lunger] flickers across the gap. The blade is already in you, and the floor comes up fast!"),
 		)
 	log_combat(lunger, victim, charged ? "mantis-leapt" : "mantis-lunged", "mantis blades ([blades] landed)")
-	playsound(victim, 'sound/items/weapons/bladeslice.ogg', 70, TRUE)
+	playsound(victim, CYBERWARE_MANTIS_SLASH_SOUND, 70, TRUE)
 
 // =========================================================================
 // WIDOWLINE MONOWIRE

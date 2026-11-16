@@ -114,7 +114,7 @@
 	return TRUE
 
 /obj/item/mecha_parts/mecha_equipment/proc/action(mob/source, atom/target, list/modifiers)
-	TIMER_COOLDOWN_START(chassis, COOLDOWN_MECHA_EQUIPMENT(type), equip_cooldown)//Cooldown is on the MECH so people dont bypass it by switching equipment
+	TIMER_COOLDOWN_START(chassis, COOLDOWN_MECHA_EQUIPMENT(type), cyberware_dilated_time(chassis, equip_cooldown)) // VOIDCREW EDIT CHANGE - cyberware time dilation (voidcrew/modules/cyberware/ware_sandy_timestop.dm): a slowed mech's weapons cycle slowly. ORIGINAL: TIMER_COOLDOWN_START(chassis, COOLDOWN_MECHA_EQUIPMENT(type), equip_cooldown)//Cooldown is on the MECH so people dont bypass it by switching equipment
 	SEND_SIGNAL(source, COMSIG_MOB_USED_MECH_EQUIPMENT, chassis)
 	chassis.use_energy(energy_drain)
 	return TRUE

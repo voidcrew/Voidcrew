@@ -26,12 +26,27 @@
 #define CYBERWARE_CASCADE_CRIT_BONUS 18
 /// Stamina dumped by the crash.
 #define CYBERWARE_CASCADE_CRASH_STAMINA 80
-/// Degrees the afterimage hue moves per step of the trail.
-#define CYBERWARE_CASCADE_HUE_STEP 25
 /// Melee-cooldown multiplier during the window (lower is faster).
 #define CYBERWARE_CASCADE_MELEE_MULT 0.5
-/// Starting opacity of a trail afterimage.
-#define CYBERWARE_CASCADE_AFTERIMAGE_ALPHA 200
+// The trail. Not undefined at the end of this file: the replay draws the same trail (ware_sandy_replay.dm).
+/// Starting opacity of a trail afterimage (the newest); each older one is fainter, down to nothing at the tail.
+#define CYBERWARE_CASCADE_AFTERIMAGE_ALPHA 230
+/// Afterimages on screen at once behind a Cascade bearer who keeps moving.
+#define CYBERWARE_CASCADE_TRAIL_LENGTH 20
+/// Afterimages the Cascade leaves per tile walked: one on the tile left, the rest spread along the step.
+#define CYBERWARE_CASCADE_TRAIL_PER_TILE 2
+/// The longest one step counts for in a trail's life (the first step, or one after a pause).
+#define CYBERWARE_CASCADE_TRAIL_STEP_MAX (0.4 SECONDS)
+// The trail's colours by an afterimage's age, newest to oldest: each one starts on the first and runs through them to the
+// last as it fades, so a whole trail reads first to last from the bearer's heels (cyberware_cascade_trail_tints()).
+/// The newest afterimage: the Sandevistan's own green.
+#define CYBERWARE_CASCADE_TRAIL_COLOR_NEWEST "#5AFF96"
+/// A third of the way through its life.
+#define CYBERWARE_CASCADE_TRAIL_COLOR_YOUNG "#3C8CFF"
+/// Two thirds of the way.
+#define CYBERWARE_CASCADE_TRAIL_COLOR_OLD "#A050FF"
+/// The oldest, just before it is gone.
+#define CYBERWARE_CASCADE_TRAIL_COLOR_OLDEST "#FF5AC8"
 
 /**
  * # Cascade Lattice (T4, chest, OS slot, load 12)
@@ -82,14 +97,30 @@
 	var/window_melee_mult = CYBERWARE_CASCADE_MELEE_MULT
 	/// The bearer's screen tint during the window.
 	var/datum/client_colour/window_colour = /datum/client_colour/cyberware_cascade
-	/// A trail afterimage is left on every Nth step.
-	var/afterimage_interval = 1
+	/// Afterimages on screen at once behind a bearer who keeps moving.
+	var/trail_length = CYBERWARE_CASCADE_TRAIL_LENGTH
+	/// Afterimages left per tile walked.
+	var/trail_per_tile = CYBERWARE_CASCADE_TRAIL_PER_TILE
 	/// Starting opacity of a trail afterimage.
 	var/afterimage_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA
 	/// The status alert shown while the window runs.
 	var/window_alert = /atom/movable/screen/alert/status_effect/cyberware_cascade
 	/// What the bearer reads on activation.
 	var/online_message = "CASCADE ONLINE."
+	/// The bearer's balloons as the window opens and as the crash lands, and what they call the part in chat.
+	var/online_balloon = "cascade online"
+	var/crash_balloon = "cascade crash!"
+	var/part_word = "lattice"
+	/// What the bearer's balloons call the part ("cascade online", "rig still cycling!"). Read through sandy_part_balloon_word().
+	var/balloon_word = "cascade"
+	/// How long the window lasts when it slows the world (no other player near, ware_sandy_timestop.dm). A plain
+	/// surge, or one that a player cuts short, lasts window_duration.
+	var/slowmo_duration = 13 SECONDS
+	/// How fast the world runs through the window when no other player is near (ware_sandy_timestop.dm).
+	var/dilation_scale = 0.1
+	/// How much faster than normal the bearer runs in the window. A surging mob in someone else's field runs at its
+	/// multiplier over theirs.
+	var/time_multiplier = 10
 
 /obj/item/organ/cyberimp/cyberware/cascade/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -112,10 +143,16 @@
 	var/datum/status_effect/cyberware_cascade_window/window = owner.has_status_effect(/datum/status_effect/cyberware_cascade_window)
 	if(!window)
 		return
-	to_chat(owner, span_userdanger("The pulse rips through the lattice mid-cascade, everything slams back to real time!"))
+	to_chat(owner, span_userdanger("The pulse rips through the [part_word] mid-surge, everything slams back to real time!"))
 	owner.remove_status_effect(/datum/status_effect/cyberware_cascade_window) // on_remove applies the crash
 	for(var/datum/action/cooldown/cyberware/cascade_surge/surge in actions)
 		surge.StartCooldown()
+
+/// What `user`'s balloons call their reflex part: "cascade" on the top model, "lattice" on the service model, "rig" on the street model.
+/proc/sandy_part_balloon_word(mob/living/user)
+	var/mob/living/carbon/carbon_user = user
+	var/obj/item/organ/cyberimp/cyberware/cascade/part = iscarbon(carbon_user) ? (locate(/obj/item/organ/cyberimp/cyberware/cascade) in carbon_user.organs) : null
+	return part?.balloon_word || "cascade"
 
 /datum/action/cooldown/cyberware/cascade_surge
 	name = "Cascade Surge"
@@ -125,12 +162,41 @@
 	cooldown_time = 60 SECONDS
 	click_to_activate = FALSE
 
+/// Whether a press now would end a running window: a player's own press only. An NPC's AI never turns its surge off.
+/datum/action/cooldown/cyberware/cascade_surge/proc/can_cut_short()
+	if(!isliving(owner))
+		return FALSE
+	var/mob/living/surger = owner
+	return !!surger.ckey && !!surger.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+
+/// The cooldown starts as the window opens, so pressing again to end the window early looks past it.
+/datum/action/cooldown/cyberware/cascade_surge/IsAvailable(feedback = FALSE)
+	// Not while a replay holds him: a surge fired under it would run through it
+	if(isliving(owner) && (HAS_TRAIT_FROM(owner, TRAIT_INCAPACITATED, "sandy_replay") || sandy_replay_showing(owner)))
+		return FALSE
+	if(!can_cut_short())
+		return ..()
+	var/cooldown_end = next_use_time
+	next_use_time = 0
+	. = ..()
+	next_use_time = cooldown_end
+
 /datum/action/cooldown/cyberware/cascade_surge/Activate(atom/target)
 	if(!isliving(owner))
 		return FALSE
 	var/mob/living/surger = owner
-	if(surger.has_status_effect(/datum/status_effect/cyberware_cascade_window) || surger.has_status_effect(/datum/status_effect/cyberware_cascade_crash))
-		surger.balloon_alert(surger, "lattice still cycling!")
+	if(HAS_TRAIT_FROM(surger, TRAIT_INCAPACITATED, "sandy_replay") || sandy_replay_showing(surger))
+		return FALSE
+	if(can_cut_short()) // the second press: back to real time, and the crash
+		var/datum/status_effect/cyberware_cascade_window/window = surger.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+		if(window.time_stop)
+			window.slowmo_time_up() // a slow-mo waits for an execution in progress (ware_sandy_timestop.dm)
+		else
+			qdel(window)
+		return TRUE
+	// A member of a shared slow-mo whose time is out waits for its crash too (ware_sandy_timestop_shared.dm).
+	if(surger.has_status_effect(/datum/status_effect/cyberware_cascade_window) || surger.has_status_effect(/datum/status_effect/cyberware_cascade_crash) || GLOB.sandy_session_of[surger])
+		surger.balloon_alert(surger, "[sandy_part_balloon_word(surger)] still cycling!")
 		return FALSE
 	StartCooldown()
 	// The lattice hands the window its numbers (an organ-less call falls back to the T4 defaults).
@@ -147,8 +213,6 @@
 	duration = CYBERWARE_CASCADE_WINDOW
 	tick_interval = STATUS_EFFECT_NO_TICK
 	alert_type = /atom/movable/screen/alert/status_effect/cyberware_cascade
-	/// Hue of the next afterimage, in degrees. Starts random so no two surges match.
-	var/trail_hue = 0
 	// The numbers below default to the T4 lattice and are overwritten from the
 	// organ that opened the window (see on_creation). Copied, never referenced.
 	/// Dodge chance while the window lives: ranged fire while moving, blows any time.
@@ -161,17 +225,26 @@
 	var/melee_mult = CYBERWARE_CASCADE_MELEE_MULT
 	/// The bearer's screen tint.
 	var/datum/client_colour/colour_type = /datum/client_colour/cyberware_cascade
-	/// A trail afterimage is left on every Nth step.
-	var/afterimage_interval = 1
+	/// Afterimages on screen at once behind a bearer who keeps moving, and how many a tile walked leaves.
+	var/trail_length = CYBERWARE_CASCADE_TRAIL_LENGTH
+	var/trail_per_tile = CYBERWARE_CASCADE_TRAIL_PER_TILE
+	/// The tile his last step left, for the afterimages spread back along that step (on_move()).
+	var/turf/trail_prev
 	/// Starting opacity of a trail afterimage.
 	var/afterimage_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA
+	/// world.time of the bearer's last step, to time the next one: the trail's life is counted in steps.
+	var/last_step_at = 0
 	/// What the bearer reads on activation.
 	var/online_message = "CASCADE ONLINE."
+	var/online_balloon = "cascade online"
 	/// The crash this window rolls into.
 	var/crash_duration = CYBERWARE_CASCADE_CRASH
 	var/crash_stamina = CYBERWARE_CASCADE_CRASH_STAMINA
-	/// Steps taken so far, for the afterimage cadence.
-	var/steps_taken = 0
+	/// Whether the surge's own speed, quicker blows, crit and dodge are on now (refresh_perks()).
+	var/perks_on = FALSE
+	/// Quicker blows stay on while a slow-mo carries the surger, apart from the other perks (decisions 22, 2026-11-12):
+	/// melee, unarmed and chrome strikes come at the window's own rate. Gun fire delay is not a click cooldown.
+	var/slowmo_quick_blows = TRUE
 
 /// Optional second argument: the lattice whose numbers this window runs on.
 /datum/status_effect/cyberware_cascade_window/on_creation(mob/living/new_owner, obj/item/organ/cyberimp/cyberware/cascade/lattice)
@@ -183,80 +256,160 @@
 		speed_type = lattice.window_speed
 		melee_mult = lattice.window_melee_mult
 		colour_type = lattice.window_colour
-		afterimage_interval = lattice.afterimage_interval
+		trail_length = lattice.trail_length
+		trail_per_tile = lattice.trail_per_tile
 		afterimage_alpha = lattice.afterimage_alpha
 		online_message = lattice.online_message
+		online_balloon = lattice.online_balloon
 		crash_duration = lattice.crash_duration
 		crash_stamina = lattice.crash_stamina
+		dilation_scale = lattice.dilation_scale
+		time_multiplier = lattice.time_multiplier
+		slowmo_duration = lattice.slowmo_duration
 	return ..()
 
 /datum/status_effect/cyberware_cascade_window/on_apply()
-	trail_hue = rand(0, 359)
-	owner.add_movespeed_modifier(speed_type)
 	owner.add_movespeed_mod_immunities(id, /datum/movespeed_modifier/reagent)
 	cyberware_register_dodge_source(owner, id, CALLBACK(src, PROC_REF(get_dodge_chance)), melee = TRUE)
-	owner.hv_crit_set_attacker_bonus(id, crit_bonus)
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_move))
+	RegisterSignal(owner, COMSIG_LIVING_DEATH, PROC_REF(on_death))
 	owner.add_client_colour(colour_type, id)
-	playsound(owner, 'sound/effects/magic/timeparadox2.ogg', 70, TRUE)
+	sandy_surge_sounds() // ware_sandy_sound.dm
 	owner.visible_message(
 		span_boldwarning("[owner] fractures into afterimages. Something under [owner.p_their()] skin is running far too fast!"),
 		span_boldnotice(online_message),
 	)
-	owner.balloon_alert(owner, "cascade online")
+	owner.balloon_alert(owner, online_balloon)
 	cyberware_cascade_window_fx(owner)
+	try_time_stop() // ware_sandy_timestop.dm
+	refresh_perks()
 	return TRUE
 
 /datum/status_effect/cyberware_cascade_window/on_remove()
-	owner.remove_movespeed_modifier(speed_type)
+	end_time_stop()
+	sandy_sound_sync(off = TRUE, quiet = QDELETED(owner) || owner.stat == DEAD) // ware_sandy_sound.dm
+	set_perks(FALSE)
 	owner.remove_movespeed_mod_immunities(id, /datum/movespeed_modifier/reagent)
 	cyberware_unregister_dodge_source(owner, id)
-	owner.hv_crit_set_attacker_bonus(id, null)
-	UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
+	UnregisterSignal(owner, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_DEATH))
 	owner.remove_client_colour(id)
-	if(!QDELETED(owner) && owner.stat != DEAD)
+	// A slow-mo that ran to its end replays first, and the crash lands when the replay is over (ware_sandy_replay.dm).
+	if(!QDELETED(owner) && owner.stat != DEAD && !sandy_replay_defer_crash(owner, crash_duration, crash_stamina))
 		owner.apply_status_effect(/datum/status_effect/cyberware_cascade_crash, crash_duration, crash_stamina)
 	if(!QDELETED(owner))
 		cyberware_cascade_window_end_fx(owner)
 	return ..()
 
+/// Signal proc for [COMSIG_LIVING_DEATH]: the bearer's slow-mo ends with them (its replay still plays).
+/datum/status_effect/cyberware_cascade_window/proc/on_death(mob/living/source, gibbed)
+	SIGNAL_HANDLER
+	end_time_stop() // ware_sandy_timestop.dm
+
 /// Melee cooldowns scaled for the window (changeNext_move multiplies these in).
 /datum/status_effect/cyberware_cascade_window/nextmove_modifier()
-	return melee_mult
+	return (perks_on || slowmo_quick_blows) ? melee_mult : 1
+
+/**
+ * The surge's own edge (speed, crit, dodge) is off while a slow-mo carries the surger: its own
+ * (ware_sandy_timestop.dm), or someone else's that runs it at its relative rate. There it moves at normal speed
+ * and only the world around it is slowed; its quicker blows stay (slowmo_quick_blows). Call whenever either changes.
+ */
+/datum/status_effect/cyberware_cascade_window/proc/refresh_perks()
+	set_perks(!time_stop && !cyberware_surge_in_field(owner))
+
+/datum/status_effect/cyberware_cascade_window/proc/set_perks(on)
+	if(on == perks_on)
+		return
+	perks_on = on
+	if(on)
+		owner.add_movespeed_modifier(speed_type)
+		owner.hv_crit_set_attacker_bonus(id, crit_bonus)
+	else
+		owner.remove_movespeed_modifier(speed_type)
+		owner.hv_crit_set_attacker_bonus(id, null)
 
 /// Dodge-source callback for the shared arbiter: flat chance while the window
 /// lives (the arbiter itself enforces the moving-only and point-blank rules
 /// for shots, and the pinned rules for blows).
 /datum/status_effect/cyberware_cascade_window/proc/get_dodge_chance()
-	return dodge_chance
+	return perks_on ? dodge_chance : 0
 
-/// Signal proc for [COMSIG_MOVABLE_MOVED]: one afterimage per step, the
-/// telegraph everyone in the fight can read. Each step shifts the hue, so the
-/// trail reads as one rolling colour gradient.
+/**
+ * Signal proc for [COMSIG_MOVABLE_MOVED]: the trail, the telegraph everyone in the fight can read. Each step lays
+ * trail_per_tile afterimages along the way it came (the tile left, then evenly toward the tile reached), and each fades
+ * out over the time the bearer takes to walk trail_length of them, measured on his last step. So a bearer who keeps
+ * moving drags trail_length afterimages, newest strongest, at any speed; when he stops, the trail fades out behind him
+ * in that time. Each one's colour goes by its age (green newest, pink oldest), so the trail reads as one gradient, in
+ * his own slow-mo too.
+ */
 /datum/status_effect/cyberware_cascade_window/proc/on_move(atom/movable/source, atom/old_loc, dir, forced)
 	SIGNAL_HANDLER
-	if(!isturf(old_loc))
+	if(!isturf(old_loc) || owner.stat == DEAD) // a body knocked across the floor is not surging
 		return
-	steps_taken++
-	if(steps_taken % afterimage_interval) // cheaper chrome leaves a sparser trail
-		return
-	new /obj/effect/temp_visual/decoy/fading/cascade(old_loc, owner, trail_hue, afterimage_alpha)
-	trail_hue = (trail_hue + CYBERWARE_CASCADE_HUE_STEP) % 360
+	var/turf/here = get_turf(owner)
+	var/step_time = world.time - last_step_at
+	last_step_at = world.time
+	sandy_step_sounds(step_time, forced) // ware_sandy_sound.dm
+	var/paused = step_time > CYBERWARE_CASCADE_TRAIL_STEP_MAX
+	if(paused) // the first step, or one after a pause: as long as a step takes him now
+		step_time = owner.cached_multiplicative_slowdown
+	step_time = clamp(step_time, world.tick_lag, CYBERWARE_CASCADE_TRAIL_STEP_MAX)
+	var/per_tile = max(1, trail_per_tile)
+	// One step longer than trail_length of them take to walk: each is laid a step behind him, on ground already crossed
+	var/life = step_time * (max(1, trail_length) / per_tile + 1)
+	var/cap = life
+	if(time_stop) // the slow-mo's trail is gone when it is: the replay draws its own
+		cap = max(duration - world.time, world.tick_lag)
+	// One on the tile he leaves, and the rest spread back along the step he took before this one. Never along the step
+	// he is taking now: he is still gliding off the tile, and they stood ahead of him. A jump, a z change or the first
+	// step after a pause leaves the one.
+	var/along = here && here.z == old_loc.z && get_dist(here, old_loc) == 1
+	var/turf/before = (along && !paused && trail_prev && trail_prev.z == old_loc.z && get_dist(trail_prev, old_loc) == 1) ? trail_prev : null
+	trail_prev = along ? old_loc : null
+	var/count = before ? per_tile : 1
+	for(var/i in 0 to count - 1)
+		var/fraction = i / per_tile
+		var/left = life - (1 + fraction) * step_time // it was passed this long ago
+		if(left <= 0)
+			continue
+		var/start_alpha = afterimage_alpha * left / life
+		var/shift_x = before ? round((before.x - old_loc.x) * fraction * ICON_SIZE_X) : 0
+		var/shift_y = before ? round((before.y - old_loc.y) * fraction * ICON_SIZE_Y) : 0
+		var/age = 1 - left / life
+		// The slow-mo's own kind keeps its colours while the world is tinted (ware_sandy_timestop.dm)
+		var/kind = time_stop ? /obj/effect/temp_visual/decoy/fading/cascade/stopped : /obj/effect/temp_visual/decoy/fading/cascade
+		new kind(old_loc, owner, age, start_alpha, min(left, cap), shift_x, shift_y, left)
 
-/// One afterimage in the Cascade trail, washed in a single hue.
-/obj/effect/temp_visual/decoy/fading/cascade
-	duration = 8
+/// The trail's colour matrices by age, newest first (the CYBERWARE_CASCADE_TRAIL_COLOR_* defines). Shared: never edit them.
+/proc/cyberware_cascade_trail_tints()
+	var/static/list/tints
+	if(!tints)
+		tints = list()
+		for(var/colour in list(CYBERWARE_CASCADE_TRAIL_COLOR_NEWEST, CYBERWARE_CASCADE_TRAIL_COLOR_YOUNG, CYBERWARE_CASCADE_TRAIL_COLOR_OLD, CYBERWARE_CASCADE_TRAIL_COLOR_OLDEST))
+			tints += list(cyberware_cascade_tint(colour))
+	return tints
 
-/obj/effect/temp_visual/decoy/fading/cascade/Initialize(mapload, atom/mimiced_atom, hue = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA)
-	. = ..()
-	alpha = start_alpha
-	color = cascade_tint_matrix(hue)
-	animate(src, alpha = 0, time = duration) // restart the parent's fade from the new alpha
+/// The trail's colour matrix for an afterimage `age` (0 newest, 1 oldest) of the way through its life: between two of
+/// the trail's colours, as the client tweens it.
+/proc/cyberware_cascade_tint_at(age)
+	var/list/tints = cyberware_cascade_trail_tints()
+	var/spans = length(tints) - 1
+	var/at = clamp(age, 0, 1) * spans
+	var/index = min(round(at), spans - 1)
+	var/list/from = tints[index + 1]
+	var/list/to_tint = tints[index + 2]
+	var/blend = at - index
+	if(blend <= 0)
+		return from
+	var/list/mixed = new(length(from))
+	for(var/i in 1 to length(from))
+		mixed[i] = from[i] + (to_tint[i] - from[i]) * blend
+	return mixed
 
-/// Colour matrix that flattens the copy to luminance and paints it one hue,
+/// Colour matrix that flattens a sprite to luminance and paints it `colour`,
 /// with a lift so dark clothes still glow instead of going black.
-/obj/effect/temp_visual/decoy/fading/cascade/proc/cascade_tint_matrix(hue)
-	var/list/tint = rgb2num(rgb(hue, 100, 100, space = COLORSPACE_HSV))
+/proc/cyberware_cascade_tint(colour)
+	var/list/tint = rgb2num(colour)
 	var/red = tint[1] / 255
 	var/green = tint[2] / 255
 	var/blue = tint[3] / 255
@@ -268,6 +421,66 @@
 		0.11 * gain * red, 0.11 * gain * green, 0.11 * gain * blue,
 		lift * red, lift * green, lift * blue,
 	)
+
+/**
+ * One afterimage in the Cascade trail, washed in one colour by its age: `age` (0 to 1) of the way through its life
+ * when laid, and `age_time` until it is oldest (its natural life left; defaults to `life`). Fades from `start_alpha`
+ * over `life`, shifted `shift_x`, `shift_y` pixels. Drawn on the floor, under everyone standing: a trail lies behind its
+ * bearer, never over him (on the game plane one a row nearer the camera would sort over him).
+ */
+/obj/effect/temp_visual/decoy/fading/cascade
+	duration = 8
+	/// The colour matrices it was given and aged through, laid colour first (for tests: the client's tween isn't readable).
+	var/list/aged_through
+
+/obj/effect/temp_visual/decoy/fading/cascade/Initialize(mapload, atom/mimiced_atom, age = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA, life, shift_x = 0, shift_y = 0, age_time)
+	if(life)
+		duration = life // before the parent's timer and fade read it
+	. = ..()
+	// The whole look goes on in one assignment, then the fade starts on it (as the replay's afterimage does): a var set
+	// under a running fade is not drawn until the fade ends.
+	var/mutable_appearance/copy = new(src)
+	copy.pixel_w += shift_x // along the step, toward the tile reached
+	copy.pixel_z += shift_y
+	copy.alpha = start_alpha
+	copy.color = cyberware_cascade_tint_at(age)
+	copy.filters = null // the bearer's outline and tints are his, not the trail's
+	copy.appearance_flags |= KEEP_TOGETHER // the colour must reach every overlay
+	SET_PLANE_EXPLICIT(copy, FLOOR_PLANE, src)
+	copy.layer = CLEANABLE_FLOOR_OBJECT_LAYER
+	animate(src)
+	appearance = copy.appearance
+	animate(src, alpha = 0, time = duration)
+	age_colours(age, age_time || duration)
+
+/**
+ * Runs the copy's colour from the one for `age` through the trail's later colours to the oldest, reached in `age_time`,
+ * beside its fade (one parallel animate chain). Call it after the fade starts, on a look already given
+ * cyberware_cascade_tint_at(age).
+ */
+/obj/effect/temp_visual/decoy/fading/cascade/proc/age_colours(age, age_time)
+	var/list/tints = cyberware_cascade_trail_tints()
+	var/spans = length(tints) - 1
+	age = clamp(age, 0, 1)
+	aged_through = list(cyberware_cascade_tint_at(age))
+	if(age >= 1 || age_time <= 0)
+		return
+	var/per_age = age_time / (1 - age) // time per whole life
+	var/at = age
+	var/first = TRUE
+	for(var/stop in 1 to spans)
+		var/stop_age = stop / spans
+		if(stop_age <= at)
+			continue
+		var/list/tint = tints[stop + 1]
+		var/step_time = max((stop_age - at) * per_age, world.tick_lag / 10)
+		if(first)
+			animate(src, color = tint, time = step_time, flags = ANIMATION_PARALLEL)
+			first = FALSE
+		else
+			animate(color = tint, time = step_time)
+		aged_through += list(tint)
+		at = stop_age
 
 /atom/movable/screen/alert/status_effect/cyberware_cascade
 	name = "Cascade Window"
@@ -299,19 +512,19 @@
 /datum/status_effect/cyberware_cascade_crash/on_apply()
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade_crash)
 	owner.adjustStaminaLoss(crash_stamina)
-	owner.add_client_colour(/datum/client_colour/cyberware_cascade_crash, id)
-	playsound(owner, 'sound/machines/warning-buzzer.ogg', 50, TRUE)
+	var/mob/living/carbon/carbon_owner = owner
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = iscarbon(owner) ? (locate(/obj/item/organ/cyberimp/cyberware/cascade) in carbon_owner.organs) : null
+	playsound(owner, 'sound/machines/defib/defib_failed.ogg', 50, FALSE)
 	owner.visible_message(
 		span_warning("[owner] staggers, every movement suddenly leaden."),
-		span_userdanger("The lattice dumps its heat. Your whole body seizes up and everything slows to a crawl."),
+		span_userdanger("The [lattice?.part_word || "lattice"] dumps its heat. Your whole body seizes up and everything slows to a crawl."),
 	)
-	owner.balloon_alert(owner, "cascade crash!")
+	owner.balloon_alert(owner, lattice?.crash_balloon || "cascade crash!")
 	cyberware_cascade_crash_fx(owner)
 	return TRUE
 
 /datum/status_effect/cyberware_cascade_crash/on_remove()
 	owner.remove_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade_crash)
-	owner.remove_client_colour(id)
 	if(!QDELETED(owner) && owner.stat != DEAD)
 		owner.balloon_alert(owner, "systems restabilized")
 	if(!QDELETED(owner))
@@ -330,13 +543,6 @@
 	color = list(1.1, 0, 0.08, 0.05, 1.05, 0.1, 0.1, 0, 1.2)
 	fade_in = 3
 	fade_out = 3
-
-/// The crash's screen: drained and gray-brown.
-/datum/client_colour/cyberware_cascade_crash
-	priority = CLIENT_COLOR_ORGAN_PRIORITY
-	color = list(0.55, 0.3, 0.25, 0.35, 0.55, 0.25, 0.25, 0.25, 0.5)
-	fade_in = 3
-	fade_out = 5
 
 // =========================================================================
 // REDLINE CORE
@@ -777,7 +983,6 @@
 /datum/status_effect/cyberware_redline_crash/on_apply()
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_redline_crash)
 	owner.adjustStaminaLoss(stamina_dump)
-	owner.add_client_colour(/datum/client_colour/cyberware_redline_crash, id)
 	owner.visible_message(
 		span_warning("[owner] sags as the red drains out of [owner.p_their()] eyes."),
 		span_userdanger("The core slams shut and your legs go out from under you."),
@@ -789,7 +994,6 @@
 
 /datum/status_effect/cyberware_redline_crash/on_remove()
 	owner.remove_movespeed_modifier(/datum/movespeed_modifier/cyberware_redline_crash)
-	owner.remove_client_colour(id)
 	if(!QDELETED(owner) && owner.stat != DEAD)
 		owner.balloon_alert(owner, "core recovered")
 	if(!QDELETED(owner))
@@ -805,13 +1009,6 @@
 	color = list(1, 0, 0, 0.55, 0.5, 0, 0.55, 0, 0.5)
 	fade_in = 2
 	fade_out = 10
-
-/// The crash's screen: burnt out, brown-gray.
-/datum/client_colour/cyberware_redline_crash
-	priority = CLIENT_COLOR_ORGAN_PRIORITY
-	color = list(0.6, 0.35, 0.3, 0.3, 0.5, 0.25, 0.25, 0.25, 0.45)
-	fade_in = 3
-	fade_out = 5
 
 // =========================================================================
 // GOVERNOR DELETE
@@ -1111,7 +1308,10 @@
 #undef CYBERWARE_CASCADE_CRASH
 #undef CYBERWARE_CASCADE_DODGE_CHANCE
 #undef CYBERWARE_CASCADE_CRASH_STAMINA
-#undef CYBERWARE_CASCADE_HUE_STEP
+#undef CYBERWARE_CASCADE_TRAIL_COLOR_NEWEST
+#undef CYBERWARE_CASCADE_TRAIL_COLOR_YOUNG
+#undef CYBERWARE_CASCADE_TRAIL_COLOR_OLD
+#undef CYBERWARE_CASCADE_TRAIL_COLOR_OLDEST
 #undef CYBERWARE_REDLINE_WINDOW
 #undef CYBERWARE_REDLINE_DAMAGE_MULT
 #undef CYBERWARE_REDLINE_MELEE_BONUS

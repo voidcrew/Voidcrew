@@ -117,6 +117,8 @@
 		return 0
 	if(world.time - last_move_time > CYBERWARE_DODGE_MOVE_WINDOW)
 		return 0
+	if(cyberware_time_stopping(source)) // the slowed world is the dodge (ware_sandy_timestop.dm)
+		return 0
 	if(source.stat != CONSCIOUS || source.body_position == LYING_DOWN || source.buckled)
 		return 0
 	// Point-blank shots always land: an adjacent shooter is inside the
@@ -182,7 +184,7 @@
 /// Signal proc for [COMSIG_LIVING_CHECK_BLOCK]: the melee dodge roll, from tg's own check_block().
 /datum/component/cyberware_dodge/proc/on_check_block(mob/living/source, atom/hit_by, damage, attack_text, attack_type, armour_penetration, damage_type)
 	SIGNAL_HANDLER
-	if(!length(melee_sources) || !cyberware_can_dodge_blow(source, hit_by, damage, attack_text, attack_type))
+	if(!length(melee_sources) || cyberware_time_stopping(source) || !cyberware_can_dodge_blow(source, hit_by, damage, attack_text, attack_type))
 		return FAILED_BLOCK
 	var/best_chance = best_chance(melee_sources)
 	if(best_chance <= 0 || !prob(best_chance))

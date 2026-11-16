@@ -323,23 +323,47 @@
 #define GORILLA_RIP_FALL_TIME (0.25 SECONDS)
 /// How long the let-go body takes to slide back to where tg lays it (tg's own offset slide).
 #define GORILLA_RIP_LET_GO (0.2 SECONDS)
-/// How long nothing moves at the start of the plant, while the puppets' pictures reach the client. The plant's own
-/// 0.3 s still ends inside its stage.
+/// How long nothing moves at the start of the plant, while the puppets' pictures reach the client. The grab
+/// (GORILLA_RIP_GRAB_TIME) still ends inside the plant's stage.
 #define GORILLA_RIP_START_HOLD (0.15 SECONDS)
-/// Seen from behind, how long the torn arm takes to come down with his fist and hang beside him.
-#define GORILLA_RIP_HANG_TIME (0.25 SECONDS)
 /// The limb rip's blood: how many drops burst from the socket as the arm comes away, and the furthest (pixels) the pool
 /// under the shoulder is laid from the middle of the body's tile.
 #define GORILLA_RIP_BURST_DROPS 12
 #define GORILLA_RIP_POOL_REACH 10
-/// The limb rip's blow with the torn arm: up over his head, then down on theirs. The hit lands as it comes down.
-#define GORILLA_CLUB_RAISE (0.2 SECONDS)
-#define GORILLA_CLUB_STRIKE (0.1 SECONDS)
-/// How long before the arm is all the way down the blow lands (recorded 0 to 0.12 s late without it).
-#define GORILLA_CLUB_HIT_LEAD (0.05 SECONDS)
-/// How far his arms push out on that blow, and the most the torn arm in his fists stretches to reach, as shares of their length.
-#define GORILLA_CLUB_REACH 1.6
-#define GORILLA_CLUB_MAX_STRETCH 1.5
+/// Pixels out past the torn shoulder, away from the body, the pool under it is laid, so it shows from the tear.
+#define GORILLA_RIP_POOL_OUT 6
+/// The limb rip's pace: how long his fists take to close on the wrist, how long the one haul takes from the grab to the
+/// full lean (a shade longer than its 0.4 s stage, so it is still closing when the arm gives, not held still), and how
+/// long the arm shakes in its socket at the end of it before it gives.
+#define GORILLA_RIP_GRAB_TIME (0.25 SECONDS)
+#define GORILLA_RIP_HAUL_TIME (0.45 SECONDS)
+#define GORILLA_RIP_STRAIN_TIME (0.2 SECONDS)
+/// Seen from the front or the back, pixels aside of his middle the arm is hauled to, so it shows beside his body.
+#define GORILLA_RIP_HAUL_ASIDE 12
+/// The same facing away: his arms reach past his back and head, so the arm goes out past his shoulder.
+#define GORILLA_RIP_HAUL_ASIDE_AWAY 20
+/// Seen from the front or the back the body lies across his way. Pixels from where it lay to the middle of his tile
+/// that his step in leaves open (his soles 15 below his middle, half a lying body 8, tg's lying drop 6 and a pixel
+/// to spare), so his boots stop at its edge; and the pixels he steps back off it as he hauls.
+#define GORILLA_RIP_STEP_GAP 18
+#define GORILLA_RIP_STEP_BACK 3
+/// The share of the grab his fists take to reach the hand where it lies, before the arm comes up with them.
+#define GORILLA_RIP_REACH_SHARE 0.55
+/// Facing away, pixels under his tile the finisher's bar is drawn: over his head it would sit on the body and the
+/// arm he hauls up off it.
+#define GORILLA_RIP_BAR_LOW -14
+/// Tiles the torn arm is flung, the degrees his arms swing on as it goes (back seen from the side, out wide from the
+/// front or back), and the pixels of piston they push out with.
+#define GORILLA_RIP_THROW_TILES 2
+#define GORILLA_RIP_THROW_SWING 40
+#define GORILLA_RIP_THROW_REACH 2
+/// The throw: how long the arm is in the air, the animation steps it flies in (each turn a short one), the whole turns
+/// it spins, the pixels it rises at the top of its arc, and the pixels short of the middle of its tile it comes down.
+#define GORILLA_RIP_THROW_TIME (0.3 SECONDS)
+#define GORILLA_RIP_THROW_STEPS 8
+#define GORILLA_RIP_THROW_SPINS 2
+#define GORILLA_RIP_THROW_ARC 10
+#define GORILLA_RIP_THROW_SHORT 0
 /// Pixels toward the viewer a backbroken body lies on the bearer's tile, so he doesn't hide it, and the offset's source.
 #define GORILLA_BACK_IN_FRONT 10
 #define GORILLA_LAID_IN_FRONT_OFFSET "gorilla_laid_in_front"

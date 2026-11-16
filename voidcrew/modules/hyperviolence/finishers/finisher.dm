@@ -387,7 +387,10 @@
 	user.set_combat_mode(TRUE)
 	var/old_wound_bonus = weapon.wound_bonus
 	weapon.wound_bonus += extra_wound_bonus
+	victim.hv_struck_where_aimed = TRUE
 	weapon.melee_attack_chain(user, victim)
+	if(!QDELETED(victim))
+		victim.hv_struck_where_aimed = FALSE
 	if(!QDELETED(weapon))
 		weapon.wound_bonus = old_wound_bonus
 	if(!QDELETED(user))
@@ -445,6 +448,18 @@
 	if(user.faction_check_atom(victim))
 		return FALSE
 	return TRUE
+
+/mob/living/carbon
+	/// TRUE while a finisher's real blow (real_blow()) is being struck at this body: the blow lands on the part it
+	/// is aimed at instead of going through tg's zone roll for a melee hit (attacked_by() in item_attack.dm).
+	var/hv_struck_where_aimed = FALSE
+
+/mob/living/carbon/get_random_valid_zone(base_zone, base_probability = 80, list/blacklisted_parts, even_weights, bypass_warning)
+	if(hv_struck_where_aimed && base_zone && !even_weights)
+		var/aimed = check_zone(base_zone)
+		if(!(aimed in blacklisted_parts) && get_bodypart(aimed))
+			return aimed
+	return ..()
 
 /// The melee weapon a person attacker swings in a finisher: the heaviest one in its hands, or null
 /proc/hv_finisher_weapon(mob/living/user)
