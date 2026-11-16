@@ -566,6 +566,7 @@ function NumberField(props: {
         h={fh}
         value={text}
         max={4}
+        pulse={value}
         onChange={(v) => {
           const clean = v.replace(/[^0-9.]/g, '');
           const dot = clean.indexOf('.');

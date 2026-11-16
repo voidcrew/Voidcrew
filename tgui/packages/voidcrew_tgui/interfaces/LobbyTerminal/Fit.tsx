@@ -643,6 +643,8 @@ export function Fit(props: { ctx: YardCtx; hull: Hull }) {
       <Put key="nd" x={1} y={yK + 1} cls="dim">
         NOTHING DUE
       </Put>,
+      // Kept mounted (empty), so the first figure due flashes as it appears.
+      <ClassFigures key="tf" y={yK + 1} set="F" values={{}} pulse />,
     );
   }
   out.push(

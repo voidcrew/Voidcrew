@@ -548,7 +548,7 @@ export function KitEditor() {
           value = (
             <>
               <Swatch x={41} y={ty2} w={4} hex={hex} />
-              <Put x={46} y={ty2} cls="dim">
+              <Put x={46} y={ty2} cls="dim" pulse={hex}>
                 {hex.toUpperCase()}
               </Put>
             </>
@@ -570,7 +570,7 @@ export function KitEditor() {
           onPress = () => sub(<KitStyle item={item} />, 'STYLE', k);
           value = (
             <>
-              <Put x={41} y={ty2}>
+              <Put x={41} y={ty2} pulse={cur?.name || ''}>
                 {cut(safe(cur?.name || ''), 14)}
               </Put>
               <Key x={56} y={oy} w={3} h={oh} kind="cap" label="<" mouseOnly onClick={() => step(-1)} />
@@ -587,7 +587,11 @@ export function KitEditor() {
           label = 'WORN';
           const over = entry.layer === 1 || (entry.layer as unknown) === true;
           onPress = () => act('char_kit_layer', { path: item.path });
-          value = <Put x={41} y={ty2}>{over ? 'OVER SUIT' : 'UNDER SUIT'}</Put>;
+          value = (
+            <Put x={41} y={ty2} pulse={over}>
+              {over ? 'OVER SUIT' : 'UNDER SUIT'}
+            </Put>
+          );
           break;
         }
         case 'lips': {
@@ -600,7 +604,11 @@ export function KitEditor() {
               path: item.path,
               style: LIPS[(LIPS.indexOf(curLip) + 1) % LIPS.length],
             });
-          value = <Put x={41} y={ty2}>{curLip.toUpperCase()}</Put>;
+          value = (
+            <Put x={41} y={ty2} pulse={curLip}>
+              {curLip.toUpperCase()}
+            </Put>
+          );
           break;
         }
       }

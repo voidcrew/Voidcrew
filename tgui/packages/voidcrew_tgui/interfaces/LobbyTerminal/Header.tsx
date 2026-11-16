@@ -87,7 +87,7 @@ export function HeaderBand() {
     }
   });
   const departing = data.phase === 'setup';
-  const clockCls = `${last % 2 === 1 ? 'amb' : 'wht'} nog${departing ? ' lt-blink3' : ''}`;
+  const clockCls = `lt-clock ${last % 2 === 1 ? 'amb' : 'wht'} nog${departing ? ' lt-blink3' : ''}`;
   const admin = data.admin_ready
     ? `${data.admin_ready[0]} READY  ${data.admin_ready[1]}/${data.admin_ready[2]} ADM`
     : '';
@@ -122,7 +122,7 @@ export function HeaderBand() {
         key={departing ? 'departing' : 'clock'}
         x={cols - 2}
         y={0.25}
-        cls={whole ? clockCls : 'wht nog'}
+        cls={whole ? clockCls : 'lt-clock wht nog'}
       >
         {whole ? clock : cut(right, room)}
       </RPut>

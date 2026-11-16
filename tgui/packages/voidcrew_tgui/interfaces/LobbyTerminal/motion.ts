@@ -421,8 +421,10 @@ type ScreenPlay = { serial: number; kind: WipeKind; up: boolean; rect?: Px };
 let screen: Screen | null = null;
 let screenSerial = 0;
 let screenWipeAt = 0;
-let nextQuiet = false;
-let nextBack = false;
+/** Hints for the screen change about to happen; each lapses if no change follows at once. */
+let quietUntil = 0;
+let backUntil = 0;
+const HINT_MS = 500;
 const screenSubs = new Set<(play: ScreenPlay) => void>();
 
 function playMain(play: Omit<ScreenPlay, 'serial'>) {
@@ -435,26 +437,27 @@ function playMain(play: Omit<ScreenPlay, 'serial'>) {
 
 const tabOf = (id: string) => id.split('/')[0];
 
-/** The next screen change makes no sound and draws no cover (the shell moved, not the player). */
+/** The screen change about to happen makes no sound and draws no cover (the shell moved, not the player). */
 export function quietNextScreen() {
-  nextQuiet = true;
+  quietUntil = Date.now() + HINT_MS;
 }
 
-/** The next screen change is a step back, whatever the screens' depths say. */
+/** The screen change about to happen is a step back, whatever the screens' depths say. */
 export function backNextScreen() {
-  nextBack = true;
+  backUntil = Date.now() + HINT_MS;
 }
 
 function reportScreen(next: Screen, quiet: boolean) {
   const was = screen;
   screen = next;
-  const silent = quiet || nextQuiet;
-  const forcedBack = nextBack;
   if (!was || (was.id === next.id && was.item === next.item)) {
     return;
   }
-  nextQuiet = false;
-  nextBack = false;
+  const now = Date.now();
+  const silent = quiet || now < quietUntil;
+  const forcedBack = now < backUntil;
+  quietUntil = 0;
+  backUntil = 0;
   if (silent || muted || hidden()) {
     return;
   }
@@ -644,6 +647,24 @@ export function useChanged<T>(value: T, fn: (was: T, now: T) => void) {
   }, [value]);
 }
 
+/**
+ * The same, before the browser paints: for a change whose animation must start in the very
+ * frame the new value shows, so the end state is never seen ahead of it. State set in fn is
+ * drawn in that same frame.
+ */
+export function useChangedNow<T>(value: T, fn: (was: T, now: T) => void) {
+  const prev = useRef(value);
+  const ref = useRef(fn);
+  ref.current = fn;
+  useLayoutEffect(() => {
+    const was = prev.current;
+    prev.current = value;
+    if (!Object.is(was, value)) {
+      ref.current(was, value);
+    }
+  }, [value]);
+}
+
 /** Pauses every running animation under the returned ref's element while the page is hidden. */
 export function usePauseWhenHidden<T extends HTMLElement>() {
   const ref = useRef<T | null>(null);
@@ -670,15 +691,16 @@ export function usePauseWhenHidden<T extends HTMLElement>() {
  * Keyframes and classes. --lw (the line weight in px) is set on .lt-tui by the shell.
  *
  * Step counts: a cover uses steps(n, end), so it shows n positions, the first of them whole, and
- * is gone at the end. A fill or a band being drawn uses steps(n, start), so its first step shows
- * at once and it is whole for the last one.
+ * is gone at the end; READY's fill does too, so it lands at the very end, when [#] appears. A band
+ * being drawn uses steps(n, start), so its first step shows at once and it is whole for the last.
  */
 export const MOTION_CSS = `
 [data-paused] * { animation-play-state: paused !important; }
 .lt-tui [data-press] { background: #fff !important; border-color: #fff !important; color: var(--lt-ink) !important;
   text-shadow: none !important; }
 .lt-tui [data-press] span { color: var(--lt-ink) !important; text-shadow: none !important; }
-.lt-tui .lt-hit[data-press], .lt-tui .lt-vscreen[data-press] { background: rgba(255,255,255,.8) !important; }
+.lt-tui .lt-hit[data-press] { background: rgba(255,255,255,.8) !important; }
+.lt-tui .lt-vscreen[data-press] { background: #07030d !important; border-color: #3a2466 !important; }
 .lt-tui input[data-press] { background: transparent !important; color: var(--lt-fg) !important; }
 .lt-wipe { position: absolute; overflow: hidden; pointer-events: none; z-index: 6; }
 .lt-wipe-c { position: absolute; left: 0; top: 0; width: 100%; height: 100%; box-sizing: border-box;
@@ -712,13 +734,13 @@ export const MOTION_CSS = `
 @keyframes lt-blink2 { 0% { opacity: .55; } 50% { opacity: 1; } }
 .lt-tui .lt-fill { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: var(--lt-acc);
   transform-origin: 0 50%; pointer-events: none; animation-fill-mode: forwards; }
-.lt-tui .lt-fill.is-on { animation: lt-fill-on 180ms steps(6, start) forwards; }
+.lt-tui .lt-fill.is-on { animation: lt-fill-on 180ms steps(6, end) forwards; }
 .lt-tui .lt-fill.is-off { animation: lt-fill-off 120ms steps(4, end) forwards; }
 @keyframes lt-fill-on { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @keyframes lt-fill-off { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 .lt-tui .lt-k.is-busy span { animation: lt-vblink 1.06s steps(1) infinite; }
 .lt-tui .lt-light { position: absolute; z-index: 5; pointer-events: none; background: var(--lt-bg);
-  animation: lt-light 200ms steps(2, end) both; }
+  animation: lt-light 40ms steps(1, end) both; }
 @keyframes lt-light { from { opacity: .62; } to { opacity: 0; } }
 .lt-tui .lt-turn-a { animation: lt-turn-a 60ms steps(2, start) forwards; }
 .lt-tui .lt-turn-b { animation: lt-turn-b 60ms steps(2, end) forwards; }

@@ -21,6 +21,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react';
@@ -699,7 +700,8 @@ export function Dialog(props: {
   };
   const last = useRef({ inside, sound });
   last.current = { inside, sound };
-  useEffect(() => {
+  // A layout effect, so the closing cover is up in the very frame the box goes.
+  useLayoutEffect(() => {
     if (sound) {
       sfx(sound);
     }
@@ -777,6 +779,8 @@ type FieldProps = Pick<NavProps, 'auto'> & {
   disabled?: boolean;
   /** Mask the text (codes). */
   secret?: boolean;
+  /** The text flashes white for 200 ms when this value changes (a value set from outside). */
+  pulse?: unknown;
   onChange: (value: string) => void;
   onEnter: () => void;
 };
@@ -798,11 +802,13 @@ function FieldInput(
     auto: props.auto,
     input,
   });
+  const pulse = usePulse<HTMLInputElement>(props.pulse);
   return (
     <input
       ref={(el) => {
         input.current = el;
         focus.ref.current = el;
+        pulse.current = el;
       }}
       className={`${props.cls}${focus.focused ? ' lt-fieldfoc' : ''}`}
       onMouseEnter={focus.onMouseEnter}
@@ -1034,6 +1040,8 @@ export function ClassHeads(props: { y: number; set: 'R' | 'F' }) {
 /**
  * The four figures of a set, right-aligned under ClassHeads. Zero draws nothing (unless
  * `zero`). `cls`: one colour class, or one per class. `big`: Big 1.25, one row band tall.
+ * With `pulse` a figure flashes when it changes, also when it appears or goes (its place is
+ * kept, empty, while it is zero).
  */
 export function ClassFigures(props: {
   y: number;
@@ -1050,7 +1058,7 @@ export function ClassFigures(props: {
     <>
       {PART_CLASSES.map((k, i) => {
         const text = fig(values?.[k]) || (zero ? '0' : '');
-        if (!text) {
+        if (!text && !pulse) {
           return null;
         }
         const c = typeof cls === 'object' ? cls[k] : cls;

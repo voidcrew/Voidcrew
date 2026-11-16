@@ -381,7 +381,7 @@ export function TraitsEditor() {
       if (kind === 'pick') {
         onPress = () => sub(<TraitPick k={key} label={label} />, label, key);
         shownValue = (
-          <Put x={15} y={oy + 0.125}>
+          <Put x={15} y={oy + 0.125} pulse={String(value)}>
             {cut(safe(nameOf(cat, key, value)), 16)}
           </Put>
         );
@@ -397,7 +397,7 @@ export function TraitsEditor() {
           }
         };
         shownValue = (
-          <Put x={15} y={oy + 0.125}>
+          <Put x={15} y={oy + 0.125} pulse={String(value)}>
             {list.length === 2
               ? cut(safe(nameOf(cat, key, value)), 16)
               : value
@@ -411,7 +411,7 @@ export function TraitsEditor() {
         shownValue = (
           <>
             <Swatch x={15} y={oy + 0.125} w={4} hex={hex} />
-            <Put x={20} y={oy + 0.125} cls="dim">
+            <Put x={20} y={oy + 0.125} cls="dim" pulse={hex}>
               {hex.toUpperCase()}
             </Put>
           </>

@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 
 import { Emblem } from './Emblem';
-import { sfx, useBlink, useChanged } from './motion';
+import { sfx, useBlink, useChanged, useChangedNow } from './motion';
 import { FocusScope, useBack } from './nav';
 import {
   Box,
@@ -84,7 +84,8 @@ function TopKey(props: {
   const { phase } = data;
   const before = phase === 'loading' || phase === 'pregame';
   const [sweep, setSweep] = useState<'on' | 'off' | null>(null);
-  useChanged(!!data.ready, (_, ready) => {
+  // Before the paint, so the key is never drawn already filled ahead of its sweep.
+  useChangedNow(!!data.ready, (_, ready) => {
     if (before) {
       setSweep(ready ? 'on' : 'off');
       sfx(ready ? 'ready_on' : 'ready_off');

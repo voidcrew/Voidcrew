@@ -10,7 +10,7 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 
-import { sfx, useChanged } from './motion';
+import { sfx, useChanged, useChangedNow } from './motion';
 import { useBack, usePager } from './nav';
 import {
   Band,
@@ -116,7 +116,7 @@ function useCountdown(value: number): number {
   return Math.max(0, base.current.value - gone);
 }
 
-/** A berth row coming alive after the code was accepted: its dead look lifts `delay` ms in. */
+/** A berth row coming alive after the code was accepted: its dead look lifts 40 ms after `delay`. */
 function Light(props: { y: number; h: number; delay: number }) {
   const style = useCellRect(1, props.y, 41, props.h);
   return (
@@ -173,7 +173,7 @@ export function CrewRecord(props: Props) {
 
   // The code was accepted: the berth rows light top to bottom.
   const [lights, setLights] = useState(0);
-  useChanged(locked, (was, now) => {
+  useChangedNow(locked, (was, now) => {
     if (was && !now && !!c.cleared) {
       setLights((n) => n + 1);
       sfx('ok', { own: true });
