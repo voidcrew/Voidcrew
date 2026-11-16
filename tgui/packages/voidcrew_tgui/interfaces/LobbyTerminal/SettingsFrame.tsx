@@ -13,7 +13,7 @@ import {
   useState,
 } from 'react';
 
-import { clamp, useListPager } from './CharFrame';
+import { clamp, StepKeys, useListPager } from './CharFrame';
 import { FocusGroup, useBack } from './nav';
 import {
   BODY_Y,
@@ -60,8 +60,10 @@ export type SettingsRowSpec = {
   value?: (ty: number, focused: boolean) => ReactNode;
   /** Enter or a click. Without it (and without onStep) the row is not a focus stop. */
   onPress?: () => void;
-  /** Left and Right on the focused row. */
+  /** Left and Right on the focused row; the row then draws its `<` `>` keys (StepKeys). */
   onStep?: (by: number) => void;
+  /** A number at its low or high end: that key is drawn dead. */
+  ends?: [boolean, boolean];
   /** Dead colours (shown, not changeable), still focusable for its description. */
   muted?: boolean;
   /** The row takes the focus when this turns on (back from typing in it). */
@@ -281,6 +283,15 @@ function SettingRow(props: {
           </Put>
         ))}
         {spec.value?.(ty, focused)}
+        {!!step && (
+          <StepKeys
+            x={WORK_X + WORK_W - 6}
+            y={y}
+            h={h}
+            onStep={step}
+            ends={spec.ends}
+          />
+        )}
       </Slab>
     </div>
   );
@@ -325,8 +336,10 @@ export function SettingsColumns(props: {
    */
   find?: string;
   onFind?: (text: string) => void;
+  /** The row whose value is being typed: the strip keeps its description while the keys are in the field. */
+  typing?: string | null;
 }) {
-  const { cats, cat, onCat, rows, focusKey, empty, onFind } = props;
+  const { cats, cat, onCat, rows, focusKey, empty, onFind, typing } = props;
   const find = props.find || '';
   const { subOpen, closeSub } = useSettings();
   const { rows: M } = useGrid();
@@ -457,7 +470,8 @@ export function SettingsColumns(props: {
     return row;
   });
 
-  const described = seen ?? (inRows ? focusRow : null);
+  const described =
+    seen ?? (inRows ? focusRow : shownRow(typing ?? null) ? typing : null);
   const desc = safe(
     rows.find((r) => r.key === described)?.desc || '',
   ).toUpperCase();

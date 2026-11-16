@@ -48,12 +48,16 @@ import { choicesOf, nameOf, usePrefsCatalog } from './usePrefsCatalog';
 
 /** A choice with more values than this opens the list picker on Enter. */
 const HANDFUL = 6;
-/** The value's text: from VALUE_X + 2, this many cells (the `>` sits in the last one). */
-const VALUE_TEXT_X = VALUE_X + 2;
-const VALUE_TEXT_W = 14;
-/** A slider's track: after the `<`, with the number in the four cells after it. */
-const SLIDE_X = VALUE_X + 2;
-const SLIDE_W = 10;
+/** The value's text: from VALUE_X, this many cells beside the row's `<` `>` keys (column 56). */
+const VALUE_TEXT_X = VALUE_X;
+const VALUE_TEXT_W = 11;
+/** A value with no keys beside it runs to the row's end. */
+const VALUE_WIDE_W = 18;
+/** A choice with a value name longer than this opens the list picker on Enter. */
+const PICK_W = 14;
+/** A slider's track, with the number in the four cells after it. */
+const SLIDE_X = VALUE_X;
+const SLIDE_W = 7;
 /** The category tg's window puts last here. */
 const LAST_CAT = 'ADMIN';
 
@@ -159,42 +163,6 @@ function numberText(row: SettingRow, v: number) {
 }
 
 /**
- * The `<` and `>` around a stepped value, mouse only (Left and Right step the focused row). An
- * arrow that can't move the value (a number at the end of its range) is faint and inert.
- */
-function Arrows(props: {
-  ty: number;
-  onStep: (by: number) => void;
-  atLo?: boolean;
-  atHi?: boolean;
-}) {
-  const { ty, onStep, atLo, atHi } = props;
-  const arrow = (x: number, glyph: string, by: number, dead?: boolean) =>
-    dead ? (
-      <Put x={x} y={ty} cls="faint">
-        {glyph}
-      </Put>
-    ) : (
-      <Put
-        x={x}
-        y={ty}
-        cls="dim"
-        hoverCls="inv"
-        mouseOnly
-        onClick={() => onStep(by)}
-      >
-        {glyph}
-      </Put>
-    );
-  return (
-    <>
-      {arrow(VALUE_X, '<', -1, atLo)}
-      {arrow(WORK_X + WORK_W - 1, '>', 1, atHi)}
-    </>
-  );
-}
-
-/**
  * A number or text being typed, over the value zone. Enter sends it; leaving the field (Escape,
  * a click elsewhere) drops it.
  */
@@ -203,9 +171,11 @@ function TypeIn(props: {
   start: string;
   max: number;
   numeric: boolean;
+  /** Cells for the field. */
+  w: number;
   onDone: (text: string | null) => void;
 }) {
-  const { ty, start, max, numeric, onDone } = props;
+  const { ty, start, max, numeric, w, onDone } = props;
   const [text, setText] = useState(start);
   const wrap = useRef<HTMLDivElement>(null);
   const done = useRef(false);
@@ -223,9 +193,9 @@ function TypeIn(props: {
   return (
     <div ref={wrap} onBlur={() => finish(null)}>
       <Field
-        x={VALUE_X + 1}
+        x={VALUE_X}
         y={ty - 0.125}
-        w={VALUE_W_FIELD}
+        w={w}
         h={1.25}
         value={text}
         max={max}
@@ -237,8 +207,6 @@ function TypeIn(props: {
     </div>
   );
 }
-
-const VALUE_W_FIELD = WORK_X + WORK_W - VALUE_X - 2;
 
 /** The open setting's row, or null once it is gone (a parent toggle hid it). */
 function useSettingRow(k: string) {
@@ -366,7 +334,7 @@ export function SettingsOptions() {
                 upper(
                   shown ? shown.name(String(row.value)) : String(row.value),
                 ),
-                VALUE_TEXT_W,
+                VALUE_WIDE_W,
               )}
             </Put>
           ),
@@ -385,6 +353,7 @@ export function SettingsOptions() {
             start={start}
             max={max}
             numeric={numeric}
+            w={numeric ? VALUE_TEXT_W : VALUE_WIDE_W}
             onDone={(t) => {
               setTyping(null);
               setBack(key);
@@ -420,16 +389,13 @@ export function SettingsOptions() {
               onStep: step,
               onPress:
                 spec.list.length > HANDFUL ||
-                spec.list.some((c) => upper(spec.name(c)).length > VALUE_TEXT_W)
+                spec.list.some((c) => upper(spec.name(c)).length > PICK_W)
                   ? () => sub(<OptionPick k={key} />, NAME, key)
                   : () => step(1),
               value: (ty: number) => (
-                <>
-                  <Arrows ty={ty} onStep={step} />
-                  <Put x={VALUE_TEXT_X} y={ty} pulse={value}>
-                    {cut(upper(spec.name(value)), VALUE_TEXT_W)}
-                  </Put>
-                </>
+                <Put x={VALUE_TEXT_X} y={ty} pulse={value}>
+                  {cut(upper(spec.name(value)), VALUE_TEXT_W)}
+                </Put>
               ),
             };
           }
@@ -439,7 +405,7 @@ export function SettingsOptions() {
               ...base,
               value: (ty: number) => (
                 <Put x={VALUE_TEXT_X} y={ty} cls="dim">
-                  {cut(upper(String(row.value)), VALUE_TEXT_W)}
+                  {cut(upper(String(row.value)), VALUE_WIDE_W)}
                 </Put>
               ),
             };
@@ -487,6 +453,7 @@ export function SettingsOptions() {
             return {
               ...base,
               onStep: (by: number) => step(by * coarse),
+              ends: [now <= lo, now >= hi],
               onPress: () => setTyping(key),
               value:
                 typing === key
@@ -495,12 +462,6 @@ export function SettingsOptions() {
                       const text = numberText(row, now);
                       return (
                         <>
-                          <Arrows
-                            ty={ty}
-                            onStep={(by) => step(by * coarse)}
-                            atLo={now <= lo}
-                            atHi={now >= hi}
-                          />
                           <Slide
                             x={SLIDE_X}
                             y={ty}
@@ -535,22 +496,15 @@ export function SettingsOptions() {
           return {
             ...base,
             onStep: step,
+            ends: [v <= lo, v >= hi],
             onPress: () => setTyping(key),
             value:
               typing === key
                 ? typeIn(numberText(row, v), 6, true, send)
                 : (ty: number) => (
-                    <>
-                      <Arrows
-                        ty={ty}
-                        onStep={step}
-                        atLo={v <= lo}
-                        atHi={v >= hi}
-                      />
-                      <Put x={VALUE_TEXT_X} y={ty} pulse={v}>
-                        {cut(numberText(row, v), VALUE_TEXT_W)}
-                      </Put>
-                    </>
+                    <Put x={VALUE_TEXT_X} y={ty} pulse={v}>
+                      {cut(numberText(row, v), VALUE_TEXT_W)}
+                    </Put>
                   ),
           };
         }
@@ -588,7 +542,7 @@ export function SettingsOptions() {
                   )
                 : (ty: number) => (
                     <Put x={VALUE_TEXT_X} y={ty} pulse={text}>
-                      {cut(upper(text), VALUE_TEXT_W + 2)}
+                      {cut(upper(text), VALUE_WIDE_W)}
                     </Put>
                   ),
           };
@@ -599,7 +553,7 @@ export function SettingsOptions() {
             muted: true,
             value: (ty: number) => (
               <Put x={VALUE_TEXT_X} y={ty} cls="faint">
-                {cut(upper(String(row.value ?? '')), VALUE_TEXT_W)}
+                {cut(upper(String(row.value ?? '')), VALUE_WIDE_W)}
               </Put>
             ),
           };
@@ -615,6 +569,7 @@ export function SettingsOptions() {
       focusKey={from}
       find={find}
       onFind={setFind}
+      typing={typing}
       empty={data.settings ? undefined : 'FETCHING SETTINGS.'}
     />
   );
