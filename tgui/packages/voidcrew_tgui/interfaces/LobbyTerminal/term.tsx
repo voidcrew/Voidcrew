@@ -1223,9 +1223,9 @@ export const TERM_CSS = `
     radial-gradient(ellipse 50% 45% at 30% 20%, rgba(90,60,255,.16), transparent 70%); }
 .lt-stars { position: absolute; inset: 0; pointer-events: none; }
 .lt-stars i { position: absolute; background: #a88fe0; }
-.lt-scan { position: absolute; inset: 0; z-index: 20; pointer-events: none;
+.lt-scan { position: absolute; inset: 0; z-index: 22; pointer-events: none;
   background: repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 1px, transparent 1px 3px); }
-.lt-vign { position: absolute; inset: 0; z-index: 21; pointer-events: none;
+.lt-vign { position: absolute; inset: 0; z-index: 23; pointer-events: none;
   box-shadow: inset 0 0 calc(var(--s) * 26px) #000; }
 .lt-tui { --lt-fg: #dfc4ff; --lt-ph: var(--lt-fg); --lt-dim: #8f6fc8; --lt-faint: #4d3a73; --lt-wht: #ffffff;
   --lt-acc: #ff66d6; --lt-amb: #ffc41f; --lt-red: #ff5f6f; --lt-bar: #7b2fbf; --lt-ink: #1a0420;

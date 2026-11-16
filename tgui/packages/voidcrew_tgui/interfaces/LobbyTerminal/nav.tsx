@@ -24,7 +24,8 @@ import {
   useRef,
   useState,
 } from 'react';
-import { resolveAsset } from 'tgui/assets';
+
+import { play, preload } from './audio';
 
 export type Dir = 'up' | 'down' | 'left' | 'right';
 
@@ -82,7 +83,6 @@ const PRESS_VOLUME = 0.3;
 /** At most one click per this many ms; a held arrow repeats faster than that. */
 const SOUND_GAP = 55;
 
-const audioCache: Record<string, HTMLAudioElement | null> = {};
 let lastSound = 0;
 let soundTurn = 0;
 
@@ -96,26 +96,26 @@ function playSound(kind: 'move' | 'press') {
     kind === 'press'
       ? PRESS_SOUND
       : MOVE_SOUNDS[soundTurn++ % MOVE_SOUNDS.length];
-  try {
-    let audio = audioCache[name];
-    if (audio === undefined) {
-      audio = new Audio(resolveAsset(name));
-      audio.preload = 'auto';
-      audioCache[name] = audio;
-    }
-    if (!audio) {
-      return;
-    }
-    audio.volume = kind === 'press' ? PRESS_VOLUME : MOVE_VOLUME;
-    audio.currentTime = 0;
-    const played = audio.play();
-    if (played?.catch) {
-      // Before the first key or click the browser may refuse; the next one plays.
-      played.catch(() => undefined);
-    }
-  } catch {
-    audioCache[name] = null;
-  }
+  // Before the first key or click the browser may refuse; the next one plays.
+  play(name, {
+    gain: kind === 'press' ? PRESS_VOLUME : MOVE_VOLUME,
+    solo: true,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Input lock
+// ---------------------------------------------------------------------------
+
+let inputLocked = false;
+
+/**
+ * While locked, the keyboard does nothing here and the focus makes no sound: something drawn
+ * over the terminal (the start-up screen) owns the keys. The owner must also keep the mouse off
+ * what is underneath, and handle or swallow the keys itself.
+ */
+export function lockNav(locked: boolean) {
+  inputLocked = locked;
 }
 
 // ---------------------------------------------------------------------------
@@ -239,7 +239,7 @@ export function NavProvider(props: ProviderProps) {
       setFocused(id);
       const item = id ? items.get(id) : undefined;
       lastBox.current = boxOf(item) || lastBox.current;
-      if ((how === 'key' || how === 'mouse') && id) {
+      if ((how === 'key' || how === 'mouse') && id && !inputLocked) {
         playSound('move');
       }
       if (how === 'key' && item?.opts.current.tab) {
@@ -353,6 +353,10 @@ export function NavProvider(props: ProviderProps) {
   }, []);
 
   useEffect(() => {
+    preload([...MOVE_SOUNDS, PRESS_SOUND]);
+  }, []);
+
+  useEffect(() => {
     const move = (dir: Dir) => {
       const current = focusRef.current;
       const item = current ? items.get(current) : undefined;
@@ -394,6 +398,9 @@ export function NavProvider(props: ProviderProps) {
       lastAction.current = Date.now();
     };
     const onKey = (e: KeyboardEvent) => {
+      if (inputLocked) {
+        return;
+      }
       onAction();
       if (e.ctrlKey || e.altKey || e.metaKey) {
         return;

@@ -13,6 +13,7 @@ import { resolveAsset } from 'tgui/assets';
 import { useBackend } from 'tgui/backend';
 
 import { Bezel } from './Bezel';
+import { Boot } from './Boot';
 import { CharacterTab } from './CharacterTab';
 import { CrewsTab } from './CrewsTab';
 import { HeaderBand, TABS, TabRow } from './Header';
@@ -257,6 +258,12 @@ export function LobbyTerminal() {
                 {!!reg.bar && <Region {...reg.bar} />}
               </GridContext.Provider>
             </div>
+            {/* Glass layers, bottom to top: the canvas, the start-up screen, scanlines, vignette. */}
+            <Boot
+              glassW={layout.screen.w}
+              glassH={layout.screen.h}
+              dpr={layout.dpr}
+            />
             <div className="lt-scan" />
             <div className="lt-vign" />
           </div>

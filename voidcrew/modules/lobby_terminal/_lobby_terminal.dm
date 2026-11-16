@@ -65,6 +65,8 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	var/had_focus = FALSE
 	/// The skin.dmf BROWSER control the terminal renders into.
 	var/control_id = "lobby_browser"
+	/// TRUE once the player has pressed LOGIN on the start-up screen. The terminal lives as long as the client, so the screen plays once per connection and not again on a return to the lobby mid-round.
+	var/boot_done = FALSE
 
 	// CHARACTER section (lobby_character*.dm). Declared here so every owner shares them.
 	/// Job category the preview wears (preview only, never saved). Null: the top role.
@@ -172,6 +174,9 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 		"mapwindow.status_bar.is-visible" = "false",
 		"[control_id].focus" = "true",
 	))
+	// The start-up screen waits for this: it must not begin before the player can see it.
+	if(!boot_done)
+		INVOKE_ASYNC(SStgui, TYPE_PROC_REF(/datum/controller/subsystem/tgui, update_uis), src)
 
 /**
  * Puts the classic HUD lobby's buttons on or off the owner's screen. The starfield backdrop

@@ -49,6 +49,11 @@ export type ShellData = {
   notice: Notice | null;
   /** The server asks the client to switch tab; act on each new serial. */
   tab_request: { tab: TabId; serial: number } | null;
+  /**
+   * The start-up screen (Boot.tsx): 0 this connection has already seen it, 1 it is still to
+   * play but the terminal is not on screen yet, 2 play it now.
+   */
+  boot?: 0 | 1 | 2;
 };
 
 export type ShellStatic = {
