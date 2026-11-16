@@ -777,6 +777,8 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 /mob/living/carbon/human/npc/bounty_mafia/proc/mafia_target_ok(mob/living/target)
 	if(!bounty_mafia_may_hurt(target) || faction_check_atom(target))
 		return FALSE
+	if(cyberware_camo_hides(target, src)) // optical camo (cyberware_stealth.dm)
+		return FALSE
 	var/turf/spot = get_turf(target)
 	return spot && spot.z == z && get_dist(src, spot) <= BOUNTY_MOBSTER_CHASE
 
