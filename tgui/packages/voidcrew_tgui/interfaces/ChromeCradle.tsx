@@ -370,10 +370,7 @@ const Rack = () => {
 
   if (!has_occupant) {
     return (
-      <div className="Cradle__empty">
-        The rack is dark. Drag yourself onto the slab to lie back and it wakes
-        up.
-      </div>
+      <div className="Cradle__empty">The rack is dark.</div>
     );
   }
 
@@ -477,7 +474,7 @@ const TileCard = (props: { ware: Ware }) => {
       </div>
       <div className="Cradle__hoverMeta">
         <span style={{ color: accent }}>
-          T{ware.tier} {TIER_NAMES[ware.tier] || 'CHROME'}
+          {TIER_NAMES[ware.tier] || 'CHROME'}
         </span>
         <span>load {ware.load}</span>
         {ware.capacity_bonus > 0 && <span>+{ware.capacity_bonus} cap</span>}
@@ -520,10 +517,7 @@ const Detail = () => {
 
   if (!ware) {
     return (
-      <div className="Cradle__empty">
-        Pick a piece from the rack. Anything you own shows up on the body before
-        the rig touches you.
-      </div>
+      <div className="Cradle__empty">Nothing selected.</div>
     );
   }
 
@@ -548,7 +542,7 @@ const Detail = () => {
           </div>
           <div className="Cradle__detailTier">
             <span style={{ color: accent }}>
-              TIER {ware.tier} · {TIER_NAMES[ware.tier] || 'CHROME'}
+              {TIER_NAMES[ware.tier] || 'CHROME'}
             </span>
             <span className="Cradle__detailWhere">
               {ware.state === 'installed'
@@ -603,7 +597,7 @@ const Detail = () => {
           )}
           {!!overCapacity && (
             <div className="Cradle__evicts Cradle__evicts--bad">
-              No neural headroom. Shed load or find a Governor.
+              No neural headroom.
             </div>
           )}
         </div>
@@ -614,7 +608,6 @@ const Detail = () => {
           <ActionButton
             tone="bad"
             disabled={!mayOperate}
-            hint="Three-second extraction. The ware comes back out intact."
             onClick={() => act('remove', { ref: ware.ref })}
           >
             EXTRACT
@@ -623,11 +616,7 @@ const Detail = () => {
           <ActionButton
             tone="good"
             disabled={!mayOperate || !ware.fits}
-            hint={
-              ware.fits
-                ? 'Four-second install. You will be briefly sedated.'
-                : 'Will not fit the current load budget.'
-            }
+            hint={ware.fits ? undefined : 'No neural headroom.'}
             onClick={() => act('install', { ref: ware.ref })}
           >
             INSTALL
@@ -776,10 +765,7 @@ const StatusDeck = () => {
             style={{ width: `${progress * 100}%` }}
           />
         </div>
-        <div className="Cradle__note">
-          Hold still. Leaving the slab cancels the cycle. Nothing is lost, the
-          ware goes to the tray.
-        </div>
+        <div className="Cradle__note">Hold still.</div>
       </div>
     );
   }
@@ -789,19 +775,13 @@ const StatusDeck = () => {
     notes.push('Trade embargo. The rig will not work on you.');
   }
   if (!has_occupant) {
-    notes.push('The slab is empty. Drag yourself onto it to lie back.');
+    notes.push('The slab is empty.');
   } else if (!occupant_is_user) {
-    notes.push(
-      `${occupant_name} is on the slab. The rig takes orders from its occupant only. You can still pop the parts tray.`,
-    );
+    notes.push(`${occupant_name} is on the slab.`);
   } else if (!can_operate) {
-    notes.push(
-      'The rig refuses: you have to be conscious and unrestrained to consent to chrome work.',
-    );
+    notes.push('The rig needs you awake and free to say yes.');
   } else {
-    notes.push(
-      'Rig idle. Highlight a piece in the rack, check it on the body, then commit.',
-    );
+    notes.push('Rig idle.');
   }
   if (tray_count > 0) {
     notes.push(
@@ -841,10 +821,7 @@ const Controls = () => {
       <ActionButton
         tone="cool"
         disabled={!mayOperate || !!tuneup_denial}
-        hint={
-          tuneup_denial ||
-          `Clears EMP scramble and repairs all installed chrome. ${tuneup_fee} cr.`
-        }
+        hint={tuneup_denial || undefined}
         onClick={() => act('tuneup')}
       >
         {`TUNE-UP · ${tuneup_fee} CR`}
@@ -852,7 +829,6 @@ const Controls = () => {
       <ActionButton
         tone="plain"
         disabled={tray_count === 0}
-        hint="Anyone adjacent can pop the tray. Evicted chrome is never held hostage."
         onClick={() => act('eject_tray')}
       >
         {`EJECT TRAY${tray_count > 0 ? ` · ${tray_count}` : ''}`}
@@ -860,7 +836,6 @@ const Controls = () => {
       <ActionButton
         tone="plain"
         disabled={loaded_credits <= 0 || !!busy}
-        hint="Returns the slab's loaded cash as a holochip."
         onClick={() => act('eject_cash')}
       >
         EJECT CASH
@@ -868,7 +843,6 @@ const Controls = () => {
       <ActionButton
         tone="plain"
         disabled={!has_occupant}
-        hint="Gets the patient off the slab. Cancels any running cycle, the ware goes to the tray."
         onClick={() => act('get_up')}
       >
         {occupant_is_user ? 'GET UP' : 'UNBUCKLE'}

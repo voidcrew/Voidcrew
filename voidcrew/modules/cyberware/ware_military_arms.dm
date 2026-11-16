@@ -23,7 +23,7 @@
  */
 /obj/item/cyberware_pair_case
 	name = "cyberware pair case"
-	desc = "A foam-lined clamshell case for a matched set of chrome. Crack it open in hand."
+	desc = "A foam-lined clamshell case for a matched set of chrome."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	icon_state = "ware_case"
 	w_class = WEIGHT_CLASS_NORMAL
@@ -39,7 +39,7 @@
 	. = ..()
 	if(length(contents))
 		. += span_notice("Nestled in the foam: [english_list(contents)].")
-	. += span_notice("Use it in hand to crack it open.")
+
 
 /obj/item/cyberware_pair_case/attack_self(mob/user, modifiers)
 	. = ..()
@@ -61,7 +61,7 @@
 
 /obj/item/cyberware_pair_case/gorilla_arms
 	name = "\improper Gorilla Arms case"
-	desc = "A heavy clamshell case stenciled with a fist. Two myomer lattices inside, one per arm. The Cradle installs the pair in one sitting."
+	desc = "A heavy clamshell case stenciled with a fist. Two myomer lattices inside, one per arm."
 	ware_types = list(
 		/obj/item/organ/cyberimp/cyberware/gorilla_arms,
 		/obj/item/organ/cyberimp/cyberware/gorilla_arms/left,
@@ -114,7 +114,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/gorilla_arms
 	name = "\improper Gorilla Arms myomer lattice (right)"
-	desc = "A myomer weave anchored bone-deep through the arm. You don't look any stronger for it; you just start pulling closed airlocks open with your bare hands."
+	desc = "A myomer weave anchored bone-deep through the arm. You don't look any stronger for it; doors just stop being your problem."
 	icon_state = "gorilla"
 	zone = BODY_ZONE_R_ARM
 	slot = ORGAN_SLOT_RIGHT_ARM_AUG
@@ -128,6 +128,23 @@
 	aug_overlay = "gorilla_right"
 	/// Rate limit on this arm's empowered hits.
 	COOLDOWN_DECLARE(slam_cooldown)
+	// The defines above are the Gorilla defaults. They live in vars so the other
+	// models of the line (ware_line_models_a.dm) can retune by setting them.
+	/// Flat brute per empowered punch.
+	var/punch_damage = CYBERWARE_GORILLA_PUNCH_DAMAGE
+	/// Damage per structure/machine smash.
+	var/structure_damage = CYBERWARE_GORILLA_STRUCTURE_DAMAGE
+	/// Gap between empowered punches, per arm.
+	var/punch_cooldown_time = CYBERWARE_GORILLA_PUNCH_COOLDOWN
+	/// Gap between structure smashes / rock breaks, per arm.
+	var/smash_cooldown_time = CYBERWARE_GORILLA_SMASH_COOLDOWN
+	/// How far an aggressively-grabbed victim gets hurled. 0 or less: no hurl,
+	/// the grabbed victim takes the ordinary slam.
+	var/hurl_range = CYBERWARE_GORILLA_HURL_RANGE
+	/// Whether a matched pair of these pries closed airlocks (the set bonus).
+	var/pries_doors = TRUE
+	/// The set bonus a matched pair of this model syncs into. Each model has its own, so a mixed pair syncs into neither.
+	var/pair_bonus = /datum/status_effect/organ_set_bonus/cyberware_gorilla
 
 /obj/item/organ/cyberimp/cyberware/gorilla_arms/left
 	name = "\improper Gorilla Arms myomer lattice (left)"
@@ -137,7 +154,11 @@
 
 /obj/item/organ/cyberimp/cyberware/gorilla_arms/Initialize(mapload)
 	. = ..()
-	AddElement(/datum/element/organ_set_bonus, /datum/status_effect/organ_set_bonus/cyberware_gorilla)
+	if(pries_doors && pair_bonus)
+		AddElement(/datum/element/organ_set_bonus, pair_bonus)
+	// Each real arm winds up a haymaker; both share the pistons' cooldown (hyperviolence_gorilla/gorilla_haymaker.dm)
+	if(heavy_moves)
+		add_item_action(/datum/action/cooldown/cyberware/gorilla_haymaker)
 
 /**
  * Worn-chrome overlay hook. Gorilla Arms replace the limb outright, hand
@@ -146,12 +167,11 @@
  * sits well above CYBERWARE_WORN_LAYER, so a plate drawn only at the chrome
  * layer gets painted back over by bare knuckles.
  *
- * One image cannot fix that. The hand already draws above UNIFORM_LAYER, so
- * anything stacked over the hand is also stacked over the jumpsuit, and the
- * chrome layer exists precisely to stay under worn clothing. Instead we do what
- * tg's own toolkit augments do (augments_arms.dm's hand_state): the arm plate
- * keeps the chrome layer and hides under sleeves, and a separate "_hand" plate
- * rides at the hand's own layer, where gloves still cover it like real skin.
+ * Lifting the whole arm plate above the hand would also lift it over the worn
+ * ID. Instead we do what tg's own toolkit augments do (augments_arms.dm's
+ * hand_state): the arm plate keeps the chrome layer, over the sleeve, and a
+ * separate "_hand" plate rides at the hand's own layer, where gloves still
+ * cover it like real skin.
  *
  * The sheet may ship without the hand plate. Then this is a no-op and the arm
  * plate renders alone, exactly as it did before.
@@ -198,7 +218,28 @@
 		source.do_attack_animation(rock, ATTACK_EFFECT_SMASH)
 		playsound(rock, 'sound/effects/meteorimpact.ogg', 30, TRUE)
 		rock.gets_drilled(source, 1)
-		COOLDOWN_START(src, slam_cooldown, CYBERWARE_GORILLA_SMASH_COOLDOWN)
+		COOLDOWN_START(src, slam_cooldown, smash_cooldown_time)
+		return COMPONENT_CANCEL_ATTACK_CHAIN
+
+	// Someone held in an aggressive grab, brought down on the floor or a table (hyperviolence_gorilla/gorilla_punch.dm).
+	// Before the structure smash, so a table click while grabbing slams them instead of caving the table in.
+	switch(try_slam(source, target, active_hand))
+		if(GORILLA_SLAM_DONE)
+			COOLDOWN_START(src, slam_cooldown, punch_cooldown_time)
+			return COMPONENT_CANCEL_ATTACK_CHAIN
+		if(GORILLA_SLAM_PASS)
+			return NONE
+
+	// A trader outpost's doors hold against a fist as they do against a pry, and trying counts against you
+	// (hyperviolence_gorilla/gorilla_pry.dm).
+	if(istype(target, /obj/machinery/door) && gorilla_pry_refused(target))
+		source.changeNext_move(CLICK_CD_MELEE)
+		source.do_attack_animation(target, ATTACK_EFFECT_SMASH)
+		playsound(target, 'sound/items/weapons/tap.ogg', 50, TRUE)
+		target.balloon_alert(source, "it won't budge!")
+		gorilla_pry_aggression(target, source)
+		source.log_message("punched [target] at a trader outpost, located at [loc_name(target)].", LOG_GAME)
+		COOLDOWN_START(src, slam_cooldown, smash_cooldown_time)
 		return COMPONENT_CANCEL_ATTACK_CHAIN
 
 	// Structures, girders, machines cave in. Loose items are beneath us.
@@ -213,11 +254,12 @@
 			span_danger("[source] caves [smashed] in with a piston-driven fist!"),
 			span_danger("You cave [smashed] in!"),
 		)
-		smashed.take_damage(CYBERWARE_GORILLA_STRUCTURE_DAMAGE, BRUTE, MELEE)
-		COOLDOWN_START(src, slam_cooldown, CYBERWARE_GORILLA_SMASH_COOLDOWN)
+		smashed.take_damage(structure_damage, BRUTE, MELEE)
+		COOLDOWN_START(src, slam_cooldown, smash_cooldown_time)
 		return COMPONENT_CANCEL_ATTACK_CHAIN
 
-	if(!isliving(target))
+	// A pacifist's punch at a living thing is the ordinary punch, which refuses it.
+	if(!isliving(target) || HAS_TRAIT(source, TRAIT_PACIFISM))
 		return NONE
 	if(!source.can_unarmed_attack())
 		return COMPONENT_SKIP_ATTACK
@@ -227,37 +269,19 @@
 
 	if(ishuman(living_target))
 		var/mob/living/carbon/human/human_target = living_target
-		if(human_target.check_block(source, CYBERWARE_GORILLA_PUNCH_DAMAGE, "[source]'s piston punch"))
+		if(human_target.check_block(source, punch_damage, "[source]'s piston punch"))
 			source.do_attack_animation(living_target)
 			playsound(living_target.loc, 'sound/items/weapons/punchmiss.ogg', 25, TRUE, -1)
 			log_combat(source, living_target, "attempted to piston-punch", "gorilla arms")
 			return COMPONENT_CANCEL_ATTACK_CHAIN
 
-	// The one damage line. Flat, wounding, honest.
-	var/grabbed_hurl = living_target.pulledby == source && source.grab_state >= GRAB_AGGRESSIVE
-	source.do_attack_animation(living_target, ATTACK_EFFECT_SMASH)
-	playsound(living_target.loc, 'sound/items/weapons/punch1.ogg', 40, TRUE, -1)
-	var/target_zone = living_target.get_random_valid_zone(source.zone_selected)
-	var/armor_block = living_target.run_armor_check(target_zone, MELEE, armour_penetration = active_hand.unarmed_effectiveness)
-	living_target.apply_damage(CYBERWARE_GORILLA_PUNCH_DAMAGE, BRUTE, target_zone, armor_block, wound_bonus = 10)
+	// Someone in crit or stunned, with the aimed zone picking the finisher (hyperviolence_gorilla/gorilla_finisher.dm).
+	if(gorilla_try_finisher(source, living_target))
+		return COMPONENT_CANCEL_ATTACK_CHAIN
 
-	if(source.body_position != LYING_DOWN)
-		var/atom/throw_target = get_edge_target_turf(living_target, source.dir)
-		if(grabbed_hurl)
-			living_target.safe_throw_at(throw_target, CYBERWARE_GORILLA_HURL_RANGE, 2, source)
-			living_target.visible_message(
-				span_danger("[source] hurls [living_target] across the room!"),
-				span_userdanger("[source] hurls you across the room!"),
-			)
-		else
-			living_target.throw_at(throw_target, 1, rand(1, 4), source, gentle = TRUE)
-			living_target.visible_message(
-				span_danger("[source] slams [living_target] with a piston-driven fist!"),
-				span_userdanger("[source] slams you with a piston-driven fist!"),
-			)
-	to_chat(source, span_danger("You slam [living_target]!"))
-	log_combat(source, living_target, "piston-punched", "gorilla arms")
-	COOLDOWN_START(src, slam_cooldown, CYBERWARE_GORILLA_PUNCH_COOLDOWN)
+	// The one damage line, through #509, with the knockback on the safe path (hyperviolence_gorilla/gorilla_punch.dm).
+	piston_hit(source, living_target, active_hand)
+	COOLDOWN_START(src, slam_cooldown, punch_cooldown_time)
 	return COMPONENT_CANCEL_ATTACK_CHAIN
 
 /**
@@ -270,22 +294,41 @@
 	id = "organ_set_bonus_cyberware_gorilla"
 	organs_needed = 2
 	required_biotype = NONE
-	bonus_activate_text = span_notice("Your Gorilla Arms sync up. You can force closed airlocks by hand now. Walk up and pull, out of combat mode.")
-	bonus_deactivate_text = span_notice("Your arms fall out of sync. Doors stay shut again.")
+	bonus_activate_text = span_notice("Your Gorilla Arms sync up.")
+	bonus_deactivate_text = span_notice("Your arms fall out of sync.")
+	/// How long the pair takes to force a powered airlock.
+	var/pry_time = GORILLA_PRY_TIME
+	/// The ground pound chip the pair grants.
+	var/pound_type = /datum/action/cooldown/cyberware/gorilla_pound
+	/// Whether the arms flex as they sync.
+	var/flexes = TRUE
 
 /datum/status_effect/organ_set_bonus/cyberware_gorilla/enable_bonus(obj/item/organ/inserted_organ)
 	. = ..()
 	if(!.)
 		return
-	owner.AddElement(/datum/element/door_pryer, pry_time = 4 SECONDS, interaction_key = DOAFTER_SOURCE_GORILLA_PRY)
+	// The pry refuses trader outpost doors and plays the strain (hyperviolence_gorilla/gorilla_pry.dm)
+	owner.AddElement(/datum/element/door_pryer/gorilla, pry_time = pry_time, interaction_key = DOAFTER_SOURCE_GORILLA_PRY)
+	// The ground pound chip, and the flex as the arms come online (hyperviolence_gorilla/gorilla_pound.dm)
+	grant_pound()
+	if(flexes)
+		gorilla_flex(owner)
 
 /datum/status_effect/organ_set_bonus/cyberware_gorilla/disable_bonus(obj/item/organ/removed_organ)
 	. = ..()
-	owner.RemoveElement(/datum/element/door_pryer, pry_time = 4 SECONDS, interaction_key = DOAFTER_SOURCE_GORILLA_PRY)
+	owner.RemoveElement(/datum/element/door_pryer/gorilla, pry_time = pry_time, interaction_key = DOAFTER_SOURCE_GORILLA_PRY)
+	take_pound()
+
+/datum/status_effect/organ_set_bonus/cyberware_gorilla/on_remove()
+	take_pound()
+	return ..()
 
 // =========================================================================
 // MANTIS BLADES
 // =========================================================================
+
+// These four are the Mantis defaults. The housing reads them into vars so the
+// other models in the line (ware_line_mantis.dm) can retune by setting vars.
 
 /// Lunge reach in tiles.
 #define CYBERWARE_MANTIS_LUNGE_RANGE 5
@@ -296,6 +339,10 @@
 /// How long a connecting lunge floors its target. Above the module's usual
 /// 1-1.5s band because the lunge is telegraphed and on a 20 second clock.
 #define CYBERWARE_MANTIS_LUNGE_KNOCKDOWN (2 SECONDS)
+/// How long a shown-line dash (dash_aim) takes per tile: a real run down the line, one tick a step.
+#define CYBERWARE_MANTIS_LUNGE_STEP (0.5)
+/// How long tg's attack lunge takes to reach its target (do_attack_animation()): the arrival's cut lands no sooner.
+#define CYBERWARE_MANTIS_LUNGE_THRUST (0.1 SECONDS)
 
 /**
  * The blade itself: hardlight, ~20 force (cap 22), sharp, wounding. Only
@@ -305,13 +352,14 @@
  *
  * Every sprite comes off the cyberware sheets rather than the stock hardlight
  * sword: this is a long blade running forward past the hand out of a forearm
- * housing, not something anybody is gripping. The held sprite is blade only.
- * The housing is already on the bearer's arm as the organ's aug_overlay, and
- * drawing a second one in the hand put a metal brick over their bicep.
+ * housing, not something anybody is gripping. The held sprite is the blade
+ * along the forearm. The organ's worn overlay (the housing with the blade
+ * folded in) hides while the blade is out, see hide_worn_while_deployed.
  *
- * base_icon_state comes along for the ride purely so it cannot disagree with
- * icon_state; update_icon_state() only consults it when sword_color_icon is
- * set, which it never is here.
+ * base_icon_state names the blade's model for its held poses: the held sprite
+ * is "[base_icon_state]_[pose]" (voidcrew/modules/mantis_gore/), the raised
+ * guard while nothing else is going on. update_icon_state() only consults it
+ * when sword_color_icon is set, which it never is here.
  */
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis
 	name = "mantis blade"
@@ -319,12 +367,41 @@
 	icon = 'voidcrew/modules/cyberware/icons/cyberware_weapons.dmi'
 	icon_state = "mantis"
 	base_icon_state = "mantis"
-	inhand_icon_state = "mantis"
-	lefthand_file = 'voidcrew/modules/cyberware/icons/cyberware_lefthand.dmi'
-	righthand_file = 'voidcrew/modules/cyberware/icons/cyberware_righthand.dmi'
+	inhand_icon_state = "mantis_guard"
+	lefthand_file = MANTIS_LEFTHAND_ICON
+	righthand_file = MANTIS_RIGHTHAND_ICON
 	force = 20
 	armour_penetration = 10
 	wound_bonus = 10
+	/// Set by afterattack() during attack()'s parent call, which only a swing that
+	/// connected reaches. attack()'s own FALSE can't tell a cut from a pacifist's
+	/// pulled swing or a signal-skipped one. The Widowline does the same.
+	var/swing_landed = FALSE
+
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
+	// A head swing at someone dying is the scissor, not a cut (mantis_gore/mantis_scissor.dm).
+	if(mantis_swing_taken(target, user))
+		return TRUE
+	swing_landed = FALSE
+	// What the cut does to the body is read while the hit resolves, so its lines join the attack line.
+	mantis_watch_cut(target, user)
+	. = ..()
+	mantis_unwatch_cut(target)
+	var/landed = swing_landed
+	swing_landed = FALSE
+	// Only a cut that landed counts: not a blocked or cancelled swing, not a pulled
+	// one. Never the wielder, whoever is in the way.
+	if(. || !landed || QDELETED(target) || target == user)
+		return
+	on_cut_landed(target, user)
+
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/afterattack(atom/target, mob/user, list/modifiers, list/attack_modifiers)
+	. = ..()
+	swing_landed = TRUE
+
+/// A swing with this blade connected with [target]. The line's models add to it.
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/on_cut_landed(mob/living/target, mob/living/user)
+	return
 
 /**
  * # Mantis Blades (T3, arms, aug slots, load 3 per arm / 6 the pair)
@@ -343,6 +420,8 @@
 	chrome_load = 3
 	tier = CYBERWARE_TIER_3
 	aug_overlay = "mantis"
+	// The worn housing sprite carries the folded blade, so it hides while the blade is out.
+	hide_worn_while_deployed = TRUE
 	items_to_create = list(/obj/item/melee/energy/blade/hardlight/cyberware_mantis)
 	// A blade sliding out of a forearm housing and snapping back into it, the
 	// cursed katana's pair (mining_loot/cursed_katana.dm), not a baton's ratchet.
@@ -352,6 +431,17 @@
 		/datum/action/item_action/organ_action/toggle/toolkit,
 		/datum/action/cooldown/cyberware/mantis_lunge,
 	)
+	/// Lunge reach in tiles.
+	var/lunge_range = CYBERWARE_MANTIS_LUNGE_RANGE
+	/// Bonus brute the arriving lunge lands per blade out.
+	var/lunge_bonus = CYBERWARE_MANTIS_LUNGE_BONUS
+	/// Delay between the wind-up and the dash.
+	var/lunge_telegraph = CYBERWARE_MANTIS_LUNGE_TELEGRAPH
+	/// How long a connecting lunge floors its target.
+	var/lunge_knockdown = CYBERWARE_MANTIS_LUNGE_KNOCKDOWN
+	/// Fire stacks the arriving lunge puts on its target (and lights them
+	/// with). 0 for no fire. The most of any blade that arrives lands, not the sum.
+	var/lunge_fire_stacks = 0
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/left
 	name = "\improper Mantis Blade housing (left)"
@@ -369,32 +459,46 @@
 
 /datum/action/cooldown/cyberware/mantis_lunge
 	name = "Mantis Lunge"
-	desc = "Dash up to five tiles onto a target with the blade leading, cutting them open and dropping them on arrival. The blade must be extended. With both blades out, both land."
+	desc = "Dash up to five tiles onto a target, cutting them open and dropping them on arrival."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_mantis_lunge"
 	cooldown_time = 20 SECONDS
 	click_to_activate = TRUE
+	// A stunned, paralysed or bound body, or one with its hands tied, does not lunge.
+	check_flags = AB_CHECK_CONSCIOUS | AB_CHECK_INCAPACITATED | AB_CHECK_IMMOBILE | AB_CHECK_HANDS_BLOCKED
+	/// Set by a bearer that showed its line before pressing (a bounty NPC's tell): the next press runs down
+	/// that line to this tile with real movement (dash()) instead of the ordinary lunge. Spent by the press.
+	var/turf/dash_aim
 
 /**
- * How many mantis blades this owner has out right now. Every housing grants
- * exactly one of these buttons, so counting the buttons whose blade is
- * extended counts the blades that will arrive.
+ * The housings whose blade is out right now and will arrive with the lunge.
+ * Every lunging housing grants exactly one of these buttons, so walking the
+ * buttons whose blade is extended finds the blades. A model with no lunge
+ * button never lands in this list.
  */
-/datum/action/cooldown/cyberware/mantis_lunge/proc/count_extended_blades()
+/datum/action/cooldown/cyberware/mantis_lunge/proc/get_extended_housings()
+	var/list/housings = list()
 	if(!owner)
-		return 0
-	var/blades = 0
-	for(var/datum/action/cooldown/cyberware/mantis_lunge/lunge_action in owner.actions)
+		return housings
+	// Chrome abilities have no button and so never join mob.actions (chrome_hud.dm).
+	for(var/datum/action/cooldown/cyberware/mantis_lunge/lunge_action in get_chrome_wheel_actions(owner))
 		var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/housing = lunge_action.organ
 		if(istype(housing) && housing.blade_extended())
-			blades++
-	return blades
+			housings += housing
+	return housings
+
+/// How many mantis blades this owner has out right now.
+/datum/action/cooldown/cyberware/mantis_lunge/proc/count_extended_blades()
+	return length(get_extended_housings())
 
 /datum/action/cooldown/cyberware/mantis_lunge/Activate(atom/target)
 	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/housing = organ
 	if(!istype(housing) || !isliving(owner))
 		return FALSE
 	var/mob/living/lunger = owner
+	if(HAS_TRAIT(lunger, TRAIT_PACIFISM))
+		to_chat(lunger, span_warning("You don't want to harm other living beings!"))
+		return FALSE
 	if(!housing.blade_extended())
 		lunger.balloon_alert(lunger, "extend the blade first!")
 		return FALSE
@@ -405,15 +509,22 @@
 		lunger.balloon_alert(lunger, "no target!")
 		return FALSE
 	var/mob/living/victim = target
+	var/turf/aim = dash_aim
+	dash_aim = null
 	if(victim == lunger || victim.stat == DEAD)
 		lunger.balloon_alert(lunger, "no target!")
 		return FALSE
-	if(get_dist(lunger, victim) > CYBERWARE_MANTIS_LUNGE_RANGE || !can_see(lunger, victim, CYBERWARE_MANTIS_LUNGE_RANGE))
+	if(get_dist(lunger, victim) > housing.lunge_range || !can_see(lunger, victim, housing.lunge_range))
 		lunger.balloon_alert(lunger, "out of reach!")
 		return FALSE
+	// The blade is about to be used on someone.
+	cyberware_camo_drop(lunger)
+	// A shown line out of reach is no line: the ordinary lunge
+	if(aim && (aim.z != lunger.z || get_dist(lunger, aim) > housing.lunge_range))
+		aim = null
 	// One lunge clock across both housings: start every mantis_lunge button
 	// this owner has, ours included.
-	for(var/datum/action/cooldown/cyberware/mantis_lunge/lunge_action in lunger.actions)
+	for(var/datum/action/cooldown/cyberware/mantis_lunge/lunge_action in get_chrome_wheel_actions(lunger))
 		lunge_action.StartCooldown()
 	// The telegraph: readable wind-up before the dash lands.
 	lunger.face_atom(victim)
@@ -422,58 +533,193 @@
 		span_boldwarning("[lunger] drops low, mantis blade[both_blades ? "s" : ""] laid flat along [lunger.p_their()] [both_blades ? "arms" : "arm"]!"),
 		span_warning("You coil for the lunge."),
 	)
+	// The blades go flat along the arms for the wind-up (mantis_gore/mantis_poses.dm).
+	mantis_pose_blades(get_extended_housings(), MANTIS_POSE_LUNGE)
 	playsound(lunger, 'sound/items/weapons/sear.ogg', 50, TRUE)
-	addtimer(CALLBACK(src, PROC_REF(do_lunge), WEAKREF(victim)), CYBERWARE_MANTIS_LUNGE_TELEGRAPH)
+	addtimer(CALLBACK(src, PROC_REF(do_lunge), WEAKREF(victim), null, FALSE, aim), housing.lunge_telegraph)
 	return TRUE
 
-/// The dash itself: walk the line to the target with a decoy per tile,
-/// stop adjacent, land the bonus cut once per blade and floor them.
-/datum/action/cooldown/cyberware/mantis_lunge/proc/do_lunge(datum/weakref/victim_ref)
+/// The dash itself: walk the line to the target, stop adjacent, land the bonus
+/// cut once per blade and floor them. [range] is how far it may reach (a charged
+/// leap reaches further, mantis_gore/mantis_charge.dm); [charged] is TRUE for a
+/// leap out of a crouch. With a shown line ([aim], from dash_aim) it runs down
+/// that line instead (dash()).
+/datum/action/cooldown/cyberware/mantis_lunge/proc/do_lunge(datum/weakref/victim_ref, range, charged = FALSE, turf/aim)
 	var/mob/living/lunger = owner
-	if(QDELETED(lunger) || lunger.incapacitated || !isturf(lunger.loc))
+	if(QDELETED(lunger))
 		return
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/housing = organ
+	if(!istype(housing))
+		return
+	// The blades go back to the guard however the dash ends.
+	var/list/posed = get_extended_housings()
+	if(lunger.incapacitated || !isturf(lunger.loc))
+		mantis_pose_blades(posed, MANTIS_POSE_GUARD)
+		return
+	if(isnull(range))
+		range = housing.lunge_range
 	var/mob/living/victim = victim_ref?.resolve()
 	if(QDELETED(victim) || victim.stat == DEAD)
 		lunger.balloon_alert(lunger, "target lost!")
+		mantis_pose_blades(posed, MANTIS_POSE_GUARD)
 		return
+	if(aim)
+		if(aim.z != lunger.z)
+			lunger.balloon_alert(lunger, "target lost!")
+			mantis_pose_blades(posed, MANTIS_POSE_GUARD)
+			return
+		INVOKE_ASYNC(src, PROC_REF(dash), lunger, victim_ref, aim, range, charged, posed)
+		return
+	// The ordinary lunge: walk the line to the target with a decoy per tile and stop adjacent
 	var/turf/victim_turf = get_turf(victim)
-	if(!victim_turf || get_dist(lunger, victim_turf) > CYBERWARE_MANTIS_LUNGE_RANGE + 1)
+	if(!victim_turf || get_dist(lunger, victim_turf) > range + 1)
 		lunger.balloon_alert(lunger, "target lost!")
+		mantis_pose_blades(posed, MANTIS_POSE_GUARD)
 		return
 	playsound(lunger, 'sound/items/weapons/bladeslice.ogg', 60, TRUE)
-	for(var/turf/step_turf as anything in get_line(get_turf(lunger), victim_turf))
-		if(step_turf == get_turf(lunger))
+	var/turf/start = get_turf(lunger)
+	var/list/passed = list()
+	for(var/turf/step_turf as anything in get_line(start, victim_turf))
+		if(step_turf == start)
 			continue
 		if(step_turf == victim_turf)
 			break
 		if(step_turf.is_blocked_turf(exclude_mobs = TRUE))
 			break
-		new /obj/effect/temp_visual/decoy/fading/halfsecond(lunger.loc, lunger)
+		// Never over a drop, into lava or out into space: the dash stops at the edge.
+		if(mantis_lunge_unsafe_turf(step_turf))
+			break
+		passed += lunger.loc
 		lunger.forceMove(step_turf)
+	// Hardlight afterimages and a streak down the line, and the body glides into place (mantis_gore/mantis_lunge_fx.dm).
+	var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/lunge_blade = housing.active_item
+	var/glide = mantis_lunge_dash_fx(lunger, start, passed, charged, istype(lunge_blade) ? lunge_blade.base_icon_state : "mantis")
 	if(!lunger.Adjacent(victim))
 		lunger.balloon_alert(lunger, "fell short!")
+		// The blades stay flat while the body is still gliding in.
+		mantis_lunge_settle(posed, glide)
 		return
+	land_lunge(lunger, victim, housing, lunge_blade, charged, posed, start, glide)
+
+/**
+ * A shown-line dash (dash_aim, a bounty NPC's tell): a real run down the line it showed, a tile a tick with
+ * a decoy per tile, up to the tile before `aim`. Anything that stops a walker stops it there: a wall, a
+ * window, a shut door, a standing body, a stun or a grab. The lunge lands only where the line said: on a
+ * target still on the marked tile, or one who stepped into its way, next to it where it stops. Anyone who
+ * stepped off the line is missed. It goes no further than [range] tiles, never over a drop, lava or
+ * space, and leaves the lunge's afterimages and streak behind it (mantis_gore/mantis_lunge_fx.dm).
+ * [posed] are the blades laid flat for the wind-up: they go back to the guard however it ends.
+ */
+/datum/action/cooldown/cyberware/mantis_lunge/proc/dash(mob/living/lunger, datum/weakref/victim_ref, turf/aim, range, charged = FALSE, list/posed)
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/housing = organ
+	if(!istype(housing))
+		mantis_pose_blades(posed, MANTIS_POSE_GUARD)
+		return
+	var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/lunge_blade = housing.active_item
+	var/model = istype(lunge_blade) ? lunge_blade.base_icon_state : "mantis"
+	var/turf/start = get_turf(lunger)
+	var/turf/stopped_at
+	var/dash_dir = get_dir(start, aim)
+	var/steps = 0
+	playsound(lunger, 'sound/items/weapons/bladeslice.ogg', 60, TRUE)
+	for(var/turf/step_turf as anything in get_line(start, aim))
+		if(step_turf == start)
+			continue
+		if(steps >= range || mantis_lunge_unsafe_turf(step_turf))
+			break
+		if(step_turf == aim || QDELETED(lunger) || lunger.incapacitated || lunger.body_position == LYING_DOWN || !isturf(lunger.loc) || lunger.pulledby?.grab_state > GRAB_PASSIVE)
+			break
+		var/blocked = FALSE
+		for(var/mob/living/body in step_turf)
+			if(body.density)
+				blocked = TRUE
+				break
+		if(blocked)
+			stopped_at = step_turf
+			break
+		var/turf/from = lunger.loc
+		lunger.set_glide_size(DELAY_TO_GLIDE_SIZE(CYBERWARE_MANTIS_LUNGE_STEP))
+		if(!lunger.Move(step_turf, get_dir(from, step_turf)) || lunger.loc != step_turf)
+			break
+		steps++
+		// The lunge's wake on the tile it just left: hardlight afterimages and the streak.
+		mantis_dash_ghost(WEAKREF(lunger), WEAKREF(from), dash_dir, steps / (range + 1), model)
+		sleep(CYBERWARE_MANTIS_LUNGE_STEP)
+	if(QDELETED(lunger) || lunger.stat != CONSCIOUS)
+		mantis_pose_blades(posed, MANTIS_POSE_GUARD)
+		return
+	var/mob/living/victim = victim_ref?.resolve()
+	var/turf/victim_turf = get_turf(victim)
+	if(QDELETED(victim) || victim.stat == DEAD || (victim_turf != aim && victim_turf != stopped_at) || !lunger.Adjacent(victim))
+		lunger.balloon_alert(lunger, "fell short!")
+		mantis_pose_blades(posed, MANTIS_POSE_GUARD)
+		return
+	// The run was real movement: the body is already there.
+	land_lunge(lunger, victim, housing, lunge_blade, charged, posed, null, 0)
+
+/// The arrival: the bonus cut once per blade, and they go down. [housing] is the housing that lunged and
+/// [lunge_blade] its blade, [charged] is TRUE for a leap out of a crouch, and [posed] are the blades laid
+/// flat for the wind-up. [from] is where the ordinary lunge set out, for the impale's glide in; a shown-line
+/// dash ran here on its own feet and gives none. [glide] is how long the body still takes to glide in
+/// (mantis_lunge_dash_fx()): the impact, the knockdown and the blades' return to the guard wait for it, and for
+/// the body's thrust at the target when it is already there.
+/datum/action/cooldown/cyberware/mantis_lunge/proc/land_lunge(mob/living/lunger, mob/living/victim, obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/housing, obj/item/melee/energy/blade/hardlight/cyberware_mantis/lunge_blade, charged = FALSE, list/posed, turf/from, glide = 0)
 	// Both housings deployed means both blades arrive. Floored at one: a blade
 	// stowed during the 0.3s telegraph shouldn't eat the whole cooldown for
 	// nothing when the dash still connected.
-	var/blades = max(count_extended_blades(), 1)
+	var/list/blade_housings = get_extended_housings()
+	if(!length(blade_housings))
+		blade_housings = list(housing)
+	var/blades = length(blade_housings)
+	// Judged as they arrive, before the arrival cut: someone already hurt or down.
+	var/skewer = mantis_can_impale(lunger, victim, blade_housings)
 
 	lunger.face_atom(victim)
-	lunger.do_attack_animation(victim, ATTACK_EFFECT_SLASH)
+	lunger.do_attack_animation(victim, no_effect = TRUE)
+	// The cut lands as the body does, and not before its thrust has reached them.
+	var/lands_in = max(glide, CYBERWARE_MANTIS_LUNGE_THRUST)
+	// The blade's own impact over the target (both blades for a pounce), and a burst of light and dust (mantis_gore/mantis_lunge_fx.dm).
+	mantis_lunge_arrival_fx(lunger, victim, istype(lunge_blade) ? lunge_blade.impact_state : "impact_mantis", charged && blades > 1, lands_in)
+	// The arrival counts toward the lunger's kill (mantis_gore/mantis_cuts.dm).
+	mantis_note_hit(victim, lunger)
 	// One armor roll for the arrival, reused per blade. Both land in the same
 	// instant on the same plate, and it keeps the armor message to one line.
 	var/armor_block = victim.run_armor_check(BODY_ZONE_CHEST, MELEE)
-	for(var/i in 1 to blades)
+	var/lunge_fire = 0
+	for(var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/blade_housing as anything in blade_housings)
 		victim.apply_damage(
-			CYBERWARE_MANTIS_LUNGE_BONUS,
+			blade_housing.lunge_bonus,
 			BRUTE,
 			BODY_ZONE_CHEST,
 			armor_block,
 			wound_bonus = 10,
 			sharpness = SHARP_EDGED,
 		)
-	victim.Knockdown(CYBERWARE_MANTIS_LUNGE_KNOCKDOWN)
-	if(blades > 1)
+		lunge_fire = max(lunge_fire, blade_housing.lunge_fire_stacks)
+	if(lunge_fire)
+		cyberware_scorch_target(victim, lunge_fire)
+	// Both blades into someone already hurt: held up on them, then ripped free (mantis_gore/mantis_impale.dm).
+	// The knockdown waits for the rip.
+	if(skewer && !QDELETED(victim) && victim.stat != DEAD && mantis_start_impale(src, lunger, victim, blade_housings, housing.lunge_knockdown, from, charged ? 2 : MANTIS_LUNGE_GLIDE))
+		log_combat(lunger, victim, "mantis-lunged and impaled", "mantis blades ([blades] landed)")
+		playsound(victim, 'sound/effects/wounds/pierce3.ogg', 70, TRUE)
+		return
+	// The blades stay flat through the glide and come back to the guard as the body lands, and they go down
+	// then, with the impact (mantis_gore/mantis_lunge_fx.dm).
+	mantis_lunge_settle(posed, lands_in)
+	mantis_lunge_knockdown(victim, housing.lunge_knockdown, lands_in)
+	if(charged)
+		if(blades > 1)
+			victim.visible_message(
+				span_danger("[lunger] springs at [victim] and shuts both blades on [victim.p_them()], dropping [victim.p_them()]!"),
+				span_userdanger("[lunger] springs at you. Both blades land at once and your legs go out from under you!"),
+			)
+		else
+			victim.visible_message(
+				span_danger("[lunger] springs at [victim], opens [victim.p_them()] up and puts [victim.p_them()] down!"),
+				span_userdanger("[lunger] springs at you. The blade is already in you, and the floor comes up fast!"),
+			)
+	else if(blades > 1)
 		victim.visible_message(
 			span_danger("[lunger] flickers across the gap and shuts both blades on [victim] like a trap, dropping [victim.p_them()]!"),
 			span_userdanger("[lunger] flickers across the gap. Both blades land at once and your legs go out from under you!"),
@@ -483,7 +729,7 @@
 			span_danger("[lunger] flickers across the gap, opens [victim] up on arrival and puts [victim.p_them()] down!"),
 			span_userdanger("[lunger] flickers across the gap. The blade is already in you, and the floor comes up fast!"),
 		)
-	log_combat(lunger, victim, "mantis-lunged", "mantis blades ([blades] landed)")
+	log_combat(lunger, victim, charged ? "mantis-leapt" : "mantis-lunged", "mantis blades ([blades] landed)")
 	playsound(victim, 'sound/items/weapons/bladeslice.ogg', 70, TRUE)
 
 // =========================================================================
@@ -506,14 +752,16 @@
  *
  * The damage splits 3:1. The cut is brute and carries the wounding; the charge
  * running down the line is burn, flat and unwounding. Both halves ignore armor
- * and both halves cleave.
+ * and both halves carry through.
  *
- * Every landed hit cleaves through mobs adjacent to the victim with line of
- * sight, allies filtered out, for CYBERWARE_MONOWIRE_CLEAVE_MULT of both.
+ * Every landed hit carries on into one body at most: the one standing right
+ * behind the victim along the swing, allies filtered out, for
+ * CYBERWARE_MONOWIRE_CLEAVE_MULT of both, never taking a limb. The
+ * through-cut, severs and the garrote live in voidcrew/modules/hyperviolence/wire/.
  */
 /obj/item/melee/cyberware_monowire
 	name = "\improper Widowline monowire"
-	desc = "A weighted spool of monomolecular line, run live. At rest it's a glitter in the air. Swung, it goes through plate and the person wearing it in the same motion, and through whoever is standing next to them."
+	desc = "A weighted spool of monomolecular line, run live. At rest it's a glitter in the air."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware_weapons.dmi'
 	icon_state = "monowire"
 	inhand_icon_state = "monowire"
@@ -533,65 +781,57 @@
 	attack_verb_continuous = list("garrotes", "flenses", "lashes", "bisects")
 	attack_verb_simple = list("garrote", "flense", "lash", "bisect")
 	hitsound = 'voidcrew/sound/monowire1.ogg'
+	/// Cleave fraction of the wire's damage dealt to secondary targets.
+	var/cleave_mult = CYBERWARE_MONOWIRE_CLEAVE_MULT
+	/// Burn the charged line adds on top of the cut, every hit.
+	var/charge_burn = CYBERWARE_MONOWIRE_BURN
+	/// Set by afterattack() during attack()'s parent call. Only a swing that
+	/// connected gets that far, and attack()'s own return can't tell a hit from
+	/// a pacifist's pulled swing or a signal-skipped one (both return FALSE).
+	var/swing_landed = FALSE
 
 /obj/item/melee/cyberware_monowire/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
 	// The parent plays hitsound partway through the swing, so pick which of the
 	// line's two voices we are before handing off.
 	hitsound = pick('voidcrew/sound/monowire1.ogg', 'voidcrew/sound/monowire2.ogg')
+	swing_landed = FALSE
+	// The cut rides the hit: clean severs and the through-cut land
+	// while tg resolves it, so their lines join its message (hyperviolence/wire/wire_cut.dm).
+	wire_cut_begin(target, user)
 	. = ..()
-	// A truthy return means the swing was blocked or cancelled outright, no
-	// cut landed, so nothing burns and nothing carries through.
-	if(. || QDELETED(target) || !isliving(user))
+	var/landed = swing_landed
+	swing_landed = FALSE
+	// No cut landed (blocked, cancelled, pulled), so nothing burns.
+	if(. || !landed || QDELETED(target) || !isliving(user))
+		wire_cut_end(target)
 		return
 
 	// The charge on the line, on top of the cut. Silent armor check: the parent
-	// already announced the penetration for this same swing.
+	// already announced the penetration for this same swing. Still part of the clean
+	// cut: a wound the cut just opened throws no blood when the charge lands on it.
 	var/burn_zone = target.get_random_valid_zone(user.zone_selected)
 	target.apply_damage(
-		CYBERWARE_MONOWIRE_BURN,
+		charge_burn,
 		BURN,
 		burn_zone,
 		target.run_armor_check(burn_zone, MELEE, armour_penetration = armour_penetration, silent = TRUE),
 	)
+	wire_cut_end(target)
 
-	var/cleaved_anyone = FALSE
-	for(var/mob/living/nearby in orange(1, target))
-		if(nearby == user || nearby == target || nearby.stat == DEAD)
-			continue
-		if(!can_see(target, nearby, 1))
-			continue
-		if(cyberware_is_ally(user, nearby))
-			continue
-		// One roll for both halves: it is one pass of the same wire.
-		var/cleave_block = nearby.run_armor_check(BODY_ZONE_CHEST, MELEE, armour_penetration = armour_penetration)
-		nearby.apply_damage(
-			force * CYBERWARE_MONOWIRE_CLEAVE_MULT,
-			BRUTE,
-			BODY_ZONE_CHEST,
-			cleave_block,
-			wound_bonus = wound_bonus,
-			sharpness = SHARP_EDGED,
-		)
-		nearby.apply_damage(
-			CYBERWARE_MONOWIRE_BURN * CYBERWARE_MONOWIRE_CLEAVE_MULT,
-			BURN,
-			BODY_ZONE_CHEST,
-			cleave_block,
-		)
-		to_chat(nearby, span_userdanger("[user]'s monowire carries through into you!"))
-		cleaved_anyone = TRUE
-	if(cleaved_anyone)
-		user.visible_message(
-			span_danger("The wire sings through everything beside [target]!"),
-			span_danger("The wire carries through the whole cluster."),
-		)
-		playsound(target, 'sound/items/weapons/bladeslice.ogg', 50, TRUE)
+/obj/item/melee/cyberware_monowire/afterattack(atom/target, mob/user, list/modifiers, list/attack_modifiers)
+	. = ..()
+	swing_landed = TRUE
+	if(!isliving(user) || QDELETED(target) || target == user)
+		return
+	// The wire lashes out of the hand to what it hit (hyperviolence/wire/wire_held.dm), standing in for the held wire.
+	wire_lash_at(user, target, lash_zone)
+	lash_zone = null
 
 /**
  * # Widowline Monowire (T3, one arm, aug slot, load 5)
  *
- * A single-arm spool housing deploying the wire above. Reach two, hits the
- * crowd around whatever it lands on, and armor does nothing to slow it down.
+ * A single-arm spool housing deploying the wire above. Reach two, carries on
+ * into whoever stands behind what it lands on, and armor does nothing to slow it down.
  * What it can't do is hard targets: a quarter demolition mod means walls,
  * doors and machines shrug it off. Bring it to bodies, not to bulkheads.
  */
@@ -602,7 +842,8 @@
 	chrome_load = 5
 	tier = CYBERWARE_TIER_3
 	items_to_create = list(/obj/item/melee/cyberware_monowire)
-	extend_sound = 'sound/items/weapons/batonextend.ogg'
+	extend_sound = 'voidcrew/sound/monowire_deploy.ogg'
+	retract_sound = 'voidcrew/sound/monowire_retract.ogg'
 
 // =========================================================================
 // POPUP RONIN SMG
@@ -634,7 +875,7 @@
  */
 /obj/item/ammo_box/magazine/cyberware_ronin
 	name = "\improper Ronin flush-feed magazine (10x24mm)"
-	desc = "A flush-feed magazine keyed to the Popup Ronin's action and nothing else's. Holds twenty caseless rounds."
+	desc = "A flush-feed magazine keyed to the Popup Ronin's action and nothing else's."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	icon_state = "ronin_mag"
 	base_icon_state = "ronin_mag"
@@ -681,7 +922,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin
 	name = "\improper Popup Ronin housing"
-	desc = "A forearm rig that unfolds a skeletal machine-pistol into your grip and folds it away again just as fast. The mag well only takes Ronin flush-feed magazines."
+	desc = "A forearm rig that unfolds a skeletal machine-pistol into your grip and folds it away again just as fast."
 	icon_state = "ronin"
 	chrome_load = 5
 	tier = CYBERWARE_TIER_3
@@ -723,7 +964,7 @@
 
 /obj/item/ammo_casing/cyberware_buster
 	name = "30mm shaped rocket"
-	desc = "A stubby shaped-charge rocket in the Buster's proprietary 30mm. All of the blast goes forward and stops at the first thing it hits."
+	desc = "A stubby shaped-charge rocket in the Buster's proprietary 30mm."
 	icon_state = "low_yield_rocket"
 	base_icon_state = "low_yield_rocket"
 	caliber = CYBERWARE_CALIBER_BUSTER
@@ -771,7 +1012,7 @@
  */
 /obj/item/gun/ballistic/revolver/cyberware_buster
 	name = "\improper Bunker Buster micro-rocket pod"
-	desc = "A two-tube rocket pod that rides folded along the forearm. The munitions are shaped, so the blast goes into the target instead of the room, and instead of your hull."
+	desc = "A two-tube rocket pod that rides folded along the forearm."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware_weapons.dmi'
 	icon_state = "bunker_buster"
 	inhand_icon_state = "bunker_buster"
@@ -797,7 +1038,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster
 	name = "\improper Bunker Buster housing"
-	desc = "A reinforced forearm bay built around two rocket tubes, with a recoil bed where your radius used to be. Takes proprietary 30mm shaped rockets, so make both count."
+	desc = "A reinforced forearm bay built around two rocket tubes, with a recoil bed where your radius used to be."
 	icon_state = "bunker_buster"
 	chrome_load = 5
 	tier = CYBERWARE_TIER_3
@@ -815,6 +1056,8 @@
 #undef CYBERWARE_MANTIS_LUNGE_BONUS
 #undef CYBERWARE_MANTIS_LUNGE_TELEGRAPH
 #undef CYBERWARE_MANTIS_LUNGE_KNOCKDOWN
+#undef CYBERWARE_MANTIS_LUNGE_STEP
+#undef CYBERWARE_MANTIS_LUNGE_THRUST
 #undef CYBERWARE_MONOWIRE_CLEAVE_MULT
 #undef CYBERWARE_MONOWIRE_BURN
 #undef CYBERWARE_CALIBER_RONIN

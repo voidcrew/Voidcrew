@@ -29,7 +29,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw
 	name = "\improper Rockjaw drill fist"
-	desc = "A compact mining drill that folds out of the forearm. Anything it cracks gets vacuumed straight into an internal hopper, so you aren't crawling around the floor picking up your own ore."
+	desc = "A compact mining drill that folds out of the forearm, with a hopper that swallows whatever it cracks."
 	icon_state = "rockjaw"
 	chrome_load = 2
 	tier = CYBERWARE_TIER_1
@@ -58,7 +58,7 @@
 /// diamond drill (0.2). The speed is part of what the 1,200 cr buys.
 /obj/item/pickaxe/drill/cyberware
 	name = "rockjaw drill"
-	desc = "The business end of a Rockjaw drill fist. It only comes off the arm at a Chrome Cradle."
+	desc = "The business end of a Rockjaw drill fist."
 	toolspeed = 0.5
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw/Destroy()
@@ -160,7 +160,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers
 	name = "\improper Fixer's Fingers"
-	desc = "A fingertip omnitool suite. Driver, wrench and cutters fold out of the knuckles, and the servo tendons behind them make everything you do with your hands quicker."
+	desc = "A fingertip omnitool suite. Driver, wrench and cutters fold out of the knuckles on quick servo tendons."
 	icon_state = "fixers"
 	chrome_load = 2
 	tier = CYBERWARE_TIER_1
@@ -170,6 +170,9 @@
 		/obj/item/wrench/cyborg,
 		/obj/item/wirecutters/cyborg,
 	)
+	/// The action-speed modifier the servo tendons apply while the ware is running.
+	/// The model in the line (ware_line_models_a.dm) swaps in a weaker one.
+	var/datum/actionspeed_modifier/speed_modifier = /datum/actionspeed_modifier/cyberware_fixers
 
 // The tool-speed bonus rides the failing-gated passive layer (BAL-4): servo
 // tendons with an EMP reboot or a brownout are just fingers until the ware
@@ -177,10 +180,10 @@
 // idempotent and needs no applied-state guard.
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers/chrome_passives_on(mob/living/carbon/bearer)
 	. = ..()
-	bearer?.add_actionspeed_modifier(/datum/actionspeed_modifier/cyberware_fixers)
+	bearer?.add_actionspeed_modifier(speed_modifier)
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers/chrome_passives_off(mob/living/carbon/bearer)
 	. = ..()
-	bearer?.remove_actionspeed_modifier(/datum/actionspeed_modifier/cyberware_fixers)
+	bearer?.remove_actionspeed_modifier(speed_modifier)
 
 #undef CYBERWARE_ROCKJAW_SWEEP_DELAY
