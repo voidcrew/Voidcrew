@@ -661,7 +661,7 @@ function Waiting(props: { empty: boolean }) {
     const id = setInterval(() => setOn((v) => !v), 530);
     return () => clearInterval(id);
   }, [props.empty]);
-  const line = props.empty ? 'NO HULLS ON THE SHELF.' : 'CONTACTING THE YARD';
+  const line = props.empty ? 'NO HULLS ON THE SHELF.' : 'CONTACTING THE YARD.';
   return (
     <>
       <Box x={0} y={BOX_Y} w={63} h={rows - 3.5} caption="HULLS" />

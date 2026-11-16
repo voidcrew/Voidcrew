@@ -320,7 +320,7 @@ export function CrewRecord(props: Props) {
     out.push(
       <Slab key="nob" x={1} y={by} w={41} h={BERTH_H} variant="row" dead />,
       <Put key="nobt" x={3} y={by + 0.25} cls="dim">
-        NO BERTHS OPEN
+        NO BERTHS OPEN.
       </Put>,
     );
     const pingLive = pingWait <= 0;
@@ -612,7 +612,7 @@ export function CrewRecord(props: Props) {
     if (applied) {
       out.push(
         <Put key="sent" x={1} y={ny} cls="amb">
-          APPLICATION SENT
+          APPLICATION SENT.
         </Put>,
       );
     } else {
