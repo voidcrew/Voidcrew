@@ -488,7 +488,8 @@
 /datum/landing_animation/proc/fade_out()
 	if(proxy)
 		animate(proxy, alpha = 0, time = LANDING_PICTURE_FADE)
-	QDEL_IN(src, LANDING_PICTURE_FADE)
+	// a hard reference: QDEL_IN keeps only a weakref past a second, and nothing else holds this datum by now
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel), src), LANDING_PICTURE_FADE)
 
 /datum/landing_animation/proc/show_shadow()
 	if(!length(berth_turfs) || frozen)
@@ -563,7 +564,9 @@
 		animate(shadow, alpha = 0, time = LAUNCH_CLIMB_TIME * 0.7, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
 	else
 		QDEL_NULL(shadow)
-	QDEL_IN(src, LAUNCH_CLIMB_TIME + 0.5 SECONDS)
+	// a hard reference: QDEL_IN keeps only a weakref past a second, and nothing else holds this datum, so it
+	// would be garbage collected without Destroy() and leave its picture and shadow on the map
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel), src), LAUNCH_CLIMB_TIME + 0.5 SECONDS)
 
 /datum/launch_animation/Destroy(force)
 	QDEL_NULL(shadow)
