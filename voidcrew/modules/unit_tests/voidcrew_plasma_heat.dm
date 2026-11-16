@@ -71,11 +71,13 @@
 		var/shot = plasma_heat_test_burst(old, 20, gaps[i])
 		TEST_ASSERT_EQUAL(shot, old_expected[i], "The Old Furnace in vacuum every [gaps[i]] s overheated on shot [shot]")
 
-	// The pistol has no heat at all.
-	var/obj/item/gun/energy/plasma_weapon/pistol/pistol = allocate(/obj/item/gun/energy/plasma_weapon/pistol, spot)
-	pistol.add_heat(PLASMA_HEAT_MAX * 2)
-	TEST_ASSERT_EQUAL(pistol.barrel_heat, 0, "The Cinder gained heat")
-	TEST_ASSERT(!(pistol.datum_flags & DF_ISPROCESSING), "The Cinder started processing")
+	// The Cinder: the 7th shot flat out (0.5 s), the 8th at 0.7 s, 9th at 1 s, 10th at 1.2 s
+	var/list/cinder_gaps = list(0.5, 0.7, 1, 1.2)
+	var/list/cinder_expected = list(7, 8, 9, 10)
+	for(var/i in 1 to length(cinder_gaps))
+		var/obj/item/gun/energy/plasma_weapon/pistol/pistol = allocate(/obj/item/gun/energy/plasma_weapon/pistol, spot)
+		var/shot = plasma_heat_test_burst(pistol, 15, cinder_gaps[i])
+		TEST_ASSERT_EQUAL(shot, cinder_expected[i], "A Cinder in vacuum every [cinder_gaps[i]] s overheated on shot [shot]")
 
 /datum/unit_test/voidcrew_plasma_heat_vacuum/Destroy()
 	if(spot && saved_air)
@@ -360,11 +362,7 @@
 	TEST_ASSERT(!length(binding.classic_keys) || binding.classic_keys[1] == "Unbound", "The vent keybinding has a default classic key")
 	qdel(binding)
 
-	// In hand: starts a vent, and the pistol, which doesn't heat up, never vents
-	var/obj/item/gun/energy/plasma_weapon/pistol/pistol = allocate(/obj/item/gun/energy/plasma_weapon/pistol)
-	pistol.barrel_heat = 90
-	pistol.attack_self(user)
-	TEST_ASSERT(!pistol.vent_started_at, "Using a Cinder in hand started a vent")
+	// In hand: starts a vent
 	gun.barrel_heat = 90
 	gun.heat_updated_at = world.time
 	gun.attack_self(user)
@@ -595,3 +593,56 @@
 	TEST_ASSERT_NULL(gun.cartridge, "The cartridge stayed seated after unloading")
 	TEST_ASSERT(gun.load_cartridge(fresh, user), "A Furnace after a gold tap wouldn't take a new cartridge")
 	TEST_ASSERT_EQUAL(gun.cartridge, fresh, "The new cartridge isn't seated")
+
+/// The Cinder heats up too: 17 a shot, the 9th shot flat out in room air, never in a cartridge at a careful 1.2 s,
+/// a 4 s lockout with the overheat bar and the reload lock, and its own coil glow.
+/datum/unit_test/voidcrew_plasma_heat_cinder
+
+/datum/unit_test/voidcrew_plasma_heat_cinder/Run()
+	var/turf/open/spot = run_loc_floor_bottom_left
+	TEST_ASSERT(spot.return_air().return_pressure() > 90, "The test floor has no room air")
+	var/list/gaps = list(0.5, 0.7, 1, 1.2)
+	var/list/expected = list(9, 11, 0, 0)
+	for(var/i in 1 to length(gaps))
+		var/obj/item/gun/energy/plasma_weapon/pistol/burst = allocate(/obj/item/gun/energy/plasma_weapon/pistol, spot)
+		var/shot = plasma_heat_test_burst(burst, 15, gaps[i])
+		TEST_ASSERT_EQUAL(shot, expected[i], "A Cinder in room air every [gaps[i]] s overheated on shot [shot]")
+
+	var/mob/living/carbon/human/consistent/user = allocate(/mob/living/carbon/human/consistent, spot)
+	var/obj/item/gun/energy/plasma_weapon/pistol/gun = allocate(/obj/item/gun/energy/plasma_weapon/pistol)
+	user.put_in_active_hand(gun, forced = TRUE)
+	TEST_ASSERT(gun.uses_heat, "The Cinder doesn't heat up")
+	gun.heat_updated_at = world.time
+	gun.add_heat(gun.heat_per_shot)
+	TEST_ASSERT_EQUAL(gun.barrel_heat, 17, "A Cinder shot added [gun.barrel_heat] heat, not 17")
+	TEST_ASSERT_EQUAL(gun.gold_window, PLASMA_VENT_GOLD_WINDOW, "The Cinder's gold window changed")
+
+	// Glowing, it vents in hand like the Furnace, and its coil shows its own glow
+	gun.barrel_heat = 90
+	gun.heat_updated_at = world.time
+	gun.update_heat_step()
+	TEST_ASSERT_EQUAL(gun.heat_step, 3, "A Cinder at heat 90 shows coil step [gun.heat_step]")
+	TEST_ASSERT(icon_exists(gun.icon, "[gun.heat_glow_state]_3"), "The Cinder has no world glow state")
+	TEST_ASSERT(icon_exists(gun.lefthand_file, "[gun.heat_glow_state]_3") && icon_exists(gun.righthand_file, "[gun.heat_glow_state]_3"), "The Cinder has no inhand glow state")
+	gun.attack_self(user)
+	TEST_ASSERT(gun.vent_started_at, "Using a glowing Cinder in hand didn't start a vent")
+	gun.vent_started_at = world.time - plasma_heat_test_unit_time(19)
+	gun.heat_updated_at = world.time
+	gun.attack_self(user)
+	TEST_ASSERT_EQUAL(gun.barrel_heat, 0, "A gold tap on a Cinder left heat [gun.barrel_heat]")
+
+	// An overheat locks it for 4 s, its cartridge with it, and the bar comes up for a player
+	gun.gold_until = 0
+	gun.barrel_heat = PLASMA_HEAT_MAX - 1
+	gun.heat_updated_at = world.time
+	gun.add_heat(gun.heat_per_shot)
+	TEST_ASSERT_EQUAL(gun.shutdown_until, world.time + 4 SECONDS, "The Cinder's lockout isn't 4 s")
+	TEST_ASSERT(!gun.can_shoot(), "A locked Cinder can fire")
+	TEST_ASSERT_EQUAL(gun.click_alt(user), CLICK_ACTION_BLOCKING, "A locked Cinder let its cartridge out")
+	// Test mobs have no client, so bring the bar up as overheat() does for one
+	TEST_ASSERT(gun.start_overheat_vent(user), "The overheat bar didn't come up on a locked Cinder")
+	TEST_ASSERT_NOTNULL(gun.vent_bar, "The Cinder's overheat bar has no bar")
+	gun.vent_started_at = world.time - PLASMA_VENT_SWEEP
+	gun.finish_vent_sweep()
+	gun.shutdown_until = world.time
+	TEST_ASSERT(gun.can_fire_heat(), "The Cinder stayed locked past its 4 s")

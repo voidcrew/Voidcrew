@@ -1727,7 +1727,7 @@
    "hash": "",
    "name": "Cinder plasma pistol",
    "rank": 10,
-   "reason": "A plasma sidearm: slow 22-burn bolts, loaded with single-use plasma cartridges.",
+   "reason": "A plasma sidearm: slow 22-burn bolts, 15 a single-use plasma cartridge. Emptied flat out it overheats once a cartridge and locks for a few seconds unless vented; a steady pace keeps it cool.",
    "score": 55,
    "score_inputs": {
     "cell_fed": {

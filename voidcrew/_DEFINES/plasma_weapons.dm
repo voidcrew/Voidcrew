@@ -48,12 +48,14 @@
 /// Structure and door damage multiplier (demolition_mod) for a rifle bolt
 #define PLASMA_DEMOLITION_RIFLE 2
 
-// ===== Heat and venting (Furnace and Old Furnace) =====
+// ===== Heat and venting (Cinder, Furnace and Old Furnace) =====
 
 /// Heat a Furnace shot adds
 #define PLASMA_HEAT_PER_SHOT 25
 /// Heat an Old Furnace shot adds
 #define PLASMA_HEAT_PER_SHOT_UNIQUE 18
+/// Heat a Cinder shot adds
+#define PLASMA_HEAT_PER_SHOT_PISTOL 17
 /// A shot that brings the barrel to this heat or more overheats the gun
 #define PLASMA_HEAT_MAX 100
 /// Heat at which the coil overlay reaches step 1, 2 and 3. Step 3 is the last before an overheat, and the
@@ -69,6 +71,8 @@
 #define PLASMA_OVERHEAT_SHUTDOWN (10 SECONDS)
 /// The Old Furnace's shorter lockout
 #define PLASMA_OVERHEAT_SHUTDOWN_UNIQUE (6 SECONDS)
+/// The Cinder's lockout
+#define PLASMA_OVERHEAT_SHUTDOWN_PISTOL (4 SECONDS)
 /// Heat an overheated gun comes back at, below the first coil step
 #define PLASMA_OVERHEAT_END_HEAT 20
 /// An amber tap on the bar an overheat brings up cuts the lockout to this long from the overheat
@@ -113,6 +117,8 @@
 // 1.2 s; vacuum 5th at 0.7 s, 5th at 1 s, 6th at 1.2 s. It only holds steady at about 2.2 s a shot in room air.
 // Old Furnace (18 a shot): room air 10th at 0.7 s, 14th at 1 s, never in a cartridge at 1.2 s (84 after the 20th);
 // vacuum 7th at 0.7 s, 8th at 1 s, 9th at 1.2 s.
+// Cinder (17 a shot, 15 a cartridge, 0.5 s fire delay): room air 9th at 0.5 s, 11th at 0.7 s, never in a cartridge at
+// 1 s (94 at the peak) or 1.2 s (62); vacuum 7th at 0.5 s, 8th at 0.7 s, 9th at 1 s, 10th at 1.2 s.
 /// Heat lost per second, always
 #define PLASMA_COOL_BASE 6
 /// Heat lost per second to the turf air, times the pressure and temperature factors below

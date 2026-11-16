@@ -62,7 +62,7 @@ GLOBAL_LIST_EMPTY(plasma_soot_decals)
 	var/barrel_heat = 0
 	/// Heat one shot adds
 	var/heat_per_shot = 0
-	/// Whether this gun runs the heat model (the rifles do, the pistol doesn't)
+	/// Whether this gun runs the heat model
 	var/uses_heat = FALSE
 	/// world.time cooling was last applied up to
 	var/heat_updated_at = 0
@@ -90,6 +90,8 @@ GLOBAL_LIST_EMPTY(plasma_soot_decals)
 	var/overheat_shutdown = PLASMA_OVERHEAT_SHUTDOWN
 	/// Coil overlay step shown, 0 to 3
 	var/heat_step = 0
+	/// Coil overlay states are this plus _1 to _3, in the world icon and the inhand files
+	var/heat_glow_state = "furnace_glow"
 	/// Sound distant listeners hear when this fires
 	var/far_fire_sound
 
@@ -99,6 +101,10 @@ GLOBAL_LIST_EMPTY(plasma_soot_decals)
 	icon_state = "cinder"
 	inhand_icon_state = "cinder"
 	ammo_type = list(/obj/item/ammo_casing/energy/plasma_bolt)
+	uses_heat = TRUE
+	heat_per_shot = PLASMA_HEAT_PER_SHOT_PISTOL
+	overheat_shutdown = PLASMA_OVERHEAT_SHUTDOWN_PISTOL
+	heat_glow_state = "cinder_glow"
 
 /obj/item/gun/energy/plasma_weapon/rifle
 	name = "\improper Furnace plasma rifle"

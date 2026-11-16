@@ -90,25 +90,23 @@ Slag cut out of a deep burn comes out as a small bead of black glass. It's worth
 
 Cutting the slag out of a Plasma Burn-Through also saves the limb from the rifle's next bolt.
 
-## Heat and venting (Furnace only)
+## Heat and venting
 
-The Furnace and the Old Furnace heat up as they fire, and their coils glow brighter as they do: a dull glow, then bright, then white-hot. The coil ticks when it goes white-hot, and the next shot or two will overheat it. They cool by themselves between shots: fastest in cold air at normal pressure, slower in thin air, and slowest in vacuum. Standing in fire or on lava heats them up.
+The Cinder, the Furnace and the Old Furnace heat up as they fire, and their coils glow brighter as they do: a dull glow, then bright, then white-hot. The coil ticks when it goes white-hot, and the next shot or two will overheat it. They cool by themselves between shots: fastest in cold air at normal pressure, slower in thin air, and slowest in vacuum. Standing in fire or on lava heats them up.
 
-- A Furnace runs hot long before its cartridge runs dry. Fired as fast as it goes it overheats a few times a cartridge, so vent it as you fight. Slower shots, cold air and a clean vent all keep it going longer; in vacuum it heats up fastest.
-- An overheated rifle **locks up**: its coils stay white-hot and it won't fire for ten seconds, or six on the Old Furnace. It clicks when it's ready again.
-- A locked rifle's cartridge is stuck in place: you can't take it out or swap in a new one until the lock ends.
+- A Furnace runs hot long before its cartridge runs dry. Fired as fast as it goes it overheats a few times a cartridge, so vent it as you fight. The Cinder runs cooler: emptied as fast as it fires, it overheats once a cartridge, and at a steady pace it keeps up. Slower shots, cold air and a clean vent all keep a gun going longer; in vacuum it heats up fastest.
+- An overheated gun **locks up**: its coils stay white-hot and it won't fire for ten seconds, six on the Old Furnace and four on the Cinder. It clicks when it's ready again.
+- A locked gun's cartridge is stuck in place: you can't take it out or swap in a new one until the lock ends.
 - When it locks up in your hands, the vent bar comes up at once. Hit the gold and the lock ends there and then, with the coils cold. Hit the amber and it vents most of its heat and is ready again in about two seconds. Miss, or hit the dark ends, and you wait out the whole lock; the dark ends also spit plasma onto your tile.
 
-**Venting:** use a glowing Furnace in your hand. A bar appears above your head and a marker sweeps across it. Use the rifle in your hand again as the marker passes the middle. Pulling the trigger does nothing while the bar is up. You can also bind a key to Vent held gun in your keybindings, and it works the same way.
+**Venting:** use a glowing gun in your hand. A bar appears above your head and a marker sweeps across it. Use the gun in your hand again as the marker passes the middle. Pulling the trigger does nothing while the bar is up. You can also bind a key to Vent held gun in your keybindings, and it works the same way.
 
 - On the bright gold centre, the coils go cold at once, and the next few shots heat them less.
-- On the amber either side of it, the rifle vents most of its heat.
+- On the amber either side of it, the gun vents most of its heat.
 - Don't do anything and it vents most of its heat when the marker reaches the end, and takes a moment longer before it fires.
-- On the dark ends, the vent fumbles: the rifle spits plasma onto your tile and you can't fire for a moment.
+- On the dark ends, the vent fumbles: the gun spits plasma onto your tile and you can't fire for a moment.
 
-You can't shoot while the bar is up. Dropping the rifle or swapping hands stops the vent.
+You can't shoot while the bar is up. Dropping the gun or swapping hands stops the vent.
 
 !!! warning "Vented gas is fuel"
     Spat plasma doesn't light itself, but a spark, a flame or another plasma bolt can set it off in breathable air.
-
-The Cinder does not heat up.

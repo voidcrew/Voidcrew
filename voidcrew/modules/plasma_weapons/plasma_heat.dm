@@ -330,12 +330,12 @@
 	. = ..()
 	if(!uses_heat || !heat_step)
 		return
-	. += mutable_appearance(icon, "furnace_glow_[heat_step]")
-	. += emissive_appearance(icon, "furnace_glow_[heat_step]", src)
+	. += mutable_appearance(icon, "[heat_glow_state]_[heat_step]")
+	. += emissive_appearance(icon, "[heat_glow_state]_[heat_step]", src)
 
 /obj/item/gun/energy/plasma_weapon/worn_overlays(mutable_appearance/standing, isinhands = FALSE, icon_file)
 	. = ..()
 	if(!isinhands || !uses_heat || !heat_step)
 		return
-	. += mutable_appearance(icon_file, "furnace_glow_[heat_step]")
-	. += emissive_appearance(icon_file, "furnace_glow_[heat_step]", src)
+	. += mutable_appearance(icon_file, "[heat_glow_state]_[heat_step]")
+	. += emissive_appearance(icon_file, "[heat_glow_state]_[heat_step]", src)
