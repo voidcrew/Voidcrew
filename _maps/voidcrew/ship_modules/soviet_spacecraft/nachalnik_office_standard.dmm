@@ -37,6 +37,10 @@
 "eUZ" = (
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
+"frL" = (
+/obj/machinery/autolathe,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
 "hbo" = (
 /obj/structure/table/wood,
 /obj/structure/sign/poster/contraband/soviet_propaganda/directional/north,
@@ -273,7 +277,7 @@ naJ
 jeb
 nEn
 eUZ
-eUZ
+frL
 puZ
 "}
 (6,1,1) = {"

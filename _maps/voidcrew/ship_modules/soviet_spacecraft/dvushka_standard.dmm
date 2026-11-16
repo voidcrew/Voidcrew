@@ -16,6 +16,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 4
 	},
+/obj/item/kirbyplants/organic/plant11,
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
 "aWn" = (
@@ -179,8 +180,7 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
 "tKU" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
-/obj/item/kirbyplants/organic/plant11,
+/obj/machinery/autolathe,
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
 "uOW" = (
@@ -201,6 +201,9 @@
 "xDN" = (
 /obj/structure/chair/comfy/shuttle{
 	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
