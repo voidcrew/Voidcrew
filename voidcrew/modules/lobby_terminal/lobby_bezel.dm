@@ -75,6 +75,9 @@
 	data["can_observe"] = SSticker.current_state > GAME_STATE_STARTUP
 	data["polls"] = polls_state
 	data["queue"] = SSticker.queued_players.Find(user)
+	data["queue_go"] = lobby_queue_go(user)
+	var/datum/preferences/prefs = user.client?.prefs
+	data["char_name"] = (data["prefs_ready"] && prefs) ? "[prefs.read_preference(/datum/preference/name/real_name)]" : ""
 	data["admin_ready"] = (user.client?.holder && phase != "playing") ? list(SSticker.totalPlayersReady, SSticker.total_admins_ready, length(GLOB.admins)) : null
 	data["notice"] = notice
 	data["tab_request"] = tab_request ? list("tab" = tab_request, "serial" = tab_request_serial) : null
@@ -91,9 +94,15 @@
 		if("ready")
 			return act_ready(user)
 		if("observe")
+			// The classic path, with the native confirm. The terminal asks in its own window and sends observe_confirm.
 			if(SSticker.current_state <= GAME_STATE_STARTUP)
 				return FALSE
 			INVOKE_ASYNC(user, TYPE_PROC_REF(/mob/dead/new_player, make_me_an_observer))
+			return FALSE
+		if("observe_confirm")
+			if(SSticker.current_state <= GAME_STATE_STARTUP)
+				return FALSE
+			INVOKE_ASYNC(user, TYPE_PROC_REF(/mob/dead/new_player, make_me_an_observer), TRUE)
 			return FALSE
 		if("character")
 			// The CHARACTER key opens the terminal's own CHARACTER tab (lobby_character.dm).
@@ -117,6 +126,9 @@
 			if(!polls_state)
 				return FALSE
 			user.handle_player_polling()
+			// The NEW mark clears once the player has voted: look again a little later.
+			addtimer(CALLBACK(src, PROC_REF(recheck_polls)), 20 SECONDS, TIMER_UNIQUE)
+			addtimer(CALLBACK(src, PROC_REF(recheck_polls)), 90 SECONDS, TIMER_UNIQUE)
 			return FALSE
 		if("manifest")
 			user.ViewManifest()
@@ -132,6 +144,11 @@
 				set_notice("Starting as soon as the port opens.", "warn")
 			return TRUE
 		if("dismiss")
+			// With at, only the notice set at that time: a notice that clears itself never takes a newer one with it.
+			if(!notice)
+				return FALSE
+			if(!isnull(params["at"]) && text2num(params["at"]) != notice["at"])
+				return FALSE
 			notice = null
 			return TRUE
 		if("boot_done")
@@ -150,7 +167,8 @@
 			if(world.time < metrics_logged_at + 1 MINUTES)
 				return FALSE
 			metrics_logged_at = world.time
-			log_tgui(user, "Lobby terminal metrics: dpr [text2num(params["dpr"])], pane [text2num(params["w"])]x[text2num(params["h"])], scale [text2num(params["s"])], grid [text2num(params["cols"])]x[text2num(params["rows"])]", window = window)
+			var/mode = params["mode"] == "bar" ? "bar" : "side"
+			log_tgui(user, "Lobby terminal metrics: dpr [text2num(params["dpr"])], pane [text2num(params["w"])]x[text2num(params["h"])], scale [text2num(params["s"])], grid [text2num(params["cols"])]x[text2num(params["rows"])], [mode] mode", window = window)
 			return FALSE
 	return FALSE
 
@@ -170,16 +188,36 @@
 	else
 		relevant_cap = max(hard_popcap, extreme_popcap)
 	if(SSticker.queued_players.len || (relevant_cap && living_player_count() >= relevant_cap && !(ckey(user.key) in GLOB.admin_datums)))
-		var/queue_position = SSticker.queued_players.Find(user)
-		if(!queue_position)
+		if(!SSticker.queued_players.Find(user))
 			SSticker.queued_players += user
-			queue_position = SSticker.queued_players.len
 		to_chat(user, span_danger("[CONFIG_GET(string/hard_popcap_message)]"))
-		set_notice("Port is full. You are number [queue_position] in line.", "warn")
+		set_notice("Port is full. You are in line.", "warn")
 		return TRUE
 	user.auto_deadmin_on_ready_or_latejoin()
 	goto_tab("crews")
 	return TRUE
+
+/// The popcap the classic Join button checks: the lower of the hard and extreme caps when both are set. 0 = none.
+/proc/lobby_relevant_popcap()
+	var/hard_popcap = CONFIG_GET(number/hard_popcap)
+	var/extreme_popcap = CONFIG_GET(number/extreme_popcap)
+	if(hard_popcap && extreme_popcap)
+		return min(hard_popcap, extreme_popcap)
+	return max(hard_popcap, extreme_popcap)
+
+/// TRUE when the player is first in the popcap queue and a place is free: JOIN reads NOW.
+/proc/lobby_queue_go(mob/dead/new_player/user)
+	if(!length(SSticker.queued_players) || SSticker.queued_players[1] != user)
+		return FALSE
+	var/cap = lobby_relevant_popcap()
+	return !cap || living_player_count() < cap
+
+/// Looks for unanswered polls again after the player opened the poll window.
+/datum/lobby_terminal/proc/recheck_polls()
+	var/mob/dead/new_player/player = owner?.mob
+	if(!istype(player))
+		return
+	refresh_polls(player)
 
 /// READY: same as the classic Ready button, and keeps that button's own state in step.
 /datum/lobby_terminal/proc/act_ready(mob/dead/new_player/user)

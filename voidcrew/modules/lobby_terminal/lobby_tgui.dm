@@ -98,7 +98,15 @@ GLOBAL_DATUM_INIT(lobby_terminal_state, /datum/ui_state/lobby_terminal, new)
 	var/list/data = list()
 	data["wiki"] = !!CONFIG_GET(string/wikiurl)
 	data["localhost_admin"] = !!(user.client?.is_localhost() && check_rights_for(user.client, R_SERVER))
-	data["port"] = null
+	data["port"] = html_decode(station_name())
+	// Whether a player who observes can come back this round (voidcrew/edits/mobs/ghost_respawn.dm).
+	switch(CONFIG_GET(flag/allow_respawn))
+		if(RESPAWN_FLAG_DISABLED)
+			data["respawn"] = "none"
+		if(RESPAWN_FLAG_NEW_CHARACTER)
+			data["respawn"] = "new"
+		else
+			data["respawn"] = "same"
 	data["bezel"] = lobby_terminal_bezel_spec()
 	merge_section(data, yard_static(user))
 	return data
