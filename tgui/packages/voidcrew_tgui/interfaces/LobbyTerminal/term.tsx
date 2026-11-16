@@ -73,13 +73,6 @@ export const BODY_W = 61;
 /** Body rows for a main region of `rows` rows. */
 export const bodyRows = (rows: number) => rows - 4.25;
 
-/**
- * Compatibility for screens not yet redesigned: the row their old frames start on, so the
- * frame's top border lands on the box's top edge (BOX_Y). Remove with its last caller.
- */
-export const LEGACY_TOP = 2;
-/** Compatibility: screens not yet redesigned take their one-panel (narrow) layout. */
-export const LEGACY_NARROW: boolean = true;
 
 export type Cls =
   | ''
@@ -794,7 +787,7 @@ type FieldProps = Pick<NavProps, 'auto'> & {
   onEnter: () => void;
 };
 
-/** The text input over a field, shared by Field and LegacyField. */
+/** The text input over a field. */
 function FieldInput(
   props: FieldProps & {
     left: number;
@@ -898,31 +891,6 @@ export function Field(props: FieldProps) {
         height={box.height}
         pad={px(cw)}
         cells={w - 2}
-      />
-    </>
-  );
-}
-
-/**
- * Compatibility for screens not yet redesigned: the old one-row `[          ]` field. x is
- * the opening bracket, w the cells between the brackets.
- */
-export function LegacyField(props: FieldProps) {
-  const { x, y, w, disabled } = props;
-  const { cw, ch } = useGrid();
-  return (
-    <>
-      <Put x={x} y={y} cls={disabled ? 'faint' : 'amb'}>
-        {`[${' '.repeat(w)}]`}
-      </Put>
-      <FieldInput
-        {...props}
-        cls={`lt-field lt-field-old${disabled ? ' is-dead' : ''}`}
-        left={px((x + 1) * cw)}
-        top={px(y * ch)}
-        width={px(w * cw)}
-        height={ch}
-        cells={w}
       />
     </>
   );
@@ -1126,44 +1094,6 @@ export function ClassFigures(props: {
 // ---------------------------------------------------------------------------
 // Kept for screens not yet redesigned
 // ---------------------------------------------------------------------------
-
-type FrameProps = {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  title?: string;
-  /** Dim border. */
-  dim?: boolean;
-  children?: ReactNode;
-};
-
-/**
- * Old box from cell (x, y), w columns by h rows, the border through the middle of the edge
- * cells, with an optional title. Drawn as a single lw line; new work uses Box.
- */
-export function Frame(props: FrameProps) {
-  const { x, y, w, h, title, dim, children } = props;
-  const { cw, ch, lw } = useGrid();
-  const style: CSSProperties = {
-    borderWidth: lw,
-    left: px(x * cw + cw / 2 - lw / 2),
-    top: px(y * ch + ch / 2 - lw / 2),
-    width: Math.max(0, px((w - 1) * cw + lw)),
-    height: Math.max(0, px((h - 1) * ch + lw)),
-  };
-  return (
-    <>
-      <div className={dim ? 'lt-box dimb' : 'lt-box'} style={style} />
-      {!!title && (
-        <Put x={x + 2} y={y} cls={dim ? 'dim' : 'wht'} bg>
-          {` ${cut(title, Math.max(1, w - 6))} `}
-        </Put>
-      )}
-      {children}
-    </>
-  );
-}
 
 /** n filled cells (block characters drawn as boxes on the grid). frac = height share of a row. */
 export function Blocks(props: {
@@ -1552,40 +1482,6 @@ export function Cycler(props: {
   );
 }
 
-/**
- * A framed overlay for screens not yet redesigned: paints the background over cells
- * (x, y, w, h), draws a Frame and puts its children above everything under it. New work
- * uses Dialog.
- */
-export function Panel(props: {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  title?: string;
-  children?: ReactNode;
-}) {
-  const { x, y, w, h, title, children } = props;
-  const { cw, ch } = useGrid();
-  return (
-    <div style={{ position: 'absolute', left: 0, top: 0, zIndex: 8 }}>
-      <div
-        style={{
-          position: 'absolute',
-          left: x * cw,
-          top: y * ch,
-          width: w * cw,
-          height: h * ch,
-          background: 'var(--lt-bg)',
-        }}
-        onClick={(e) => e.stopPropagation()}
-      />
-      <Frame x={x} y={y} w={w} h={h} title={title} />
-      <FocusScope>{children}</FocusScope>
-    </div>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // Text helpers
 // ---------------------------------------------------------------------------
@@ -1635,12 +1531,6 @@ export function wrapMax(text: string, w: number, n: number): string[] {
         : `${last}${CUT}`;
   }
   return out;
-}
-
-/** Left-pads to n characters. */
-export function lpad(str: string | number, n: number): string {
-  const s = String(str);
-  return ' '.repeat(Math.max(0, n - s.length)) + s;
 }
 
 /** Word-wraps to lines of at most w characters. */
@@ -1845,7 +1735,6 @@ export const TERM_CSS = `
 .lt-tui .lt-field { position: absolute; z-index: 6; padding: 0; margin: 0; border: none; outline: none;
   background: transparent; color: var(--lt-fg); caret-color: var(--lt-fg); caret-shape: block; font: inherit;
   letter-spacing: 0; text-shadow: inherit; user-select: text; }
-.lt-tui .lt-field-old { color: var(--lt-amb); caret-color: var(--lt-amb); }
 .lt-tui .lt-field.is-dead { color: var(--lt-faint); }
 .lt-tui .lt-blk { position: absolute; background: var(--lt-fg); box-shadow: 0 0 6px rgba(190,140,255,.5); }
 .lt-tui .lt-blk.dim { background: var(--lt-dim); box-shadow: none; }
