@@ -75,6 +75,9 @@ GLOBAL_LIST_INIT(bounty_species_weights, list(
 			record.style = bounty_roll_style(concealed = (placement_kind == BOUNTY_PLACEMENT_TRADER_OUTPOST))
 		if(BOUNTY_ARCHETYPE_BOSS)
 			record.kit = bounty_roll_kit()
+	// C0 chrome (bounty_chrome.dm): rolled once, so the same criminal always carries the same chrome. The kingpin carries none.
+	if(placement_kind != BOUNTY_PLACEMENT_KINGPIN)
+		record.chrome = bounty_chrome_roll(tier, archetype, record.style, record.kit, bounty_chrome_kit_organs(record.kit))
 	record.alias = bounty_roll_alias(record)
 	record.crime = bounty_roll_crime(tier)
 	record.features = bounty_roll_features(record)
@@ -124,6 +127,8 @@ GLOBAL_LIST_INIT(bounty_species_weights, list(
 		BOUNTY_KIT_PYROMANIAC = 20,
 		BOUNTY_KIT_DEMOLITIONIST = 18,
 		BOUNTY_KIT_GHOST = 18,
+		// The rarest: its kit is its chrome (chrome/bounty_cyberpsycho.dm)
+		BOUNTY_KIT_CYBERPSYCHO = 8,
 	)
 	return pick_weight(weights)
 

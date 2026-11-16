@@ -157,7 +157,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
  */
 /proc/bounty_mafia_room_crew(area_type)
 	var/type_text = "[area_type]"
-	var/static/marker = "/mafia_club/"
+	var/marker = "/mafia_club/"
 	var/at = findtext(type_text, marker)
 	if(!at)
 		return null
@@ -778,6 +778,8 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 /// Whether it may go after `target`: a hunter on their feet, on its level and near
 /mob/living/carbon/human/npc/bounty_mafia/proc/mafia_target_ok(mob/living/target)
 	if(!bounty_mafia_may_hurt(target) || faction_check_atom(target))
+		return FALSE
+	if(cyberware_camo_hides(target, src)) // optical camo (cyberware_stealth.dm)
 		return FALSE
 	var/turf/spot = get_turf(target)
 	return spot && spot.z == z && get_dist(src, spot) <= BOUNTY_MOBSTER_CHASE
