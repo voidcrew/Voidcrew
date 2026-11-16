@@ -75,6 +75,7 @@ GLOBAL_VAR_INIT(stealth_group_count, 0)
 	members = null
 	routes = null
 	home = null
+	restricted = null
 	return ..()
 
 /// Whether `tile` is in this group's map region.

@@ -10,7 +10,8 @@
  * passes. Its notice still fills as usual (it can go "?"), so someone who stays in front of it is seen on the first
  * look after. A turn made by stepping is a walk, not a look round, and gives nothing.
  *
- * Its flashlight pool (stealth_light.dm) follows every turn and step from here.
+ * Its flashlight beam (stealth_light.dm) follows every turn and step from here, and goes halfway ahead of a turn it
+ * makes on its own while it leans (decision 41).
  */
 
 /datum/ai_controller/basic_controller/human_npc/stealth
@@ -37,11 +38,12 @@
 	if(stealth_ready)
 		turned_at = world.time
 		turned_from = get_turf(source)
-	stealth_light_follow()
+	stealth_light_turned(old_dir, new_dir)
 
+// tg hooks this to the pawn's COMSIG_MOVABLE_MOVED: its second argument is where the pawn came from.
 /datum/ai_controller/basic_controller/human_npc/stealth/update_grid(datum/source, datum/spatial_grid_cell/new_cell)
 	. = ..()
-	stealth_light_follow()
+	stealth_light_stepped(new_cell)
 
 /// Its hands or its freedom changed: its light may have to go out or may come back.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/on_light_cue(datum/source)
@@ -77,6 +79,7 @@
 	var/lean_z = (new_dir & NORTH) ? STEALTH_TURN_LEAN : ((new_dir & SOUTH) ? -STEALTH_TURN_LEAN : 0)
 	turn_lean = list(lean_w, lean_z)
 	animate(guard, pixel_w = lean_w, pixel_z = lean_z, time = STEALTH_TURN_LEAN_TIME, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
+	stealth_torch_lead(new_dir)
 	addtimer(CALLBACK(src, PROC_REF(stealth_finish_turn), new_dir, turn_planned_at), STEALTH_TURN_TELL)
 
 /// The tell is over: it turns, unless the moment has passed (it moved, went down, changed state, or a player took it).
@@ -85,13 +88,16 @@
 		return
 	var/mob/living/guard = pawn
 	var/turf/planned_from = turn_planned_from
-	stealth_drop_turn()
-	if(QDELETED(guard) || guard.stat != CONSCIOUS || stealth_driven() || get_turf(guard) != planned_from)
-		return
-	guard.setDir(new_dir)
+	// Its beam is halfway there already and stays there until the body follows.
+	stealth_drop_turn(TRUE)
+	if(!QDELETED(guard) && guard.stat == CONSCIOUS && !stealth_driven() && get_turf(guard) == planned_from)
+		guard.setDir(new_dir)
+	stealth_torch_straighten()
 
-/// Drops a turn it was about to make and takes its lean back.
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_drop_turn()
+/// Drops a turn it was about to make and takes its lean back, and its beam with it unless it is `turning` now.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_drop_turn(turning = FALSE)
+	if(turn_pending && !turning)
+		stealth_torch_straighten()
 	turn_pending = 0
 	turn_planned_from = null
 	if(isnull(turn_lean))

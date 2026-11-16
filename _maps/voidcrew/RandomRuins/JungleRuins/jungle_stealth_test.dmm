@@ -1,18 +1,18 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"a" = (
+"aa" = (
 /obj/effect/spawner/human_npc/ruin/scav/lookout{
-	dir = 2
+	dir = 8
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
-"b" = (
+"ab" = (
 /obj/structure/table,
 /obj/item/reagent_containers/cup/glass/bottle/beer,
 /obj/item/reagent_containers/cup/glass/bottle/beer,
 /obj/item/reagent_containers/cup/glass/bottle/beer,
 /turf/open/floor/iron,
 /area/ruin/powered)
-"c" = (
+"ac" = (
 /obj/structure/table,
 /obj/item/storage/toolbox/mechanical,
 /obj/item/coin/iron,
@@ -20,7 +20,7 @@
 /obj/item/coin/iron,
 /turf/open/floor/iron,
 /area/ruin/powered)
-"d" = (
+"ad" = (
 /obj/structure/closet/crate,
 /obj/item/gun/ballistic/automatic/pistol,
 /obj/item/suppressor,
@@ -33,100 +33,235 @@
 /obj/item/grenade/empgrenade,
 /turf/open/floor/iron,
 /area/ruin/powered)
-"e" = (
-/obj/machinery/door/airlock/security{
-	name = "Strongroom";
-	req_access = list("armory")
+"ag" = (
+/turf/open/floor/carpet,
+/area/ruin/powered)
+"ai" = (
+/turf/open/misc/grass/jungle,
+/area/overmap_encounter/planet_ruin)
+"aj" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "e";
+	order = 3
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
-"f" = (
-/obj/effect/landmark/stealth_patrol{
-	route = "b";
-	order = 3
-	},
-/turf/open/floor/plating,
-/area/ruin/powered)
-"g" = (
-/turf/open/floor/carpet,
-/area/ruin/powered)
-"h" = (
-/obj/effect/landmark/stealth_patrol{
-	route = "b";
-	order = 1;
-	route_mode = "pingpong"
-	},
+"ak" = (
+/obj/effect/turf_decal/tile/red/full,
 /obj/effect/spawner/human_npc/ruin/scav{
 	dir = 4
 	},
-/turf/open/floor/plating,
+/obj/effect/landmark/stealth_patrol{
+	route = "c";
+	order = 1;
+	route_mode = "pingpong"
+	},
+/turf/open/floor/iron,
 /area/ruin/powered)
-"i" = (
-/turf/open/misc/grass/jungle,
-/area/overmap_encounter/planet_ruin)
-"l" = (
+"al" = (
 /obj/machinery/light/directional/north,
 /turf/open/floor/iron,
 /area/ruin/powered)
-"o" = (
-/obj/effect/landmark/stealth_patrol{
-	route = "b";
-	order = 2
+"am" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/spawner/human_npc/ruin/scav{
+	dir = 1
 	},
-/turf/open/floor/plating,
+/obj/effect/landmark/stealth_patrol{
+	route = "d";
+	order = 1
+	},
+/turf/open/floor/iron,
 /area/ruin/powered)
-"p" = (
+"an" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "e";
+	order = 4;
+	wait = 0
+	},
+/turf/open/floor/iron,
+/area/ruin/powered)
+"ap" = (
 /obj/effect/spawner/structure/window,
 /turf/open/floor/iron,
 /area/ruin/powered)
-"q" = (
-/obj/effect/landmark/stealth_patrol{
-	route = "a";
-	order = 3;
-	facing = 2
-	},
-/obj/effect/spawner/human_npc/ruin/scav{
-	dir = 2
-	},
+"ar" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/machinery/light/small/directional/north,
 /turf/open/floor/iron,
 /area/ruin/powered)
-"s" = (
+"as" = (
 /obj/structure/closet/crate,
 /turf/open/floor/plating,
 /area/ruin/powered)
-"t" = (
+"at" = (
 /obj/machinery/door/airlock/public,
 /turf/open/floor/iron,
 /area/ruin/powered)
-"v" = (
+"au" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/spawner/human_npc/ruin/scav/lookout{
+	dir = 4
+	},
 /obj/effect/landmark/stealth_patrol{
-	route = "a";
-	order = 4;
-	facing = 4;
-	chatter = 1
+	route = "e";
+	order = 1
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
-"x" = (
+"aw" = (
+/obj/machinery/light/small/directional/south,
 /turf/open/floor/iron,
 /area/ruin/powered)
-"y" = (
+"ax" = (
+/turf/open/floor/iron,
+/area/ruin/powered)
+"ay" = (
 /obj/machinery/light/floor,
 /turf/open/floor/iron,
 /area/ruin/powered)
-"z" = (
+"az" = (
 /obj/structure/table,
 /turf/open/floor/iron,
 /area/ruin/powered)
-"B" = (
+"aA" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "e";
+	order = 2;
+	wait = 0
+	},
+/turf/open/floor/iron,
+/area/ruin/powered)
+"aB" = (
 /obj/structure/closet/crate/large,
 /turf/open/floor/plating,
 /area/ruin/powered)
-"F" = (
+"aC" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "d";
+	order = 3
+	},
+/turf/open/floor/iron,
+/area/ruin/powered)
+"aD" = (
+/obj/structure/closet/crate/large,
+/turf/open/floor/iron,
+/area/ruin/powered)
+"aE" = (
+/obj/effect/landmark/stealth_restricted,
+/turf/open/floor/iron,
+/area/ruin/powered)
+"aF" = (
 /obj/machinery/light_switch/directional/west,
 /turf/open/floor/iron,
 /area/ruin/powered)
-"I" = (
+"aG" = (
+/obj/structure/closet/crate,
+/obj/item/coin/gold,
+/obj/item/coin/gold,
+/obj/item/stack/spacecash/c200,
+/turf/open/floor/iron,
+/area/ruin/powered)
+"aH" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "d";
+	order = 4;
+	wait = 0
+	},
+/turf/open/floor/iron,
+/area/ruin/powered)
+"aJ" = (
+/turf/closed/wall,
+/area/ruin/powered)
+"aK" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "d";
+	order = 2;
+	wait = 0
+	},
+/turf/open/floor/iron,
+/area/ruin/powered)
+"aL" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/iron,
+/area/ruin/powered)
+"aM" = (
+/obj/machinery/door/airlock/maintenance,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"aN" = (
+/obj/structure/closet/crate,
+/turf/open/floor/iron,
+/area/ruin/powered)
+"aO" = (
+/obj/structure/rack,
+/turf/open/floor/iron,
+/area/ruin/powered)
+"aP" = (
+/turf/open/floor/plating,
+/area/ruin/powered)
+"aQ" = (
+/obj/effect/landmark/stealth_group,
+/turf/open/floor/iron,
+/area/ruin/powered)
+"aR" = (
+/obj/effect/landmark/stealth_restricted{
+	reach = 15
+	},
+/turf/open/floor/plating,
+/area/ruin/powered)
+"aS" = (
+/obj/effect/turf_decal/tile/red/full,
+/turf/open/floor/iron,
+/area/ruin/powered)
+"aU" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "c";
+	order = 2
+	},
+/turf/open/floor/iron,
+/area/ruin/powered)
+"aW" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/iron,
+/area/ruin/powered)
+"aX" = (
+/obj/structure/closet,
+/turf/open/floor/iron,
+/area/ruin/powered)
+"aY" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/iron,
+/area/ruin/powered)
+"aZ" = (
+/obj/machinery/door/airlock/maintenance{
+	name = "Storeroom"
+	},
+/turf/open/floor/iron,
+/area/ruin/powered)
+"bJ" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "a";
+	order = 2.5;
+	wait = 0
+	},
+/turf/open/floor/iron,
+/area/ruin/powered)
+"ej" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron,
+/area/ruin/powered)
+"eT" = (
+/obj/effect/turf_decal/tile/red/full,
 /obj/effect/landmark/stealth_patrol{
 	route = "a";
 	order = 2;
@@ -137,17 +272,114 @@
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
-"J" = (
-/turf/closed/wall,
-/area/ruin/powered)
-"P" = (
+"jv" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "a";
+	order = 4.6;
+	wait = 0
+	},
 /turf/open/floor/plating,
 /area/ruin/powered)
-"Q" = (
-/obj/effect/landmark/stealth_group,
+"jI" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "a";
+	order = 4.7;
+	wait = 0
+	},
+/turf/open/floor/plating,
+/area/ruin/powered)
+"kR" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "b";
+	order = 1.5;
+	wait = 0
+	},
+/turf/open/floor/plating,
+/area/ruin/powered)
+"np" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "a";
+	order = 3.5;
+	wait = 0
+	},
 /turf/open/floor/iron,
 /area/ruin/powered)
-"V" = (
+"ud" = (
+/obj/effect/turf_decal/tile/red/full,
+/turf/open/floor/carpet,
+/area/ruin/powered)
+"uV" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "b";
+	order = 1;
+	route_mode = "pingpong"
+	},
+/obj/effect/spawner/human_npc/ruin/scav{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/powered)
+"xt" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "a";
+	order = 1.5;
+	wait = 0
+	},
+/turf/open/floor/iron,
+/area/ruin/powered)
+"yR" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "a";
+	order = 4.5;
+	wait = 0
+	},
+/turf/open/floor/iron,
+/area/ruin/powered)
+"HJ" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "b";
+	order = 2
+	},
+/turf/open/floor/plating,
+/area/ruin/powered)
+"MD" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "b";
+	order = 3
+	},
+/turf/open/floor/plating,
+/area/ruin/powered)
+"MO" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "a";
+	order = 3;
+	facing = 2
+	},
+/obj/effect/spawner/human_npc/ruin/scav{
+	dir = 2
+	},
+/turf/open/floor/iron,
+/area/ruin/powered)
+"Og" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/machinery/door/airlock/security{
+	name = "Strongroom";
+	req_one_access = list("armory","scav")
+	},
+/turf/open/floor/iron,
+/area/ruin/powered)
+"OC" = (
+/obj/effect/turf_decal/tile/red/full,
 /obj/effect/landmark/stealth_patrol{
 	route = "a";
 	order = 1;
@@ -158,728 +390,1346 @@
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
-"W" = (
-/obj/machinery/light/directional/south,
+"Qo" = (
+/obj/effect/turf_decal/tile/red/full,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"SA" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "a";
+	order = 4.8;
+	wait = 0
+	},
+/turf/open/floor/plating,
+/area/ruin/powered)
+"UV" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "a";
+	order = 4;
+	facing = 4;
+	chatter = 1
+	},
 /turf/open/floor/iron,
+/area/ruin/powered)
+"WX" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "a";
+	order = 4.9;
+	wait = 0
+	},
+/turf/open/floor/iron,
+/area/ruin/powered)
+"Zi" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/machinery/door/airlock/public,
+/turf/open/floor/iron,
+/area/ruin/powered)
+"ZY" = (
+/obj/effect/turf_decal/tile/red/full,
+/obj/effect/landmark/stealth_patrol{
+	route = "b";
+	order = 2.5;
+	wait = 0
+	},
+/turf/open/floor/plating,
 /area/ruin/powered)
 
 (1,1,1) = {"
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
 "}
 (2,1,1) = {"
-i
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-i
-i
+ai
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+ai
+ai
 "}
 (3,1,1) = {"
-i
-J
-x
-x
-J
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-s
-J
-i
-i
+ai
+aJ
+ax
+ax
+aJ
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+as
+aJ
+ai
+ai
 "}
 (4,1,1) = {"
-i
-J
-l
-x
-J
-P
-P
-P
-P
-P
-P
-s
-P
-P
-P
-P
-P
-P
-P
-J
-i
-i
+ai
+aJ
+al
+ax
+aJ
+aP
+aP
+aP
+aP
+aP
+aP
+as
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aJ
+ai
+ai
 "}
 (5,1,1) = {"
-i
-J
-x
-V
-J
-P
-P
-h
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-J
-i
-i
+ai
+aJ
+xt
+OC
+aJ
+aP
+aP
+uV
+Qo
+Qo
+kR
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aJ
+ai
+ai
 "}
 (6,1,1) = {"
-i
-J
-x
-x
-J
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-f
-P
-P
-J
-i
-i
+ai
+aJ
+aS
+aS
+aJ
+aP
+aP
+aP
+aP
+aP
+ZY
+Qo
+Qo
+Qo
+Qo
+Qo
+MD
+aP
+aP
+aJ
+ai
+ai
 "}
 (7,1,1) = {"
-i
-J
-x
-x
-J
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-J
-i
-i
+ai
+aJ
+aS
+aS
+aJ
+aP
+aP
+aP
+aP
+aP
+Qo
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aJ
+ai
+ai
 "}
 (8,1,1) = {"
-i
-J
-x
-x
-t
-P
-P
-P
-P
-P
-P
-P
-B
-P
-P
-P
-P
-P
-P
-J
-i
-i
+ai
+aJ
+aS
+WX
+Zi
+SA
+aP
+aP
+aP
+aP
+Qo
+aR
+aB
+aP
+aP
+aP
+aP
+aP
+aP
+aJ
+ai
+ai
 "}
 (9,1,1) = {"
-i
-J
-x
-x
-J
-P
-P
-P
-P
-P
-P
-P
-B
-P
-P
-P
-P
-P
-P
-J
-i
-i
+ai
+aJ
+aS
+ax
+aJ
+Qo
+aP
+aP
+aP
+aP
+Qo
+aP
+aB
+aP
+aP
+aP
+aP
+aP
+aP
+aJ
+ai
+ai
 "}
 (10,1,1) = {"
-i
-J
-l
-x
-J
-P
-B
-B
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-J
-i
-i
+ai
+aJ
+ej
+ax
+aJ
+Qo
+aB
+aB
+aP
+aP
+Qo
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aJ
+ai
+ai
 "}
 (11,1,1) = {"
-i
-J
-g
-g
-J
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-J
-i
-i
+ai
+aJ
+ud
+ag
+aJ
+Qo
+aP
+aP
+aP
+aP
+Qo
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aJ
+ai
+ai
 "}
 (12,1,1) = {"
-i
-J
-g
-g
-p
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-J
-i
-i
+ai
+aJ
+ud
+ag
+ap
+Qo
+aP
+aP
+aP
+aP
+Qo
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aJ
+ai
+ai
 "}
 (13,1,1) = {"
-i
-J
-g
-g
-J
-P
-P
-P
-P
-P
-o
-P
-P
-P
-P
-B
-P
-P
-P
-J
-i
-i
+ai
+aJ
+ud
+ag
+aJ
+Qo
+aP
+aP
+aP
+aP
+HJ
+aP
+aP
+aP
+aP
+aB
+aP
+aP
+aP
+aJ
+ai
+ai
 "}
 (14,1,1) = {"
-i
-J
-x
-x
-J
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-s
-P
-P
-P
-J
-i
-i
+ai
+aJ
+aS
+ax
+aJ
+Qo
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+as
+aP
+aP
+aP
+aM
+ai
+ai
 "}
 (15,1,1) = {"
-i
-J
-x
-x
-J
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-P
-B
-J
-i
-i
+ai
+aJ
+aS
+ax
+aJ
+jI
+Qo
+Qo
+Qo
+jv
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aB
+aJ
+ai
+ai
 "}
 (16,1,1) = {"
-i
-J
-l
-x
-J
-J
-J
-J
-J
-e
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-i
-i
+ai
+aJ
+ej
+ax
+aJ
+aJ
+aJ
+aJ
+aJ
+Og
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+ai
+ai
 "}
 (17,1,1) = {"
-i
-J
-P
-P
-J
-x
-x
-x
-x
-x
-Q
-x
-F
-x
-x
-x
-x
-x
-x
-J
-i
-i
+ai
+aJ
+Qo
+aP
+aJ
+ax
+ax
+ax
+ax
+aS
+aQ
+ax
+aF
+ax
+ax
+ax
+ax
+ax
+ax
+aJ
+ai
+ai
 "}
 (18,1,1) = {"
-i
-J
-P
-P
-J
-l
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-W
-J
-i
-i
+ai
+aJ
+Qo
+aP
+aJ
+al
+ax
+ax
+ax
+aS
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+aW
+aJ
+ai
+ai
 "}
 (19,1,1) = {"
-i
-J
-P
-P
-p
-x
-x
-x
-x
-x
-x
-x
-x
-x
-v
-x
-x
-x
-x
-J
-i
-i
+ai
+aJ
+Qo
+aP
+ap
+ax
+ax
+np
+aS
+yR
+aS
+aS
+aS
+aS
+UV
+ax
+ax
+ax
+ax
+aJ
+ai
+ai
 "}
 (20,1,1) = {"
-i
-J
-x
-x
-p
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-b
-J
-i
-i
+ai
+aJ
+aS
+ax
+ap
+ax
+ax
+aS
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ab
+aJ
+ai
+ai
 "}
 (21,1,1) = {"
-i
-J
-x
-x
-p
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-c
-J
-i
-i
+ai
+aJ
+aS
+ax
+ap
+ax
+ax
+aS
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ac
+aJ
+ai
+ai
 "}
 (22,1,1) = {"
-i
-J
-l
-x
-J
-x
-x
-x
-x
-x
-x
-y
-x
-x
-x
-x
-x
-a
-x
-t
-i
-i
+ai
+aJ
+ej
+ax
+aJ
+ax
+ax
+aS
+ax
+ax
+ax
+ay
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+at
+ai
+ai
 "}
 (23,1,1) = {"
-i
-J
-x
-x
-J
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-J
-i
-i
+ai
+aJ
+aS
+ax
+aJ
+ax
+ax
+aS
+ax
+ax
+ax
+ax
+aa
+ax
+ax
+ax
+ax
+ax
+ax
+aJ
+ai
+ai
 "}
 (24,1,1) = {"
-i
-J
-x
-x
-p
-x
-x
-x
-x
-x
-z
-z
-x
-x
-x
-x
-x
-x
-d
-J
-i
-i
+ai
+aJ
+aS
+ax
+ap
+ax
+ax
+aS
+ax
+ax
+az
+az
+ax
+ax
+ax
+ax
+ax
+ax
+ad
+aJ
+ai
+ai
 "}
 (25,1,1) = {"
-i
-J
-x
-x
-p
-x
-x
-x
-x
-x
-z
-z
-x
-x
-x
-x
-x
-x
-x
-J
-i
-i
+ai
+aJ
+aS
+ax
+ap
+ax
+ax
+aS
+ax
+ax
+az
+az
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+aJ
+ai
+ai
 "}
 (26,1,1) = {"
-i
-J
-I
-x
-p
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-J
-i
-i
+ai
+aJ
+eT
+ax
+ap
+ax
+ax
+aS
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+aJ
+ai
+ai
 "}
 (27,1,1) = {"
-i
-J
-x
-x
-t
-x
-x
-q
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-J
-i
-i
+ai
+aJ
+bJ
+aS
+Zi
+aS
+aS
+MO
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+aJ
+ai
+ai
 "}
 (28,1,1) = {"
-i
-J
-x
-x
-J
-l
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-x
-W
-J
-i
-i
+ai
+aJ
+ax
+ax
+aJ
+al
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+aW
+aJ
+ai
+ai
 "}
 (29,1,1) = {"
-i
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-J
-i
-i
+ai
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+ap
+at
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+ai
+ai
 "}
 (30,1,1) = {"
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
-i
+ai
+aJ
+aJ
+aJ
+ax
+aJ
+aN
+ax
+ax
+aN
+ax
+ax
+ax
+aF
+ax
+ax
+ax
+aN
+ax
+aJ
+ai
+ai
+"}
+(31,1,1) = {"
+ai
+aJ
+aJ
+aJ
+ak
+aJ
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+aw
+aJ
+ai
+ai
+"}
+(32,1,1) = {"
+ai
+aJ
+aJ
+aJ
+ar
+aJ
+ax
+ax
+aK
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+am
+ax
+ax
+aJ
+ai
+ai
+"}
+(33,1,1) = {"
+ai
+aJ
+aJ
+aJ
+aS
+ap
+ax
+ax
+aS
+ax
+ax
+ax
+ax
+ax
+aN
+ax
+aS
+ax
+ax
+aJ
+ai
+ai
+"}
+(34,1,1) = {"
+ai
+aJ
+aJ
+aJ
+aS
+at
+ax
+ax
+aS
+ax
+ax
+aJ
+aJ
+aJ
+ax
+ax
+aS
+ax
+ax
+aJ
+ai
+ai
+"}
+(35,1,1) = {"
+ai
+aJ
+aJ
+aJ
+aS
+aJ
+ax
+ax
+aS
+ax
+ax
+aJ
+aJ
+aJ
+ax
+ax
+aS
+ax
+ax
+aJ
+ai
+ai
+"}
+(36,1,1) = {"
+ai
+aJ
+aJ
+aJ
+aS
+aJ
+ax
+ax
+aS
+ax
+aD
+ax
+ax
+ax
+ax
+ax
+aS
+ax
+ax
+aJ
+ai
+ai
+"}
+(37,1,1) = {"
+ai
+aJ
+aJ
+aJ
+aS
+aJ
+ax
+ax
+aC
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aH
+ax
+ax
+aJ
+ai
+ai
+"}
+(38,1,1) = {"
+ai
+aJ
+aJ
+aJ
+aS
+aJ
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+aw
+aJ
+ai
+ai
+"}
+(39,1,1) = {"
+ai
+aJ
+ax
+ax
+aS
+aJ
+aO
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+aN
+ax
+aJ
+ai
+ai
+"}
+(40,1,1) = {"
+ai
+aJ
+aJ
+aJ
+aS
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+ap
+at
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+ai
+ai
+"}
+(41,1,1) = {"
+ai
+aJ
+aJ
+aJ
+aS
+aJ
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+aJ
+ai
+ai
+"}
+(42,1,1) = {"
+ai
+aJ
+aJ
+aX
+aS
+aJ
+ax
+au
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+an
+ax
+aJ
+ai
+ai
+"}
+(43,1,1) = {"
+ai
+aJ
+aJ
+aJ
+aS
+aJ
+ax
+aS
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aS
+ax
+aJ
+ai
+ai
+"}
+(44,1,1) = {"
+ai
+aJ
+aJ
+aJ
+aS
+aJ
+aL
+aS
+aJ
+aJ
+aJ
+aJ
+aJ
+ax
+aG
+ax
+aJ
+aS
+ax
+aJ
+ai
+ai
+"}
+(45,1,1) = {"
+ai
+aJ
+ax
+ax
+aS
+aJ
+ax
+aS
+aJ
+aJ
+aJ
+aJ
+aJ
+ax
+ax
+ax
+aJ
+aS
+ax
+aJ
+ai
+ai
+"}
+(46,1,1) = {"
+ai
+aJ
+aJ
+aJ
+aS
+aJ
+ax
+aS
+aJ
+aJ
+aJ
+aJ
+aJ
+ax
+ax
+ax
+aJ
+aS
+ax
+aJ
+ai
+ai
+"}
+(47,1,1) = {"
+ai
+aJ
+aJ
+aJ
+aS
+aJ
+ax
+aS
+aJ
+aJ
+aJ
+aJ
+aJ
+ax
+aE
+ax
+aZ
+aS
+ax
+aJ
+ai
+ai
+"}
+(48,1,1) = {"
+ai
+aJ
+aJ
+aJ
+aS
+aJ
+ax
+aS
+aJ
+aJ
+aJ
+aJ
+aJ
+ax
+ax
+ax
+aJ
+aS
+ax
+aJ
+ai
+ai
+"}
+(49,1,1) = {"
+ai
+aJ
+aJ
+aJ
+aS
+aJ
+aL
+aS
+aJ
+aJ
+aJ
+aJ
+aJ
+ax
+ax
+ax
+aJ
+aS
+ax
+aJ
+ai
+ai
+"}
+(50,1,1) = {"
+ai
+aJ
+aJ
+aJ
+aU
+aJ
+ax
+aS
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aS
+ax
+aJ
+ai
+ai
+"}
+(51,1,1) = {"
+ai
+aJ
+aJ
+aJ
+aL
+aJ
+ax
+aA
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aj
+ax
+aJ
+ai
+ai
+"}
+(52,1,1) = {"
+ai
+aM
+ax
+ax
+ax
+aJ
+ax
+ax
+ax
+ax
+ax
+ax
+aY
+ax
+ax
+ax
+ax
+ax
+ax
+aJ
+ai
+ai
+"}
+(53,1,1) = {"
+ai
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+ai
+ai
+"}
+(54,1,1) = {"
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
 "}

@@ -198,7 +198,8 @@
 		// a hand-placed setpiece (elite, or an arena's megafauna) counts as
 		// the guard/boss, e.g. Pandora's ruin, the blood-drunk shrines
 		var/has_setpiece = has_megafauna || findtext(text, "/mob/living/simple_animal/hostile/asteroid/elite")
-		if(!findtext(text, "/obj/effect/zone_mobs") && !has_setpiece)
+		// Human NPC guards (a stealth den's scavs) defend a cache as well as a zone_mobs marker does.
+		if(!findtext(text, "/obj/effect/zone_mobs") && !findtext(text, "/obj/effect/spawner/human_npc") && !has_setpiece)
 			TEST_FAIL("[map_file] places a loot cache but no zone_mobs guard marker or hand-placed setpiece")
 
 	// ---- rumor charts point at real, stocked, guarded ruins ----
@@ -235,8 +236,8 @@
 				chart_caches++
 		if(!chart_caches)
 			TEST_FAIL("[map_path] (rumor chart [chart_path]) contains no zone loot caches. The chart sells an empty prize")
-		if(!findtext(text, "/obj/effect/zone_mobs"))
-			TEST_FAIL("[map_path] (rumor chart [chart_path]) has no zone_mobs guards")
+		if(!findtext(text, "/obj/effect/zone_mobs") && !findtext(text, "/obj/effect/spawner/human_npc"))
+			TEST_FAIL("[map_path] (rumor chart [chart_path]) has no zone_mobs or human NPC guards")
 		var/chart_has_boss = findtext(text, "/boss,") || findtext(text, "/boss{") || findtext(text, "/boss)")
 		var/chart_setpiece = findtext(text, "/mob/living/simple_animal/hostile/megafauna") \
 			|| findtext(text, "/mob/living/basic/boss") \

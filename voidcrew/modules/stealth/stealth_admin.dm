@@ -35,6 +35,19 @@
 	var/wary_text = "calm"
 	if(stealth_ai.blackboard[BB_STEALTH_WARY])
 		wary_text = "wary [max(0, round((stealth_ai.stealth_skill().wary_time - (world.time - stealth_ai.wary_at)) / (1 SECONDS)))]s"
+	// Decision 40: what the one it has stopped, its focus, or else the nearest player wears, and whether it works on this guard.
+	var/mob/living/stopped = stealth_ai.challenge?.resolve()
+	var/mob/living/subject = stopped || focus
+	var/turf/here = get_turf(guard)
+	if(isnull(subject) && here && here.z <= length(SSmobs.clients_by_zlevel))
+		for(var/mob/living/player as anything in SSmobs.clients_by_zlevel[here.z])
+			if(get_dist(player, here) <= HUMAN_NPC_SIGHT_RANGE && (isnull(subject) || get_dist(player, here) < get_dist(subject, here)))
+				subject = player
+	var/pieces = isliving(subject) ? stealth_disguise_of(subject) : NONE
+	if(pieces)
+		var/passed = stealth_ai.passes?[REF(subject)] > world.time
+		var/works = subject == stopped ? "stopped" : (stealth_ai.stealth_fooled(subject) ? (passed ? "passed" : "holds") : "seen through")
+		wary_text += " | disguise: [subject] stage [stealth_disguise_stage(pieces)][(pieces & STEALTH_PIECE_ID) ? " +pass" : ""], [works]"
 	return "[guard.real_name] [REF(guard)] | [stealth_ai.group?.id || "no group"] | [stealth_ai.stealth_skill().name][stealth_ai.skill_forced ? " (set)" : ""] | [state_text] [since]s | focus [focus_text] | [wary_text] | [route_text] | AI [status_text] | [stealth_guard_hearing_summary(guard, stealth_ai)]"
 
 ADMIN_VERB(stealth_guards, R_DEBUG, "Stealth Guards", "View and force the awareness of stealth guards on your z-level.", ADMIN_CATEGORY_DEBUG)
