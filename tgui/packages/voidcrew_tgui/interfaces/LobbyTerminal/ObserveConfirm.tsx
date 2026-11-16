@@ -4,6 +4,7 @@
  */
 import { useBackend } from 'tgui/backend';
 
+import { quietDialogClose } from './motion';
 import { useBack } from './nav';
 import { BODY_Y, Btn, Dialog, Put, useGrid } from './term';
 import type { LobbyData } from './types';
@@ -47,6 +48,8 @@ export function ObserveConfirm(props: { onClose: () => void }) {
           label="OBSERVE"
           right
           onClick={() => {
+            // Answered, not backed out of: the box goes without the back sound.
+            quietDialogClose();
             onClose();
             act('observe_confirm');
           }}

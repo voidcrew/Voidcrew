@@ -8,9 +8,11 @@
  * Bar mode keeps READY/JOIN, OBSERVE, CHARACTER and START as keys along the bottom and folds
  * the utility items into MENU. The symbol, wordmark, station name and character name are cut.
  */
+import { useEffect, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 
 import { Emblem } from './Emblem';
+import { sfx, useBlink, useChanged } from './motion';
 import { FocusScope, useBack } from './nav';
 import {
   Box,
@@ -18,25 +20,33 @@ import {
   cut,
   HRule,
   Key,
+  type KeyKind,
   type KeyState,
   Put,
   RPut,
   safe,
   useGrid,
+  WipeAt,
   wrapMax,
 } from './term';
 import type { LobbyData } from './types';
 
+/** How long READY's fill takes to sweep in, and to retract, in ms. */
+const READY_ON_MS = 180;
+const READY_OFF_MS = 120;
+
 /** READY before the round, JOIN once it runs. */
-function topKey(data: LobbyData) {
+function topKey(data: LobbyData, sweep: 'on' | 'off' | null, now: boolean) {
   const { phase } = data;
   const ready = !!data.ready;
   if (phase === 'loading' || phase === 'pregame' || phase === 'setup') {
+    // While the fill sweeps in the key keeps its rest look under it; [#] shows when it lands.
+    const on = ready && sweep !== 'on';
     return {
       label: 'READY',
-      right: ready ? '[#]' : '[ ]',
+      right: on ? '[#]' : '[ ]',
       rightCls: undefined as Cls | undefined,
-      state: (phase === 'setup' ? 'dead' : ready ? 'on' : 'idle') as KeyState,
+      state: (phase === 'setup' ? 'dead' : on ? 'on' : 'idle') as KeyState,
       action: 'ready',
     };
   }
@@ -50,9 +60,68 @@ function topKey(data: LobbyData) {
     label: 'JOIN',
     right,
     rightCls: 'amb' as Cls,
-    state: (phase === 'playing' ? 'idle' : 'dead') as KeyState,
+    // First in line with a place free: the key takes the accent fill every other half second.
+    state: (phase !== 'playing' ? 'dead' : now ? 'on' : 'idle') as KeyState,
     action: 'join',
   };
+}
+
+/**
+ * The READY / JOIN key of the side menu and of the key bar.
+ *
+ * READY's fill follows what the server says, not the press: it sweeps in left to right when
+ * the player becomes ready and retracts when they stop. In line, the place flashes when it
+ * changes, and the key blinks when the player is first and a place is free.
+ */
+function TopKey(props: {
+  x: number;
+  y: number;
+  w: number;
+  h?: number;
+  kind: KeyKind;
+}) {
+  const { data, act } = useBackend<LobbyData>();
+  const { phase } = data;
+  const before = phase === 'loading' || phase === 'pregame';
+  const [sweep, setSweep] = useState<'on' | 'off' | null>(null);
+  useChanged(!!data.ready, (_, ready) => {
+    if (before) {
+      setSweep(ready ? 'on' : 'off');
+      sfx(ready ? 'ready_on' : 'ready_off');
+    }
+  });
+  useEffect(() => {
+    if (!sweep) {
+      return;
+    }
+    const id = setTimeout(
+      () => setSweep(null),
+      sweep === 'on' ? READY_ON_MS : READY_OFF_MS,
+    );
+    return () => clearTimeout(id);
+  }, [sweep]);
+  const queue = phase === 'playing' ? data.queue : 0;
+  useChanged(queue, (_, place) => {
+    if (place > 0) {
+      sfx('queue');
+    }
+  });
+  const now = useBlink(phase === 'playing' && !!data.queue_go, 500);
+  const top = topKey(data, before ? sweep : null, now);
+  return (
+    <Key
+      {...props}
+      label={top.label}
+      right={top.right}
+      rightCls={top.rightCls}
+      rightPulse={queue}
+      state={top.state}
+      sweep={before ? sweep : null}
+      auto={beforeRound(data) ? 9 : undefined}
+      zone="menu"
+      onClick={() => act(top.action)}
+    />
+  );
 }
 
 type Util = {
@@ -101,7 +170,6 @@ export function SideMenu(props: MenuProps) {
   const { charOpen, onCharacter, onObserve } = props;
   const { data, act } = useBackend<LobbyData>();
   const { rows, cw, ch } = useGrid();
-  const top = topKey(data);
   const prefs = !!data.prefs_ready;
   // The box ends level with the main box (one row above the region's foot).
   const boxH = rows - 1;
@@ -133,20 +201,7 @@ export function SideMenu(props: MenuProps) {
       <Put x={2} y={6.75} cls="wht lt-wordmark">
         V O I D C R E W
       </Put>
-      <Key
-        x={1}
-        y={8.25}
-        w={17}
-        h={2}
-        kind="big"
-        label={top.label}
-        right={top.right}
-        rightCls={top.rightCls}
-        state={top.state}
-        auto={beforeRound(data) ? 9 : undefined}
-        zone="menu"
-        onClick={() => act(top.action)}
-      />
+      <TopKey x={1} y={8.25} w={17} h={2} kind="big" />
       <Key
         x={1}
         y={10.5}
@@ -222,22 +277,9 @@ export function KeyBar(
 ) {
   const { charOpen, onCharacter, onObserve, menuOpen, onMenu } = props;
   const { data, act } = useBackend<LobbyData>();
-  const top = topKey(data);
   return (
     <>
-      <Key
-        x={0}
-        y={0}
-        w={15}
-        kind="box"
-        label={top.label}
-        right={top.right}
-        rightCls={top.rightCls}
-        state={top.state}
-        auto={beforeRound(data) ? 9 : undefined}
-        zone="menu"
-        onClick={() => act(top.action)}
-      />
+      <TopKey x={0} y={0} w={15} kind="box" />
       <Key
         x={16}
         y={0}
@@ -305,6 +347,7 @@ export function MenuPopup(props: { onClose: () => void }) {
       />
       <div className="lt-dialog">
         <Box x={44} y={y} w={19} h={6} tone="bg" bright />
+        <WipeAt x={44} y={y} w={19} h={6} k={0} kind="screen" first z={9} />
         <FocusScope>
           {items.map((u, i) => (
             <Key

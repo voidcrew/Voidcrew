@@ -20,10 +20,25 @@ import { HeaderBand, TABS, TabRow } from './Header';
 import { HousingTab } from './HousingTab';
 import { computeLayout, regions } from './layout';
 import { KeyBar, MenuPopup, SideMenu } from './Menu';
+import {
+  backNextScreen,
+  MOTION_CSS,
+  quietNextScreen,
+  ScreenWipe,
+  setSfxTune,
+  usePauseWhenHidden,
+} from './motion';
 import { Confirmed, NoticeLine } from './Notice';
 import { NAV_CSS, NavProvider } from './nav';
 import { ObserveConfirm } from './ObserveConfirm';
-import { type Grid, GridContext, Region, STARS, TERM_CSS } from './term';
+import {
+  type Grid,
+  GridContext,
+  Region,
+  STARS,
+  TERM_CSS,
+  useBoxInside,
+} from './term';
 import type { LobbyData, TabId } from './types';
 import { YardTab } from './YardTab';
 
@@ -105,8 +120,17 @@ function useTerminalFont() {
   return advance;
 }
 
+/** The cover a screen change draws over the inside of the main box (motion.ts). */
+function MainWipe() {
+  return <ScreenWipe style={useBoxInside()} />;
+}
+
 export function LobbyTerminal() {
   const { data, act } = useBackend<LobbyData>();
+  const root = usePauseWhenHidden<HTMLDivElement>();
+  // Stand-in sound clips play at the rate and volume the server lists for them.
+  const tune = data.sfx_tune;
+  useEffect(() => setSfxTune(tune), [tune]);
   const pane = usePaneSize();
   const advance = useTerminalFont();
   const layout = useMemo(
@@ -195,6 +219,8 @@ export function LobbyTerminal() {
   }, [acted, before, data.prefs_ready]);
   useEffect(() => {
     if (data.phase === 'playing' && autoChar && !acted && tab === 'character') {
+      // The shell's own move: no wipe, no sound.
+      quietNextScreen();
       setTab('crews');
     }
     if (data.phase === 'playing' || acted) {
@@ -253,7 +279,10 @@ export function LobbyTerminal() {
       <CharacterTab
         home={charHome}
         auto={autoChar}
-        onLeave={() => switchTab(prevTab)}
+        onLeave={() => {
+          backNextScreen();
+          switchTab(prevTab);
+        }}
       />
     );
   } else {
@@ -282,6 +311,7 @@ export function LobbyTerminal() {
 
   return (
     <div
+      ref={root}
       style={{
         position: 'fixed',
         inset: 0,
@@ -289,7 +319,7 @@ export function LobbyTerminal() {
         background: '#0b0a0e',
       }}
     >
-      <style>{TERM_CSS + NAV_CSS}</style>
+      <style>{TERM_CSS + NAV_CSS + MOTION_CSS}</style>
       <NavProvider
         onTabNumber={(n) => {
           const next = TABS[n - 1];
@@ -329,6 +359,7 @@ export function LobbyTerminal() {
                 height: layout.rows * layout.ch,
                 fontSize: layout.fs,
                 lineHeight: `${layout.ch}px`,
+                ['--lw' as string]: `${layout.lw}px`,
               }}
             >
               <GridContext.Provider value={grid}>
@@ -350,6 +381,7 @@ export function LobbyTerminal() {
                   <Fragment key={tab === 'character' ? 'char' : bootKey}>
                     {body}
                   </Fragment>
+                  <MainWipe />
                   <NoticeLine />
                   {!!observeOpen && !confirmed && (
                     <ObserveConfirm onClose={() => setObserveOpen(false)} />

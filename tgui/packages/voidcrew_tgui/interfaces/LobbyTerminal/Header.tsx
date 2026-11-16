@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 
+import { sfx, useChanged } from './motion';
 import { Band, cut, HRule, Put, RPut, useGrid } from './term';
 import type { LobbyData, TabId } from './types';
 
@@ -60,16 +61,33 @@ function clockText(data: LobbyData, elapsed: number): string {
   }
 }
 
+/** The departure clock's last seconds: the clock ticks and turns amber every other second. */
+const LAST_SECONDS = 10;
+
 /**
  * Header band (its own region, 1.5 rows): BERTH OFFICE at column 2, the counts and the clock
  * ending at column cols - 3. The clock and the admin counts always draw; the title gives way
  * whole, then the online count.
+ *
+ * In the last ten seconds before departure the clock is amber and white in turn, with a tick
+ * a second that rises in pitch; DEPARTING blinks three times when it appears.
  */
 export function HeaderBand() {
   const { data } = useBackend<LobbyData>();
   const { cols } = useGrid();
   const elapsed = useElapsed(data.clock);
   const clock = clockText(data, elapsed);
+  const counting =
+    (data.phase === 'loading' || data.phase === 'pregame') && data.clock > 0;
+  const left = counting ? Math.max(0, Math.floor(data.clock - elapsed)) : -1;
+  const last = left > 0 && left <= LAST_SECONDS ? left : 0;
+  useChanged(last, (_, now) => {
+    if (now > 0) {
+      sfx('clock', { rate: 1 + (LAST_SECONDS - now) * 0.05 });
+    }
+  });
+  const departing = data.phase === 'setup';
+  const clockCls = `${last % 2 === 1 ? 'amb' : 'wht'} nog${departing ? ' lt-blink3' : ''}`;
   const admin = data.admin_ready
     ? `${data.admin_ready[0]} READY  ${data.admin_ready[1]}/${data.admin_ready[2]} ADM`
     : '';
@@ -84,6 +102,9 @@ export function HeaderBand() {
   if (right.length > room) {
     right = join([admin, clock]);
   }
+  // The clock is its own piece of text, so it can change colour and blink by itself.
+  const whole = right.length <= room && right.endsWith(clock);
+  const before = whole ? right.slice(0, right.length - clock.length) : '';
   return (
     <>
       <Band x={0} y={0} w={cols} h={1.5} tone="bar" />
@@ -92,8 +113,18 @@ export function HeaderBand() {
           {title}
         </Put>
       )}
-      <RPut x={cols - 2} y={0.25} cls="wht nog">
-        {cut(right, room)}
+      {!!before && (
+        <RPut x={cols - 2 - clock.length} y={0.25} cls="wht nog">
+          {before}
+        </RPut>
+      )}
+      <RPut
+        key={departing ? 'departing' : 'clock'}
+        x={cols - 2}
+        y={0.25}
+        cls={whole ? clockCls : 'wht nog'}
+      >
+        {whole ? clock : cut(right, room)}
       </RPut>
     </>
   );

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useBackend } from 'tgui/backend';
 
+import { foundingSent, sfx, useScreen } from './motion';
 import { useBack } from './nav';
 import {
   Band,
@@ -16,6 +17,18 @@ import {
 } from './term';
 import type { LobbyData } from './types';
 
+/** The notice that last sounded: a notice sounds once, however often it is drawn again. */
+let soundedAt: number | null = null;
+
+/** TRUE the first time it is asked about the notice set at `at`. */
+function firstSound(at: number) {
+  if (soundedAt === at) {
+    return false;
+  }
+  soundedAt = at;
+  return true;
+}
+
 /** How long a notice stays before it clears itself, in ms. */
 const NOTICE_LIFE = { warn: 8000, bad: 10000 } as const;
 
@@ -28,13 +41,29 @@ export function EmptyBox() {
   return <Box x={0} y={BOX_Y} w={63} h={rows - 1 - BOX_Y} />;
 }
 
-/** The CONFIRMED box (kind "ok"), drawn over the empty main box instead of the screen. */
+/**
+ * The CONFIRMED box (kind "ok"), drawn over the empty main box instead of the screen. It wipes
+ * in with the stamp; when it answers a commission, a requisition or a load, the long job
+ * under it starts a moment later.
+ */
 export function Confirmed() {
   const { data, act } = useBackend<LobbyData>();
   const { cols } = useGrid();
   const notice = data.notice;
   const dismiss = () => act('dismiss', notice ? { at: notice.at } : {});
   useBack(notice ? dismiss : null);
+  // The box has its own wipe and sound; the screen that comes back after it wipes as a step back.
+  useScreen('confirmed', 9, '', 0, true);
+  const at = notice?.at;
+  useEffect(() => {
+    if (at === undefined || !firstSound(at)) {
+      return;
+    }
+    sfx('stamp');
+    if (foundingSent()) {
+      sfx('working', { when: 0.2 });
+    }
+  }, [at]);
   if (!notice) {
     return null;
   }
@@ -46,7 +75,7 @@ export function Confirmed() {
   return (
     <>
       <EmptyBox />
-      <Dialog w={45} h={6 + n} caption="CONFIRMED">
+      <Dialog w={45} h={6 + n} caption="CONFIRMED" sound={null}>
         {lines.map((line, i) => (
           <Put key={i} x={x} y={y + 1 + i} cls="wht">
             {line}
@@ -54,6 +83,7 @@ export function Confirmed() {
         ))}
         <Put x={x} y={y + 1.5 + n} cls="dim">
           STAND BY.
+          <span className="lt-in lt-vblink" />
         </Put>
         <Btn x={x} y={y + 3.5 + n} label="BACK" lit auto={9} onClick={dismiss} />
       </Dialog>
@@ -76,6 +106,9 @@ export function NoticeLine() {
     if (kind !== 'warn' && kind !== 'bad') {
       return;
     }
+    if (at !== undefined && firstSound(at)) {
+      sfx(kind);
+    }
     const id = setTimeout(() => act('dismiss', { at }), NOTICE_LIFE[kind]);
     return () => clearTimeout(id);
   }, [kind, at]);
@@ -87,8 +120,12 @@ export function NoticeLine() {
   const top = rows - lines.length;
   const clear = () => act('dismiss', { at: notice.at });
   // Its own layer: over everything on the screen (picture wells and keys included), under dialogs.
+  // Keyed by the notice, so each new one draws its band left to right (a bad one then blinks twice).
   return (
-    <div style={{ position: 'absolute', left: 0, top: 0, zIndex: 6 }}>
+    <div
+      key={notice.at}
+      style={{ position: 'absolute', left: 0, top: 0, zIndex: 6 }}
+    >
       {lines.length > 1 && (
         <Band x={0} y={top} w={63} h={lines.length} tone="bg" />
       )}
@@ -98,6 +135,7 @@ export function NoticeLine() {
         w={63}
         h={lines.length}
         tone={bad ? 'bad' : 'warn'}
+        fx={bad ? 'lt-draw-bad' : 'lt-draw'}
       />
       {lines.map((line, i) => (
         <Put
