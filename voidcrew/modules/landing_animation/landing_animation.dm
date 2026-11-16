@@ -37,6 +37,10 @@
 #define LANDING_PROXY_LIGHT_LAYER 100
 /// Just above bullet holes and floor clutter, below every object and mob
 #define LANDING_SHADOW_LAYER 2.07
+/// Height the descending ship waits at until the move starts
+#define LANDING_PROXY_HOVER 10
+/// How long the picture takes to give way to the real hull
+#define LANDING_PICTURE_FADE (0.8 SECONDS)
 /// How long the picture covers a landed hull while its lighting is rebuilt
 #define LANDING_LIGHTING_SETTLE (2 SECONDS)
 /// Chance an edge tile kicks up a puff of dust, and the most puffs one landing makes
@@ -93,7 +97,7 @@
 		descent?.freeze()
 		landing_touchdown(pairs[2])
 		// the crew aboard feel it too, though they are still in transit for the moment
-		landing_jolt(pairs[1], null, 0, shake_strength = 0.2)
+		landing_jolt(pairs[1], 'sound/effects/meteorimpact.ogg', 60, shake_strength = 0.2)
 	else if(ship.state == OVERMAP_SHIP_UNDOCKING && old_dock && !istype(old_dock, /obj/docking_port/stationary/transit) && istype(new_dock, /obj/docking_port/stationary/transit) && landing_animation_wanted(ship.undock_origin?.resolve()))
 		launch = new(landing_hull_pairs(src, new_dock)[1])
 	. = ..()
@@ -115,7 +119,6 @@
  * that many tiles of the hull on the same level.
  */
 /proc/landing_jolt(list/hull_turfs, sound_file, volume, reach = 0, shake_time = 3, shake_strength = 0)
-	return // BLOCKING-GATE
 	if(!length(hull_turfs))
 		return
 	var/list/hull_set = list()
@@ -144,7 +147,6 @@
 
 /// A few light puffs of dust kicked out from the hull's edges
 /proc/landing_dust(list/hull_turfs)
-	return // BLOCKING-GATE
 	var/list/hull_set = list()
 	for(var/turf/hull_turf as anything in hull_turfs)
 		hull_set[hull_turf] = TRUE
@@ -430,17 +432,25 @@
 	if(frozen)
 		return
 	frozen = TRUE
-	QDEL_NULL(shadow)
+	if(shadow) // under the hull now; let its blurred rim go gently
+		animate(shadow, alpha = 0, time = 0.4 SECONDS)
+		QDEL_IN(shadow, 0.4 SECONDS)
+		shadow = null
 	if(proxy)
-		animate(proxy)
-		proxy.pixel_z = 0
+		animate(proxy, pixel_z = 0, time = 0.2 SECONDS, easing = QUAD_EASING | EASE_IN)
 
 /// The hull is down. The picture covers it a moment longer while its lighting is rebuilt, then goes.
 /datum/landing_animation/proc/landed()
 	if(ship?.landing_animation == src)
 		ship.landing_animation = null
 	landed = TRUE
-	QDEL_IN(src, LANDING_LIGHTING_SETTLE)
+	addtimer(CALLBACK(src, PROC_REF(fade_out)), LANDING_LIGHTING_SETTLE, TIMER_DELETE_ME)
+
+/// The real hull is lit again: the picture gives way to it
+/datum/landing_animation/proc/fade_out()
+	if(proxy)
+		animate(proxy, alpha = 0, time = LANDING_PICTURE_FADE)
+	QDEL_IN(src, LANDING_PICTURE_FADE)
 
 /datum/landing_animation/proc/show_shadow()
 	if(!length(berth_turfs) || frozen)
@@ -449,6 +459,8 @@
 	if(!shadow.outline(berth_turfs))
 		QDEL_NULL(shadow)
 		return
+	// engines heard on the ground before the ship is in sight; the crew aboard hear nothing new
+	landing_jolt(berth_turfs, 'voidcrew/sound/machines/rocket/rocket_launch.ogg', 25, reach = LANDING_HEAR_RANGE)
 	var/time_left = max(1, touchdown_time - world.time)
 	var/fade_in = min(1.5 SECONDS, time_left / 4)
 	var/spread_end = max(0, time_left - LANDING_PROXY_LEAD - fade_in)
@@ -469,7 +481,8 @@
 	var/high_part = time_left * 2 / 3
 	proxy.pixel_z = LANDING_PROXY_START_HEIGHT
 	animate(proxy, pixel_z = LANDING_PROXY_FINAL_HEIGHT, time = high_part, easing = QUAD_EASING | EASE_OUT)
-	animate(pixel_z = 0, time = time_left - high_part, easing = SINE_EASING | EASE_OUT)
+	// it hovers just off the ground until the move actually starts, which is when it touches down
+	animate(pixel_z = LANDING_PROXY_HOVER, time = time_left - high_part, easing = SINE_EASING | EASE_OUT)
 
 /**
  * # Takeoff
@@ -501,10 +514,15 @@
 		qdel(src)
 		return
 	animate(proxy, pixel_z = LANDING_PROXY_START_HEIGHT, time = LAUNCH_CLIMB_TIME, easing = QUAD_EASING | EASE_IN)
+	landing_dust(berth_turfs)
+	landing_jolt(berth_turfs, 'voidcrew/sound/machines/rocket/rocket_launch.ogg', 70, reach = LANDING_HEAR_RANGE, shake_strength = 0.2)
+	landing_jolt(hull_turfs, 'voidcrew/sound/machines/rocket/rocket_launch.ogg', 50, shake_strength = 0.2)
 	shadow = new(berth_turfs[1])
 	if(shadow.outline(berth_turfs))
 		shadow.alpha = LANDING_SHADOW_DARK
-		animate(shadow, transform = matrix().Scale(LANDING_SHADOW_WIDE), alpha = 0, time = LAUNCH_CLIMB_TIME, easing = SINE_EASING | EASE_IN)
+		animate(shadow, transform = matrix().Scale(LANDING_SHADOW_WIDE), time = LAUNCH_CLIMB_TIME, easing = SINE_EASING | EASE_IN)
+		// pales steadily, so it is all but gone before it is removed
+		animate(shadow, alpha = 0, time = LAUNCH_CLIMB_TIME * 0.9, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
 	else
 		QDEL_NULL(shadow)
 	QDEL_IN(src, LAUNCH_CLIMB_TIME + 0.5 SECONDS)
@@ -528,6 +546,8 @@
 #undef LANDING_PROXY_LIGHT_LAYER
 #undef LANDING_SHADOW_LAYER
 #undef LANDING_LIGHTING_SETTLE
+#undef LANDING_PROXY_HOVER
+#undef LANDING_PICTURE_FADE
 #undef LANDING_DUST_CHANCE
 #undef LANDING_DUST_MAX
 #undef LANDING_HEAR_RANGE

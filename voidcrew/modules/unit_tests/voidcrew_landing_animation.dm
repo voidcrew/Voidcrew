@@ -115,7 +115,7 @@
 	picture = descent.proxy
 	TEST_ASSERT_NOTNULL(picture, "The picture went before the landed hull's lighting was rebuilt")
 	TEST_ASSERT_EQUAL(picture.pixel_z, 0, "At touchdown the picture is still in the air")
-	sleep(3 SECONDS)
+	sleep(4 SECONDS)
 	TEST_ASSERT(QDELETED(descent), "Touchdown kept the descent")
 	TEST_ASSERT_EQUAL(length(effects_on(berth_turfs)), 0, "Touchdown left the picture or the shadow on the berth")
 
