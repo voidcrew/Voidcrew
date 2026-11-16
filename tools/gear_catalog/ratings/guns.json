@@ -1496,7 +1496,7 @@
    "score_inputs": {
     "cell_fed": {
      "value": false,
-     "why": "Loads single-use plasma cartridges, pressed from sheets or ore, printed or bought; no recharger."
+     "why": "Loads single-use plasma cartridges, printed or bought; no recharger."
     },
     "points": {
      "value": 15,
@@ -1516,7 +1516,7 @@
    "score_inputs": {
     "cell_fed": {
      "value": false,
-     "why": "Loads single-use plasma cartridges, pressed from sheets or ore, printed or bought; no recharger."
+     "why": "Loads single-use plasma cartridges, printed or bought; no recharger."
     },
     "points": {
      "value": 15,
@@ -1536,7 +1536,7 @@
    "score_inputs": {
     "cell_fed": {
      "value": false,
-     "why": "Loads single-use plasma cartridges, pressed from sheets or ore, printed or bought; no recharger."
+     "why": "Loads single-use plasma cartridges, printed or bought; no recharger."
     },
     "points": {
      "value": 75,
@@ -1556,7 +1556,7 @@
    "score_inputs": {
     "cell_fed": {
      "value": false,
-     "why": "Loads single-use plasma cartridges, pressed from sheets or ore, printed or bought; no recharger."
+     "why": "Loads single-use plasma cartridges, printed or bought; no recharger."
     },
     "points": {
      "value": 75,
@@ -1576,7 +1576,7 @@
    "score_inputs": {
     "cell_fed": {
      "value": false,
-     "why": "Loads single-use plasma cartridges, pressed from sheets or ore, printed or bought; no recharger."
+     "why": "Loads single-use plasma cartridges, printed or bought; no recharger."
     },
     "points": {
      "value": 85,

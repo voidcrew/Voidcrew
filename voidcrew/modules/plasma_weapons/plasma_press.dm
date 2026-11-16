@@ -1,25 +1,7 @@
-// Package: P2 guns and cartridges. Where plasma cartridges come from: pressed by hand, or printed.
+// Package: P2 guns and cartridges. Where plasma cartridges come from: printed on a protolathe, or bought.
 //
-// Pressing by hand needs nothing but plasma and iron, so a looted gun can be loaded in any zone.
-// Ore counts half a sheet. A cartridge's materials are always iron only (plasma_cartridge.dm), and
-// a lathe never discounts the plasma (build_efficiency, code/modules/research/machinery/_production.dm).
-
-/datum/crafting_recipe/plasma_cartridge
-	name = "plasma cartridge"
-	result = /obj/item/plasma_cartridge
-	reqs = list(
-		/obj/item/stack/sheet/mineral/plasma = PLASMA_CARTRIDGE_SHEETS,
-		/obj/item/stack/sheet/iron = 1,
-	)
-	time = PLASMA_PRESS_TIME
-	category = CAT_WEAPON_AMMO
-
-/datum/crafting_recipe/plasma_cartridge/ore
-	name = "plasma cartridge (ore)"
-	reqs = list(
-		/obj/item/stack/ore/plasma = PLASMA_CARTRIDGE_SHEETS * 2,
-		/obj/item/stack/sheet/iron = 1,
-	)
+// A cartridge's materials are always iron only (plasma_cartridge.dm), and a lathe never discounts the
+// plasma (build_efficiency, code/modules/research/machinery/_production.dm).
 
 /datum/design/plasma_cartridge
 	name = "Plasma Cartridge"

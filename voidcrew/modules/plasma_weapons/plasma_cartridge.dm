@@ -1,6 +1,6 @@
 // Package: P2 guns and cartridges. The plasma cartridge: made full, used up, never refilled.
 //
-// A cartridge's plasma only ever falls. It comes full from the hand press, the lathe or the shop
+// A cartridge's plasma only ever falls. It comes full from the lathe or the shop
 // (plasma_press.dm, plasma_shop.dm), goes into a gun's chamber when seated and comes back out with
 // whatever the chamber still holds (plasma_guns.dm). Nothing puts plasma into a cartridge.
 
@@ -9,14 +9,10 @@
 	slot_flags = ITEM_SLOT_BELT
 
 /// Whatever made it, a cartridge is its iron jacket and nothing else. A lathe stamps the design's
-/// plasma onto what it prints and crafting stamps the ingredients'; either would let a spent
-/// cartridge recycle back into plasma sheets, and make it burn like a plasma item.
+/// plasma onto what it prints, which would let a spent cartridge recycle back into plasma sheets,
+/// and make it burn like a plasma item.
 /obj/item/plasma_cartridge/apply_material_effects(list/materials)
 	return ..(list(/datum/material/iron = PLASMA_CARTRIDGE_IRON))
-
-/obj/item/plasma_cartridge/on_craft_completion(list/components, datum/crafting_recipe/current_recipe, atom/crafter)
-	. = ..()
-	playsound(src, PLASMA_SOUND_PRESS, 20, TRUE)
 
 /// Fill step 0 (spent) to 3 (full), for the sprite and the examine line
 /obj/item/plasma_cartridge/proc/fill_step()
