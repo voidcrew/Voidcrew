@@ -216,7 +216,8 @@ function FullSlot(props: {
   if (st === 'empty') {
     body.push(
       <NameLine key="n" x={18} y={ys + p} w={30} text="EMPTY" cls="dim" />,
-      <RPut key="s" x={61} y={ys + p + 0.125} cls="dim">
+      // On the class line's row, where a saved ship's slot number sits.
+      <RPut key="s" x={61} y={ys + p + 1.25} cls="dim">
         {`SLOT ${n}`}
       </RPut>,
     );
