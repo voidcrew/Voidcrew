@@ -672,7 +672,7 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 	if(!prefs?.savefile)
 		return
 	char_dirty = FALSE
-	if(!prefs.save_character())
+	if(!prefs.lobby_save_whole_character())
 		return // a guest's file is never written
 	prefs.save_preferences()
 	// SAVED on the CHARACTER box for a moment.

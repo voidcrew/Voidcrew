@@ -98,16 +98,35 @@
 	return out
 
 /**
+ * save_character() that writes every character preference, not only the ones changed since the
+ * last save. tg's defaults and random rolls (a new file's name and looks) are written into the
+ * slot's save entry only if that entry already exists (/datum/preference/proc/write), so a new
+ * file saved by save_character() alone kept just the edited keys: switching away and back rolled a
+ * new random character, and the FILES list showed the slot as empty. FALSE for a guest.
+ */
+/datum/preferences/proc/lobby_save_whole_character()
+	SHOULD_NOT_SLEEP(TRUE)
+	if(!path || !savefile)
+		return FALSE
+	for(var/datum/preference/preference as anything in get_preferences_in_priority_order())
+		if(preference.savefile_identifier != PREFERENCE_CHARACTER)
+			continue
+		if(preference.type in value_cache)
+			recently_updated_keys |= preference.type
+	return save_character()
+
+/**
  * switch_to_slot() without its unguarded character_preview_view.update_body() (tg's preview only
  * exists while tg's window is open). Saves the current slot first. FALSE for a slot out of range.
  */
 /datum/preferences/proc/lobby_switch_to_slot(new_slot, mob/user)
 	if(!isnum(new_slot) || new_slot != round(new_slot) || new_slot < 1 || new_slot > max_save_slots)
 		return FALSE
-	save_character()
+	lobby_save_whole_character()
 	if(!load_character(new_slot))
 		randomise_appearance_prefs()
-		save_character()
+	// A new slot keeps whatever it was given, so it is still the same character when you come back.
+	lobby_save_whole_character()
 	tainted_character_profiles = TRUE
 	for(var/datum/preference_middleware/preference_middleware as anything in middleware)
 		preference_middleware.on_new_character(user)
