@@ -56,6 +56,19 @@
 	bolt.starting = get_turf(hunter)
 	target.bullet_act(bolt, BODY_ZONE_CHEST)
 
+/// A normal criminal of `tier` fighting in `style`, made the way production makes one (its record as its look)
+/datum/unit_test/voidcrew_human_npc_combat_sense/proc/make_normal_criminal(tier, style, turf/where)
+	var/datum/bounty_record/record = generate_bounty_record(tier, "normal", "planet", /datum/species/human) // BOUNTY_ARCHETYPE_NORMAL, BOUNTY_PLACEMENT_PLANET
+	record.tier = tier
+	record.style = style
+	var/datum/human_npc_order/order = spawn_human_npc(/mob/living/carbon/human/npc/bounty_criminal/normal, where, look = record, immediate = TRUE)
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/criminal = order?.spawned_ref?.resolve()
+	qdel(order)
+	if(criminal)
+		allocated += criminal
+		criminal.ai_update_style()
+	return criminal
+
 /// Whether `npc`'s rules let it act right now (false while a get-up do_after runs)
 /datum/unit_test/voidcrew_human_npc_combat_sense/proc/sense_acts_mid_get_up(mob/living/carbon/human/npc/npc)
 	if(!LAZYLEN(npc.do_afters))
@@ -331,6 +344,8 @@
 		/mob/living/carbon/human/npc/faction_pirate/silverscale/ranged,
 		/mob/living/carbon/human/npc/faction_pirate/grey/captain,
 		/mob/living/carbon/human/npc/ruin/trooper/syndicate,
+		/mob/living/carbon/human/npc/bounty_criminal/normal,
+		/mob/living/carbon/human/npc/bounty_companion,
 		/mob/living/carbon/human/npc/outpost_prison_guard,
 	))
 		var/mob/living/carbon/human/npc/armed_path = armed_type
@@ -343,10 +358,42 @@
 	TEST_ASSERT_NULL(civilian.GetComponent(/datum/component/npc_combat_sense), "A townsperson has combat sense")
 	TEST_ASSERT_NULL(civilian.ai_controller?.blackboard["human_npc_cover"], "A townsperson ran for cover")
 
-/// The families' rules: a pirate holding its ground stays put, and a pirate with no crew keeps near home.
+/// The families' rules: a Wanted criminal carries a stimpack and keeps cover on its leash; a Petty one
+/// carries none; a pirate holding its ground stays put, and a pirate with no crew keeps near home.
 /datum/unit_test/voidcrew_human_npc_combat_sense/families
 
 /datum/unit_test/voidcrew_human_npc_combat_sense/families/Run()
+	// BOUNTY_TIER_WANTED 2, BOUNTY_STYLE_BRAWLER: a free pocket for the stimpack
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/wanted = make_normal_criminal(2, "brawler", tile(2, 2))
+	TEST_ASSERT_NOTNULL(wanted, "Test fixture: no Wanted criminal was made")
+	var/obj/item/reagent_containers/hypospray/medipen/wanted_stim = human_npc_find_stim(wanted)
+	TEST_ASSERT_NOTNULL(wanted_stim, "A Wanted brawler carries no stimpack it can reach")
+	TEST_ASSERT_EQUAL(wanted_stim.type, /obj/item/reagent_containers/hypospray/medipen/stimpack, "A Wanted brawler carries the wrong stimulant")
+	var/datum/component/npc_combat_sense/sense = wanted.GetComponent(/datum/component/npc_combat_sense)
+	TEST_ASSERT_NOTNULL(sense, "A Wanted criminal has no combat sense")
+	TEST_ASSERT_EQUAL(sense.rules.reach(wanted, wanted.ai_controller), 1, "A brawler counts as a gunner")
+	var/turf/corner = tile(1, 1)
+	var/turf/far_corner = tile(3, 3)
+	wanted.site_bounds = list(corner.x, corner.y, far_corner.x, far_corner.y, corner.z)
+	TEST_ASSERT(sense.rules.tile_ok(wanted, wanted.ai_controller, tile(2, 3)), "A tile on the criminal's leash is refused")
+	TEST_ASSERT(!sense.rules.tile_ok(wanted, wanted.ai_controller, tile(4, 4)), "A tile off the criminal's leash is allowed")
+
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/petty = make_normal_criminal(1, "brawler", tile(0, 0)) // BOUNTY_TIER_PETTY
+	TEST_ASSERT_NOTNULL(petty, "Test fixture: no Petty criminal was made")
+	TEST_ASSERT_NULL(human_npc_find_stim(petty), "A Petty criminal carries a stimpack")
+	TEST_ASSERT_NOTNULL(petty.GetComponent(/datum/component/npc_combat_sense), "A Petty criminal has no combat sense")
+
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/most_wanted = make_normal_criminal(3, "club", tile(0, 4)) // BOUNTY_TIER_MOST_WANTED
+	TEST_ASSERT_NOTNULL(most_wanted, "Test fixture: no Most Wanted criminal was made")
+	var/obj/item/reagent_containers/hypospray/medipen/combat_stim = human_npc_find_stim(most_wanted)
+	TEST_ASSERT_NOTNULL(combat_stim, "A Most Wanted club fighter carries no stimulant")
+	TEST_ASSERT_EQUAL(combat_stim.type, /obj/item/reagent_containers/hypospray/medipen/stimpack/traitor, "A Most Wanted club fighter doesn't carry a combat stimpack")
+
+	var/mob/living/carbon/human/npc/bounty_criminal/normal/gunman = make_normal_criminal(2, "pistol", tile(4, 4)) // BOUNTY_STYLE_PISTOL
+	TEST_ASSERT_NOTNULL(gunman, "Test fixture: no Wanted gunman was made")
+	var/datum/component/npc_combat_sense/gunman_sense = gunman.GetComponent(/datum/component/npc_combat_sense)
+	TEST_ASSERT(gunman_sense.rules.reach(gunman, gunman.ai_controller) > 3, "A pistol criminal counts as a close fighter") // HUMAN_NPC_SENSE_CLOSE_IN_REACH
+
 	var/datum/human_npc_order/order = spawn_human_npc(/mob/living/carbon/human/npc/faction_pirate/grey/ranged, tile(4, 0), immediate = TRUE)
 	var/mob/living/carbon/human/npc/faction_pirate/grey/ranged/pirate = order?.spawned_ref?.resolve()
 	qdel(order)
