@@ -212,6 +212,10 @@ export function NavProvider(props: ProviderProps) {
     .current;
   /** Per open scope: the scope under it had no focus of the player's when it opened. */
   const coveredBare = useRef(new Map<string, boolean>()).current;
+  /** Per open scope: the item the player had focused under it when it opened (its opener). */
+  const openers = useRef(new Map<string, string>()).current;
+  /** An opener to give the focus back to once its dialog has closed. */
+  const restore = useRef<string | null>(null);
   /** Items in the newest open scope, in mount order. */
   const live = () => {
     const top = scopes[scopes.length - 1];
@@ -264,6 +268,21 @@ export function NavProvider(props: ProviderProps) {
       claim.current = null;
       // The open scope's claims are settled now; only covered scopes keep theirs waiting.
       waiting.delete(top);
+      // A dialog just closed: the focus goes back to the item that opened it, if it is still
+      // there and can take the focus. Otherwise the rules below pick as usual.
+      const back = restore.current;
+      restore.current = null;
+      if (back) {
+        const opener = items.get(back);
+        if (
+          opener?.scope === top &&
+          !opener.opts.current.mouseOnly &&
+          boxOf(opener)
+        ) {
+          setFocus(back, 'claim');
+          return;
+        }
+      }
       // A claim wins after a key or click (a record or screen the player opened), never because
       // a server update added a row under the focus.
       const untouched = focusHow.current === 'auto';
@@ -351,6 +370,9 @@ export function NavProvider(props: ProviderProps) {
           items.get(current)?.scope === under &&
           focusHow.current !== 'auto';
         coveredBare.set(id, !held);
+        if (held && current) {
+          openers.set(id, current);
+        }
         scopes.push(id);
         schedule();
       },
@@ -362,9 +384,17 @@ export function NavProvider(props: ProviderProps) {
         const bare = coveredBare.get(id);
         coveredBare.delete(id);
         waiting.delete(id);
+        const opener = openers.get(id);
+        openers.delete(id);
         const top = scopes[scopes.length - 1];
+        // The opener wins when there was one; a waiting first-focus claim is for a dialog that
+        // opened before the player had focused anything (WELCOME over a screen that just opened).
+        if (opener && at === scopes.length) {
+          restore.current = opener;
+        }
         const wait = waiting.get(top);
         if (
+          !opener &&
           bare &&
           at === scopes.length &&
           wait &&
