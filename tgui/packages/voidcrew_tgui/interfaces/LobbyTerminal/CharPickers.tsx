@@ -104,15 +104,21 @@ export function ListPicker(props: PickerProps) {
   const palette = !!hexOf;
   const nameW = (ncol === 2 ? 17 : w - 3) - (palette ? 3 : 0);
   const two = !wide && choices.some((v) => shown(v).length > nameW);
-  const rowH = two ? 2.25 : 1.25;
+  const baseH = two ? 2.25 : 1.25;
 
-  const fitAll = Math.floor((M - 6.5) / rowH);
+  const fitAll = Math.floor((M - 6.5) / baseH);
   const paged = fitAll * ncol < list.length;
+  // A short list that fits on one page: its rows grow (to 2.25) so the column fills.
+  const rowsUsed = Math.max(1, Math.ceil(choices.length / ncol));
+  const rowH =
+    paged || two
+      ? baseH
+      : Math.max(baseH, Math.min(2.25, q((M - 6.5) / rowsUsed)));
   // One page: the columns share the list evenly, so the second is never left empty.
   const perCol = Math.max(
     1,
     paged
-      ? Math.floor((M - 7.75) / rowH)
+      ? Math.floor((M - 7.75) / baseH)
       : Math.min(fitAll, Math.ceil(list.length / ncol)),
   );
   const per = perCol * ncol;
