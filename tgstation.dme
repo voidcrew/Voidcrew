@@ -7103,6 +7103,7 @@
 #include "voidcrew\modules\bounties\bounty_board.dm"
 #include "voidcrew\modules\bounties\bounty_boss.dm"
 #include "voidcrew\modules\bounties\bounty_boss_kits.dm"
+#include "voidcrew\modules\bounties\bounty_combat_sense.dm"
 #include "voidcrew\modules\bounties\bounty_companions.dm"
 #include "voidcrew\modules\bounties\bounty_criminal.dm"
 #include "voidcrew\modules\bounties\bounty_identity.dm"
