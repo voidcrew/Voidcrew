@@ -134,9 +134,10 @@
 		max_y = max(max_y, hull_turf.y)
 	var/turf/first = hull_turfs[1]
 	var/turf/middle = locate(round((min_x + max_x) / 2), round((min_y + max_y) / 2), first.z)
-	for(var/mob/listener as anything in SSmobs.clients_by_zlevel[first.z])
+	// ghosts too, as with explosions (SSmobs.clients_by_zlevel only holds living mobs)
+	for(var/mob/listener as anything in GLOB.player_list)
 		var/turf/where = get_turf(listener)
-		if(!where)
+		if(!where || where.z != first.z)
 			continue
 		if(!hull_set[where] && (!reach || where.x < min_x - reach || where.x > max_x + reach || where.y < min_y - reach || where.y > max_y + reach))
 			continue
@@ -447,8 +448,8 @@
 		var/list/aboard = list()
 		for(var/turf/hull_turf as anything in hull_turfs)
 			aboard[hull_turf] = TRUE
-		var/turf/first = hull_turfs[1]
-		for(var/mob/crew as anything in SSmobs.clients_by_zlevel[first.z])
+		// every player aboard, ghosts included (they are not in SSmobs.clients_by_zlevel)
+		for(var/mob/crew as anything in GLOB.player_list)
 			if(!crew.client || !aboard[get_turf(crew)])
 				continue
 			var/image/hide = image(loc = proxy)
