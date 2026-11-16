@@ -1599,6 +1599,7 @@
 /// Otherwise its unexpected-deletion stack trace aborts callers inside try/catch,
 /// leaving a hull-less overmap ship behind that continues to pin its landing site.
 /obj/structure/overmap/ship/proc/detach_shuttle()
+	roundend_note_departed_ship(src) // keeps its row in the round-end report, voidcrew/modules/roundend
 	ship_metric_removed(src) // the last moment the hull still has its metrics id
 	var/obj/docking_port/mobile/voidcrew/owned_shuttle = shuttle
 	shuttle = null
