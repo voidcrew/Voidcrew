@@ -61,6 +61,17 @@
 	TEST_ASSERT_NULL(dummy.ai_controller, "The kit's chrome dummy has an AI")
 	TEST_ASSERT_EQUAL(length(get_installed_cyberware(dummy)), 3, "The dummy didn't take its three pieces")
 
+	// Chrome Read reads an NPC like anyone else.
+	var/mob/living/carbon/human/reader = allocate(/mob/living/carbon/human/consistent, spot(0, 0))
+	var/obj/item/organ/eyes/robotic/cyberware/deadeye/optics = allocate(/obj/item/organ/eyes/robotic/cyberware/deadeye)
+	TEST_ASSERT(optics.Insert(reader, special = TRUE), "Deadeye staging insert was refused")
+	var/list/report = cyberware_scan_report(dummy, 2)
+	TEST_ASSERT_EQUAL(report["count"], 3, "Chrome Read miscounted an NPC's chrome")
+	var/datum/action/cooldown/cyberware/chrome_read/read = locate() in optics.actions
+	TEST_ASSERT_NOTNULL(read, "The Deadeye link lost its chrome read")
+	TEST_ASSERT(read.PreActivate(dummy), "The chrome read didn't run on an NPC in reach")
+	TEST_ASSERT_NOTNULL(read.current_readout, "The chrome read drew nothing over an NPC")
+
 	// Death: every piece comes out as scrap, nothing intact is left anywhere.
 	dummy.death()
 	TEST_ASSERT(!length(get_installed_cyberware(dummy)), "A dead NPC kept chrome in its body")
