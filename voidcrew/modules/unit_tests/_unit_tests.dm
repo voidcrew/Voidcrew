@@ -13,6 +13,7 @@
 #include "lobby_character.dm"
 #include "lobby_character_kit_roles.dm"
 #include "lobby_crews_payload.dm"
+#include "lobby_settings.dm"
 #include "lobby_settings_keys.dm"
 #include "lobby_shell.dm"
 #include "lobby_terminal_bill.dm"

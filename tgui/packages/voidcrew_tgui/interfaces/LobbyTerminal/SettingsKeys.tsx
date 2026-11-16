@@ -36,7 +36,7 @@ import {
   VALUE_X,
   WORK_W,
   WORK_X,
-} from './Settings';
+} from './SettingsFrame';
 import {
   BODY_Y,
   Big,

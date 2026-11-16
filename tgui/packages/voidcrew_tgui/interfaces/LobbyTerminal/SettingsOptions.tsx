@@ -11,7 +11,8 @@
  *
  * Controls by kind: a toggle flips on Enter or a click ([#] / [ ]); a choice steps with Left and
  * Right or the mouse arrows, and Enter opens the list picker when it has more than HANDFUL
- * choices (else steps on); a number steps the same way, and Enter or a click types it; a colour
+ * choices or a choice's name is too long for the value zone (the picker shows names whole; the
+ * row cuts them with the mark), else steps on; a number steps the same way, and Enter or a click types it; a colour
  * opens the colour panel; a text types.
  */
 import { useEffect, useRef, useState } from 'react';
@@ -39,7 +40,7 @@ import {
   VALUE_X,
   WORK_W,
   WORK_X,
-} from './Settings';
+} from './SettingsFrame';
 import { cut, Field, Put, Swatch, safe } from './term';
 import type { LobbyData, SettingRow } from './types';
 import { choicesOf, nameOf, usePrefsCatalog } from './usePrefsCatalog';
@@ -399,7 +400,8 @@ export function SettingsOptions() {
               ...base,
               onStep: step,
               onPress:
-                spec.list.length > HANDFUL
+                spec.list.length > HANDFUL ||
+                spec.list.some((c) => upper(spec.name(c)).length > VALUE_TEXT_W)
                   ? () => sub(<OptionPick k={key} />, NAME, key)
                   : () => step(1),
               value: (ty: number) => (
