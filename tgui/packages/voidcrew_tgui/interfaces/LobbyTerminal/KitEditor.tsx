@@ -526,7 +526,8 @@ export function KitEditor() {
             {l}
           </Put>
         ))}
-        <Check x={58.5} y={iy + (ih - 1) / 2} on={packed} acc />
+        {/* Centred over the last column of keys (STYLE's `>`): a box about 1.5 cells wide. */}
+        <Check x={59.75} y={iy + (ih - 1) / 2} on={packed} acc />
       </Slab>,
       // The row flashes when it is packed, unpacked, or gives its place to another item.
       <FlashAt
@@ -588,8 +589,12 @@ export function KitEditor() {
               <Put x={41} y={ty2} pulse={cur?.name || ''}>
                 {cut(safe(cur?.name || ''), 14)}
               </Put>
-              <Key x={56} y={oy} w={3} h={oh} kind="cap" label="<" mouseOnly onClick={() => step(-1)} />
-              <Key x={59} y={oy} w={3} h={oh} kind="cap" label=">" mouseOnly onClick={() => step(1)} />
+              {skins.length > 1 && (
+                <>
+                  <Key x={56} y={oy} w={3} h={oh} kind="cap" label="<" mouseOnly onClick={() => step(-1)} />
+                  <Key x={59} y={oy} w={3} h={oh} kind="cap" label=">" mouseOnly onClick={() => step(1)} />
+                </>
+              )}
             </>
           );
           break;

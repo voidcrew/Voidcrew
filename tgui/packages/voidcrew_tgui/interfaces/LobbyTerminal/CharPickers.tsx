@@ -177,22 +177,27 @@ export function ListPicker(props: PickerProps) {
           }}
         />
       )}
-      <Key
-        x={x + w - 6}
-        y={BODY_Y}
-        w={3}
-        kind="cap"
-        label="<"
-        onClick={() => step(-1)}
-      />
-      <Key
-        x={x + w - 3}
-        y={BODY_Y}
-        w={3}
-        kind="cap"
-        label=">"
-        onClick={() => step(1)}
-      />
+      {/* Nothing to step to on a list of one: no arrows. */}
+      {choices.length > 1 && (
+        <>
+          <Key
+            x={x + w - 6}
+            y={BODY_Y}
+            w={3}
+            kind="cap"
+            label="<"
+            onClick={() => step(-1)}
+          />
+          <Key
+            x={x + w - 3}
+            y={BODY_Y}
+            w={3}
+            kind="cap"
+            label=">"
+            onClick={() => step(1)}
+          />
+        </>
+      )}
       <HRule x={x} y={4.75} w={w} />
       {slice.map((v, i) => {
         const col = Math.floor(i / perCol);
@@ -240,7 +245,7 @@ export function ListPicker(props: PickerProps) {
       })}
       {!slice.length && (
         <Put x={x + 2} y={5.375} cls="dim">
-          {'NO MATCH'}
+          {'NO MATCH.'}
         </Put>
       )}
       <Pager
