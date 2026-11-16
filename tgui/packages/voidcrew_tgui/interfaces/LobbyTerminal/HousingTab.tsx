@@ -67,7 +67,7 @@ type View = {
 
 /** The block's word, its key and its reason (design 02, 4.3). */
 function viewOf(o: Outpost): View {
-  const why = o.blocked ? safe(o.why).trim() : '';
+  const why = o.blocked ? safe(o.why).trim().toUpperCase() : '';
   if (o.mode === 'closed') {
     return { word: 'CLOSED', wordCls: 'dim', act: 'none', why: '' };
   }

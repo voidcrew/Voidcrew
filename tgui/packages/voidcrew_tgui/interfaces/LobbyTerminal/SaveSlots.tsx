@@ -240,7 +240,7 @@ function FullSlot(props: {
       </RPut>,
     );
     if (st === 'refused') {
-      wrapMax(safe(card.denial), NAME_W, Math.min(2, nC)).forEach((t, j) =>
+      wrapMax(safe(card.denial).toUpperCase(), NAME_W, Math.min(2, nC)).forEach((t, j) =>
         body.push(
           <Put key={`d${j}`} x={18} y={ys + p + 2.25 + j} cls="amb">
             {t}
@@ -329,7 +329,7 @@ function RowSlot(props: {
     if (st === 'refused') {
       body.push(
         <Put key="d" x={3} y={ys + 1.125} cls="amb">
-          {cut(safe(card.denial), ROW_DENIAL_W)}
+          {cut(safe(card.denial).toUpperCase(), ROW_DENIAL_W)}
         </Put>,
       );
     } else {
