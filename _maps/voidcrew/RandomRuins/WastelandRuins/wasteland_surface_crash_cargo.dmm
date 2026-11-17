@@ -111,7 +111,7 @@
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "kO" = (
-/mob/living/basic/trooper/pirate/melee,
+/obj/effect/spawner/human_npc/ruin/pirate,
 /turf/open/floor/plating{
 	burnt = 1
 	},
@@ -424,7 +424,7 @@
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "Gs" = (
-/mob/living/basic/trooper/pirate/melee,
+/obj/effect/spawner/human_npc/ruin/pirate,
 /turf/open/floor/plating{
 	broken = 1
 	},
@@ -461,7 +461,7 @@
 	dir = 8
 	},
 /obj/structure/cable,
-/mob/living/basic/trooper/pirate/ranged,
+/obj/effect/spawner/human_npc/ruin/pirate/gunner,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "Iv" = (
@@ -483,7 +483,7 @@
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "Ku" = (
-/mob/living/basic/trooper/pirate/melee,
+/obj/effect/spawner/human_npc/ruin/pirate,
 /turf/open/floor/mineral/titanium{
 	broken = 1
 	},
@@ -639,7 +639,7 @@
 /area/ruin/unpowered)
 "RQ" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/mob/living/basic/trooper/pirate/ranged,
+/obj/effect/spawner/human_npc/ruin/pirate/gunner,
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "RV" = (

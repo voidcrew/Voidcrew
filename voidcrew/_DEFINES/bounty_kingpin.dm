@@ -23,16 +23,11 @@
 
 // ===== HIS BODY =====
 
-#define BOUNTY_KINGPIN_HEALTH 200
-/// Stamina damage that stamcrits him: 5 disabler hits in 10 seconds, or 3 baton hits
-#define BOUNTY_KINGPIN_STAMINA 150
-/// Downed to up, uncuffed (the 10 s stirring tell is P2's, inside this)
-#define BOUNTY_KINGPIN_RECOVERY (60 SECONDS)
-/// After he gets up: stamina does nothing to him and he won't surrender (combat.md 5.6)
-#define BOUNTY_KINGPIN_RALLY (20 SECONDS)
-/// Below this percent of his health, with his crew down, he may surrender
+/// Brute and burn he takes, as a multiple of a person's (the human NPC base's npc_damage_taken, boss rank). His armoured coat does the rest.
+#define BOUNTY_KINGPIN_DAMAGE_TAKEN 0.6
+/// At or below this percent of his health, with his crew down and a hunter in sight, he may give up
 #define BOUNTY_KINGPIN_SURRENDER_BELOW 40
-/// Percent chance on the hit that crosses the line, and on each later hit
+/// Percent chance on his first roll, and on each later one
 #define BOUNTY_KINGPIN_SURRENDER_FIRST 60
 #define BOUNTY_KINGPIN_SURRENDER_LATER 25
 /// At most one surrender roll per this
@@ -40,13 +35,14 @@
 
 // ===== HIS REVOLVER =====
 
-/// The revolver in his hand: its look, its rounds and its cylinder (bounty_real_weapon())
+/// The revolver he carries in his holster: a real .357, drawn when the guns come out
 #define BOUNTY_KINGPIN_REVOLVER /obj/item/gun/ballistic/revolver
+/// His spare rounds: real .357 speedloaders, two in the holster and one in a pocket
+#define BOUNTY_KINGPIN_SPEEDLOADER /obj/item/ammo_box/a357
 /// The aim line before each shot; he never fires without it
 #define BOUNTY_KINGPIN_REVOLVER_AIM (0.5 SECONDS)
 /// From one aim to the next
 #define BOUNTY_KINGPIN_REVOLVER_COOLDOWN (1.2 SECONDS)
-#define BOUNTY_KINGPIN_REVOLVER_RELOAD (3 SECONDS)
 
 // ===== THE SHOOTOUT =====
 
@@ -75,53 +71,48 @@
 
 /// A fixed crew of six (kingpin.md 3.4), one per map post
 #define BOUNTY_KINGPIN_GOONS 6
-#define BOUNTY_GOON_HEALTH 150
-/// A goon's stamina pool, the way P2 sets a criminal's: max_stamina 100, with a coefficient of 100 / BOUNTY_GOON_HEALTH, so 5 disabler hits stamcrit him. tg's basic mobs compare raw points with this percentage when the crit ends, so it must be 100.
-#define BOUNTY_GOON_MAX_STAMINA 100
-/// Percent of it that stamcrits him. Just under 100, for float rounding.
-#define BOUNTY_GOON_STAMCRIT_AT 99.9
 #define BOUNTY_GOON_WEAPON_PISTOL "pistol"
 #define BOUNTY_GOON_WEAPON_SMG "smg"
 #define BOUNTY_GOON_WEAPON_SHOTGUN "shotgun"
 
-/// The guns in the goons' hands: their looks, their rounds and their magazines (bounty_real_weapon())
+/// The real guns the goons carry, and their real spares
 #define BOUNTY_GOON_PISTOL_GUN /obj/item/gun/ballistic/automatic/pistol/aps
+#define BOUNTY_GOON_PISTOL_MAG /obj/item/ammo_box/magazine/m9mm_aps
 #define BOUNTY_GOON_SMG_GUN /obj/item/gun/ballistic/automatic/mini_uzi
-#define BOUNTY_GOON_SHOTGUN_GUN /obj/item/gun/ballistic/shotgun/automatic/combat
-/// What the shotguns are loaded with
+#define BOUNTY_GOON_SMG_MAG /obj/item/ammo_box/magazine/uzim9mm
+/// The combat shotgun, its tube loaded with buckshot (bounty_kingpin.dm)
+#define BOUNTY_GOON_SHOTGUN_GUN /obj/item/gun/ballistic/shotgun/automatic/combat/bounty_kingpin
+/// What the shotguns are loaded with, and the loose shells a shotgun goon carries in his bandolier
 #define BOUNTY_GOON_SHOTGUN_AMMO /obj/item/ammo_casing/shotgun/buckshot
+#define BOUNTY_GOON_SHOTGUN_SHELLS 8
 
-#define BOUNTY_GOON_PISTOL_COOLDOWN (0.3 SECONDS)
-#define BOUNTY_GOON_PISTOL_RELOAD (2 SECONDS)
+/// Between two trigger pulls of a goon's pistol: the Stechkin set to single shots with its own selector, in strings of
+/// BOUNTY_PISTOL_STRING_SHOTS with BOUNTY_PISTOL_STRING_PAUSE on top between them, as every bounty pistol fires
+#define BOUNTY_GOON_PISTOL_COOLDOWN (0.5 SECONDS)
 
-/// Shots in a burst, and the gap between them
-#define BOUNTY_GOON_SMG_BURST 5
-#define BOUNTY_GOON_SMG_BURST_GAP (0.1 SECONDS)
+/// Trigger pulls in a burst (each pull is the Uzi's own two-round burst), and the gap between them
+#define BOUNTY_GOON_SMG_BURST 2
+#define BOUNTY_GOON_SMG_BURST_GAP (0.3 SECONDS)
 /// The spin-up: the gun comes up level, with a sound
 #define BOUNTY_GOON_SMG_WINDUP (0.3 SECONDS)
 #define BOUNTY_GOON_SMG_COOLDOWN (1 SECONDS)
-#define BOUNTY_GOON_SMG_RELOAD (2.5 SECONDS)
 
 /// Tiles: he walks in to this before he fires
 #define BOUNTY_GOON_SHOTGUN_RANGE 2
 /// The pump before each blast
 #define BOUNTY_GOON_SHOTGUN_WINDUP (0.3 SECONDS)
 #define BOUNTY_GOON_SHOTGUN_COOLDOWN (1.2 SECONDS)
-#define BOUNTY_GOON_SHOTGUN_RELOAD (3 SECONDS)
 
-/// Tiles from the sofa a goon ever walks
+/// Tiles from the sofa a goon ever walks while his crew holds the lounge
 #define BOUNTY_GOON_LEASH 7
-/// Percent of the goons left who flee when he falls (downed, cuffed, surrendered or dead)
+/// Percent of the goons left who run when he falls (in crit, cuffed, given up or dead)
 #define BOUNTY_GOON_FLEE_ON_BOSS 50
-/// A fleeing goon is gone after this
-#define BOUNTY_GOON_FLEE_TIME (6 SECONDS)
-/// A goon's body fades after this (the outpost never unloads)
-#define BOUNTY_GOON_FADE (60 SECONDS)
-/// How long a goon's body takes to fade, and a leaving goon to walk out
-#define BOUNTY_GOON_FADE_OUT (2 SECONDS)
-#define BOUNTY_GOON_LEAVE_TIME (5 SECONDS)
-/// Between a goon's steps in a fight
+/// The quickest a goon takes a step in a fight; his own body's slowdown (wounds, armour) can make it slower
 #define BOUNTY_GOON_STEP (0.35 SECONDS)
+/// A reload by hand gives up after this: a tube is fed a shell at a time
+#define BOUNTY_KINGPIN_RELOAD_GIVE_UP (15 SECONDS)
+/// Blackboard key on him and his goons: their guns are out (the crew is drawing or fighting), so a spent gun is reloaded
+#define BB_BOUNTY_KINGPIN_ARMED "bounty_kingpin_armed"
 
 // ===== TALKING =====
 
@@ -158,7 +149,7 @@
 #define BOUNTY_KINGPIN_PAY_MAX 3500
 /// Vouchers on a full-share turn-in; red adds BOUNTY_RED_VOUCHER_BONUS
 #define BOUNTY_KINGPIN_VOUCHERS 1
-/// Wanted dead or alive: restrained, stunned or downed is alive
+/// Wanted dead or alive: alive pays in full however he is brought in (cuffed, stunned or in crit); dead pays 80%
 #define BOUNTY_KINGPIN_PAY_ALIVE 100
 #define BOUNTY_KINGPIN_PAY_DEAD 80
 /// He goes on the board no earlier than 45 minutes into the round, and only with 3+ active ships

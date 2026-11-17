@@ -665,6 +665,8 @@
 
 /// URL for admins to be redirected to for 2FA
 /datum/config_entry/string/admin_2fa_url
+	// VOIDCREW EDIT ADDITION - port of tgstation/tgstation#98433: clearing this through proc call disables 2FA
+	protection = CONFIG_ENTRY_LOCKED
 
 /datum/config_entry/number/hard_deletes_overrun_threshold
 	integer = FALSE

@@ -214,8 +214,6 @@ def extra_catalog(dm,rows):
         add('Player outpost upgrades',dm.val(upgrade,'name'),dm.loc(upgrade),dm.val(upgrade,'price'),sku_type=upgrade,stock='installation gated',notes='Treasury buys upgrade blueprint; not a ship purchase',field_sources=f_sources(dm,upgrade,['price','id']))
     # Other paid registry services; ship purchase prices deliberately excluded.
     for file,needle,name,const in [
-        ('voidcrew/modules/player_outposts/outpost_checkpoints.dm','OUTPOST_CHECKPOINT_SAVE_COST','save ship checkpoint','OUTPOST_CHECKPOINT_SAVE_COST'),
-        ('voidcrew/modules/player_outposts/outpost_checkpoints.dm','OUTPOST_CHECKPOINT_UPDATE_COST','update ship checkpoint','OUTPOST_CHECKPOINT_UPDATE_COST'),
         ('voidcrew/modules/player_outposts/outpost_management_ui.dm','OUTPOST_ADVERT_COST','galaxy advertisement','OUTPOST_ADVERT_COST'),
         ('voidcrew/modules/player_outposts/outpost_ship_bay.dm','OUTPOST_SHIP_BAY_COST','install ship bay','OUTPOST_SHIP_BAY_COST')]:
         add('Player outpost registry',name,dm.cite(file,needle),dm.eval(const),notes='Paid from treasury; runtime eligibility applies')

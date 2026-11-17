@@ -165,6 +165,7 @@
 /datum/mission/recovery/extraction/build_objectives()
 	var/datum/mission_objective/field/plant_quest/plant = new
 	plant.quest_item_type = /obj/item/mission_recovery/anchored
+	plant.scene_type = /datum/mission_scene/cargo_wreck
 	add_objective(plant)
 	add_objective(new /datum/mission_objective/deliver/bound)
 
@@ -189,7 +190,7 @@
 		return
 	alarm_tripped = TRUE
 	var/turf/site = get_turf(cargo)
-	new wave_theme(site, list(1, 2))
+	new wave_theme(site, list(1, 2), TRUE)
 	second_wave_timer = addtimer(CALLBACK(src, PROC_REF(second_wave), site), EXTRACTION_SECOND_WAVE_DELAY, TIMER_STOPPABLE)
 	servant?.ship_notify("[name]: site security alarm triggered.", "MISSION UPDATE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 
@@ -197,13 +198,13 @@
 	second_wave_timer = null
 	if(failed || completed || !site)
 		return
-	new wave_theme(site, list(1, 2))
+	new wave_theme(site, list(1, 2), TRUE)
 
 /**
  * # Anchored Recovery Cargo
  *
  * The extraction objective: a mission_recovery item that starts bolted to
- * the deck. Unbolting is a channel that trips the mission's alarm.
+ * the deck. Unbolting is a wrench channel that trips the mission's alarm.
  */
 /obj/item/mission_recovery/anchored
 	desc = "Contracted salvage, bolted to the deck."
@@ -214,26 +215,32 @@
 /obj/item/mission_recovery/anchored/examine(mob/user)
 	. = ..()
 	if(anchored)
-		. += span_warning("It is bolted down.")
+		. += span_warning("It is bolted to the floor.")
 
+/// Bare hands get nowhere with the bolts
 /obj/item/mission_recovery/anchored/attack_hand(mob/living/user, list/modifiers)
 	if(!anchored)
 		return ..()
+	balloon_alert(user, "it's bolted down")
+	return TRUE
+
+/obj/item/mission_recovery/anchored/wrench_act(mob/living/user, obj/item/tool)
+	if(!anchored)
+		return NONE
 	balloon_alert(user, "wrenching it free...")
-	playsound(src, 'sound/items/tools/ratchet.ogg', 60, TRUE)
-	if(!do_after(user, EXTRACTION_UNBOLT_TIME, target = src))
+	if(!tool.use_tool(src, user, EXTRACTION_UNBOLT_TIME, volume = 60))
 		balloon_alert(user, "still bolted!")
-		return TRUE
+		return ITEM_INTERACT_BLOCKING
 	if(!anchored)
 		balloon_alert(user, "already free")
-		return TRUE
+		return ITEM_INTERACT_BLOCKING
 	anchored = FALSE
 	balloon_alert(user, "wrenched free")
 	playsound(src, 'sound/machines/click.ogg', 60, TRUE)
 	var/datum/mission/recovery/extraction/mission = mission_ref?.resolve()
 	if(istype(mission))
 		mission.trigger_extraction_alarm(src)
-	return TRUE
+	return ITEM_INTERACT_SUCCESS
 
 #undef SURVEY_CALIBRATE_TIME
 #undef EXTRACTION_UNBOLT_TIME

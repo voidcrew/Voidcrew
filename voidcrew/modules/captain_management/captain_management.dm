@@ -129,6 +129,7 @@
 	data["joining_allowed"] = ship.joining_allowed
 	data["join_password"] = ship.join_password || ""
 	data["can_set_password"] = ship.can_have_join_password()
+	data["password_price"] = SHIP_PASSWORD_PRICE
 	data["crew_only_airlocks"] = ship.crew_only_airlocks
 
 	// Check if user is still captain
@@ -252,10 +253,7 @@
 			return TRUE
 
 		if("set_memo")
-			var/new_memo = params["memo"]
-			if(length(new_memo) > 500)
-				new_memo = copytext(new_memo, 1, 501)
-			ship.memo = new_memo
+			ship.set_memo(params["memo"])
 			to_chat(captain, span_notice("Ship memo updated."))
 			return TRUE
 
@@ -265,8 +263,8 @@
 			return TRUE
 
 		if("set_password")
-			// set_join_password handles validation, the fleet-hull refusal, feedback, and logging
-			ship.set_join_password(params["password"], captain)
+			// buy_join_password takes the payment, and sleeps on the database doing so
+			INVOKE_ASYNC(ship, TYPE_PROC_REF(/obj/structure/overmap/ship, buy_join_password), params["password"], captain)
 			return TRUE
 
 		if("reset_join_access")
@@ -415,3 +413,9 @@
 		return
 
 	to_chat(player, boxed_message(span_notice("<b>Ship Memo from [ship.name]:</b>\n[ship.memo]")))
+
+/// Sets the ship memo. It is shown in chat to everyone who joins, so tags are stripped here.
+/obj/structure/overmap/ship/proc/set_memo(new_memo)
+	if(!istext(new_memo))
+		return
+	memo = trim(STRIP_HTML_SIMPLE(new_memo, 501))

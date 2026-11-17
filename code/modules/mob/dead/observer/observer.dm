@@ -453,6 +453,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	for(var/area/A as anything in get_sorted_areas())
 		if(!(A.area_flags & HIDDEN_AREA))
 			filtered += A
+	filtered = add_trader_outposts_to_ghost_teleport(filtered) // VOIDCREW EDIT ADDITION - trade: list each trader outpost by name
 	var/area/thearea = tgui_input_list(usr, "Area to jump to", "BOOYEA", filtered)
 
 	if(isnull(thearea))
@@ -460,6 +461,16 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	if(!isobserver(usr))
 		to_chat(usr, span_warning("Not when you're not dead!"))
 		return
+	// VOIDCREW EDIT ADDITION START - trade: a trader outpost entry jumps into that outpost
+	if(istype(thearea, /obj/structure/overmap/trader_outpost))
+		var/obj/structure/overmap/trader_outpost/outpost = thearea
+		var/turf/outpost_turf = QDELETED(outpost) ? null : outpost.ghost_teleport_turf()
+		if(!outpost_turf)
+			to_chat(usr, span_warning("No area available."))
+			return
+		usr.abstract_move(outpost_turf)
+		return
+	// VOIDCREW EDIT ADDITION END
 
 	var/list/L = list()
 	for(var/turf/T in get_area_turfs(thearea.type))

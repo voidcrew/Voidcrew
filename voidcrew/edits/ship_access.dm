@@ -92,6 +92,12 @@
  * than on the /obj/machinery/door override above is deliberate: it runs ahead of
  * `emergency` and `unres_sides`, neither of which should punch a hole in a lock the
  * captain deliberately set.
+ *
+ * The lock refuses NPCs too. Most ship doors carry no mapped access, so the NPC rule
+ * above never touches them, and before this a pirate boarding party walked through a
+ * crew-locked hull's airlocks while its players were turned away. A clientless mob gets
+ * through only if it is that ship's crew by is_npc_ship_crew(). Bots and silicons stay on
+ * the upstream path, as with the NPC rule above.
  */
 GLOBAL_LIST_EMPTY(crew_locked_ships)
 
@@ -108,24 +114,80 @@ GLOBAL_LIST_EMPTY(crew_locked_ships)
 /obj/machinery/door/proc/refused_by_ship_crew_lock(mob/user)
 	if(!length(GLOB.crew_locked_ships))
 		return FALSE
-	// Players only. Clientless mobs are covered by the NPC rule above, and bots and
-	// silicons stay on the upstream path so their own credentials are still read.
-	if(!user || !GET_CLIENT(user))
+	if(!user)
 		return FALSE
+	// Bots and silicons stay on the upstream path so their own credentials are still read.
 	if(isbot(user) || HAS_SILICON_ACCESS(user))
 		return FALSE
-	var/area/shuttle/voidcrew/ship_area = get_area(src)
-	if(!istype(ship_area))
+	var/has_client = !!GET_CLIENT(user)
+	if(!has_client && !isliving(user))
 		return FALSE
-	var/obj/structure/overmap/ship/ship = ship_area.shuttle_port?.current_ship
-	if(isnull(ship) || !ship.crew_only_airlocks)
+	var/obj/structure/overmap/ship/ship = crew_locked_ship()
+	if(isnull(ship))
 		return FALSE
+	if(!has_client)
+		return !ship.is_npc_ship_crew(user)
 	if(ship.is_ship_crew(user))
 		return FALSE
 	if(TIMER_COOLDOWN_FINISHED(user, "ship_crew_lock_refusal"))
 		TIMER_COOLDOWN_START(user, "ship_crew_lock_refusal", 5 SECONDS)
 		to_chat(user, span_warning("This airlock is keyed to the [ship.name]'s crew."))
 	return TRUE
+
+/**
+ * The crew-locked ship this door belongs to, or null. Only airlocks and windoors carry the
+ * lock. Costs one list read while no ship has the lock on.
+ */
+/obj/machinery/door/proc/crew_locked_ship()
+	if(!length(GLOB.crew_locked_ships))
+		return null
+	if(!istype(src, /obj/machinery/door/airlock) && !istype(src, /obj/machinery/door/window))
+		return null
+	var/area/shuttle/voidcrew/ship_area = get_area(src)
+	if(!istype(ship_area))
+		return null
+	var/obj/structure/overmap/ship/ship = ship_area.shuttle_port?.current_ship
+	if(isnull(ship) || !ship.crew_only_airlocks)
+		return null
+	return ship
+
+/**
+ * Whether a mob with no player in it counts as this ship's crew for the crew lock:
+ * - its mind is on the roster (a crewmember's body with nobody in it right now),
+ * - it is a stray who joined this ship, aboard or following the crew there,
+ * - or it is an animal one of the ship's crew has befriended, like a tamed pet.
+ * Everything else, pirate boarders included, is not crew.
+ */
+/obj/structure/overmap/ship/proc/is_npc_ship_crew(mob/living/npc)
+	if(is_ship_crew(npc))
+		return TRUE
+	if(istype(npc, /mob/living/carbon/human/npc/ambient_npc/stray))
+		var/mob/living/carbon/human/npc/ambient_npc/stray/stray = npc
+		return !stray.is_wild() && stray.get_ship() == src
+	var/list/friends = npc.ai_controller?.blackboard[BB_FRIENDS_LIST]
+	for(var/mob/friend as anything in friends)
+		if(!QDELETED(friend) && is_ship_crew(friend))
+			return TRUE
+	return FALSE
+
+/**
+ * Whether `door` stays shut for an NPC that carries no access: it has mapped access, or its
+ * ship's crew lock is on and `npc` is not that ship's crew. Without `npc`, any crew lock
+ * counts, which is right for planning a boarding party's route.
+ *
+ * Every NPC door planner asks this to decide which doors to break instead of open, so it
+ * has to agree with what allowed() does for an NPC at that door.
+ */
+/proc/door_refuses_npc(obj/machinery/door/door, mob/living/npc)
+	if(QDELETED(door))
+		return FALSE
+	if((istype(door, /obj/machinery/door/airlock) || istype(door, /obj/machinery/door/window)) \
+		&& (LAZYLEN(door.req_access) || LAZYLEN(door.req_one_access)))
+		return TRUE
+	var/obj/structure/overmap/ship/ship = door.crew_locked_ship()
+	if(isnull(ship))
+		return FALSE
+	return isnull(npc) || !ship.is_npc_ship_crew(npc)
 
 /obj/machinery/door/airlock/allowed(mob/user)
 	if(refused_by_ship_crew_lock(user))
@@ -154,11 +216,8 @@ GLOBAL_LIST_EMPTY(crew_locked_ships)
 /// Whether a crew-locked ship's door must stay shut for this item, which was thrown by
 /// someone who is not crew, or by nobody at all.
 /obj/machinery/door/proc/refuses_thrown_item(obj/item/thrown)
-	var/area/shuttle/voidcrew/ship_area = get_area(src)
-	if(!istype(ship_area))
-		return FALSE
-	var/obj/structure/overmap/ship/ship = ship_area.shuttle_port?.current_ship
-	if(isnull(ship) || !ship.crew_only_airlocks)
+	var/obj/structure/overmap/ship/ship = crew_locked_ship()
+	if(isnull(ship))
 		return FALSE
 	var/mob/thrower = thrown.throwing?.get_thrower()
 	return isnull(thrower) || !ship.is_ship_crew(thrower)

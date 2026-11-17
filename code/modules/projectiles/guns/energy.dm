@@ -67,9 +67,9 @@
 	playing_sound.pitch = pitch_to_use
 
 	if(suppressed)
-		playsound(src, playing_sound, suppressed_volume, vary_fire_sound, ignore_walls = FALSE, extrarange = SILENCED_SOUND_EXTRARANGE, falloff_distance = 0)
+		playsound(src, playing_sound, suppressed_volume, vary_fire_sound, ignore_walls = FALSE, extrarange = SILENCED_SOUND_EXTRARANGE, falloff_distance = 0, frequency = gun_feel_fire_frequency()) // VOIDCREW EDIT CHANGE - gun_feel: a narrow random pitch instead of 0.73x-1.25x (voidcrew/modules/gun_feel/sounds.dm)
 	else
-		playsound(src, playing_sound, fire_sound_volume, vary_fire_sound)
+		playsound(src, playing_sound, fire_sound_volume, vary_fire_sound, frequency = gun_feel_fire_frequency()) // VOIDCREW EDIT CHANGE - gun_feel: a narrow random pitch instead of 0.73x-1.25x (voidcrew/modules/gun_feel/sounds.dm)
 
 /obj/item/gun/energy/emp_act(severity)
 	. = ..()

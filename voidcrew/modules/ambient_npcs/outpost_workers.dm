@@ -58,12 +58,12 @@
 // =========================================================================
 
 /// Someone who works at the outpost. They duck when a fight starts and then carry on.
-/mob/living/basic/ambient_npc/outpost/worker
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker
 	desc = "Works here."
 	dialogue_file = AMBIENT_STRINGS_WORKERS
 	dialogue_section = "janitor"
 
-/mob/living/basic/ambient_npc/outpost/worker/react_violence(mob/living/offender)
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/react_violence(mob/living/offender)
 	if(stat != CONSCIOUS || fading || istype(activity, /datum/ambient_activity/leave) || !reaction_ready("violence"))
 		return
 	if(!start_activity(new /datum/ambient_activity/duck(src, offender)))
@@ -75,7 +75,7 @@
 		speak_context(AMBIENT_LINE_VIOLENCE, offender, force = TRUE)
 
 /// Staff take a swing with a word and stay at work
-/mob/living/basic/ambient_npc/outpost/worker/react_attacked(atom/attacker)
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/react_attacked(atom/attacker)
 	if(stat != CONSCIOUS || fading || !reaction_ready("attacked"))
 		return
 	speak_context(AMBIENT_LINE_ATTACKED, attacker, force = TRUE)
@@ -126,7 +126,7 @@
 			. += thing
 
 /// Where `npc` stands to use `thing`: on its tile if they can stand there (a wall-hung sink), beside it otherwise
-/proc/ambient_use_spot(mob/living/basic/ambient_npc/npc, atom/thing, list/avoid)
+/proc/ambient_use_spot(mob/living/carbon/human/npc/ambient_npc/npc, atom/thing, list/avoid)
 	var/turf/tile = get_turf(thing)
 	if(!tile)
 		return null
@@ -153,7 +153,7 @@
 	suit = /obj/item/clothing/suit/apron/overalls
 	head = /obj/item/clothing/head/beanie
 
-/mob/living/basic/ambient_npc/outpost/worker/janitor
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor
 	desc = "Keeps the floors clean, more or less."
 	dialogue_section = "janitor"
 	outfit_choices = list(
@@ -173,30 +173,30 @@
 	/// Mess they could not get to: turf -> world.time they may try again
 	var/list/unreachable
 
-/mob/living/basic/ambient_npc/outpost/worker/janitor/Initialize(mapload)
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/Initialize(mapload)
 	. = ..()
 	set_held(/obj/item/mop)
 
-/mob/living/basic/ambient_npc/outpost/worker/janitor/Destroy()
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/Destroy()
 	mopped = null
 	unreachable = null
 	return ..()
 
 /// They could not get to the mess on `tile`: it is left alone for a few minutes
-/mob/living/basic/ambient_npc/outpost/worker/janitor/proc/give_up_on(turf/tile)
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/proc/give_up_on(turf/tile)
 	if(!tile)
 		return
 	LAZYSET(unreachable, tile, world.time + WORKER_REMOP_TIME)
 	if(length(unreachable) > 12)
 		unreachable.Cut(1, 2)
 
-/mob/living/basic/ambient_npc/outpost/worker/janitor/pick_activity()
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/pick_activity()
 	// What was on the floor before anyone looked is the map's, not a mess
 	ambient_outpost_mark_decor(place)
 	return ..()
 
 /// Found mid-job: mopping somewhere on the floor
-/mob/living/basic/ambient_npc/outpost/worker/janitor/settle_in()
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/settle_in()
 	ambient_outpost_mark_decor(place)
 	if(settle_at(/datum/ambient_activity/work/janitor))
 		return TRUE
@@ -224,7 +224,7 @@
 			. += junk
 
 /// Where to stand to mop `tile`: beside it, or on it
-/mob/living/basic/ambient_npc/outpost/worker/janitor/proc/mop_spot(turf/tile, list/avoid)
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/proc/mop_spot(turf/tile, list/avoid)
 	if(!tile || !leash_ok(tile) || LAZYACCESS(unreachable, tile) > world.time)
 		return null
 	var/turf/stand = free_tile_beside(tile, 1, avoid)
@@ -236,7 +236,7 @@
  * The nearest tile with mess on it they could get to, or null. However much mess is about, no more
  * than WORKER_MESS_SPOT_CHECKS tiles are checked for a place to stand, nearest first.
  */
-/mob/living/basic/ambient_npc/outpost/worker/janitor/proc/find_mess()
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/proc/find_mess()
 	var/turf/here = get_turf(src)
 	if(!here)
 		return null
@@ -272,7 +272,7 @@
  * Someone made `mess` near them: they come and mop it, unless they are busy with something that
  * matters more or it is too far. TRUE if they are on their way.
  */
-/mob/living/basic/ambient_npc/outpost/worker/janitor/proc/notice_mess(obj/effect/decal/cleanable/mess)
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/proc/notice_mess(obj/effect/decal/cleanable/mess)
 	if(!can_act() || QDELETED(mess) || get_dist(src, mess) > WORKER_MESS_RANGE * 2)
 		return FALSE
 	if(istype(activity, /datum/ambient_activity/mop_mess) || activity?.priority > AMBIENT_PRIORITY_ROUTINE)
@@ -280,7 +280,7 @@
 	return !!start_activity(new /datum/ambient_activity/mop_mess(src, mess))
 
 /// Cleans `tile`: its fresh mess and wrappers go, nothing else is touched
-/mob/living/basic/ambient_npc/outpost/worker/janitor/proc/clean_tile(turf/tile)
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/proc/clean_tile(turf/tile)
 	for(var/atom/movable/mess as anything in ambient_outpost_mess_on(tile))
 		qdel(mess)
 	LAZYSET(mopped, tile, world.time)
@@ -288,7 +288,7 @@
 		mopped.Cut(1, 2)
 
 /// Whether they mopped `tile` a little while ago
-/mob/living/basic/ambient_npc/outpost/worker/janitor/proc/mopped_recently(turf/tile)
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/proc/mopped_recently(turf/tile)
 	return LAZYACCESS(mopped, tile) && world.time - mopped[tile] < WORKER_REMOP_TIME
 
 /**
@@ -312,7 +312,7 @@
 	var/wetted = FALSE
 
 /datum/ambient_activity/mop_mess/setup()
-	var/mob/living/basic/ambient_npc/outpost/worker/janitor/janitor = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/janitor = doer
 	if(!istype(janitor))
 		return FALSE
 	var/turf/tile = get_turf(anchor())
@@ -333,7 +333,7 @@
 	return ..()
 
 /datum/ambient_activity/mop_mess/arrive()
-	var/mob/living/basic/ambient_npc/outpost/worker/janitor/janitor = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/janitor = doer
 	if(!mess_tile)
 		return
 	if(mess_tile != get_turf(doer) && !doer.buckled)
@@ -347,7 +347,7 @@
 
 /// A wet floor sign on the mess, if they have one left
 /datum/ambient_activity/mop_mess/proc/put_sign()
-	var/mob/living/basic/ambient_npc/outpost/worker/janitor/janitor = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/janitor = doer
 	if(janitor.signs_left <= 0 || !isopenturf(mess_tile) || mess_tile.is_blocked_turf(exclude_mobs = TRUE))
 		return
 	janitor.signs_left--
@@ -367,7 +367,7 @@
 				doer.setDir(turn(get_dir(doer, mess_tile) || doer.dir, pick(90, -90)))
 			return AMBIENT_STEP_CONTINUE
 		mopped = TRUE
-		var/mob/living/basic/ambient_npc/outpost/worker/janitor/janitor = doer
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/janitor = doer
 		janitor.clean_tile(mess_tile)
 		// Wet only under their own sign, and never in or at a doorway
 		var/obj/item/clothing/suit/caution/sign = sign_ref?.resolve()
@@ -393,7 +393,7 @@
 		wetted = FALSE
 		var/turf/open/floor = mess_tile
 		floor.MakeDry(TURF_WET_WATER, TRUE)
-	var/mob/living/basic/ambient_npc/outpost/worker/janitor/janitor = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/janitor = doer
 	if(!QDELETED(sign) && isturf(sign.loc) && get_dist(sign, doer) <= 2)
 		qdel(sign)
 		if(istype(janitor))
@@ -409,7 +409,7 @@
 
 /datum/ambient_activity/mop_mess/spot_unreachable()
 	. = ..()
-	var/mob/living/basic/ambient_npc/outpost/worker/janitor/janitor = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/janitor = doer
 	if(istype(janitor))
 		janitor.give_up_on(mess_tile)
 	mess_tile = null
@@ -445,7 +445,7 @@
 	head = /obj/item/clothing/head/flatcap
 	shoes = /obj/item/clothing/shoes/galoshes
 
-/mob/living/basic/ambient_npc/outpost/worker/gardener
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/gardener
 	desc = "Looks after the outpost's plants."
 	dialogue_section = "gardener"
 	outfit_choices = list(
@@ -463,30 +463,30 @@
 	/// Weakrefs to the trays they watered last
 	var/list/tended
 
-/mob/living/basic/ambient_npc/outpost/worker/gardener/Initialize(mapload)
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/gardener/Initialize(mapload)
 	. = ..()
 	can_water = rand(1, WORKER_CAN_POURS)
 	set_held(/obj/item/reagent_containers/cup/watering_can)
 
-/mob/living/basic/ambient_npc/outpost/worker/gardener/Destroy()
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/gardener/Destroy()
 	tended = null
 	return ..()
 
 /// Found mid-job: at one of the outpost's trays with the watering can
-/mob/living/basic/ambient_npc/outpost/worker/gardener/settle_in()
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/gardener/settle_in()
 	if(settle_at(/datum/ambient_activity/tend_plants, null, 1))
 		return TRUE
 	return ..()
 
 /// Whether they watered `tray` lately
-/mob/living/basic/ambient_npc/outpost/worker/gardener/proc/tended_lately(obj/machinery/hydroponics/tray)
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/gardener/proc/tended_lately(obj/machinery/hydroponics/tray)
 	for(var/datum/weakref/ref as anything in tended)
 		if(ref.resolve() == tray)
 			return TRUE
 	return FALSE
 
 /// Remembers watering `tray`
-/mob/living/basic/ambient_npc/outpost/worker/gardener/proc/remember_tray(obj/machinery/hydroponics/tray)
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/gardener/proc/remember_tray(obj/machinery/hydroponics/tray)
 	LAZYADD(tended, WEAKREF(tray))
 	if(length(tended) > WORKER_TENDED_MEMORY)
 		tended.Cut(1, 2)
@@ -495,7 +495,7 @@
  * The next of the outpost's own trays to water: the driest one they did not just water, and could
  * stand beside (never near a hive). Trays a player brought or built are left alone.
  */
-/mob/living/basic/ambient_npc/outpost/worker/gardener/proc/find_tray(list/avoid)
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/gardener/proc/find_tray(list/avoid)
 	var/obj/structure/overmap/trader_outpost/outpost = get_outpost()
 	var/obj/machinery/hydroponics/best
 	var/best_score = INFINITY
@@ -511,7 +511,7 @@
 	return best
 
 /// The nearest sink they could fill the can at, or null
-/mob/living/basic/ambient_npc/outpost/worker/gardener/proc/find_sink(list/avoid)
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/gardener/proc/find_sink(list/avoid)
 	var/obj/structure/sink/best
 	var/best_distance = INFINITY
 	for(var/obj/structure/sink/sink as anything in ambient_outpost_find_all(get_outpost(), /obj/structure/sink))
@@ -535,7 +535,7 @@
 	var/done_at = 0
 
 /datum/ambient_activity/tend_plants/setup()
-	var/mob/living/basic/ambient_npc/outpost/worker/gardener/gardener = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/worker/gardener/gardener = doer
 	if(!istype(gardener))
 		return FALSE
 	var/atom/target
@@ -574,7 +574,7 @@
 		doer.speak_context("water")
 
 /datum/ambient_activity/tend_plants/act(seconds)
-	var/mob/living/basic/ambient_npc/outpost/worker/gardener/gardener = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/worker/gardener/gardener = doer
 	var/atom/target = target_ref?.resolve()
 	if(QDELETED(target) || !istype(gardener))
 		return AMBIENT_STEP_DONE
@@ -599,7 +599,7 @@
  */
 /datum/ambient_activity/tend_plants/spot_unreachable()
 	. = ..()
-	var/mob/living/basic/ambient_npc/outpost/worker/gardener/gardener = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/worker/gardener/gardener = doer
 	var/obj/machinery/hydroponics/tray = target_ref?.resolve()
 	target_ref = null
 	if(!istype(gardener))
@@ -630,7 +630,7 @@
 	uniform = /obj/item/clothing/under/color/grey
 	head = /obj/item/clothing/head/beanie
 
-/mob/living/basic/ambient_npc/outpost/worker/barback
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/barback
 	desc = "Clears the glasses, wipes the tables and walks out whoever can't walk."
 	dialogue_section = "barback"
 	outfit_choices = list(
@@ -645,12 +645,16 @@
 		/datum/ambient_activity/chat = 1,
 	)
 	/// Empty glasses on their tray
-	var/glasses = 0
+	var/tray_glasses = 0
 
-/mob/living/basic/ambient_npc/outpost/worker/barback/pick_activity()
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/barback/pick_activity()
+	// A drinker sleeping it off who has been there long enough: shaken awake and walked out
+	var/mob/living/carbon/human/npc/ambient_npc/drunk = ambient_outpost_drunk_to_walk_out(place)
+	if(drunk && start_activity(new /datum/ambient_activity/escort(src, drunk)))
+		return activity
 	var/list/bar = ambient_outpost_bar(place)
 	var/atom/bar_spot = length(bar) ? bar[1] : null
-	if(glasses >= WORKER_TRAY_MAX || (glasses > 0 && prob(30)))
+	if(tray_glasses >= WORKER_TRAY_MAX || (tray_glasses > 0 && prob(30)))
 		var/datum/ambient_activity/wash = start_activity(new /datum/ambient_activity/wash_glasses(src, bar_spot))
 		if(wash)
 			return wash
@@ -658,7 +662,7 @@
 	return pick_anchored(routine, bar_spot, list(/datum/ambient_activity/collect_glasses, /datum/ambient_activity/wander))
 
 /// Found mid-job: wiping down tables round the bar
-/mob/living/basic/ambient_npc/outpost/worker/barback/settle_in()
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/barback/settle_in()
 	var/list/bar = ambient_outpost_bar(place)
 	var/atom/bar_spot = length(bar) ? bar[1] : null
 	if(bar_spot && settle_at(/datum/ambient_activity/work/barback, null, AMBIENT_SETTLE_TRIES, bar_spot))
@@ -666,7 +670,7 @@
 	return ..()
 
 /// An empty drinking glass left on a table or the floor near `center` that they could reach, or null
-/mob/living/basic/ambient_npc/outpost/worker/barback/proc/find_glass(atom/center, list/avoid)
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/barback/proc/find_glass(atom/center, list/avoid)
 	var/turf/middle = get_turf(center) || get_turf(src)
 	if(!middle)
 		return null
@@ -693,8 +697,8 @@
 	var/pick_at = 0
 
 /datum/ambient_activity/collect_glasses/setup()
-	var/mob/living/basic/ambient_npc/outpost/worker/barback/barback = doer
-	if(!istype(barback) || barback.glasses >= WORKER_TRAY_MAX)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/worker/barback/barback = doer
+	if(!istype(barback) || barback.tray_glasses >= WORKER_TRAY_MAX)
 		return FALSE
 	var/obj/item/reagent_containers/cup/glass/drinkingglass/glass = barback.find_glass(anchor(), failed_spots)
 	if(!glass)
@@ -714,7 +718,7 @@
 	pick_at = world.time + rand(1 SECONDS, 2 SECONDS)
 
 /datum/ambient_activity/collect_glasses/act(seconds)
-	var/mob/living/basic/ambient_npc/outpost/worker/barback/barback = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/worker/barback/barback = doer
 	var/obj/item/reagent_containers/cup/glass/drinkingglass/glass = glass_ref?.resolve()
 	if(!ambient_glass_is_empty(glass) || !istype(barback))
 		return AMBIENT_STEP_DONE
@@ -723,12 +727,12 @@
 	var/turf/spot = glass.loc
 	var/on_floor = !(locate(/obj/structure/table) in spot)
 	for(var/obj/item/reagent_containers/cup/glass/drinkingglass/empty in spot.contents.Copy())
-		if(barback.glasses >= WORKER_TRAY_MAX)
+		if(barback.tray_glasses >= WORKER_TRAY_MAX)
 			break
 		if(!ambient_glass_is_empty(empty))
 			continue
 		qdel(empty)
-		barback.glasses++
+		barback.tray_glasses++
 	playsound(barback, 'sound/items/handling/drinkglass_pickup.ogg', 30, TRUE, -4)
 	barback.set_held(/obj/item/storage/bag/tray)
 	if(prob(40))
@@ -754,8 +758,8 @@
 	var/done_at = 0
 
 /datum/ambient_activity/wash_glasses/setup()
-	var/mob/living/basic/ambient_npc/outpost/worker/barback/barback = doer
-	if(!istype(barback) || barback.glasses <= 0)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/worker/barback/barback = doer
+	if(!istype(barback) || barback.tray_glasses <= 0)
 		return FALSE
 	var/atom/bar = anchor()
 	var/turf/center = get_turf(bar) || get_turf(doer)
@@ -777,7 +781,7 @@
 		target = stand ? barkeep : null
 	if(!target)
 		// Nowhere to take them: they go out the back with the rest
-		barback.glasses = 0
+		barback.tray_glasses = 0
 		barback.set_held(null)
 		return FALSE
 	target_ref = WEAKREF(target)
@@ -795,7 +799,7 @@
 	done_at = world.time + rand(4 SECONDS, 7 SECONDS)
 
 /datum/ambient_activity/wash_glasses/act(seconds)
-	var/mob/living/basic/ambient_npc/outpost/worker/barback/barback = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/worker/barback/barback = doer
 	var/atom/target = target_ref?.resolve()
 	if(QDELETED(target) || !istype(barback))
 		return AMBIENT_STEP_DONE
@@ -803,7 +807,7 @@
 		if(prob(50))
 			playsound(barback, istype(target, /obj/structure/sink) ? 'sound/machines/sink-faucet.ogg' : 'sound/items/handling/drinkglass_drop.ogg', 20, TRUE, -4)
 		return AMBIENT_STEP_CONTINUE
-	barback.glasses = 0
+	barback.tray_glasses = 0
 	barback.set_held(null)
 	return AMBIENT_STEP_DONE
 
@@ -811,9 +815,9 @@
 /datum/ambient_activity/wash_glasses/spot_unreachable()
 	. = ..()
 	target_ref = null
-	var/mob/living/basic/ambient_npc/outpost/worker/barback/barback = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/worker/barback/barback = doer
 	if(istype(barback))
-		barback.glasses = 0
+		barback.tray_glasses = 0
 		barback.set_held(null)
 
 /datum/ambient_activity/wash_glasses/shift_times(delay)
@@ -826,8 +830,8 @@
 	work_weights = list(/datum/outpost_ambient_work/wipe = 1)
 
 /**
- * Walking a passed-out drinker to the lift: over to them, a word to wake them, and beside them all
- * the way while they leave.
+ * Walking a passed-out drinker to the lift: over to them, a shake to wake them (tg's help: an empty
+ * hand on someone asleep), a word, and beside them all the way while they leave.
  */
 /datum/ambient_activity/escort
 	name = "walking someone out"
@@ -837,29 +841,36 @@
 	var/woke = FALSE
 
 /datum/ambient_activity/escort/setup()
-	var/mob/living/basic/ambient_npc/drunk = anchor()
-	if(!istype(drunk) || drunk.stat != CONSCIOUS || drunk.fading)
+	var/mob/living/carbon/human/npc/ambient_npc/drunk = anchor()
+	if(!istype(drunk) || drunk.stat == DEAD || drunk.fading || HAS_TRAIT(drunk, TRAIT_CRITICAL_CONDITION))
 		return FALSE
 	go_to(get_turf(drunk), 1)
 	set_duration()
 	return TRUE
 
-/datum/ambient_activity/escort/arrive()
-	var/mob/living/basic/ambient_npc/drunk = anchor()
-	if(!drunk || woke)
-		return
-	woke = TRUE
-	if(!doer.buckled)
-		doer.face_atom(drunk)
-	doer.speak_context("escort", drunk, force = TRUE)
-	drunk.start_activity(new /datum/ambient_activity/leave(drunk))
-
 /datum/ambient_activity/escort/act(seconds)
-	var/mob/living/basic/ambient_npc/drunk = anchor()
-	if(!drunk || drunk.fading || drunk.stat != CONSCIOUS || !istype(drunk.activity, /datum/ambient_activity/leave))
+	var/mob/living/carbon/human/npc/ambient_npc/drunk = anchor()
+	if(!drunk || drunk.fading || drunk.stat == DEAD || HAS_TRAIT(drunk, TRAIT_CRITICAL_CONDITION))
+		return AMBIENT_STEP_DONE
+	if(!woke)
+		if(get_dist(doer, drunk) > 1)
+			go_to(get_turf(drunk), 1)
+			return AMBIENT_STEP_MOVE
+		if(!doer.buckled)
+			doer.face_atom(drunk)
+		if(drunk.stat != CONSCIOUS)
+			// A shake, as anyone wakes a sleeper (an empty hand)
+			human_npc_ready_empty_hand(doer)
+			doer.ai_controller?.ai_interact(drunk, combat_mode = FALSE)
+			return AMBIENT_STEP_CONTINUE
+		woke = TRUE
+		doer.speak_context("escort", drunk, force = TRUE)
+		drunk.start_activity(new /datum/ambient_activity/leave(drunk))
+		return AMBIENT_STEP_CONTINUE
+	if(drunk.stat != CONSCIOUS || !istype(drunk.activity, /datum/ambient_activity/leave))
 		return AMBIENT_STEP_DONE
 	// They can manage the last few steps to the lift; the barback stays off it, and on this side of the checkpoint
-	var/mob/living/basic/ambient_npc/outpost/barback = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/barback = doer
 	var/obj/structure/overmap/trader_outpost/outpost = istype(barback) ? barback.get_outpost() : null
 	if(length(outpost?.checkpoints) && !outpost.is_secured_turf(get_turf(drunk)))
 		return AMBIENT_STEP_DONE
@@ -892,7 +903,7 @@
 	uniform = /obj/item/clothing/under/misc/overalls
 	head = /obj/item/clothing/head/utility/hardhat
 
-/mob/living/basic/ambient_npc/outpost/worker/dock
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/dock
 	desc = "Moves the depot's freight, one crate at a time."
 	dialogue_section = "dock_worker"
 	outfit_choices = list(
@@ -907,12 +918,12 @@
 		/datum/ambient_activity/chat = 1,
 	)
 
-/mob/living/basic/ambient_npc/outpost/worker/dock/pick_activity()
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/dock/pick_activity()
 	// The coffee break is taken by the crew room's machine
 	return pick_anchored(routine, ambient_outpost_find(get_outpost(), /obj/machinery/vending/coffee), list(/datum/ambient_activity/drink/coffee))
 
 /// Found mid-job hauling freight, or else on a coffee break by the crew room's machine
-/mob/living/basic/ambient_npc/outpost/worker/dock/settle_in()
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/dock/settle_in()
 	if(settle_at(/datum/ambient_activity/work/dock))
 		return TRUE
 	var/obj/machinery/vending/coffee/machine = ambient_outpost_find(get_outpost(), /obj/machinery/vending/coffee)
@@ -921,7 +932,7 @@
 	return ..()
 
 /// The convoy is in: everything down, and the crates come off the lift
-/mob/living/basic/ambient_npc/outpost/worker/dock/react_convoy(obj/structure/overmap/trader_outpost/outpost)
+/mob/living/carbon/human/npc/ambient_npc/outpost/worker/dock/react_convoy(obj/structure/overmap/trader_outpost/outpost)
 	if(stat != CONSCIOUS || fading || istype(activity, /datum/ambient_activity/convoy_unload))
 		return
 	start_activity(new /datum/ambient_activity/convoy_unload(src))
@@ -974,7 +985,7 @@
 	var/wait_until = 0
 
 /datum/ambient_activity/convoy_unload/setup()
-	var/mob/living/basic/ambient_npc/outpost/worker/dock/worker = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/worker/dock/worker = doer
 	var/obj/structure/overmap/trader_outpost/outpost = istype(worker) ? worker.get_outpost() : null
 	if(!outpost)
 		return FALSE
@@ -1058,7 +1069,7 @@
 /// A janitor at Quartermain
 /datum/ambient_outpost_role/janitor
 	name = "janitor"
-	npc_type = /mob/living/basic/ambient_npc/outpost/worker/janitor
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor
 	outpost_types = list(/obj/structure/overmap/trader_outpost/outfitter)
 	max_count = 1
 	weight = 3
@@ -1068,7 +1079,7 @@
 /// A gardener for Halcyon's conservatory and dome
 /datum/ambient_outpost_role/gardener
 	name = "gardener"
-	npc_type = /mob/living/basic/ambient_npc/outpost/worker/gardener
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/outpost/worker/gardener
 	outpost_types = list(/obj/structure/overmap/trader_outpost/general)
 	max_count = 1
 	weight = 3
@@ -1078,7 +1089,7 @@
 /// A barback at the Dregs
 /datum/ambient_outpost_role/barback
 	name = "barback"
-	npc_type = /mob/living/basic/ambient_npc/outpost/worker/barback
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/outpost/worker/barback
 	outpost_types = list(/obj/structure/overmap/trader_outpost/black_market)
 	max_count = 1
 	weight = 3
@@ -1088,7 +1099,7 @@
 /// A dock worker at Quartermain
 /datum/ambient_outpost_role/dock_worker
 	name = "dock worker"
-	npc_type = /mob/living/basic/ambient_npc/outpost/worker/dock
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/outpost/worker/dock
 	outpost_types = list(/obj/structure/overmap/trader_outpost/outfitter)
 	max_count = 1
 	weight = 3

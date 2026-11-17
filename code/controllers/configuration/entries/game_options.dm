@@ -161,22 +161,22 @@
 /datum/config_entry/flag/arrivals_shuttle_require_safe_latejoin //Require the arrivals shuttle to be operational in order for latejoiners to join
 
 /datum/config_entry/string/alert_green
-	default = "All threats to the station have passed. Security may not have weapons visible, privacy laws are once again fully enforced."
+	default = "The captain has stood the crew down. Weapons away." // VOIDCREW EDIT CHANGE: ship alert text, no station
 
 /datum/config_entry/string/alert_blue_upto
-	default = "The station has received reliable information about possible hostile activity on the station. Security staff may have weapons visible, random searches are permitted."
+	default = "The captain has raised the alert. Crew are to stay armed and alert." // VOIDCREW EDIT CHANGE: ship alert text, no station
 
 /datum/config_entry/string/alert_blue_downto
-	default = "The immediate threat has passed. Security may no longer have weapons drawn at all times, but may continue to have them visible. Random searches are still allowed."
+	default = "The worst has passed. Crew are to stay armed and alert." // VOIDCREW EDIT CHANGE: ship alert text, no station
 
 /datum/config_entry/string/alert_red_upto
-	default = "There is an immediate serious threat to the station. Security may have weapons unholstered at all times. Random searches are allowed and advised."
+	default = "All hands to stations. The ship is under threat. Weapons out." // VOIDCREW EDIT CHANGE: ship alert text, no station
 
 /datum/config_entry/string/alert_red_downto
-	default = "The station's destruction has been averted. There is still however an immediate serious threat to the station. Security may have weapons unholstered at all times, random searches are allowed and advised."
+	default = "The ship is out of immediate danger. Stay at your stations with weapons ready." // VOIDCREW EDIT CHANGE: ship alert text, no station
 
 /datum/config_entry/string/alert_delta
-	default = "Destruction of the station is imminent. All crew are instructed to obey all instructions given by heads of staff. Any violations of these orders can be punished by death. This is not a drill."
+	default = "The ship is about to be lost. Follow your officers' orders. This is not a drill." // VOIDCREW EDIT CHANGE: ship alert text, no station
 
 /datum/config_entry/flag/roundstart_blue_alert
 	default = TRUE

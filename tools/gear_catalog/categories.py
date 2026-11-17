@@ -20,8 +20,11 @@ CATEGORIES = [
     ('/obj/item/handloaders_vise', 'gun_parts', ITEM),
     ('/obj/item/ammo_box', 'ammo', '/obj/item/ammo_box'),
     ('/obj/item/ammo_casing', 'ammo', '/obj/item/ammo_casing'),
+    ('/obj/item/plasma_cartridge', 'ammo', ITEM),
     ('/obj/item/mecha_ammo', 'mech', '/obj/item/mecha_ammo'),
     ('/obj/item/mecha_parts', 'mech', '/obj/item/mecha_parts'),
+    # Whole exosuits, sold off the Rig Bay stands. Not items, so the checker adds their paths itself.
+    ('/obj/vehicle/sealed/mecha', 'exosuits', '/obj/vehicle/sealed/mecha'),
     ('/obj/item/clothing/glasses', 'eyewear', '/obj/item/clothing/glasses'),
     ('/obj/item/clothing/head', 'headwear', '/obj/item/clothing/head'),
     ('/obj/item/clothing/suit', 'suits', '/obj/item/clothing/suit'),
@@ -174,6 +177,7 @@ CATEGORIES = [
     ('/obj/item/instrument', 'toys', '/obj/item/instrument'),
     ('/obj/item/trash', 'trash', '/obj/item/trash'),
     ('/obj/item/vending_refill', 'vending_refills', '/obj/item/vending_refill'),
+    ('/obj/item/dnainjector/loot', 'medical', '/obj/item/dnainjector'),
     ('/obj/item/dnainjector', 'genetics', '/obj/item/dnainjector'),
     ('/obj/item/flashlight', 'tools', '/obj/item/flashlight'),
     ('/obj/item/assembly', 'tools', '/obj/item/assembly'),
@@ -313,7 +317,7 @@ CATEGORIES = [
 GEAR_CATEGORIES = frozenset({
     'guns', 'gun_parts', 'eyewear', 'melee', 'shields', 'explosives', 'headwear', 'suits', 'uniforms', 'gloves', 'shoes', 'masks',
     'neckwear', 'accessories', 'earwear', 'modsuits', 'implants', 'cyberware', 'organs', 'ammo', 'tools', 'toolboxes', 'medical',
-    'belts', 'backpacks', 'storage', 'mech', 'robotics', 'comms', 'ship_parts', 'relics',
+    'belts', 'backpacks', 'storage', 'mech', 'exosuits', 'robotics', 'comms', 'ship_parts', 'relics',
 })
 NOT_GEAR_CATEGORIES = frozenset({
     'food', 'botany', 'paper', 'decor', 'toys', 'trash', 'boards', 'machine_parts', 'stacks', 'circuits', 'slimes', 'genetics', 'cards',

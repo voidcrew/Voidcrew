@@ -14,6 +14,14 @@
  * trader is aggression against outpost property. Embargo rules apply. The
  * ambient NPCs milling about are killable, and hurting them counts as violence too.
  *
+ * A documented fixture, not a person (owner ruling OC-1, human NPC migration, 2026-11-08): every
+ * other humanoid NPC is a real human body that bleeds, goes into crit and dies
+ * (voidcrew/modules/human_npcs/), but traders and the checkpoint guards (a subtype,
+ * outpost_checkpoint_guard.dm) stay invulnerable basic mobs. A dead shopkeeper would cut every crew
+ * off that shop for the rest of a six-hour round; the outpost's own answer to an attack (aggression,
+ * the embargo, the turrets) is the consequence instead. Keep the exception to the counter staff:
+ * everyone else at an outpost can be killed.
+ *
  * Speech lines come from the outpost's shop datum, so each trader has their
  * own voice (see the trader_lines lists on the /datum/outpost_shop subtypes).
  */
@@ -433,6 +441,8 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 
 /datum/outpost_trader_ui/shop/ui_data(mob/user)
 	var/list/data = list()
+	// Tutorial checklist pointer (voidcrew/modules/tutorials)
+	data["tutorial_focus"] = tutorial_ui_focus(user, "trader")
 	var/datum/outpost_shop/shop = npc.shop
 
 	data["barred"] = npc.outpost ? npc.outpost.is_user_barred(user) : FALSE
@@ -586,6 +596,8 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 
 /datum/outpost_trader_ui/contracts/ui_data(mob/user)
 	var/list/data = list()
+	// Tutorial checklist pointer (voidcrew/modules/tutorials)
+	data["tutorial_focus"] = tutorial_ui_focus(user, "board")
 	var/obj/structure/overmap/trader_outpost/outpost = npc.outpost
 
 	var/datum/outpost_shop/shop = outpost?.shop

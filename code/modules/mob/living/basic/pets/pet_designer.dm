@@ -147,11 +147,13 @@ GLOBAL_LIST_INIT(pet_options, list(
 
 			var/trick_name = params["selected_trick_name"]
 			if(trick_name && sanitize_name(trick_name))
-				pet_trick_name = trick_name
+				// VOIDCREW EDIT CHANGE - port of tgstation/tgstation#98413: store the checked, encoded name
+				pet_trick_name = sanitize_name(trick_name)
 
 			var/pet_name =  params["selected_pet_name"]
 			if(pet_name && sanitize_name(pet_name))
-				custom_name = pet_name
+				// VOIDCREW EDIT CHANGE - port of tgstation/tgstation#98413: store the checked, encoded name
+				custom_name = sanitize(pet_name)
 
 			switch(params["selected_gender"])
 				if("male")

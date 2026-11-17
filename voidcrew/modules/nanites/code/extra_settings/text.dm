@@ -5,7 +5,10 @@
 	value = initial
 
 /datum/nanite_extra_setting/text/set_value(value)
-	src.value = trim(value)
+	if(!istext(value))
+		return
+	// Programs print this into their host's chat, so no tags.
+	src.value = trim(STRIP_HTML_SIMPLE(value, MAX_MESSAGE_LEN))
 
 /datum/nanite_extra_setting/text/get_copy()
 	return new /datum/nanite_extra_setting/text(value)

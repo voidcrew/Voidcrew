@@ -129,6 +129,8 @@
 
 /obj/machinery/computer/mission_board/ui_data(mob/user)
 	var/list/data = list()
+	// Tutorial checklist pointer (voidcrew/modules/tutorials)
+	data["tutorial_focus"] = tutorial_ui_focus(user, "board")
 
 	var/obj/structure/overmap/ship/ship = get_ship()
 	data["has_ship"] = !!ship

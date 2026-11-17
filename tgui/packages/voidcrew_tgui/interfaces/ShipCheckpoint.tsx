@@ -18,6 +18,15 @@ import {
   ShipPreview,
   type UpgradeSlot,
 } from './ShipUpgradeSelector';
+import {
+  type BillClass,
+  HullPlan,
+  PART_CLASSES,
+  type PartClass,
+  type SavedShip,
+  type ShipSurvey,
+  SlotCard,
+} from './SavedShipCards';
 
 type ShopTheme = {
   id: string;
@@ -71,23 +80,6 @@ type Data = {
   working: BooleanLike;
   error: string | null;
   notice: string | null;
-  save_cost: number;
-  update_cost: number;
-  has_checkpoint: BooleanLike;
-  bays: {
-    ref: string;
-    name: string;
-    number: number;
-    balance: number;
-    denial: string | null;
-  }[];
-  blueprints: {
-    ref: string;
-    name: string;
-    width: number;
-    height: number;
-    denial: string | null;
-  }[];
   rebuilds: {
     ref: string;
     name: string;
@@ -96,16 +88,33 @@ type Data = {
   }[];
   catalog: ShopHull[];
   shop: Shop | null;
+  saved_ships: {
+    online: BooleanLike;
+    parts: Record<PartClass, number> | null;
+    part_credits: number;
+    funds_per_part: number;
+    slots: number;
+    saves: SavedShip[];
+    ships: DockedShip[];
+  };
+};
+
+type DockedShip = ShipSurvey & {
+  ref: string;
+  name: string;
+  class: string | null;
+  denial: string | null;
+  balance: number;
 };
 
 const credits = (amount: number) => `${amount.toLocaleString()} cr`;
 
 export const ShipCheckpoint = () => {
   const { data } = useBackend<Data>();
-  const [tab, setTab] = useState('checkpoints');
+  const [tab, setTab] = useState('saved');
   const rebuilds = data.rebuilds || [];
   return (
-    <Window width={620} height={760} title={`${data.outpost} Shipyard`}>
+    <Window width={720} height={660} title={`${data.outpost} Shipyard`}>
       <Window.Content scrollable>
         {!!data.error && <NoticeBox danger>{data.error}</NoticeBox>}
         {!!data.notice && <NoticeBox success>{data.notice}</NoticeBox>}
@@ -129,11 +138,11 @@ export const ShipCheckpoint = () => {
         )}
         <Tabs>
           <Tabs.Tab
-            icon="floppy-disk"
-            selected={tab === 'checkpoints'}
-            onClick={() => setTab('checkpoints')}
+            icon="anchor"
+            selected={tab === 'saved'}
+            onClick={() => setTab('saved')}
           >
-            Checkpoints
+            Saved ships
           </Tabs.Tab>
           <Tabs.Tab
             icon="ship"
@@ -143,71 +152,398 @@ export const ShipCheckpoint = () => {
             New ship
           </Tabs.Tab>
         </Tabs>
-        {tab === 'shop' ? <ShopTab /> : <CheckpointsTab />}
+        {tab === 'shop' && <ShopTab />}
+        {tab === 'saved' && <SavedShipsTab />}
       </Window.Content>
     </Window>
   );
 };
 
-const CheckpointsTab = () => {
+/** Why a save costs what it costs: one column per part class, with the machines behind it. */
+const PriceBill = (props: {
+  bill: BillClass[];
+  parts: Record<PartClass, number> | null;
+  miscCredits: number;
+}) => (
+  <div
+    style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+      gap: '8px',
+    }}
+  >
+    {PART_CLASSES.map(({ id, label, color }) => {
+      const entry = props.bill.find((line) => line.class === id);
+      const need = entry?.parts || 0;
+      const held = props.parts ? props.parts[id] : null;
+      // Misc parts can be made up in credits, which the save button checks.
+      const short = held !== null && need > held && id !== 'misc';
+      return (
+        <div
+          key={id}
+          style={{
+            borderTop: `2px solid ${color}`,
+            background: 'rgba(255,255,255,0.03)',
+            padding: '6px 8px 8px',
+            opacity: need ? 1 : 0.45,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+            <span
+              style={{
+                fontSize: '22px',
+                fontWeight: 'bold',
+                lineHeight: '1',
+                color,
+              }}
+            >
+              {need}
+            </span>
+            <span style={{ color: '#b9c6d0' }}>{label}</span>
+          </div>
+          {held !== null && !!need && (
+            <div
+              style={{
+                fontSize: '11px',
+                marginTop: '2px',
+                color: short ? '#ff7b72' : '#7f8e9a',
+                fontWeight: short ? 'bold' : 'normal',
+              }}
+            >
+              you have {held}
+            </div>
+          )}
+          {id === 'misc' && props.miscCredits > 0 && (
+            <div style={{ fontSize: '11px', color: '#7f8e9a' }}>
+              or {credits(props.miscCredits)}
+            </div>
+          )}
+          <div style={{ marginTop: '6px' }}>
+            {(entry?.items || []).map((item) => (
+              <div
+                key={item.name}
+                style={{
+                  display: 'flex',
+                  gap: '6px',
+                  lineHeight: '1.3',
+                  marginTop: '3px',
+                }}
+              >
+                <span style={{ flex: 1, minWidth: 0, color: '#d7e0e7' }}>
+                  {item.name}
+                  {!!item.count && item.count > 1 && (
+                    <span style={{ color: '#7f8e9a' }}> ×{item.count}</span>
+                  )}
+                </span>
+                <span style={{ color, fontWeight: 'bold' }}>{item.parts}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    })}
+  </div>
+);
+
+/** The ship in the bay and what it would cost to save. */
+const DockedPanel = (props: {
+  ship: DockedShip;
+  parts: Record<PartClass, number> | null;
+  bill: BillClass[];
+  total: number;
+  partCredits: number;
+  fundsParts: number;
+  fundsPerPart: number;
+  maxFundsParts: number;
+  setFundsParts: (amount: number) => void;
+}) => {
+  const { ship, parts, bill, total, partCredits, fundsParts } = props;
+  const miscParts = bill.find((entry) => entry.class === 'misc')?.parts || 0;
+  return (
+    <div
+      style={{
+        border: '1px solid rgba(134,197,228,0.28)',
+        borderRadius: '3px',
+        overflow: 'hidden',
+        background: 'linear-gradient(180deg, #16222d 0%, #111a23 100%)',
+      }}
+    >
+      <div style={{ display: 'flex' }}>
+        <div style={{ flex: '0 0 200px' }}>
+          <HullPlan plan={ship.plan} height={92} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0, padding: '8px 12px' }}>
+          <div
+            style={{
+              fontSize: '16px',
+              fontWeight: 'bold',
+              color: '#eef4f8',
+              overflowWrap: 'anywhere',
+            }}
+          >
+            {ship.name}
+          </div>
+          {!!ship.class && <Box color="label">{ship.class}</Box>}
+          <Box color="label" mt={0.5}>
+            {(ship.mass || 0).toLocaleString()} t · crew {ship.crew || 0}
+          </Box>
+        </div>
+        <div style={{ padding: '8px 14px', textAlign: 'right' }}>
+          <div
+            style={{
+              fontSize: '30px',
+              fontWeight: 'bold',
+              lineHeight: '1',
+              color: '#eef4f8',
+            }}
+          >
+            {total}
+          </div>
+          <Box color="label">parts to save</Box>
+        </div>
+      </div>
+      <div style={{ padding: '8px' }}>
+        <PriceBill
+          bill={bill}
+          parts={parts}
+          miscCredits={miscParts * partCredits}
+        />
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            marginTop: '8px',
+          }}
+        >
+          <Box color="label">Ship's account</Box>
+          <Box bold>{credits(ship.balance)}</Box>
+          <div style={{ flex: 1 }} />
+          <Box color="label">Carry funds</Box>
+          <Button
+            icon="minus"
+            disabled={fundsParts <= 0}
+            onClick={() => props.setFundsParts(fundsParts - 1)}
+          />
+          <Box bold width="72px" textAlign="center">
+            {credits(fundsParts * props.fundsPerPart)}
+          </Box>
+          <Button
+            icon="plus"
+            disabled={fundsParts >= props.maxFundsParts}
+            onClick={() => props.setFundsParts(fundsParts + 1)}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/** The bill with the funds on it, as ship_save_add_funds() prices it. */
+const billWithFunds = (
+  bill: BillClass[],
+  fundsParts: number,
+  fundsPerPart: number,
+): BillClass[] => {
+  if (fundsParts <= 0) {
+    return bill;
+  }
+  const line = {
+    name: `Funds, ${credits(fundsParts * fundsPerPart)}`,
+    count: null,
+    parts: fundsParts,
+    carry: 1,
+  };
+  const trade = bill.find((entry) => entry.class === 'trade');
+  if (trade) {
+    return bill.map((entry) =>
+      entry === trade
+        ? {
+            ...entry,
+            parts: entry.parts + fundsParts,
+            items: [...entry.items, line],
+          }
+        : entry,
+    );
+  }
+  return [...bill, { class: 'trade', parts: fundsParts, items: [line] }];
+};
+
+/** Parts of a class the bill wants beyond what's held. */
+const missingParts = (
+  bill: BillClass[],
+  parts: Record<PartClass, number>,
+  id: PartClass,
+) => {
+  const need = bill.find((entry) => entry.class === id)?.parts || 0;
+  return Math.max(need - parts[id], 0);
+};
+
+/** Why this captain can't afford the save, or null. Only misc parts can be had for credits. */
+const shortOfParts = (
+  bill: BillClass[],
+  parts: Record<PartClass, number> | null,
+  balance: number,
+  partCredits: number,
+) => {
+  if (!parts) {
+    return null;
+  }
+  const missing = PART_CLASSES.filter(({ id }) => id !== 'misc')
+    .map(({ id }) => ({ id, short: missingParts(bill, parts, id) }))
+    .filter(({ short }) => short > 0)
+    .map(({ id, short }) => `${short} ${id}`);
+  if (missing.length) {
+    return `Short ${missing.join(', ')}.`;
+  }
+  const short = missingParts(bill, parts, 'misc') * partCredits - balance;
+  return short > 0 ? `Short ${credits(short)}.` : null;
+};
+
+const SavedShipsTab = () => {
   const { data, act } = useBackend<Data>();
-  const updating = !!data.has_checkpoint;
-  const cost = updating ? data.update_cost : data.save_cost;
+  const { online, parts, part_credits, funds_per_part, slots, saves, ships } =
+    data.saved_ships;
+  const [shipRef, setShipRef] = useState<string | null>(null);
+  const [wantedFunds, setFundsParts] = useState(0);
+  if (!online) {
+    return (
+      <Section title="Saved ships">
+        <Box color="label">Shipyard records are offline.</Box>
+      </Section>
+    );
+  }
+  const ship = ships.find((entry) => entry.ref === shipRef) || ships[0];
+  const baseBill = ship?.bill || [];
+  // What the ship's account and trade parts can spare once the rest of the bill is paid.
+  const tradeSpare = parts
+    ? parts.trade -
+      (baseBill.find((entry) => entry.class === 'trade')?.parts || 0)
+    : 0;
+  const miscCredits = parts
+    ? missingParts(baseBill, parts, 'misc') * part_credits
+    : 0;
+  const maxFundsParts = ship
+    ? Math.max(
+        Math.min(
+          tradeSpare,
+          Math.floor((ship.balance - miscCredits) / funds_per_part),
+        ),
+        0,
+      )
+    : 0;
+  const fundsParts = Math.min(wantedFunds, maxFundsParts);
+  const fundsCredits = fundsParts * funds_per_part;
+  const bill = billWithFunds(baseBill, fundsParts, funds_per_part);
+  const saveDenial = !ship
+    ? 'Dock a ship you command.'
+    : ship.denial ||
+      shortOfParts(bill, parts, ship.balance - fundsCredits, part_credits);
   return (
     <>
-      <Section title="Checkpoint">
-        {data.blueprints.length === 0 && <Box color="label">None saved.</Box>}
-        {data.blueprints.map((checkpoint) => (
-          <Stack key={checkpoint.ref} align="center" mb={1}>
-            <Stack.Item grow bold style={{ overflowWrap: 'anywhere' }}>
-              {checkpoint.name}
-            </Stack.Item>
-            <Stack.Item>
-              <Button
-                icon="ship"
-                disabled={!!data.working || !!checkpoint.denial}
-                tooltip={
-                  checkpoint.denial || 'Prepaid. Drones rebuild it here.'
-                }
-                onClick={() => act('rebuild', { ref: checkpoint.ref })}
-              >
-                Rebuild
-              </Button>
-            </Stack.Item>
-          </Stack>
-        ))}
-      </Section>
-      <Section title="Docked here">
-        {data.bays.length === 0 && (
-          <Box color="label">Dock a ship you command to save it.</Box>
-        )}
-        {data.bays.map((bay) => {
-          const short = bay.balance < cost;
-          return (
-            <Stack key={bay.ref} align="center" mb={1}>
-              <Stack.Item grow style={{ overflowWrap: 'anywhere' }}>
-                Bay {bay.number}: {bay.name}
-              </Stack.Item>
-              <Stack.Item>
-                <Button
-                  icon="floppy-disk"
-                  disabled={!!data.working || !!bay.denial || short}
-                  tooltip={
-                    bay.denial ||
-                    (short
-                      ? `Ship account has ${credits(bay.balance)}.`
-                      : 'Saves the hull and machines for one rebuild. Supplies are not saved.')
-                  }
-                  onClick={() =>
-                    act(updating ? 'update' : 'save', { ref: bay.ref })
-                  }
-                >
-                  {updating ? 'Update' : 'Save'} · {credits(cost)}
-                </Button>
-              </Stack.Item>
+      <Section
+        title="In the bay"
+        buttons={
+          ships.length > 1 ? (
+            <Stack>
+              {ships.map((entry) => (
+                <Stack.Item key={entry.ref}>
+                  <Button
+                    selected={entry === ship}
+                    onClick={() => setShipRef(entry.ref)}
+                  >
+                    {entry.name}
+                  </Button>
+                </Stack.Item>
+              ))}
             </Stack>
-          );
-        })}
+          ) : undefined
+        }
+      >
+        {ship ? (
+          <DockedPanel
+            ship={ship}
+            parts={parts}
+            bill={bill}
+            total={(ship.total || 0) + fundsParts}
+            partCredits={part_credits}
+            fundsParts={fundsParts}
+            fundsPerPart={funds_per_part}
+            maxFundsParts={maxFundsParts}
+            setFundsParts={setFundsParts}
+          />
+        ) : (
+          <Box color="label">Dock a ship you command.</Box>
+        )}
+      </Section>
+      <Section title="Saved ships">
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+            gap: '10px',
+          }}
+        >
+          {Array.from({ length: slots }, (_, index) => {
+            const slot = index + 1;
+            const save = saves.find((entry) => entry.slot === slot);
+            return (
+              <SlotCard
+                key={slot}
+                slot={slot}
+                save={save}
+                ghostPlan={ship?.plan}
+                footer={
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: save ? '1fr 1fr' : '1fr',
+                      gap: '4px',
+                    }}
+                  >
+                    {!!save && (
+                      <Button
+                        fluid
+                        color="good"
+                        textAlign="center"
+                        style={{ margin: 0 }}
+                        disabled={!!data.working || !!save.denial}
+                        tooltip={save.denial}
+                        onClick={() =>
+                          act('ship_save_retrieve', { slot: save.slot })
+                        }
+                      >
+                        Build here
+                      </Button>
+                    )}
+                    <Button
+                      fluid
+                      color={save ? 'orange' : undefined}
+                      textAlign="center"
+                      style={{ margin: 0 }}
+                      disabled={
+                        !!data.working || !!saveDenial || !!save?.locked
+                      }
+                      tooltip={
+                        saveDenial ||
+                        (save?.locked ? 'Already under way.' : undefined)
+                      }
+                      onClick={() =>
+                        act('ship_save_store', {
+                          ref: ship?.ref,
+                          slot,
+                          funds_parts: fundsParts,
+                        })
+                      }
+                    >
+                      {save ? 'Overwrite' : 'Save'}
+                    </Button>
+                  </div>
+                }
+              />
+            );
+          })}
+        </div>
       </Section>
     </>
   );
