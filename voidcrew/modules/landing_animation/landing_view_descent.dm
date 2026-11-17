@@ -151,6 +151,15 @@
 	// drawn as late as will do: weather comes and goes, and what it shows should be how the ground is as the hull lands
 	addtimer(CALLBACK(src, PROC_REF(bake_near), close, detail_reach(), CALLBACK(src, PROC_REF(show), close)), max(0, touchdown - 5.4 SECONDS - world.time), TIMER_DELETE_ME)
 
+	// past the reach of those pictures there is only cloud: the ground is seen through an opening in it
+	var/datum/landing_track/veil_alpha = veil_fade(ground.scale)
+	for(var/for_light in list(FALSE, TRUE))
+		var/datum/landing_view_piece/veil = add_picture()
+		veil.parts = cloud_veil(for_light)
+		veil.scale = ground.scale
+		veil.alpha = veil_alpha
+		veil.give_at = touchdown - 5.4 SECONDS
+		show(veil)
 	// and the light on it: the white of the cloud gives way to the ground as it is lit, dark if it is dark
 	light = add_picture()
 	light.scale = ground.scale

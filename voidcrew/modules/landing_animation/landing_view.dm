@@ -112,8 +112,9 @@
 	var/list/parts
 	/// World picture: TRUE while viewers hold it
 	var/shown = FALSE
-	/// World picture: TRUE once its taking back is booked
+	/// World picture: TRUE once its taking back is booked, and once its handing over is
 	var/dropping = FALSE
+	var/give_booked = FALSE
 	/**
 	 * World picture: the smallest size it is ever seen at, if its parts are only handed to the viewers whose
 	 * screen they are on. A picture of real tiles costs a client its frame rate by the tile, seen or not.
@@ -641,8 +642,10 @@
 	if(!length(piece.parts) || world.time >= piece.drop_at)
 		return
 	if(world.time < piece.give_at)
-		if(piece.give_at < INFINITY)
-			addtimer(CALLBACK(src, PROC_REF(show), piece, replay), piece.give_at - world.time, TIMER_DELETE_ME | TIMER_UNIQUE | TIMER_OVERRIDE)
+		// booked once for each picture. Not as a unique timer: two pictures due at the same moment count as one, and the first is never shown
+		if(piece.give_at < INFINITY && !piece.give_booked)
+			piece.give_booked = TRUE
+			addtimer(CALLBACK(src, PROC_REF(show), piece, replay), piece.give_at - world.time, TIMER_DELETE_ME)
 		return
 	if(!piece.dropping && piece.drop_at < INFINITY)
 		piece.dropping = TRUE

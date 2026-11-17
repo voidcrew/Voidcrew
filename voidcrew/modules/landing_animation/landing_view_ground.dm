@@ -457,6 +457,108 @@
 	piece.parts = (piece.parts || list()) + parts
 	then?.Invoke()
 
+/// The furthest from the berth's middle the ground is seen, in tiles: past it there is only cloud
+#define LANDING_VEIL_HOLE 30
+/// One billow of the cloud's edge, in tiles across, and how far apart they stand along it
+#define LANDING_VEIL_PUFF 16
+#define LANDING_VEIL_STEP 5
+/// The ground's size between which the cloud around it is there in full and gone
+#define LANDING_VEIL_FULL 0.8
+#define LANDING_VEIL_GONE 0.97
+
+/**
+ * How far this site's own ground reaches from the berth's middle, in tiles, each way: list(east, west, north,
+ * south), none more than LANDING_VEIL_HOLE. A berth can stand right by the edge of its site, and past that edge
+ * there is nothing to show.
+ */
+/datum/landing_view/proc/ground_extent()
+	var/datum/own_region = map_region_for_turf(berth_turfs[1])
+	var/middle_x = round(ground_x)
+	var/middle_y = round(ground_y)
+	var/list/extent = list()
+	for(var/list/way as anything in list(list(1, 0), list(-1, 0), list(0, 1), list(0, -1)))
+		var/reach = LANDING_VEIL_HOLE
+		// along the middle of the hull's box and along both its sides
+		var/half_across = way[1] ? ground_half_h : ground_half_w
+		for(var/out in 1 to LANDING_VEIL_HOLE)
+			var/ended = FALSE
+			for(var/across in list(0, -round(half_across), round(half_across)))
+				var/turf/ground = locate(middle_x + way[1] * out + (way[2] ? across : 0), middle_y + way[2] * out + (way[1] ? across : 0), ground_z)
+				if(!ground || istype(ground, /turf/cordon) || isspaceturf(ground) || (own_region && map_region_excludes_turf(own_region, ground)))
+					ended = TRUE
+					break
+			if(ended)
+				reach = out - 1
+				break
+		extent += reach
+	return extent
+
+/**
+ * The cloud the ground is seen through: everything past the site's own ground, or past LANDING_VEIL_HOLE tiles
+ * from the berth's middle if the site goes on further, with a billowing edge. The pictures of the ground only
+ * reach so far, get coarser as they go, and end where the site ends; this lies over all of that, so no edge of
+ * any of them is ever seen. The opening widens as the ground comes up and closes in as it falls away.
+ * Returns the parts of a world picture.
+ * * for_light - the same shapes in full light, for the light plane: cloud is lit by the sky, not by the ground under it
+ */
+/datum/landing_view/proc/cloud_veil(for_light = FALSE)
+	var/list/parts = list()
+	var/tone = for_light ? COLOR_WHITE : (palette?.cloud || COLOR_WHITE)
+	var/part_layer = for_light ? 3 : LANDING_VIEW_LAYER_GROUND + 0.6
+	var/list/extent = ground_extent()
+	// where the cloud's sheets begin each way: their billows reach half a billow further in, to just short of the site's edge
+	var/east = extent[1] + LANDING_VEIL_PUFF / 2 - 3
+	var/west = extent[2] + LANDING_VEIL_PUFF / 2 - 3
+	var/north = extent[3] + LANDING_VEIL_PUFF / 2 - 3
+	var/south = extent[4] + LANDING_VEIL_PUFF / 2 - 3
+	// four sheets around the opening: list(middle x, middle y, tiles wide, tiles high)
+	for(var/list/sheet_at as anything in list(list(east + 100, 0, 200, 600), list(-west - 100, 0, 200, 600), list(0, north + 100, 600, 200), list(0, -south - 100, 600, 200)))
+		var/mutable_appearance/sheet = mutable_appearance('icons/effects/alphacolors.dmi', "white", appearance_flags = RESET_COLOR)
+		sheet.color = tone
+		sheet.transform = matrix().Scale(sheet_at[3], sheet_at[4])
+		var/mutable_appearance/look = landing_view_world_look(new /mutable_appearance, part_layer)
+		if(for_light)
+			look.plane = LANDING_VIEW_LIGHT_PLANE
+		look.overlays = list(sheet)
+		parts += list(list(look, sheet_at[1] * ICON_SIZE_X, sheet_at[2] * ICON_SIZE_Y, 1, 0))
+	// and billows all along its edge
+	var/list/spots = list()
+	for(var/along = -west, along <= east, along += LANDING_VEIL_STEP)
+		spots += list(list(along, north), list(along, -south))
+	for(var/along = -south, along <= north, along += LANDING_VEIL_STEP)
+		spots += list(list(east, along), list(-west, along))
+	var/turned = 0
+	for(var/list/spot as anything in spots)
+		var/mutable_appearance/puff = mutable_appearance(LANDING_VIEW_ICON, "puff", appearance_flags = RESET_COLOR)
+		puff.color = tone
+		puff.pixel_w = -(LANDING_VIEW_ICON_SIZE - ICON_SIZE_X) / 2
+		puff.pixel_z = -(LANDING_VIEW_ICON_SIZE - ICON_SIZE_Y) / 2
+		// no two alike: each turned and sized a little differently
+		turned += 67
+		var/matrix/billow = matrix()
+		billow.Scale(LANDING_VEIL_PUFF * ICON_SIZE_X / 361 * (0.85 + (turned % 40) / 100))
+		billow.Turn(turned)
+		puff.transform = billow
+		var/mutable_appearance/look = landing_view_world_look(new /mutable_appearance, part_layer + 0.01)
+		if(for_light)
+			look.plane = LANDING_VIEW_LIGHT_PLANE
+		look.overlays = list(puff)
+		parts += list(list(look, spot[1] * ICON_SIZE_X, spot[2] * ICON_SIZE_Y, 1, 0))
+	return parts
+
+/**
+ * How opaque the cloud around the ground is over time, from the ground's [size]: whole while the ground is small,
+ * gone by the time it is full size, when what lies past the site's edge is whatever the game itself shows there.
+ */
+/datum/landing_view/proc/veil_fade(datum/landing_track/size)
+	var/datum/landing_track/fade = new
+	var/start = size.times[1]
+	var/finish = size.end_time()
+	for(var/moment = start, moment < finish + 2, moment += 2)
+		var/when = min(moment, finish)
+		fade.mark(when, clamp((LANDING_VEIL_GONE - size.at(when)) / (LANDING_VEIL_GONE - LANDING_VEIL_FULL), 0, 1) * 255)
+	return fade
+
 /// Readies [look] to be one part of a world picture
 /proc/landing_view_world_look(mutable_appearance/look, part_layer)
 	look.plane = LANDING_VIEW_PLANE
@@ -723,6 +825,11 @@
 			return TRUE
 	return FALSE
 
+#undef LANDING_VEIL_HOLE
+#undef LANDING_VEIL_PUFF
+#undef LANDING_VEIL_STEP
+#undef LANDING_VEIL_FULL
+#undef LANDING_VEIL_GONE
 #undef LANDING_LIGHT_FAR_REACH
 #undef LANDING_LIGHT_FAR_GRAIN
 #undef LANDING_LIGHT_NEAR_REACH
