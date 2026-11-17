@@ -749,6 +749,69 @@
    "reason": "Wheels a patient along. Faster than dragging.",
    "tier": "none"
   },
+  "/obj/item/excavation/brush": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "",
+   "name": "excavation brush",
+   "rank": 24,
+   "reason": "Brushes the last grit off a dig find. Work tool only.",
+   "tier": "none"
+  },
+  "/obj/item/excavation/brush/quick": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "",
+   "name": "quick brush",
+   "rank": 25,
+   "reason": "Excavation brush that works in a third of the time. Saves minutes at a dig, nothing else.",
+   "tier": "none"
+  },
+  "/obj/item/excavation/core_sampler": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "",
+   "name": "core sampler",
+   "rank": 28,
+   "reason": "Draws a rock core from a dig find for the spectrometer. Work tool only.",
+   "tier": "none"
+  },
+  "/obj/item/excavation/depth_scanner": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "",
+   "name": "depth scanner",
+   "rank": 26,
+   "reason": "Reads roughly how deep a dig find sits and how much has been cut. Prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/excavation/depth_scanner/advanced": {
+   "confidence": "medium",
+   "group": "Mining tools",
+   "hash": "",
+   "name": "advanced depth scanner",
+   "rank": 27,
+   "reason": "Reads a dig find exactly, and the field it needs, so a crew skips the trip back to the spectrometer. Speeds artifact digging; no use in a fight.",
+   "tier": "green"
+  },
+  "/obj/item/excavation/hammer": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "",
+   "name": "rock hammer",
+   "rank": 23,
+   "reason": "Rock hammer with swappable heads for cutting dig finds down. Hits for 6. Prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/excavation/stabiliser": {
+   "confidence": "medium",
+   "group": "Mining tools",
+   "hash": "",
+   "name": "field stabiliser",
+   "rank": 29,
+   "reason": "Lays the field that keeps a large dig find whole as it comes out. Needed to get full value from artifacts; harmless otherwise.",
+   "tier": "green"
+  },
   "/obj/item/experi_scanner": {
    "confidence": "high",
    "group": "Scanners and trackers",
@@ -3002,6 +3065,7 @@
   "/obj/item/door_remote/head_of_security": "no route",
   "/obj/item/door_remote/omni": "no route",
   "/obj/item/emergency_bed/silicon": "no route",
+  "/obj/item/excavation": "abstract",
   "/obj/item/extendohand/acme": "no route",
   "/obj/item/extinguisher/anti": "no route",
   "/obj/item/extinguisher/mini/nozzle": "uncreatable",

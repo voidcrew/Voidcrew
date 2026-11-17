@@ -37,6 +37,24 @@
    "reason": "A trophy belt that holds one luchador mask.",
    "tier": "none"
   },
+  "/obj/item/storage/belt/excavation": {
+   "confidence": "high",
+   "group": "mining belts",
+   "hash": "",
+   "name": "excavation webbing",
+   "rank": 3,
+   "reason": "Eight small slots for dig tools, scanners, a GPS and rock samples. Holds nothing a fight needs.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/excavation/full": {
+   "confidence": "high",
+   "group": "mining belts",
+   "hash": "",
+   "name": "excavation webbing",
+   "rank": 3,
+   "reason": "The excavation kit: webbing with a rock hammer, brush, depth scanner, core sampler and find satchel. Prints at round start.",
+   "tier": "none"
+  },
   "/obj/item/storage/belt/fannypack": {
    "confidence": "high",
    "group": "fashion belts",
