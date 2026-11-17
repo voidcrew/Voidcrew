@@ -69,6 +69,8 @@
 #define LANDING_SHAKE 0.4
 /// How far from the hull people on the ground feel and hear it land or leave
 #define LANDING_HEAR_RANGE 12
+/// How far from the hull a landing or launch sound stays at full volume, in tiles
+#define LANDING_SOUND_FULL 4
 /// How far past the hull's box an engine roar on the ground carries
 #define LANDING_ROAR_RANGE 30
 
@@ -305,7 +307,10 @@
 		if(shake_strength)
 			shake_camera(listener, shake_time, shake_strength)
 		if(sound_file)
-			listener.playsound_local(hull_set[where] ? where : middle, sound_file, volume, TRUE, pressure_affected = FALSE, max_distance = reach + max(max_x - min_x, max_y - min_y))
+			// heard from the nearest part of the hull, not its middle: the falloff is steep, and from the middle of a
+			// big hull someone standing right against it would be a dozen tiles away and hear next to nothing
+			var/turf/source = hull_set[where] ? where : locate(clamp(where.x, min_x, max_x), clamp(where.y, min_y, max_y), first.z)
+			listener.playsound_local(source || middle, sound_file, volume, TRUE, pressure_affected = FALSE, max_distance = max(reach, 1) + LANDING_SOUND_FULL, falloff_distance = LANDING_SOUND_FULL)
 
 /// A few light puffs of dust kicked out from the hull's edges, with twins in transit for a [descent]'s crew
 /proc/landing_dust(list/hull_turfs, list/transit_turfs, datum/landing_animation/descent)
@@ -955,3 +960,4 @@
 #undef LANDING_WASH_PUSH
 #undef LANDING_HEAR_RANGE
 #undef LANDING_ROAR_RANGE
+#undef LANDING_SOUND_FULL
