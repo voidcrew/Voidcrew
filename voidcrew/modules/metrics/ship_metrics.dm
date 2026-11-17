@@ -42,9 +42,8 @@
 //                       Not written for the crash that abandonment itself causes. details:
 //                       last_hit_by_id, last_hit_by, last_hit_by_npc, seconds_since_hit.
 //   ship_repaired       A failed hull comes back into service.
-//   ship_removed        The hull leaves the round. subject = reason: bluespace_jump,
-//                       derelict_despawned, never_crewed_despawned or deleted. details:
-//                       age_seconds, crew; parts_extracted and crew_aboard for a jump.
+//   ship_removed        The hull leaves the round. subject = reason: derelict_despawned,
+//                       never_crewed_despawned or deleted. details: age_seconds, crew.
 //   ship_force_docked   A ship's interdictor forces another player ship to dock with it.
 //                       ship = the ship that did it, ckey = interdictor operator. details:
 //                       target_ship_id, target_ship.
@@ -160,10 +159,6 @@
 	var/metric_spawned_at
 	/// TRUE once the removal row is written; nothing more is recorded about the hull.
 	var/metric_removed = FALSE
-	/// Why the hull is about to leave the round, when the caller knows (a bluespace jump).
-	var/metric_removal_reason
-	/// Extra details for the removal row, set with metric_removal_reason.
-	var/list/metric_removal_details
 	/// The last ship to land a weapon hit on this one, and when.
 	var/metric_last_hit_by_id
 	var/metric_last_hit_by_name
@@ -378,19 +373,9 @@
 		return
 	record_metric(METRIC_SHIP, "ship_repaired", ship = ship, zone = ship_metric_zone(ship))
 
-/// The helm is about to jump the ship out of the round.
-/proc/ship_metric_jumping(obj/structure/overmap/ship/ship, parts_extracted)
-	if(!ship)
-		return
-	ship.metric_removal_reason = "bluespace_jump"
-	ship.metric_removal_details = list(
-		"parts_extracted" = parts_extracted || 0,
-		"crew_aboard" = length(ship.shuttle?.get_all_humans()),
-	)
-
 /**
  * The hull is leaving the round: its shuttle is about to be detached. Every removal path
- * (derelict despawn, bluespace jump, deletion) detaches the shuttle first, so this is the last
+ * (derelict despawn, deletion) detaches the shuttle first, so this is the last
  * moment the hull still has its id. Closes any open NPC encounter first.
  */
 /proc/ship_metric_removed(obj/structure/overmap/ship/ship)
@@ -399,36 +384,34 @@
 		watched.metric_stop_watching() // even with metrics off, so no area refs outlive the hull
 	if(!ship_metric_live(ship))
 		return
-	var/reason = ship.metric_removal_reason
-	var/list/details = ship.metric_removal_details ? ship.metric_removal_details.Copy() : list()
+	var/reason
+	var/list/details = list()
 	details["age_seconds"] = ship_metric_seconds_since(ship.metric_spawned_at)
 	if(ship_metric_is_npc(ship))
 		var/obj/structure/overmap/ship/npc/npc_ship = ship
 		npc_metric_end_encounter(npc_ship, outcome = "hull_removed")
-		if(!reason)
-			if(!isnull(npc_ship.disarmed_despawn_at))
-				reason = "disarmed_salvage_expired"
-			else if(ship.abandoned)
-				reason = "derelict_despawned"
-			else if(istype(ship, /obj/structure/overmap/ship/npc/pirate/nt_patrol))
-				var/obj/structure/overmap/ship/npc/pirate/nt_patrol/patrol = ship
-				reason = patrol.warping_out ? "warped_out" : "deleted"
-			else
-				reason = "deleted"
+		if(!isnull(npc_ship.disarmed_despawn_at))
+			reason = "disarmed_salvage_expired"
+		else if(ship.abandoned)
+			reason = "derelict_despawned"
+		else if(istype(ship, /obj/structure/overmap/ship/npc/pirate/nt_patrol))
+			var/obj/structure/overmap/ship/npc/pirate/nt_patrol/patrol = ship
+			reason = patrol.warping_out ? "warped_out" : "deleted"
+		else
+			reason = "deleted"
 		details["pool_slot_freed"] = npc_ship.spawner_resolved
 		details["encounters"] = npc_ship.metric_encounter_count
 		details["damage_taken"] = round(npc_ship.metric_damage_taken)
 		details["boarded_by"] = LAZYLEN(npc_ship.metric_boarded_by)
 		record_metric(METRIC_PIRATE, "npc_despawned", ship = ship, zone = ship_metric_zone(ship), subject = reason, details = details)
 	else
-		if(!reason)
-			if(ship.abandoned)
-				reason = "derelict_despawned"
-			// The derelict sweep's fast path for hulls nobody ever crewed
-			else if(ship.crewless_since && !length(ship.manifest) && !LAZYLEN(ship.ship_team?.members))
-				reason = "never_crewed_despawned"
-			else
-				reason = "deleted"
+		if(ship.abandoned)
+			reason = "derelict_despawned"
+		// The derelict sweep's fast path for hulls nobody ever crewed
+		else if(ship.crewless_since && !length(ship.manifest) && !LAZYLEN(ship.ship_team?.members))
+			reason = "never_crewed_despawned"
+		else
+			reason = "deleted"
 		details["crew"] = LAZYLEN(ship.ship_team?.members)
 		record_metric(METRIC_SHIP, "ship_removed", ship = ship, zone = ship_metric_zone(ship), subject = reason, details = details)
 	ship.metric_removed = TRUE

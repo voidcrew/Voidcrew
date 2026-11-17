@@ -16,7 +16,7 @@ Voidcrew has no station budget and no paychecks. Earn credits by selling salvage
 !!! tip "What vouchers are for"
     Vouchers buy the tier of gear no shop will sell for money: syndicate MODsuit hardware, ship shield and interdiction boards, military-grade [cyberware](cyberware.md), top-tier [exploit software](ship-hacking.md), and the charts that reveal rare ruins. If you want any of that, you have to go somewhere dangerous.
 
-There is also a persistent currency, [ship parts](ship-parts.md), banked through an extraction case when you bluespace jump or the round ends. Spend banked parts on permanent hull, theme and module unlocks in the [shipyard](ship-upgrades.md). Your parts balance is separate from the credits in your ship's bank.
+There is also a persistent currency, [ship parts](ship-parts.md), banked through an extraction case when the round ends. Spend banked parts on permanent hull, theme and module unlocks in the [shipyard](ship-upgrades.md). Your parts balance is separate from the credits in your ship's bank.
 
 ## The ship bank
 

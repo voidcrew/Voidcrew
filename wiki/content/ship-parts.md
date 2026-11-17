@@ -51,15 +51,12 @@ The PIN protects access to the contents, but someone can still steal the whole c
 
 ## Banking your parts
 
-You can extract in either of two ways:
-
-- **Bluespace jump:** carry the case aboard your ship when it jumps out of the system from the [helm](piloting.md#bluespace-jump).
-- **Round end:** carry the case when the round ends. You do not have to be aboard a ship for this.
+Carry the case when the round ends. You do not have to be aboard a ship for this.
 
 At extraction, you must be **alive, connected and still controlling your character**. Unconscious characters can extract; corpses, disconnected characters and characters you have ghosted out of cannot.
 
 !!! warning "Check your case before leaving"
-    Loose parts never extract, even if they are in your backpack. The parts must be inside a case you are carrying. A bluespace jump removes the ship and everyone aboard from the round, so agree with your crew before using it.
+    Loose parts never extract, even if they are in your backpack. The parts must be inside a case you are carrying.
 
 The **current carrier** receives the parts. The case is not bound to whoever requested it or set its PIN. You can carry a locked case and bank its contents without knowing the code.
 

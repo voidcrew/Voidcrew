@@ -5,7 +5,7 @@
  * Based on user decisions:
  * - Account-wide credits (ckey only, no character_slot)
  * - Part classes: combat, science, trade, misc
- * - Parts must be extracted via bluespace jump or round end
+ * - Parts must be extracted at round end
  * - Pending extractions queue for failed extraction retry
  * - Account-wide ship unlocks
  *

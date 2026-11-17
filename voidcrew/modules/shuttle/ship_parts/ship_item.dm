@@ -5,12 +5,12 @@
  * Uses part classes: combat, science, trade, misc
  * Parts are NOT automatically redeemed - they must be:
  * 1. Placed in an extraction briefcase
- * 2. Extracted via bluespace jump or round end
+ * 2. Extracted at round end
  * Parts NOT in a briefcase will be lost!
  */
 /obj/item/ship_parts
 	name = "ship parts"
-	desc = "Ship parts used for unlocking ships. Put these in an extraction briefcase before jumping - loose parts won't be extracted!"
+	desc = "Ship parts used for unlocking ships. Put these in an extraction briefcase before the shift ends - loose parts won't be extracted!"
 	icon = 'voidcrew/modules/shuttle/ship_parts/icons/ship_item.dmi'
 	icon_state = "misc"
 	w_class = WEIGHT_CLASS_SMALL
@@ -22,7 +22,7 @@
 	. = ..()
 	. += span_notice("This is a [part_class]-class ship part.")
 	. += span_warning("Must be stored in an extraction briefcase to be extracted!")
-	. += span_notice("Parts are extracted when you bluespace jump or when the round ends.")
+	. += span_notice("Parts are extracted when the round ends.")
 	. += span_notice("No briefcase? Get a free one with the Request Extraction Case verb in the IC tab.")
 
 // Combat parts (red) - found in wrecks, combat zones

@@ -1485,18 +1485,13 @@
  * Removes the ship from the round.
  *
  * force = TRUE deletes the hull outright; otherwise the ship is left behind as an
- * abandoned derelict for someone else to claim.
- *
- * ignore_crew exists for the bluespace jump, which is meant to take the crew with
- * it - the helm asks for confirmation first, and extraction runs before the call.
- * Without it the crew check below rejected every jump ever attempted, silently:
- * anyone flying the ship is by definition standing on it, and do_jump() is the
- * only caller there has ever been.
+ * abandoned derelict for someone else to claim. A forced delete refuses while anyone
+ * is aboard.
  */
-/obj/structure/overmap/ship/proc/destroy_ship(force, ignore_crew = FALSE)
+/obj/structure/overmap/ship/proc/destroy_ship(force)
 	// For backward compatibility, redirect to abandon_ship unless forced
 	if(force)
-		if(!ignore_crew && length(shuttle?.get_all_humans()) > 0)
+		if(length(shuttle?.get_all_humans()) > 0)
 			return FALSE
 		message_admins("\[SHUTTLE]: [shuttle?.name] has been FORCE deleted!")
 		log_shuttle("[shuttle?.name] has been force deleted!")

@@ -13,7 +13,7 @@ Parts come in four classes: **combat, science, trade and misc**. You need each c
 
 ### Getting parts home
 
-Use **Request Extraction Case** under the **IC** tab, put up to five parts inside, and carry the case when your ship bluespace jumps or the round ends. A case inside your backpack counts; loose parts do not. You must be alive and connected, and the current carrier receives the parts. Each account extracts once per round, from one standard case plus any champion's cases carried alongside it. Read [Banking your parts](ship-parts.md#banking-your-parts) before leaving with a haul.
+Use **Request Extraction Case** under the **IC** tab, put up to five parts inside, and carry the case when the round ends. A case inside your backpack counts; loose parts do not. You must be alive and connected, and the current carrier receives the parts. Each account extracts once per round, from one standard case plus any champion's cases carried alongside it. Read [Banking your parts](ship-parts.md#banking-your-parts) before leaving with a haul.
 
 ## The shipyard
 

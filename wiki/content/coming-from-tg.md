@@ -11,7 +11,7 @@ If you have played /tg/station, most of your muscle memory transfers. Surgery, c
 
 There is no station and no arrivals shuttle. You start on a small crewed ship parked on the safe edge of a galaxy map, and that ship is the entire round for you. See [The Overmap](overmap.md).
 
-You cannot call the emergency shuttle. Attempting it tells you so. There is no evac, no escape pods to fight over, and no round-end alert level theatre. A ship that wants out of the round can charge a bluespace jump at its own helm, which removes that ship and everyone on it from the round, that is as close as Voidcrew gets to escaping, and it is a per-crew decision, not a server-wide one.
+You cannot call the emergency shuttle. Attempting it tells you so. There is no evac, no escape pods to fight over, and no round-end alert level theatre.
 
 Because there is no station, there is also no permanent geography. Your medbay is a room on your ship that a random module roll gave you, and another crew's ship might not have one at all.
 

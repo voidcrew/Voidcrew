@@ -7,7 +7,7 @@
  * - Lockable with a 5-digit PIN (set by player)
  * - Can be hacked: screwdriver to open panel, then multitool (40 seconds)
  * - Can be broken into via EMAG (lock destroyed permanently)
- * - Only parts inside this case are extracted on bluespace jump / round end
+ * - Only parts inside this case are extracted at round end
  */
 
 /// Storage datum for extraction case - only accepts ship parts
@@ -37,7 +37,7 @@
 /obj/item/storage/briefcase/secure/extraction/examine(mob/user)
 	. = ..()
 	. += span_notice("This case can hold up to [atom_storage.max_slots] ship parts.")
-	. += span_notice("To bank its parts, stay alive and carry the case in your hands or inventory when your ship bluespace jumps or the round ends. Inside a backpack counts; leaving it on the floor does not. The current carrier receives the parts.")
+	. += span_notice("To bank its parts, stay alive and carry the case in your hands or inventory when the round ends. Inside a backpack counts; leaving it on the floor does not. The current carrier receives the parts.")
 	. += span_notice("Only one standard extraction case is banked per person; champion's cases are banked in addition. Loose ship parts are not extracted.")
 	. += span_notice("Use the Request Extraction Case verb in the IC tab for a free standard case if you aren't already carrying an extraction case.")
 	. += span_notice("Use in-hand to set a PIN code and lock it.")

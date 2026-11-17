@@ -66,12 +66,8 @@ GLOBAL_LIST_EMPTY(roundend_departed_ships)
 		if(body ? body.stat == DEAD : !departing)
 			dead++
 	if(departing)
-		switch(ship.metric_removal_reason)
-			if("bluespace_jump")
-				status = "Jumped out"
-			else
-				status = ship.abandoned ? "Abandoned" : "Lost"
-				bad_status = TRUE
+		status = ship.abandoned ? "Abandoned" : "Lost"
+		bad_status = TRUE
 	else if(ship.has_crash_landed)
 		status = "Wrecked"
 		bad_status = TRUE

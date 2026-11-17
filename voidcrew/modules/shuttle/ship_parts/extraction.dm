@@ -1,9 +1,7 @@
 /**
  * Ship Parts Extraction System
  *
- * Handles extracting ship parts from players when:
- * - Bluespace jump is completed
- * - Round ends
+ * Handles extracting ship parts from players when the round ends.
  *
  * Parts must be inside an extraction briefcase on the player's person
  * to be extracted. The player holding the briefcase gets the parts added to their account.
@@ -154,44 +152,6 @@ GLOBAL_LIST_EMPTY(extracted_this_round)
 			loose_parts += part
 
 	return loose_parts
-
-/**
- * Extract parts from all players on a ship
- * Called during bluespace jump
- *
- * @param ship - The ship structure (/obj/structure/overmap/ship)
- * @param extraction_type - Description for logging
- * @return Total number of parts extracted
- */
-/proc/extract_ship_parts_from_ship(obj/structure/overmap/ship/ship, extraction_type = "bluespace_jump")
-	if(!ship)
-		return 0
-
-	var/obj/docking_port/mobile/shuttle = ship.shuttle
-	if(!shuttle)
-		return 0
-
-	var/total_extracted = 0
-
-	// Get all mobs in shuttle areas
-	for(var/area/shuttle_area in shuttle.shuttle_areas)
-		for(var/mob/living/player in shuttle_area)
-			if(!player.client)
-				continue
-
-			// Warn about loose parts before extraction
-			var/list/loose_parts = find_loose_ship_parts_on_mob(player)
-			if(length(loose_parts))
-				to_chat(player, span_warning("You have [length(loose_parts)] ship part(s) NOT in an extraction briefcase! These will NOT be extracted!"))
-
-			var/list/extracted = extract_ship_parts_from_player(player, extraction_type)
-			for(var/part_class in extracted)
-				total_extracted += extracted[part_class]
-
-	if(total_extracted > 0)
-		log_game("SHIP_EXTRACTION: Extracted [total_extracted] total parts from ship [ship.name] via [extraction_type]")
-
-	return total_extracted
 
 /**
  * Extract parts from all players at round end

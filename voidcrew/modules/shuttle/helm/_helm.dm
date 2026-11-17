@@ -1,10 +1,3 @@
-#define JUMP_STATE_OFF 0
-#define JUMP_STATE_CHARGING 1
-#define JUMP_STATE_IONIZING 2
-#define JUMP_STATE_FIRING 3
-#define JUMP_STATE_FINALIZED 4
-#define JUMP_CHARGE_DELAY (20 SECONDS)
-#define JUMP_CHARGEUP_TIME (3 MINUTES)
 /// Minimum gap between hails sent from one console. A hail fans out to every helm
 /// in the view ring and lands in each one's comms log, so it needs a floor.
 #define HAIL_SEND_COOLDOWN (3 SECONDS)
@@ -45,14 +38,6 @@
 	var/list/concurrent_users = list()
 	/// Is this console view only? I.E. cant dock/etc
 	var/viewer = FALSE
-	/// When are we allowed to jump
-	var/jump_allowed
-	/// Current state of our jump
-	var/jump_state = JUMP_STATE_OFF
-	///if we are calibrating the jump
-	var/calibrating = FALSE
-	///holding jump timer ID
-	var/jump_timer
 	/// Last known ship state for detecting changes
 	var/last_ship_state
 	/// Last known integrity percent for threshold detection
@@ -373,7 +358,6 @@
 		data["repairCurrent"] = 0
 		data["repairTotal"] = 0
 
-	data["calibrating"] = calibrating
 	data["canThrust"] = current_ship.can_thrust()
 	data["otherInfo"] = list()
 	for (var/obj/structure/overmap/object as anything in current_ship.close_overmap_objects)
@@ -793,87 +777,6 @@
 	. = ..()
 	attempt_ship_connection()
 
-/obj/machinery/computer/helm/proc/calibrate_jump(inline = FALSE)
-	if(jump_allowed < 0)
-		say("Bluespace Jump Calibration offline. Please contact your system administrator.")
-		return
-	if(current_ship.state != OVERMAP_SHIP_FLYING)
-		say("Bluespace Jump Calibration detected interference in the local area.")
-		return
-	if(world.time < jump_allowed)
-		var/jump_wait = DisplayTimeText(jump_allowed - world.time)
-		say("Bluespace Jump Calibration is currently recharging. ETA: [jump_wait].")
-		return
-	if(jump_state != JUMP_STATE_OFF && !inline)
-		// Guards against href exploits calling this more than once per client. It used
-		// to return in total silence, which meant any jump that failed mid-sequence
-		// bricked the console for the rest of the round with no way to tell.
-		say("Bluespace Jump sequence already underway.")
-		return
-	message_admins("[ADMIN_LOOKUPFLW(usr)] has initiated a bluespace jump in [ADMIN_VERBOSEJMP(src)]")
-	jump_timer = addtimer(CALLBACK(src, PROC_REF(jump_sequence), TRUE), JUMP_CHARGEUP_TIME, TIMER_STOPPABLE)
-	current_ship?.ship_notify("Bluespace jump calibration initialized. Calibration completion in [JUMP_CHARGEUP_TIME/600] minutes.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
-	calibrating = TRUE
-	return TRUE
-
-/**
- * Aborts a jump, whether it is still calibrating or already running the launch
- * sequence, and puts the console back to a state that can jump again.
- *
- * jump_state has to be reset here: leaving it non-OFF makes calibrate_jump()
- * refuse every future attempt. deltimer() has to cover the sequence timers too -
- * jump_timer only ever held the initial calibration timer, so a cancel after
- * calibration finished left the chain running and unstoppable.
- */
-/obj/machinery/computer/helm/proc/cancel_jump()
-	current_ship?.ship_notify("Pylon Disengaged. Jump cancelled.", "BLUESPACE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
-	reset_jump()
-
-/// Clears all jump state and any pending sequence timer.
-/obj/machinery/computer/helm/proc/reset_jump()
-	calibrating = FALSE
-	jump_state = JUMP_STATE_OFF
-	if(jump_timer)
-		deltimer(jump_timer)
-		jump_timer = null
-
-/obj/machinery/computer/helm/proc/jump_sequence()
-	switch(jump_state)
-		if(JUMP_STATE_OFF)
-			jump_state = JUMP_STATE_CHARGING
-			SStgui.close_uis(src)
-		if(JUMP_STATE_CHARGING)
-			jump_state = JUMP_STATE_IONIZING
-			current_ship?.ship_notify("Bluespace Jump Calibration completed. Ionizing Bluespace Pylon.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
-		if(JUMP_STATE_IONIZING)
-			jump_state = JUMP_STATE_FIRING
-			current_ship?.ship_notify("Bluespace Ionization finalized; preparing to fire Bluespace Pylon.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
-		if(JUMP_STATE_FIRING)
-			jump_state = JUMP_STATE_FINALIZED
-			current_ship?.ship_notify("Bluespace Pylon launched.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'sound/effects/magic/lightning_chargeup.ogg', 50)
-			jump_timer = addtimer(CALLBACK(src, PROC_REF(do_jump)), 10 SECONDS, TIMER_STOPPABLE)
-			return
-	jump_timer = addtimer(CALLBACK(src, PROC_REF(jump_sequence), TRUE), JUMP_CHARGE_DELAY, TIMER_STOPPABLE)
-
-/obj/machinery/computer/helm/proc/do_jump()
-	jump_timer = null
-	current_ship?.ship_notify("Bluespace Jump Initiated.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
-	if(!current_ship)
-		reset_jump()
-		return
-	// Extract ship parts from all players on the ship before jumping
-	var/parts_extracted = extract_ship_parts_from_ship(current_ship, "bluespace_jump")
-	ship_metric_jumping(current_ship, parts_extracted)
-	// ignore_crew: the jump is supposed to take the crew with it, and the console
-	// asked for confirmation before any of this started.
-	if(current_ship.destroy_ship(TRUE, ignore_crew = TRUE))
-		return
-	// Never strand the console in a state it cannot leave - a failed jump has to be
-	// retryable, and the crew has to hear that it failed.
-	current_ship.ship_notify("Bluespace Pylon misfire. Jump aborted; recalibration required.", "BLUESPACE", SHIP_NOTIFY_DANGER, 'voidcrew/sound/notify.ogg', 50)
-	stack_trace("Bluespace jump failed to destroy ship [current_ship] - the console has been reset.")
-	reset_jump()
-
 /obj/machinery/computer/helm/connect_to_shuttle(mapload, obj/docking_port/mobile/voidcrew/port, obj/docking_port/stationary/dock)
 	if(!istype(port))
 		return
@@ -1279,15 +1182,6 @@
 					else
 						current_ship.command_course(BURN_STOP)
 					return
-				if("bluespace_jump")
-					if(calibrating)
-						cancel_jump()
-						return
-					else
-						if(tgui_alert(usr, "Do you want to bluespace jump? Your ship and everything on it will be removed from the round.", "Jump Confirmation", list("Yes", "No")) != "Yes")
-							return
-						calibrate_jump()
-						return
 				if("dock")
 					// Dock into whatever is actually here. Previously this refused
 					// outright whenever a ruin or planet shared the tile, so the only
@@ -1384,7 +1278,7 @@
 			// eats every button without a word is indistinguishable from a broken one -
 			// and until complete_dock() learned to give up (abort_stalled_dock() in
 			// ship.dm) a stalled move really could pin the ship here for good.
-			if(action in list("dock", "undock", "change_heading", "set_course", "stop", "autopilot", "autopilot_cancel", "change_burn_percentage", "toggle_engine", "bluespace_jump", "active_scan", "act_overmap", "hide_in_nebula", "cancel_nebula_hide", "unhide_from_nebula"))
+			if(action in list("dock", "undock", "change_heading", "set_course", "stop", "autopilot", "autopilot_cancel", "change_burn_percentage", "toggle_engine", "active_scan", "act_overmap", "hide_in_nebula", "cancel_nebula_hide", "unhide_from_nebula"))
 				say("Manoeuvring systems busy: [current_ship.get_state_readout()]. Stand by.")
 				playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
 			return
@@ -1394,12 +1288,5 @@
 #undef HELM_DRUNK_CHANCE_PER_POINT
 #undef HELM_DRUNK_MAX_CHANCE
 #undef HELM_DRUNK_THRESHOLD
-#undef JUMP_STATE_OFF
-#undef JUMP_STATE_CHARGING
-#undef JUMP_STATE_IONIZING
-#undef JUMP_STATE_FIRING
-#undef JUMP_STATE_FINALIZED
-#undef JUMP_CHARGE_DELAY
-#undef JUMP_CHARGEUP_TIME
 #undef HAIL_SEND_COOLDOWN
 #undef TYPING_SOUND_COOLDOWN

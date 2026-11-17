@@ -98,10 +98,3 @@ Fuel use scales with your ship's **mass**, so a bigger hull costs more per burn 
 ## Damage and disabling
 
 Below 50% hull integrity the helm refuses every command. Rebuilding hull mass (replacing destroyed floor and wall tiles) brings it back, and a ship that crash-landed needs 65% before it flies again. See [Ship Combat](ship-combat.md).
-
-## Bluespace jump
-
-The **Bluespace** button calibrates a jump out of the system. Calibration takes three minutes, then the pylon fires.
-
-!!! danger "A bluespace jump ends your round"
-    Your ship and everyone on it are removed from the round permanently. This is the "we are done, cash out" button, not a fast-travel option. The console asks you to confirm; press Bluespace again during calibration to cancel.

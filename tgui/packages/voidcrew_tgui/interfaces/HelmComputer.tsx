@@ -325,7 +325,6 @@ type Data = {
    * research to meet. Null the rest of the time. */
   zone_advisory: { label: string; critical: BooleanLike } | null;
 
-  calibrating: BooleanLike;
   undockCooldown: BooleanLike;
   undockCooldownRemaining: number;
   undockLocked: BooleanLike;
@@ -1343,9 +1342,6 @@ const AlertStrip = () => {
   }
   if (data.cargoShuttlePresent) {
     alerts.push(['warn', 'Cargo shuttle docked']);
-  }
-  if (data.calibrating) {
-    alerts.push(['warn', 'Bluespace jump calibrating']);
   }
   if (data.autopilot?.engaged) {
     alerts.push([
@@ -4670,7 +4666,6 @@ const OpsRow = () => {
     nebulaHideWarmup,
     nebulaHideRemaining,
     zone_transitioning,
-    calibrating,
     dockOptions,
     speed,
     dockAssistMaxSpeed,
@@ -4881,19 +4876,6 @@ const OpsRow = () => {
             : 'Broadcast a distress call on Wideband and put this ship on every helm chart in the galaxy'
         }
         onClick={() => act('distress')}
-      />
-      <OpsButton
-        label="Bluespace"
-        sub={calibrating ? 'calibrating' : 'leave system'}
-        path="M13 2L4 14h6l-1 8 9-12h-6l1-8z"
-        disabled={!flyable || !!zone_transitioning || !!hiddenInNebula}
-        state={calibrating ? 'armed' : undefined}
-        title={
-          calibrating
-            ? 'Cancel the bluespace jump'
-            : 'Calibrate a bluespace jump, this ends the round for your ship'
-        }
-        onClick={() => act('bluespace_jump')}
       />
     </div>
   );
