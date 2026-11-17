@@ -102,12 +102,14 @@
 	if(!tier || !experiment_path || !tracked_variable)
 		return FALSE
 	var/gain = calculate_gains(tier)
+	// VOIDCREW EDIT CHANGE START - BYOND 516.1670+ rejects number keys in list() (tg #93801)
 	for (var/gain_index in gains)
 		gains[gain_index] = gain
 		if(!partner_path)
 			continue
 		var/datum/scientific_partner/partner = locate(partner_path) in SSresearch.scientific_partners
 		gains[gain_index] *= partner.multipliers[gain_index]
+	// VOIDCREW EDIT CHANGE END
 
 /** Fully check if our paper have all the required variables, and prevent duplicate papers being published in the same tier.
  * Things to check: tier, gain, and partner here. ex_path and record datums in subtypes.
@@ -151,6 +153,7 @@
 /datum/scientific_paper/proc/return_gist()
 	var/list/gist = list()
 	var/list/transcripted_gains = list(SCIPAPER_COOPERATION_INDEX, SCIPAPER_FUNDING_INDEX)
+	// VOIDCREW EDIT CHANGE START - BYOND 516.1670+ rejects number keys in list() (tg #93801)
 	for (var/gain_index in transcripted_gains)
 		if (!gains)
 			transcripted_gains[gain_index] = "None"
@@ -168,6 +171,7 @@
 				transcripted_gains[gain_index] = "Huge"
 			else
 				transcripted_gains[gain_index] = "Undefined"
+	// VOIDCREW EDIT CHANGE END
 	gist["gains"] = transcripted_gains
 	gist["title"] = title
 	gist["author"] = author

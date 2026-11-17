@@ -196,6 +196,7 @@ const PaperPublishing = (props) => {
               icon="info-circle"
             />
             {' Cooperation: '}
+            {/* VOIDCREW EDIT CHANGE - BYOND 516.1670+ string gain keys (tg #93801) */}
             <BlockQuote>{gains[coopIndex]}</BlockQuote>
           </Stack.Item>
           <Stack.Item grow>
@@ -204,6 +205,7 @@ const PaperPublishing = (props) => {
               icon="info-circle"
             />
             {' Funding: '}
+            {/* VOIDCREW EDIT CHANGE - BYOND 516.1670+ string gain keys (tg #93801) */}
             <BlockQuote>{gains[fundingIndex]}</BlockQuote>
           </Stack.Item>
         </Stack>
@@ -245,9 +247,11 @@ const PaperBrowser = (props) => {
             <LabeledList.Item label="Yield">
               <LabeledList>
                 <LabeledList.Item label="Cooperation">
+                  {/* VOIDCREW EDIT CHANGE - BYOND 516.1670+ string gain keys (tg #93801) */}
                   {paper.gains[coopIndex]}
                 </LabeledList.Item>
                 <LabeledList.Item label="Funding">
+                  {/* VOIDCREW EDIT CHANGE - BYOND 516.1670+ string gain keys (tg #93801) */}
                   {paper.gains[fundingIndex]}
                 </LabeledList.Item>
               </LabeledList>
@@ -308,9 +312,11 @@ const PartnersBrowser = (props) => {
             {relations[partner.path]}
           </LabeledList.Item>
           <LabeledList.Item label="Cooperation Bonus">
+            {/* VOIDCREW EDIT CHANGE - BYOND 516.1670+ string gain keys (tg #93801) */}
             {`${partner.multipliers[coopIndex]}x`}
           </LabeledList.Item>
           <LabeledList.Item label="Funding Bonus">
+            {/* VOIDCREW EDIT CHANGE - BYOND 516.1670+ string gain keys (tg #93801) */}
             {`${partner.multipliers[fundingIndex]}x`}
           </LabeledList.Item>
           <LabeledList.Item label="Accepted Experiments">

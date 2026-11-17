@@ -66,8 +66,10 @@
 //Defines how many percent of vat grown atoms come out as hue shifted color mutants. A flat chance for now, maybe in the future dependant on the cell line.
 #define CYTO_SHINY_CHANCE 15
 
+// VOIDCREW EDIT CHANGE START - BYOND 516.1670+ rejects number keys in list() (tg #93801)
 #define SCIPAPER_COOPERATION_INDEX "cooperation"
 #define SCIPAPER_FUNDING_INDEX "funding"
+// VOIDCREW EDIT CHANGE END
 #define SCIENTIFIC_COOPERATION_PURCHASE_MULTIPLIER 0.01
 /// How much money is one point of gain worth.
 #define SCIPAPER_GAIN_TO_MONEY 125

@@ -121,7 +121,7 @@ DEFINE_BITFIELD(foodtypes, list(
 #define FOOD_COMPLEXITY_5 5
 
 /// Labels for food quality
-GLOBAL_ALIST_INIT(food_quality_description, alist(
+GLOBAL_ALIST_INIT(food_quality_description, alist( // VOIDCREW EDIT CHANGE - BYOND 516.1670+ rejects number keys in list() (tg #93801)
 	FOOD_QUALITY_NORMAL = "okay",
 	FOOD_QUALITY_NICE = "nice",
 	FOOD_QUALITY_GOOD = "good",
@@ -144,7 +144,7 @@ GLOBAL_ALIST_INIT(food_quality_events, alist(
 ))
 
 /// Weighted lists of crafted food buffs randomly given according to crafting_complexity unless the food has a specific buff
-GLOBAL_ALIST_INIT(food_buffs, alist(
+GLOBAL_ALIST_INIT(food_buffs, alist( // VOIDCREW EDIT CHANGE - BYOND 516.1670+ rejects number keys in list() (tg #93801)
 	FOOD_COMPLEXITY_1 = list(
 		/datum/status_effect/food/haste = 1,
 	),

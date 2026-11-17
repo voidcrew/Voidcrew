@@ -519,6 +519,7 @@ SUBSYSTEM_DEF(timer)
 #if defined(TIMER_DEBUG)
 	// Generate debug-friendly list for timer, more complex but also more expensive
 	timer_info = list(
+		// VOIDCREW EDIT CHANGE START - BYOND 516.1670+ rejects number keys in list() (tg #93801)
 		/* 1 = */ id,
 		/* 2 = */ timeToRun,
 		/* 3 = */ wait,
@@ -530,10 +531,12 @@ SUBSYSTEM_DEF(timer)
 		/* 9 = */ callBack.delegate,
 		/* 10 = */ callBack.arguments ? callBack.arguments.Copy() : null,
 		/* 11 = */ "[source]"
+		// VOIDCREW EDIT CHANGE END
 	)
 #else
 	// Generate a debuggable list for the timer, simpler but wayyyy cheaper, string generation (and ref/copy memes) is a bitch and this saves a LOT of time
 	timer_info = list(
+		// VOIDCREW EDIT CHANGE START - BYOND 516.1670+ rejects number keys in list() (tg #93801)
 		/* 1 = */ id,
 		/* 2 = */ timeToRun,
 		/* 3 = */ wait,
@@ -543,6 +546,7 @@ SUBSYSTEM_DEF(timer)
 		/* 7 = */ getcallingtype(),
 		/* 8 = */ callBack.delegate,
 		/* 9 = */ "[source]"
+		// VOIDCREW EDIT CHANGE END
 	)
 #endif
 

@@ -30,7 +30,7 @@
 	 * Or
 	 * - A single weight for all tiers.
 	 */
-	var/alist/weight = 0
+	var/alist/weight = 0 // VOIDCREW EDIT CHANGE - BYOND 516.1670+ rejects number keys in list() (tg #93801)
 	/**
 	 * The min population for which this ruleset is available.
 	 *
@@ -40,7 +40,7 @@
 	 * Or
 	 * - A single min population for all tiers.
 	 */
-	var/alist/min_pop = 0
+	var/alist/min_pop = 0 // VOIDCREW EDIT CHANGE - BYOND 516.1670+ rejects number keys in list() (tg #93801)
 	/// List of roles that are blacklisted from this ruleset
 	/// For roundstart rulesets, it will prevent players from being selected for this ruleset if they have one of these roles
 	/// For latejoin or midround rulesets, it will prevent players from being assigned to this ruleset if they have one of these roles
@@ -116,6 +116,7 @@
 		return FALSE
 	return ..()
 
+// VOIDCREW EDIT CHANGE START - BYOND 516.1670+ rejects number keys in list() (tg #93801)
 /// Used to create tier alists for weights and min_pop values
 /datum/dynamic_ruleset/proc/load_tier_list(list/incoming_list)
 	PRIVATE_PROC(TRUE)
@@ -125,6 +126,7 @@
 	for(var/tier in incoming_list)
 		tier_list[text2num(tier)] = incoming_list[tier]
 
+	// VOIDCREW EDIT CHANGE END
 	return tier_list
 
 /**
@@ -133,6 +135,7 @@
 /datum/dynamic_ruleset/proc/can_be_selected()
 	return TRUE
 
+// VOIDCREW EDIT CHANGE START - BYOND 516.1670+ rejects number keys in list() (tg #93801)
 /// Gets the list value for the given tier, otherwise use next highest tier,
 /// or failing that, next lowest
 /datum/dynamic_ruleset/proc/get_tier_specific_value(alist/values, tier)
@@ -152,6 +155,7 @@
 
 	return 0
 
+// VOIDCREW EDIT CHANGE END
 /**
  * Calculates the weight of this ruleset for the given tier.
  *
@@ -165,11 +169,13 @@
 		return 0
 	if(!can_be_selected())
 		return 0
+	// VOIDCREW EDIT CHANGE START - BYOND 516.1670+ rejects number keys in list() (tg #93801)
 	var/final_minpop = islist(min_pop) ? get_tier_specific_value(min_pop, tier) : min_pop
 	if(final_minpop > population_size)
 		return 0
 
 	var/final_weight = islist(weight) ? get_tier_specific_value(weight, tier) : weight
+	// VOIDCREW EDIT CHANGE END
 	for(var/datum/dynamic_ruleset/other_ruleset as anything in SSdynamic.executed_rulesets)
 		if(other_ruleset == src)
 			continue

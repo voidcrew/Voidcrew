@@ -133,8 +133,10 @@
 	shy_update()
 	alert_drones(DRONE_NET_CONNECT)
 
+	// VOIDCREW EDIT CHANGE START - BYOND 516.1670+ rejects number keys in list() (tg #93801)
 	var/datum/atom_hud/data/diagnostic/diag_hud = GLOB.huds[DATA_HUD_DIAGNOSTIC]
 	diag_hud.add_atom_to_hud(src)
+	// VOIDCREW EDIT CHANGE END
 
 	add_traits(list(
 		TRAIT_VENTCRAWLER_ALWAYS,
