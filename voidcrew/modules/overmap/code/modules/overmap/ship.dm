@@ -2824,6 +2824,7 @@
 			state = OVERMAP_SHIP_FLYING
 			undock_origin = null
 			SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_UNDOCKED)
+			update_hover_view() // voidcrew/modules/landing_animation: the planet under a ship that undocked over one
 			// Force refresh close_overmap_objects for all ships on this turf
 			var/turf/our_turf = get_turf(src)
 			if(our_turf)

@@ -139,7 +139,8 @@
 	// waiting above a planet for its ground to be made ready
 	if(state == OVERMAP_SHIP_DOCKING && docked && landing_animation_wanted(docked))
 		return docked
-	if(docked || (state != OVERMAP_SHIP_FLYING && state != OVERMAP_SHIP_ACTING))
+	// a ship that has let go of its dock is flying, whatever its state says while the undock finishes
+	if(docked || (state != OVERMAP_SHIP_FLYING && state != OVERMAP_SHIP_ACTING && state != OVERMAP_SHIP_UNDOCKING))
 		return null
 	var/turf/tile = loc
 	if(!istype(tile))
@@ -189,16 +190,6 @@
 /obj/structure/overmap/ship/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
 	. = ..()
 	update_hover_view()
-
-/obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
-	. = ..()
-	// a ship that finishes undocking while over a planet has moved there already, while it was still undocking
-	RegisterSignal(src, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(hover_after_undock))
-
-/obj/structure/overmap/ship/proc/hover_after_undock()
-	SIGNAL_HANDLER
-	// the hull reaches transit a moment after the ship is told it has undocked
-	addtimer(CALLBACK(src, PROC_REF(update_hover_view)), 1 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
 
 #undef HOVER_ARRIVE
 #undef HOVER_LEAVE

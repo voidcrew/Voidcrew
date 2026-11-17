@@ -69,6 +69,8 @@
 #define LANDING_SHAKE 0.4
 /// How far from the hull people on the ground feel and hear it land or leave
 #define LANDING_HEAR_RANGE 12
+/// How far past the hull's box an engine roar on the ground carries
+#define LANDING_ROAR_RANGE 30
 
 /// Running descent for this ship, if any
 /obj/structure/overmap/ship/var/datum/landing_animation/landing_animation
@@ -696,7 +698,7 @@
 		QDEL_NULL(shadow)
 		return
 	// engines heard on the ground before the ship is in sight; the crew aboard hear nothing new
-	landing_jolt(berth_turfs, 'voidcrew/sound/effects/landing/approach.ogg', 40, reach = LANDING_HEAR_RANGE)
+	landing_jolt(berth_turfs, 'voidcrew/sound/effects/landing/approach.ogg', 50, reach = LANDING_ROAR_RANGE)
 	var/time_left = max(1, touchdown_time - world.time)
 	var/fade_in = min(1.5 SECONDS, time_left / 4)
 	var/spread_end = max(0, time_left - LANDING_PROXY_LEAD - fade_in)
@@ -814,7 +816,8 @@
 	// 2. off toward the bow, still climbing; solid until it is gone from view
 	animate(pixel_w = round(head_x * fly), pixel_z = LAUNCH_GO_HEIGHT + round(head_y * fly), time = LAUNCH_GO_TIME, easing = QUAD_EASING | EASE_IN)
 	landing_wash(planet_turfs, bow_dir, hull_turfs, view)
-	landing_jolt(berth_turfs, 'voidcrew/sound/effects/landing/liftoff_outside.ogg', 65, reach = LANDING_HEAR_RANGE, shake_strength = LANDING_SHAKE)
+	landing_jolt(berth_turfs, 'voidcrew/sound/effects/landing/liftoff_outside.ogg', 80, reach = LANDING_ROAR_RANGE)
+	landing_jolt(berth_turfs, null, 0, reach = LANDING_HEAR_RANGE, shake_strength = LANDING_SHAKE)
 	shadow = new(berth_turfs[1])
 	if(shadow.outline(berth_turfs))
 		var/slide = LAUNCH_SHADOW_SLIDE_TILES * ICON_SIZE_X
@@ -951,3 +954,4 @@
 #undef LANDING_WASH_CHANCE
 #undef LANDING_WASH_PUSH
 #undef LANDING_HEAR_RANGE
+#undef LANDING_ROAR_RANGE

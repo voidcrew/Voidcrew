@@ -806,6 +806,10 @@
 			continue
 		if(viewer.followed != watcher.mob)
 			follow(viewer, watcher.mob)
+		// a new mob (ghosting, being put in a body) or a HUD toggle rebuilds the screen from scratch, and the sky
+		// with it, while the images held for the client stay
+		if(!(home in watcher.screen))
+			watcher.screen += home
 		size_up(viewer)
 		if(viewer.anchor != eye_turf)
 			move_viewer(viewer, eye_turf)
