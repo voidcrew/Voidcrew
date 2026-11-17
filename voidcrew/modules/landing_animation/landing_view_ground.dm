@@ -3,10 +3,9 @@
  *
  * Three pictures of the same ground, drawn about the same middle, each finer and reaching less far:
  *
- * - From afar: two small images of the country around the berth in its own colours, a couple of pixels to the
- *   tile for the whole of it and a quarter of full size for the part nearer the berth. Single sprites, so the
- *   whole planet can be on the screen at once for nothing. Scaled up smooth they look like ground seen through
- *   a mile of air, which it is.
+ * - From afar: two images of the country around the berth in its own colours: a couple of pixels to the tile
+ *   for the whole of it, and half full size for the part that is ever seen clearly (see cloud_veil()). Single
+ *   sprites, so the whole planet can be on the screen at once for nothing.
  * - Close up: the real tiles near the berth and everything standing on them, copied, in small chunks. Exact, so
  *   the hull can move onto it without anything changing, and costly to draw, so it is only shown once the
  *   ground is near, and each viewer only holds the chunks their own screen can show
@@ -28,8 +27,7 @@
 /// The two pictures from afar: how far each reaches from the berth's middle, in tiles, and its pixels to the tile
 #define LANDING_AERIAL_FAR_REACH 64
 #define LANDING_AERIAL_FAR_GRAIN 2
-#define LANDING_AERIAL_NEAR_REACH 36
-#define LANDING_AERIAL_NEAR_GRAIN 8
+#define LANDING_AERIAL_NEAR_GRAIN 16
 /// How long a picture from afar may be used again for the same berth
 #define LANDING_AERIAL_KEEP (10 MINUTES)
 /// The two pictures of the light: how far each reaches from the berth's middle, in tiles, and its pixels to the tile
@@ -122,7 +120,8 @@
 	var/mutable_appearance/beyond = landing_view_world_look(new /mutable_appearance, LANDING_VIEW_LAYER_GROUND)
 	beyond.overlays = list(sheet)
 	var/list/parts = list(list(beyond, 0, 0, 1, 0))
-	var/list/grains = list(list(LANDING_AERIAL_FAR_REACH, LANDING_AERIAL_FAR_GRAIN), list(LANDING_AERIAL_NEAR_REACH, LANDING_AERIAL_NEAR_GRAIN))
+	// the finer one as far as the ground is ever seen clearly, and no further: it is the costly one to make and to fetch
+	var/list/grains = list(list(LANDING_AERIAL_FAR_REACH, LANDING_AERIAL_FAR_GRAIN), list(veil_hole(), LANDING_AERIAL_NEAR_GRAIN))
 	for(var/rank in 1 to length(grains))
 		var/list/grain = grains[rank]
 		var/icon/aerial = landing_view_aerial(middle_x, middle_y, ground_z, berth_set, tone, grain[1], grain[2])
@@ -457,30 +456,37 @@
 	piece.parts = (piece.parts || list()) + parts
 	then?.Invoke()
 
-/// The furthest from the berth's middle the ground is seen, in tiles: past it there is only cloud
-#define LANDING_VEIL_HOLE 30
+/// How far past the hull's box the ground is seen at most, in tiles: past that it is lost in the planet's haze
+#define LANDING_VEIL_PAST 17
 /// One billow of the cloud's edge, in tiles across, and how far apart they stand along it
 #define LANDING_VEIL_PUFF 16
 #define LANDING_VEIL_STEP 5
+/// How much further in the thinner row of billows stands
+#define LANDING_VEIL_SOFT 5
 /// The ground's size between which the cloud around it is there in full and gone
 #define LANDING_VEIL_FULL 0.8
 #define LANDING_VEIL_GONE 0.97
 
+/// The furthest from the berth's middle the ground is seen, in tiles
+/datum/landing_view/proc/veil_hole()
+	return round(max(ground_half_w, ground_half_h)) + LANDING_VEIL_PAST
+
 /**
  * How far this site's own ground reaches from the berth's middle, in tiles, each way: list(east, west, north,
- * south), none more than LANDING_VEIL_HOLE. A berth can stand right by the edge of its site, and past that edge
+ * south), none more than veil_hole(). A berth can stand right by the edge of its site, and past that edge
  * there is nothing to show.
  */
 /datum/landing_view/proc/ground_extent()
+	var/hole = veil_hole()
 	var/datum/own_region = map_region_for_turf(berth_turfs[1])
 	var/middle_x = round(ground_x)
 	var/middle_y = round(ground_y)
 	var/list/extent = list()
 	for(var/list/way as anything in list(list(1, 0), list(-1, 0), list(0, 1), list(0, -1)))
-		var/reach = LANDING_VEIL_HOLE
+		var/reach = hole
 		// along the middle of the hull's box and along both its sides
 		var/half_across = way[1] ? ground_half_h : ground_half_w
-		for(var/out in 1 to LANDING_VEIL_HOLE)
+		for(var/out in 1 to hole)
 			var/ended = FALSE
 			for(var/across in list(0, -round(half_across), round(half_across)))
 				var/turf/ground = locate(middle_x + way[1] * out + (way[2] ? across : 0), middle_y + way[2] * out + (way[1] ? across : 0), ground_z)
@@ -494,16 +500,19 @@
 	return extent
 
 /**
- * The cloud the ground is seen through: everything past the site's own ground, or past LANDING_VEIL_HOLE tiles
- * from the berth's middle if the site goes on further, with a billowing edge. The pictures of the ground only
- * reach so far, get coarser as they go, and end where the site ends; this lies over all of that, so no edge of
- * any of them is ever seen. The opening widens as the ground comes up and closes in as it falls away.
+ * What the country around a landing site is lost in, seen from above: the planet's own mist, dust or smoke
+ * (see /datum/landing_view_palette/var/veil) over everything past the site's own ground, or past
+ * veil_hole() tiles from the berth's middle if the site goes on further. Billows along its edge, and a
+ * thinner row of them further in, so the ground fades into it. The pictures of the ground only reach so far,
+ * get coarser as they go, and end where the site ends; this lies over all of that, so no edge of any of them
+ * is ever seen. The opening widens as the ground comes up and closes in as it falls away.
  * Returns the parts of a world picture.
- * * for_light - the same shapes in full light, for the light plane: cloud is lit by the sky, not by the ground under it
+ * * for_light - the same shapes for the light plane, in the light of the country around the site (see country_light())
  */
 /datum/landing_view/proc/cloud_veil(for_light = FALSE)
 	var/list/parts = list()
-	var/tone = for_light ? COLOR_WHITE : (palette?.cloud || COLOR_WHITE)
+	// lit as the country around the site is lit: bright mist over a pitch-dark site would glow
+	var/tone = for_light ? country_light() : (palette?.veil || COLOR_WHITE)
 	var/part_layer = for_light ? 3 : LANDING_VIEW_LAYER_GROUND + 0.6
 	var/list/extent = ground_extent()
 	// where the cloud's sheets begin each way: their billows reach half a billow further in, to just short of the site's edge
@@ -521,12 +530,14 @@
 			look.plane = LANDING_VIEW_LIGHT_PLANE
 		look.overlays = list(sheet)
 		parts += list(list(look, sheet_at[1] * ICON_SIZE_X, sheet_at[2] * ICON_SIZE_Y, 1, 0))
-	// and billows all along its edge
+	// billows all along its edge, each list(x, y, how big, how opaque), and a thinner, bigger row of them further in
 	var/list/spots = list()
 	for(var/along = -west, along <= east, along += LANDING_VEIL_STEP)
-		spots += list(list(along, north), list(along, -south))
+		spots += list(list(along, north, 1, 1), list(along, -south, 1, 1))
+		spots += list(list(along + 2, north - LANDING_VEIL_SOFT, 1.3, 0.45), list(along + 2, -south + LANDING_VEIL_SOFT, 1.3, 0.45))
 	for(var/along = -south, along <= north, along += LANDING_VEIL_STEP)
-		spots += list(list(east, along), list(-west, along))
+		spots += list(list(east, along, 1, 1), list(-west, along, 1, 1))
+		spots += list(list(east - LANDING_VEIL_SOFT, along + 2, 1.3, 0.45), list(-west + LANDING_VEIL_SOFT, along + 2, 1.3, 0.45))
 	var/turned = 0
 	for(var/list/spot as anything in spots)
 		var/mutable_appearance/puff = mutable_appearance(LANDING_VIEW_ICON, "puff", appearance_flags = RESET_COLOR)
@@ -536,15 +547,34 @@
 		// no two alike: each turned and sized a little differently
 		turned += 67
 		var/matrix/billow = matrix()
-		billow.Scale(LANDING_VEIL_PUFF * ICON_SIZE_X / 361 * (0.85 + (turned % 40) / 100))
+		billow.Scale(LANDING_VEIL_PUFF * ICON_SIZE_X / 361 * (0.85 + (turned % 40) / 100) * spot[3])
 		billow.Turn(turned)
 		puff.transform = billow
 		var/mutable_appearance/look = landing_view_world_look(new /mutable_appearance, part_layer + 0.01)
 		if(for_light)
 			look.plane = LANDING_VIEW_LIGHT_PLANE
 		look.overlays = list(puff)
-		parts += list(list(look, spot[1] * ICON_SIZE_X, spot[2] * ICON_SIZE_Y, 1, 0))
+		parts += list(list(look, spot[1] * ICON_SIZE_X, spot[2] * ICON_SIZE_Y, spot[4], 0))
 	return parts
+
+/// The light the country around the berth lies in, as one colour: the light on a few tiles of it, some way out all round
+/datum/landing_view/proc/country_light()
+	var/datum/own_region = map_region_for_turf(berth_turfs[1])
+	var/list/total = list(0, 0, 0)
+	var/found = 0
+	for(var/bearing in 0 to 315 step 45)
+		for(var/far in list(6, 14, 22))
+			var/turf/ground = locate(round(ground_x + sin(bearing) * (ground_half_w + far)), round(ground_y + cos(bearing) * (ground_half_h + far)), ground_z)
+			if(!ground || istype(ground, /turf/cordon) || isspaceturf(ground) || (own_region && map_region_excludes_turf(own_region, ground)))
+				continue
+			var/list/light = landing_view_light_factor(ground)
+			total[1] += light[1]
+			total[2] += light[2]
+			total[3] += light[3]
+			found++
+	if(!found)
+		return COLOR_WHITE
+	return rgb(min(total[1] / found, 1) * 255, min(total[2] / found, 1) * 255, min(total[3] / found, 1) * 255)
 
 /**
  * How opaque the cloud around the ground is over time, from the ground's [size]: whole while the ground is small,
@@ -825,9 +855,10 @@
 			return TRUE
 	return FALSE
 
-#undef LANDING_VEIL_HOLE
+#undef LANDING_VEIL_PAST
 #undef LANDING_VEIL_PUFF
 #undef LANDING_VEIL_STEP
+#undef LANDING_VEIL_SOFT
 #undef LANDING_VEIL_FULL
 #undef LANDING_VEIL_GONE
 #undef LANDING_LIGHT_FAR_REACH
@@ -838,7 +869,6 @@
 #undef LANDING_VIEW_CORDON_REACH
 #undef LANDING_AERIAL_FAR_REACH
 #undef LANDING_AERIAL_FAR_GRAIN
-#undef LANDING_AERIAL_NEAR_REACH
 #undef LANDING_AERIAL_NEAR_GRAIN
 #undef LANDING_AERIAL_KEEP
 #undef LANDING_DETAIL_FROM

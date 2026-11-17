@@ -48,7 +48,7 @@
 #define LANDING_CURVE_BOTH 3
 
 /// The sizes of the whole planet between which its closer-up texture takes over (see chain_detail())
-#define LANDING_PLANET_DETAIL list(list(2.6, 3))
+#define LANDING_PLANET_DETAIL list(list(1.7, 3.3))
 /// The size of the planet under a ship that is flying over it, and the size it comes up from and falls away to
 #define LANDING_HOVER_SIZE 1.5
 #define LANDING_HOVER_FAR 0.08

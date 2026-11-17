@@ -95,16 +95,28 @@
 	for(var/turned in list(0, 137))
 		var/datum/landing_view_piece/streaks = add_sky(LANDING_VIEW_LAYER_HEAT + 1, LANDING_VIEW_ICON, "streaks", LANDING_VIEW_ICON_SIZE)
 		streaks.sky.color = palette.heat
+		// they burn: added to what is behind them, not laid over it
+		streaks.sky.blend_mode = BLEND_ADD
 		streaks.turn = turned
 		// they fly outward: each sheet grows, and the second follows the first so there is always one coming
 		var/lead = turned ? 0.9 SECONDS : 0
 		streaks.scale.mark(touchdown - 9.2 SECONDS + lead, 1.5)
 		streaks.scale.mark(touchdown - 5.6 SECONDS + lead, 3.4)
 		streaks.alpha.mark(touchdown - 9.2 SECONDS + lead, 0)
-		streaks.alpha.mark(touchdown - 8.4 SECONDS + lead, 190)
-		streaks.alpha.mark(touchdown - 6.6 SECONDS, 190)
+		streaks.alpha.mark(touchdown - 8.4 SECONDS + lead, 255)
+		streaks.alpha.mark(touchdown - 6.6 SECONDS, 255)
 		streaks.alpha.mark(touchdown - 5.6 SECONDS, 0)
 		show(streaks)
+	// and the glow of it over everything outside, flaring and sinking
+	var/datum/landing_view_piece/burn = add_sky(LANDING_VIEW_LAYER_HEAT, fill = palette.heat)
+	burn.sky.blend_mode = BLEND_ADD
+	burn.alpha.mark(touchdown - 9.2 SECONDS, 0)
+	var/flare = TRUE
+	for(var/moment = touchdown - 8.6 SECONDS, moment <= touchdown - 6.4 SECONDS, moment += 0.4 SECONDS)
+		burn.alpha.mark(moment, flare ? 70 : 38, LANDING_CURVE_BOTH)
+		flare = !flare
+	burn.alpha.mark(touchdown - 5.6 SECONDS, 0)
+	show(burn)
 	heat_hull(touchdown - 9.2 SECONDS, touchdown - 5.6 SECONDS)
 
 /// The one layer of cloud: the planet's own, seen from afar on the planet itself, and from inside as white

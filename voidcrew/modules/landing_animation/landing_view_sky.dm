@@ -17,6 +17,8 @@
 	var/air = "#b8d4f0"
 	/// The sky from inside it, and the haze over the ground
 	var/sky = "#9db4cc"
+	/// What the country around a landing site is lost in, seen from above: mist, dust, smoke
+	var/veil = "#c4ccd4"
 	/// The hull's glow on the way in
 	var/heat = "#ffa64d"
 
@@ -27,6 +29,8 @@
 	cloud = "#ffffff"
 	air = "#8fc8ff"
 	sky = "#7fb4e6"
+	// sea mist
+	veil = "#b9d9f2"
 
 /datum/landing_view_palette/jungle
 	surface_a = "#2f6b2c"
@@ -35,6 +39,8 @@
 	cloud = "#f4fbf0"
 	air = "#a5e0c0"
 	sky = "#86c7b0"
+	// the green steam off the canopy
+	veil = "#a9d8c2"
 
 /datum/landing_view_palette/ice
 	surface_a = "#eef4fa"
@@ -43,6 +49,8 @@
 	cloud = "#ffffff"
 	air = "#cfe6ff"
 	sky = "#bcd6ee"
+	// blowing snow
+	veil = "#e6f0f8"
 
 /datum/landing_view_palette/lava
 	surface_a = "#3a2c2a"
@@ -52,6 +60,8 @@
 	air = "#ff9a5a"
 	sky = "#7a4a3c"
 	heat = "#ff8a3c"
+	// smoke and ash
+	veil = "#5e443e"
 
 /datum/landing_view_palette/wasteland
 	surface_a = "#b59a6a"
@@ -60,6 +70,8 @@
 	cloud = "#d9c9a0"
 	air = "#e0c890"
 	sky = "#c9b98a"
+	// dust
+	veil = "#cdb98c"
 
 /// The palette for [site], by the kind of planet it is
 /proc/landing_view_palette_for(obj/structure/overmap/planet/site)
@@ -283,15 +295,15 @@
 	icon_state = list("dot" = 5, "cross" = 1)
 	width = 224
 	height = 224
-	count = 12
-	spawning = 2.2
-	lifespan = 0.7 SECONDS
+	count = 30
+	spawning = 5
+	lifespan = 0.9 SECONDS
 	fade = 0.5 SECONDS
 	fadein = 1
 	color = 0
 	color_change = 0.12
 	gradient = list("#fff3c4", "#ffb347", "#ff5a1c")
-	scale = generator(GEN_VECTOR, list(0.6, 0.6), list(1.4, 1.4), NORMAL_RAND)
+	scale = generator(GEN_VECTOR, list(1, 1), list(2.2, 2.2), NORMAL_RAND)
 	spin = generator(GEN_NUM, -20, 20)
 
 /// Plays [sound_file] to, and shakes the camera of, everyone watching, at [time]
