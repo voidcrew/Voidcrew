@@ -3347,6 +3347,9 @@
 	for(var/obj/structure/overmap/object in tile)
 		if(object == src || !object.parallax_theme)
 			continue
+		// flying over a terrain planet, the crew see the planet itself under the hull (voidcrew/modules/landing_animation)
+		if(landing_animation_wanted(object))
+			continue
 		return object
 	return null
 

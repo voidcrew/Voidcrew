@@ -3,7 +3,7 @@
  *
  * Seen from the ground, a ship docking on a planet used to pop onto its berth. Now a soft shadow of the hull
  * spreads over the berth during the dock warmup, then the ship itself drops out of the sky and the real hull
- * replaces it the moment it lands. On takeoff it lifts off on its thrusters, pitches its nose up and flies away
+ * replaces it the moment it lands. On takeoff it moves off level, forward and up, and flies away
  * toward its bow.
  *
  * The falling ship is a proxy: one object carrying a picture of the hull, taken from its transit turfs when it
@@ -23,21 +23,14 @@
 #define LANDING_PROXY_START_HEIGHT 1100
 /// Height of the ship one second before touchdown
 #define LANDING_PROXY_FINAL_HEIGHT 64
-/// Takeoff, in three beats: a level lift on the thrusters, the nose pitching up, then off toward the bow
+/// Takeoff: forward and up together, slowly at first, then off toward the bow
 #define LAUNCH_LIFT_TIME (1 SECONDS)
 #define LAUNCH_TILT_TIME (1 SECONDS)
 #define LAUNCH_GO_TIME (1.5 SECONDS)
-/// Height of the leaving ship, in pixels, at the end of each beat
-#define LAUNCH_LIFT_HEIGHT 20
 #define LAUNCH_TILT_HEIGHT 44
 #define LAUNCH_GO_HEIGHT 140
-/// How far the whole hull turns (degrees) as its nose comes up, and how much nearer (bigger) it looks then
-#define LAUNCH_TILT_ANGLE 10
-#define LAUNCH_TILT_SCALE 1.04
-/// How far the ship creeps toward its bow while it pitches up
+/// How far the ship creeps toward its bow before it is properly under way
 #define LAUNCH_TILT_CREEP 24
-/// Size of the ship as it leaves the screen
-#define LAUNCH_GO_SCALE 0.9
 /// Tiles past the hull's own length it flies before it is removed: off the screen of anyone near the berth
 #define LAUNCH_GO_TILES 30
 /// How far the shadow slides after it, in tiles
@@ -765,8 +758,8 @@
 /**
  * # Takeoff
  *
- * The hull has just left the berth for transit. A picture of it lifts off level on its thrusters, blowing dust
- * out from under its engine end, pitches its nose up and flies off toward its bow, solid all the way, until it
+ * The hull has just left the berth for transit. A picture of it moves off level, forward and up, blowing dust
+ * out from under its engine end, and flies off toward its bow, solid all the way, until it
  * is off the screen. Its shadow stays on the berth, then slides after it and pales. Then everything deletes
  * itself.
  */
@@ -811,38 +804,25 @@
 		min_along = min(min_along, along)
 		max_along = max(max_along, along)
 	var/length_tiles = max_along - min_along + 1
-	// The nose comes up as an angle: the whole hull turns, rigid, so its bow swings toward the top of the
-	// screen (a ship pointing up or down the screen turns clockwise). Turn() is clockwise.
-	var/angle = bow_x ? -bow_x * LAUNCH_TILT_ANGLE : LAUNCH_TILT_ANGLE
-	var/matrix/tilted = matrix()
-	tilted.Scale(LAUNCH_TILT_SCALE)
-	tilted.Turn(angle)
-	var/matrix/leaving = matrix()
-	leaving.Scale(LAUNCH_GO_SCALE)
-	leaving.Turn(angle)
-	// it flies where its nose points: the bow direction turned by the same angle
-	var/head_x = bow_x * cos(angle) + bow_y * sin(angle)
-	var/head_y = -bow_x * sin(angle) + bow_y * cos(angle)
+	// Level the whole way: forward and up together, gathering speed toward the bow. No turning or shrinking: some things
+	// aboard (railings among them) are drawn apart from the hull's picture and would stay square while it turned.
+	var/head_x = bow_x
+	var/head_y = bow_y || (bow_x ? 0 : 1)
 	var/fly = (length_tiles + LAUNCH_GO_TILES) * ICON_SIZE_X
-	// 1. level lift on the thrusters
-	animate(proxy, pixel_z = LAUNCH_LIFT_HEIGHT, time = LAUNCH_LIFT_TIME, easing = SINE_EASING | EASE_OUT)
-	// 2. nose up, creeping toward the bow
-	animate(transform = tilted, pixel_w = round(head_x * LAUNCH_TILT_CREEP), pixel_z = LAUNCH_TILT_HEIGHT + round(head_y * LAUNCH_TILT_CREEP), time = LAUNCH_TILT_TIME, easing = SINE_EASING)
-	// 3. off the way it points, still climbing; solid until it is gone from view
-	animate(transform = leaving, pixel_w = round(head_x * fly), pixel_z = LAUNCH_GO_HEIGHT + round(head_y * fly), time = LAUNCH_GO_TIME, easing = QUAD_EASING | EASE_IN)
+	// 1. forward and up together, slowly at first
+	animate(proxy, pixel_w = round(head_x * LAUNCH_TILT_CREEP), pixel_z = LAUNCH_TILT_HEIGHT + round(head_y * LAUNCH_TILT_CREEP), time = LAUNCH_LIFT_TIME + LAUNCH_TILT_TIME, easing = SINE_EASING | EASE_IN)
+	// 2. off toward the bow, still climbing; solid until it is gone from view
+	animate(pixel_w = round(head_x * fly), pixel_z = LAUNCH_GO_HEIGHT + round(head_y * fly), time = LAUNCH_GO_TIME, easing = QUAD_EASING | EASE_IN)
 	landing_wash(planet_turfs, bow_dir, hull_turfs, view)
 	landing_jolt(berth_turfs, 'voidcrew/sound/machines/rocket/rocket_launch.ogg', 70, reach = LANDING_HEAR_RANGE, shake_strength = LANDING_SHAKE)
 	shadow = new(berth_turfs[1])
 	if(shadow.outline(berth_turfs))
 		var/slide = LAUNCH_SHADOW_SLIDE_TILES * ICON_SIZE_X
 		shadow.alpha = LANDING_SHADOW_DARK
-		// stays on the berth while the ship hangs over it, then slides after it and pales
-		animate(shadow, time = LAUNCH_LIFT_TIME)
-		var/matrix/shadow_turn = matrix()
-		shadow_turn.Turn(angle)
-		animate(transform = shadow_turn, pixel_w = round(head_x * LAUNCH_TILT_CREEP), pixel_z = round(head_y * LAUNCH_TILT_CREEP), time = LAUNCH_TILT_TIME, easing = SINE_EASING)
+		// slides after the ship as it moves off, and pales
+		animate(shadow, pixel_w = round(head_x * LAUNCH_TILT_CREEP), pixel_z = round(head_y * LAUNCH_TILT_CREEP), time = LAUNCH_LIFT_TIME + LAUNCH_TILT_TIME, easing = SINE_EASING | EASE_IN)
 		animate(pixel_w = round(head_x * slide), pixel_z = round(head_y * slide), time = LAUNCH_GO_TIME, easing = QUAD_EASING | EASE_IN)
-		// pales on its own curve, from the moment the nose comes up, so it is gone before the ship is
+		// pales on its own curve, from the moment it starts to move off, so it is gone before the ship is
 		animate(shadow, time = LAUNCH_LIFT_TIME, flags = ANIMATION_PARALLEL)
 		animate(alpha = 0, time = LAUNCH_TILT_TIME + LAUNCH_GO_TIME * 0.6, easing = SINE_EASING)
 	else
@@ -946,13 +926,9 @@
 #undef LAUNCH_LIFT_TIME
 #undef LAUNCH_TILT_TIME
 #undef LAUNCH_GO_TIME
-#undef LAUNCH_LIFT_HEIGHT
 #undef LAUNCH_TILT_HEIGHT
 #undef LAUNCH_GO_HEIGHT
-#undef LAUNCH_TILT_ANGLE
-#undef LAUNCH_TILT_SCALE
 #undef LAUNCH_TILT_CREEP
-#undef LAUNCH_GO_SCALE
 #undef LAUNCH_GO_TILES
 #undef LAUNCH_SHADOW_SLIDE_TILES
 #undef LAUNCH_WASH_PER_WAVE

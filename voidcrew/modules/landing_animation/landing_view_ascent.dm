@@ -3,12 +3,12 @@
  *
  * Starts the moment the hull leaves its berth for transit (L), over a picture of the ground it just stood on,
  * so nothing outside changes as it goes. Then, in step with what the people on the ground see of the ship
- * (a level lift, the nose coming up, off toward the bow):
+ * (a level lift, then off toward the bow):
  *
  * | from    | what                                                                                  |
  * |---------|---------------------------------------------------------------------------------------|
- * | L       | the ground falls away under the hull, dust blowing out from under it                  |
- * | L+1s    | the ground starts to slide off sternward as the ship gathers way, haze thickening     |
+ * | L       | the ground falls away and starts to slide astern, dust blowing out from under the hull |
+ * | L+1s    | the ground slides off sternward faster as the ship gathers way, haze thickening       |
  * | L+3.3s  | into the cloud: everything white                                                      |
  * | L+4.1s  | out of its top: the white thins into the sky's colour, and the sky darkens             |
  * | L+4.8s  | the planet, whole, falling away under the ship until it is the size it has from orbit |
@@ -130,12 +130,13 @@
 
 /// The ground it stood on, falling away and sliding off astern, and its shadow left behind on it
 /datum/landing_view/ascent/proc/add_ground()
-	// height gained under steady thrust, and way gathered once the nose is up: sampled, so the motion is smooth
+	// height gained under steady thrust, and way gathered once it starts to move off: sampled, so the motion is smooth
 	for(var/step in 0 to 21)
 		var/seconds = step * 0.2
 		var/when = liftoff + seconds * 10
 		ground.scale.mark(when, 1 / (1 + (seconds / 2.4) ** 2))
-		var/slid = seconds > 1 ? 2.2 * (seconds - 1) ** 2.2 : 0
+		// moving off from the first moment, slowly at first
+		var/slid = 1.2 * seconds ** 2.2
 		ground.slide_x.mark(when, bow_x * slid)
 		ground.slide_y.mark(when, bow_y * slid)
 		// the shadow stays on the ground, and falls further off to one side the higher the hull is

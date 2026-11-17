@@ -190,6 +190,16 @@
 	. = ..()
 	update_hover_view()
 
+/obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
+	. = ..()
+	// a ship that finishes undocking while over a planet has moved there already, while it was still undocking
+	RegisterSignal(src, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(hover_after_undock))
+
+/obj/structure/overmap/ship/proc/hover_after_undock()
+	SIGNAL_HANDLER
+	// the hull reaches transit a moment after the ship is told it has undocked
+	addtimer(CALLBACK(src, PROC_REF(update_hover_view)), 1 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
+
 #undef HOVER_ARRIVE
 #undef HOVER_LEAVE
 #undef HOVER_CHECK
