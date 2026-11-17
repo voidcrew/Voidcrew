@@ -8,8 +8,10 @@
 		set_name()
 	var/datum/atom_hud/data/human/medical/advanced/medhud = GLOB.huds[DATA_HUD_MEDICAL_ADVANCED]
 	medhud.add_atom_to_hud(src)
-	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.huds)
-		diag_hud.add_atom_to_hud(src)
+	// VOIDCREW EDIT CHANGE START - BYOND 516.1670+ rejects number keys in list() (tg #93801)
+	var/datum/atom_hud/data/diagnostic/diag_hud = GLOB.huds[DATA_HUD_DIAGNOSTIC]
+	diag_hud.add_atom_to_hud(src)
+	// VOIDCREW EDIT CHANGE END
 	faction += "[REF(src)]"
 	GLOB.mob_living_list += src
 	// VOIDCREW EDIT: mobs created on a planet inherit that footprint's native alliance.
