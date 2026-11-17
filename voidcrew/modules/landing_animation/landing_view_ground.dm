@@ -454,8 +454,14 @@
 			if(chunk)
 				var/centre_off_x = chunk_x + LANDING_VIEW_CHUNK / 2 - ground_x
 				var/centre_off_y = chunk_y + LANDING_VIEW_CHUNK / 2 - ground_y
-				// the last number: how far it reaches from its middle, in tiles, whatever stands on it included
-				parts += list(list(landing_view_world_look(chunk[1], LANDING_VIEW_LAYER_GROUND + 0.1), centre_off_x * ICON_SIZE_X, centre_off_y * ICON_SIZE_Y, 1, chunk[2]))
+				// one part for each world plane it has anything on, floors lowest: every chunk's floor under
+				// whatever stands on any chunk
+				var/list/looks = chunk[1]
+				for(var/rank in 1 to length(looks))
+					if(!looks[rank])
+						continue
+					// the last number: how far it reaches from its middle, in tiles, whatever stands on it included
+					parts += list(list(landing_view_world_look(looks[rank], LANDING_VIEW_LAYER_GROUND + 0.1 + rank * 0.01), centre_off_x * ICON_SIZE_X, centre_off_y * ICON_SIZE_Y, 1, chunk[2]))
 			if(!in_one_go && TICK_CHECK)
 				stoplag()
 				if(QDELETED(src) || ended)
@@ -607,9 +613,12 @@
  * One chunk of the close-up picture: the planet tiles from [low_x], [low_y] up, one row and column past
  * LANDING_VIEW_CHUNK so neighbouring chunks overlap and no seam opens between them when they are scaled.
  * Drawn about its own middle, with everything standing on it, and no light on any of it (see bake_light()).
- * Returns list(its look, how far it reaches from its middle in tiles), or null if there is no ground there.
- * The reach counts what stands on it: a tree's picture can be six tiles across, and a viewer who can see any
- * of it has to be given the chunk it grows on.
+ * Returns list(its looks, how far it reaches from its middle in tiles), or null if there is no ground there.
+ *
+ * Its looks are one for each world plane, floor first, and one more for the weather over it, null where it has
+ * nothing: chunks are drawn in no order, so a chunk drawn whole would paint its floor over the tree that leans
+ * in from the chunk beside it. The reach counts what stands on it: a tree's picture can be six tiles across,
+ * and a viewer who can see any of it has to be given the chunk it grows on.
  * * own_region - the site the berth is in; ground belonging to another site is left out
  * * weather_by_area - area -> landing_view_weather() of it, filled in as areas are met
  * * cordon_box - list(low x, low y, high x, high y): cordon turfs outside it are left out
@@ -664,29 +673,18 @@
 				storm_parts += over_tile
 	if(!found)
 		return null
-	var/list/parts = list()
+	// over everything standing there, as the world draws weather
+	plane_parts += list(storm_parts)
+	var/list/looks = new /list(length(plane_parts))
 	for(var/rank in 1 to length(plane_parts))
 		if(!length(plane_parts[rank]))
 			continue
 		var/mutable_appearance/plane_group = new()
 		plane_group.plane = FLOAT_PLANE
-		plane_group.layer = rank
 		plane_group.appearance_flags = KEEP_TOGETHER
 		plane_group.overlays = plane_parts[rank]
-		parts += plane_group
-	if(length(storm_parts))
-		// over everything standing there, as the world draws weather
-		var/mutable_appearance/storm_group = new()
-		storm_group.plane = FLOAT_PLANE
-		storm_group.layer = 50
-		storm_group.appearance_flags = KEEP_TOGETHER
-		storm_group.overlays = storm_parts
-		parts += storm_group
-	var/mutable_appearance/chunk = new()
-	chunk.plane = FLOAT_PLANE
-	chunk.appearance_flags = KEEP_TOGETHER
-	chunk.overlays = parts
-	return list(chunk, reach / ICON_SIZE_X)
+		looks[rank] = plane_group
+	return list(looks, reach / ICON_SIZE_X)
 
 /// The size of the pictures in an icon file, as list(width, height) in pixels. Looked up once for each file.
 /proc/landing_view_icon_size(icon_file)

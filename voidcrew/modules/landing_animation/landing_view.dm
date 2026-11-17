@@ -30,7 +30,7 @@
 /// How many steps the light on the hull's edge is changed in
 #define LANDING_VIEW_LIGHT_STEPS 8
 /// How many chunks of a picture that cannot be seen yet a viewer is handed in one tick
-#define LANDING_VIEW_HANDOVER 5
+#define LANDING_VIEW_HANDOVER 12
 /// How far ahead a viewer's chunks are picked for
 #define LANDING_VIEW_AHEAD (1.5 SECONDS)
 /// Tiles past the edge of a viewer's screen their chunks cover: a shaking camera, a step half made
