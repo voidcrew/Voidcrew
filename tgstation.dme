@@ -7878,6 +7878,7 @@
 #include "voidcrew\modules\stealth\stealth_ai.dm"
 #include "voidcrew\modules\stealth\stealth_closet.dm"
 #include "voidcrew\modules\stealth\stealth_crits.dm"
+#include "voidcrew\modules\stealth\stealth_den_planet.dm"
 #include "voidcrew\modules\stealth\stealth_disguise.dm"
 #include "voidcrew\modules\stealth\stealth_doors.dm"
 #include "voidcrew\modules\stealth\stealth_hearing.dm"
