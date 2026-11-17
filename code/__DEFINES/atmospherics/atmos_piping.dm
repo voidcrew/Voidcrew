@@ -68,9 +68,11 @@
 #define TANK_MERGE_OVERPRESSURE "tank_overpressure"
 // Indices for the reaction_results returned by explosion_information()
 /// Reactions that have happened in the tank.
-#define TANK_RESULTS_REACTION 1
+// VOIDCREW EDIT CHANGE START - BYOND 516.1670+ rejects number keys in list() (tg #93801)
+#define TANK_RESULTS_REACTION "results_reaction"
 /// Additional information of the tank.
-#define TANK_RESULTS_MISC 2
+#define TANK_RESULTS_MISC "results_misc"
+// VOIDCREW EDIT CHANGE END
 
 /// Color used by omni-color pipes
 #define ATMOS_COLOR_OMNI COLOR_VERY_LIGHT_GRAY

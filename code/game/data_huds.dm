@@ -8,12 +8,14 @@
 /* DATA HUD DATUMS */
 
 /atom/proc/add_to_all_human_data_huds()
-	for(var/datum/atom_hud/data/human/hud in GLOB.huds)
-		hud.add_atom_to_hud(src)
+	// VOIDCREW EDIT CHANGE START - BYOND 516.1670+ rejects number keys in list() (tg #93801)
+	for(var/hud_key, hud_type in GLOB.huds)
+		astype(hud_type, /datum/atom_hud/data/human)?.add_atom_to_hud(src)
 
 /atom/proc/remove_from_all_data_huds()
-	for(var/datum/atom_hud/data/hud in GLOB.huds)
-		hud.remove_atom_from_hud(src)
+	for(var/hud_key, hud_type in GLOB.huds)
+		astype(hud_type, /datum/atom_hud/data)?.remove_atom_from_hud(src)
+	// VOIDCREW EDIT CHANGE END
 
 /datum/atom_hud/data
 

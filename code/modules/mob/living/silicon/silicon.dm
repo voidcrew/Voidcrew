@@ -59,8 +59,10 @@
 	faction += FACTION_SILICON
 	if(ispath(radio))
 		radio = new radio(src)
-	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.huds)
-		diag_hud.add_atom_to_hud(src)
+	// VOIDCREW EDIT CHANGE START - BYOND 516.1670+ rejects number keys in list() (tg #93801)
+	var/datum/atom_hud/data/diagnostic/diag_hud = GLOB.huds[DATA_HUD_DIAGNOSTIC]
+	diag_hud.add_atom_to_hud(src)
+	// VOIDCREW EDIT CHANGE END
 	diag_hud_set_status()
 	diag_hud_set_health()
 	add_sensors()
