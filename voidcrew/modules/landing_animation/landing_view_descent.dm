@@ -45,7 +45,7 @@
 	add_ground()
 	sync_viewers()
 	addtimer(CALLBACK(src, PROC_REF(fade_light), 0, 1, 2.2 SECONDS), max(0, touchdown - 2.7 SECONDS - world.time), TIMER_DELETE_ME)
-	cue_at(touchdown - 9.2 SECONDS, 'voidcrew/sound/effects/landing/entry.ogg', 55, 3.6 SECONDS, 0.08)
+	cue_at(touchdown - 9.2 SECONDS, 'voidcrew/sound/effects/landing/entry.ogg', 65, 4.5 SECONDS, 0.12)
 	cue_at(touchdown - 6.6 SECONDS, 'voidcrew/sound/effects/landing/clouds.ogg', 45, 1.4 SECONDS, 0.05)
 	cue_at(touchdown - 4.6 SECONDS, 'voidcrew/sound/effects/landing/thrusters.ogg', 50)
 
