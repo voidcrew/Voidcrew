@@ -71,8 +71,12 @@
 #define LANDING_HEAR_RANGE 12
 /// How far from the hull a landing or launch sound stays at full volume, in tiles
 #define LANDING_SOUND_FULL 4
-/// How far past the hull's box an engine roar on the ground carries
-#define LANDING_ROAR_RANGE 30
+/// For whole_site sounds: how far they stay at full volume, and how far they fade out to (a whole site and more)
+#define LANDING_SITE_FULL 20
+#define LANDING_SITE_REACH 160
+/// whole_site: everyone at the site, those aboard included; or only those who are not aboard
+#define LANDING_SITE_ALL 1
+#define LANDING_SITE_OUTSIDE 2
 
 /// Running descent for this ship, if any
 /obj/structure/overmap/ship/var/datum/landing_animation/landing_animation
@@ -154,7 +158,8 @@
 	if(!berth || istype(berth, /obj/docking_port/stationary/transit))
 		return
 	var/list/hull_turfs = landing_hull_pairs(shuttle, berth)[1]
-	landing_jolt(hull_turfs, 'voidcrew/sound/effects/landing/spool.ogg', 50, reach = LANDING_HEAR_RANGE, shake_time = 3 SECONDS, shake_strength = 0.04)
+	landing_jolt(hull_turfs, 'voidcrew/sound/effects/landing/spool.ogg', 50, whole_site = LANDING_SITE_ALL)
+	landing_jolt(hull_turfs, null, 0, reach = LANDING_HEAR_RANGE, shake_time = 3 SECONDS, shake_strength = 0.04)
 	// and what the people aboard will see as they climb is made ready
 	QDEL_NULL(launch_view)
 	launch_view = new(shuttle, null, hull_turfs, 0, docked, landing_bow_dir(shuttle, hull_turfs), src)
@@ -273,13 +278,14 @@
  */
 /proc/landing_touchdown(list/hull_turfs, list/transit_turfs, datum/landing_animation/descent)
 	landing_dust(hull_turfs, transit_turfs, descent)
-	landing_jolt(hull_turfs, 'voidcrew/sound/effects/landing/touchdown.ogg', 70, reach = LANDING_HEAR_RANGE, shake_strength = LANDING_SHAKE)
+	landing_jolt(hull_turfs, 'voidcrew/sound/effects/landing/touchdown.ogg', 70, whole_site = LANDING_SITE_OUTSIDE)
+	landing_jolt(hull_turfs, null, 0, reach = LANDING_HEAR_RANGE, shake_strength = LANDING_SHAKE)
 
 /**
  * Shakes the camera of, and plays [sound_file] to, every player on [hull_turfs] and, with [reach], everyone within
  * that many tiles of the hull on the same level.
  */
-/proc/landing_jolt(list/hull_turfs, sound_file, volume, reach = 0, shake_time = 3, shake_strength = 0)
+/proc/landing_jolt(list/hull_turfs, sound_file, volume, reach = 0, shake_time = 3, shake_strength = 0, whole_site = FALSE)
 	if(!length(hull_turfs))
 		return
 	var/list/hull_set = list()
@@ -302,7 +308,13 @@
 		var/turf/where = get_turf(listener)
 		if(!where || where.z != first.z)
 			continue
-		if(!hull_set[where] && (!reach || map_region_excludes_turf(own_region, where) || where.x < min_x - reach || where.x > max_x + reach || where.y < min_y - reach || where.y > max_y + reach))
+		if(!hull_set[where])
+			if(map_region_excludes_turf(own_region, where))
+				continue
+			// an engine roar reaches everyone at the site; a jolt only those near enough to feel it
+			if(!whole_site && (!reach || where.x < min_x - reach || where.x > max_x + reach || where.y < min_y - reach || where.y > max_y + reach))
+				continue
+		else if(whole_site == LANDING_SITE_OUTSIDE)
 			continue
 		if(shake_strength)
 			shake_camera(listener, shake_time, shake_strength)
@@ -310,7 +322,8 @@
 			// heard from the nearest part of the hull, not its middle: the falloff is steep, and from the middle of a
 			// big hull someone standing right against it would be a dozen tiles away and hear next to nothing
 			var/turf/source = hull_set[where] ? where : locate(clamp(where.x, min_x, max_x), clamp(where.y, min_y, max_y), first.z)
-			listener.playsound_local(source || middle, sound_file, volume, TRUE, pressure_affected = FALSE, max_distance = max(reach, 1) + LANDING_SOUND_FULL, falloff_distance = LANDING_SOUND_FULL)
+			var/full = whole_site ? LANDING_SITE_FULL : LANDING_SOUND_FULL
+			listener.playsound_local(source || middle, sound_file, volume, TRUE, pressure_affected = FALSE, max_distance = whole_site ? LANDING_SITE_REACH : max(reach, 1) + full, falloff_distance = full)
 
 /// A few light puffs of dust kicked out from the hull's edges, with twins in transit for a [descent]'s crew
 /proc/landing_dust(list/hull_turfs, list/transit_turfs, datum/landing_animation/descent)
@@ -703,7 +716,7 @@
 		QDEL_NULL(shadow)
 		return
 	// engines heard on the ground before the ship is in sight; the crew aboard hear nothing new
-	landing_jolt(berth_turfs, 'voidcrew/sound/effects/landing/approach.ogg', 50, reach = LANDING_ROAR_RANGE)
+	landing_jolt(berth_turfs, 'voidcrew/sound/effects/landing/approach.ogg', 50, whole_site = LANDING_SITE_OUTSIDE)
 	var/time_left = max(1, touchdown_time - world.time)
 	var/fade_in = min(1.5 SECONDS, time_left / 4)
 	var/spread_end = max(0, time_left - LANDING_PROXY_LEAD - fade_in)
@@ -821,7 +834,7 @@
 	// 2. off toward the bow, still climbing; solid until it is gone from view
 	animate(pixel_w = round(head_x * fly), pixel_z = LAUNCH_GO_HEIGHT + round(head_y * fly), time = LAUNCH_GO_TIME, easing = QUAD_EASING | EASE_IN)
 	landing_wash(planet_turfs, bow_dir, hull_turfs, view)
-	landing_jolt(berth_turfs, 'voidcrew/sound/effects/landing/liftoff_outside.ogg', 80, reach = LANDING_ROAR_RANGE)
+	landing_jolt(berth_turfs, 'voidcrew/sound/effects/landing/liftoff_outside.ogg', 80, whole_site = LANDING_SITE_OUTSIDE)
 	landing_jolt(berth_turfs, null, 0, reach = LANDING_HEAR_RANGE, shake_strength = LANDING_SHAKE)
 	shadow = new(berth_turfs[1])
 	if(shadow.outline(berth_turfs))
@@ -959,5 +972,8 @@
 #undef LANDING_WASH_CHANCE
 #undef LANDING_WASH_PUSH
 #undef LANDING_HEAR_RANGE
-#undef LANDING_ROAR_RANGE
 #undef LANDING_SOUND_FULL
+#undef LANDING_SITE_FULL
+#undef LANDING_SITE_REACH
+#undef LANDING_SITE_ALL
+#undef LANDING_SITE_OUTSIDE
