@@ -194,8 +194,11 @@
 	shadow.alpha.mark(touchdown - 5 SECONDS, 0)
 	shadow.alpha.mark(touchdown - 4.4 SECONDS, 70)
 	shadow.alpha.mark(touchdown - 3 SECONDS, 70)
-	shadow.alpha.mark(touchdown - 1 SECONDS, 100, LANDING_CURVE_BOTH)
-	shadow.alpha.mark(touchdown, 125, LANDING_CURVE_OUT)
+	shadow.alpha.mark(touchdown - 1.2 SECONDS, 130, LANDING_CURVE_BOTH)
+	// and it is under the hull by the time the hull is down: a landed ship has no rim of shadow round it,
+	// and one that went out as it landed would show
+	shadow.alpha.mark(touchdown - 0.5 SECONDS, 110)
+	shadow.alpha.mark(touchdown - 0.1 SECONDS, 0, LANDING_CURVE_IN)
 	show(shadow)
 
 /// The hull has started to move onto the berth

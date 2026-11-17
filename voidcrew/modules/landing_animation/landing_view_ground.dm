@@ -435,6 +435,13 @@
 	var/datum/own_region = map_region_for_turf(berth_turfs[1])
 	// area -> the weather over it, found once
 	var/list/weather_by_area = list()
+	// a hull coming down crushes whatever is rooted on its berth (see /turf/proc/toShuttleMove): a tree there
+	// would stand out past the hull in the picture, and be gone the moment it landed
+	var/list/crushed
+	if(which == LANDING_GROUND_ALL)
+		crushed = list()
+		for(var/turf/berth_turf as anything in berth_turfs)
+			crushed[berth_turf] = TRUE
 	var/middle_x = round(ground_x)
 	var/middle_y = round(ground_y)
 	for(var/chunk_x = middle_x - reach_x, chunk_x < middle_x + reach_x, chunk_x += LANDING_VIEW_CHUNK)
@@ -443,12 +450,12 @@
 				var/under_hull = chunk_x >= middle_x - under_x && chunk_x < middle_x + under_x && chunk_y >= middle_y - under_y && chunk_y < middle_y + under_y
 				if(under_hull != (which == LANDING_GROUND_UNDER))
 					continue
-			var/mutable_appearance/chunk = landing_view_chunk(chunk_x, chunk_y, ground_z, own_region, weather_by_area, cordon_box)
+			var/list/chunk = landing_view_chunk(chunk_x, chunk_y, ground_z, own_region, weather_by_area, cordon_box, crushed)
 			if(chunk)
 				var/centre_off_x = chunk_x + LANDING_VIEW_CHUNK / 2 - ground_x
 				var/centre_off_y = chunk_y + LANDING_VIEW_CHUNK / 2 - ground_y
-				// the last number: how far it reaches from its middle, in tiles, with room for what overhangs it
-				parts += list(list(landing_view_world_look(chunk, LANDING_VIEW_LAYER_GROUND + 0.1), centre_off_x * ICON_SIZE_X, centre_off_y * ICON_SIZE_Y, 1, LANDING_VIEW_CHUNK / 2 + 2))
+				// the last number: how far it reaches from its middle, in tiles, whatever stands on it included
+				parts += list(list(landing_view_world_look(chunk[1], LANDING_VIEW_LAYER_GROUND + 0.1), centre_off_x * ICON_SIZE_X, centre_off_y * ICON_SIZE_Y, 1, chunk[2]))
 			if(!in_one_go && TICK_CHECK)
 				stoplag()
 				if(QDELETED(src) || ended)
@@ -600,12 +607,15 @@
  * One chunk of the close-up picture: the planet tiles from [low_x], [low_y] up, one row and column past
  * LANDING_VIEW_CHUNK so neighbouring chunks overlap and no seam opens between them when they are scaled.
  * Drawn about its own middle, with everything standing on it, and no light on any of it (see bake_light()).
- * Null if there is no ground there.
+ * Returns list(its look, how far it reaches from its middle in tiles), or null if there is no ground there.
+ * The reach counts what stands on it: a tree's picture can be six tiles across, and a viewer who can see any
+ * of it has to be given the chunk it grows on.
  * * own_region - the site the berth is in; ground belonging to another site is left out
  * * weather_by_area - area -> landing_view_weather() of it, filled in as areas are met
  * * cordon_box - list(low x, low y, high x, high y): cordon turfs outside it are left out
+ * * crushed - turfs whose contents are left out: the berth, under a hull that has yet to land on it
  */
-/proc/landing_view_chunk(low_x, low_y, z, datum/own_region, list/weather_by_area, list/cordon_box)
+/proc/landing_view_chunk(low_x, low_y, z, datum/own_region, list/weather_by_area, list/cordon_box, list/crushed)
 	var/centre_x = low_x + LANDING_VIEW_CHUNK / 2
 	var/centre_y = low_y + LANDING_VIEW_CHUNK / 2
 	// one group per world plane, floor first, as the world draws them (see /obj/effect/abstract/landing_proxy)
@@ -614,6 +624,8 @@
 		plane_parts[rank] = list()
 	var/found = FALSE
 	var/list/storm_parts = list()
+	// how far anything here reaches from the middle of the chunk, in pixels: its own tiles to begin with
+	var/reach = (LANDING_VIEW_CHUNK / 2 + 1) * ICON_SIZE_X
 	for(var/tile_x in low_x to low_x + LANDING_VIEW_CHUNK)
 		for(var/tile_y in low_y to low_y + LANDING_VIEW_CHUNK)
 			var/turf/ground = locate(tile_x, tile_y, z)
@@ -626,7 +638,7 @@
 			var/offset_z = (tile_y - centre_y) * ICON_SIZE_Y
 			var/turf_plane = clamp(PLANE_TO_TRUE(ground.plane), FLOOR_PLANE, ABOVE_GAME_PLANE)
 			plane_parts[turf_plane - FLOOR_PLANE + 1] += landing_view_part(ground, offset_w, offset_z, TRUE)
-			for(var/atom/movable/thing as anything in ground)
+			for(var/atom/movable/thing as anything in (crushed?[ground] ? null : ground))
 				if(thing.invisibility > SEE_INVISIBLE_LIVING || !thing.icon || thing.alpha < 20)
 					continue
 				if(istype(thing, /obj/effect/abstract) || istype(thing, /obj/effect/temp_visual) || istype(thing, /obj/docking_port))
@@ -635,6 +647,12 @@
 				if(true_plane < FLOOR_PLANE || true_plane > ABOVE_GAME_PLANE)
 					continue
 				plane_parts[true_plane - FLOOR_PLANE + 1] += landing_view_part(thing, offset_w, offset_z, FALSE)
+				var/list/size = landing_view_icon_size(thing.icon)
+				if(size[1] > ICON_SIZE_X || size[2] > ICON_SIZE_Y || thing.pixel_x || thing.pixel_y || thing.pixel_w || thing.pixel_z)
+					// its picture's edges, from the middle of the chunk's middle tile
+					var/left = offset_w + thing.pixel_x + thing.pixel_w - ICON_SIZE_X / 2
+					var/bottom = offset_z + thing.pixel_y + thing.pixel_z - ICON_SIZE_Y / 2
+					reach = max(reach, -left, left + size[1], -bottom, bottom + size[2])
 			var/list/storm = weather_by_area[ground.loc]
 			if(isnull(storm))
 				storm = landing_view_weather(ground.loc)
@@ -668,7 +686,20 @@
 	chunk.plane = FLOAT_PLANE
 	chunk.appearance_flags = KEEP_TOGETHER
 	chunk.overlays = parts
-	return chunk
+	return list(chunk, reach / ICON_SIZE_X)
+
+/// The size of the pictures in an icon file, as list(width, height) in pixels. Looked up once for each file.
+/proc/landing_view_icon_size(icon_file)
+	var/static/list/known = list()
+	var/static/list/plain = list(ICON_SIZE_X, ICON_SIZE_Y)
+	if(!icon_file)
+		return plain
+	var/list/size = known["[icon_file]"]
+	if(!size)
+		var/icon/sheet = icon(icon_file)
+		size = list(sheet.Width(), sheet.Height())
+		known["[icon_file]"] = size
+	return size
 
 /// The weather falling on every tile of [ground_area] right now, as looks for a ground picture (none: an empty list)
 /proc/landing_view_weather(area/ground_area)

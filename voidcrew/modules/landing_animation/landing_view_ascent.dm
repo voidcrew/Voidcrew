@@ -134,7 +134,7 @@
 	for(var/step in 0 to 21)
 		var/seconds = step * 0.2
 		var/when = liftoff + seconds * 10
-		ground.scale.mark(when, 1 / (1 + (seconds / 2.3) ** 2.4))
+		ground.scale.mark(when, 1 / (1 + (seconds / 2.4) ** 2))
 		var/slid = seconds > 1 ? 2.2 * (seconds - 1) ** 2.2 : 0
 		ground.slide_x.mark(when, bow_x * slid)
 		ground.slide_y.mark(when, bow_y * slid)
@@ -178,9 +178,9 @@
 	shadow.slide_x = ground.slide_x
 	shadow.slide_y = ground.slide_y
 	shadow.alpha.mark(liftoff, 0)
-	shadow.alpha.mark(liftoff + 0.3 SECONDS, 90)
-	shadow.alpha.mark(liftoff + 1.2 SECONDS, 70)
-	shadow.alpha.mark(liftoff + 2.4 SECONDS, 0)
+	shadow.alpha.mark(liftoff + 0.3 SECONDS, 140)
+	shadow.alpha.mark(liftoff + 1.4 SECONDS, 110)
+	shadow.alpha.mark(liftoff + 2.8 SECONDS, 0)
 	show(shadow)
 
 	var/datum/landing_view_piece/haze = add_sky(LANDING_VIEW_LAYER_HAZE, fill = palette.sky)
@@ -196,8 +196,9 @@
 	var/datum/landing_view_piece/sky = add_sky(LANDING_VIEW_LAYER_SKY, fill = palette.sky)
 	sky.alpha.mark(liftoff + 2.8 SECONDS, 0)
 	sky.alpha.mark(liftoff + 3.6 SECONDS, 255, LANDING_CURVE_BOTH)
-	sky.alpha.mark(liftoff + 5.2 SECONDS, 255)
-	sky.alpha.mark(liftoff + 6.8 SECONDS, 0, LANDING_CURVE_BOTH)
+	// thinning as soon as the white has gone: a flat sky is a dead moment
+	sky.alpha.mark(liftoff + 4.7 SECONDS, 255)
+	sky.alpha.mark(liftoff + 6.4 SECONDS, 0, LANDING_CURVE_BOTH)
 	show(sky)
 
 	var/datum/landing_view_piece/inside = add_sky(LANDING_VIEW_LAYER_CLOUD + 1, fill = palette.cloud)
@@ -225,8 +226,9 @@
 	var/list/grains = planet[1]
 	var/datum/landing_view_piece/whole = grains[1][1]
 	var/datum/landing_track/size = whole.scale
-	size.mark(liftoff + 4.6 SECONDS, 6.4)
-	size.mark(liftoff + 8.6 SECONDS, LANDING_HOVER_SIZE, LANDING_CURVE_OUT)
+	// not as close as a descent leaves it: this near, its texture shows its grain, and here there is no cloud over it
+	size.mark(liftoff + 4.6 SECONDS, 4.2)
+	size.mark(liftoff + 8.6 SECONDS, LANDING_HOVER_SIZE, LANDING_CURVE_BOTH)
 	// there, solid, under the sky before the sky thins: a planet that fades in lets the stars show through it
 	var/datum/landing_track/opacity = new
 	opacity.mark(liftoff + 4.6 SECONDS, 0)
