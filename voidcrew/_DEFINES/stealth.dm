@@ -56,9 +56,11 @@
 #define STEALTH_SCAN_INTERVAL (1 SECONDS)
 #define STEALTH_SIGHT_RANGE 8
 #define STEALTH_ALERT_MAX_RANGE 7
+/// Outpost police perception (outpost_police/police_perception.dm): how far an officer sees in the dark
 #define STEALTH_DARK_SIGHT_RANGE 4
 #define STEALTH_DARK_LUMCOUNT 0.2
 #define STEALTH_DARK_MULT 0.5
+/// Outpost police perception: someone this close is noticed at once
 #define STEALTH_CLOSE_RANGE 2
 /// Elbow to elbow: someone this close in its cone is seen whatever the light (decision 31)
 #define STEALTH_ADJACENT_RANGE 1
@@ -68,9 +70,6 @@
 #define STEALTH_NEAR_RANGE 4
 #define STEALTH_NEAR_MULT 3
 #define STEALTH_CONE_HALF_ANGLE 60
-#define STEALTH_WARY_HALF_ANGLE 75
-#define STEALTH_SEARCH_HALF_ANGLE 90
-#define STEALTH_NOTICE_RATE 1.0
 #define STEALTH_NOTICE_MIN_FALLOFF 0.25
 #define STEALTH_SUSPICIOUS_AT 1.0
 #define STEALTH_ALERT_AT 2.5
@@ -85,7 +84,6 @@
 #define STEALTH_SEARCHING_MULT 2
 #define STEALTH_WARY_MULT 1.5
 #define STEALTH_MAX_CANDIDATES 8
-#define STEALTH_INVESTIGATE_DELAY (2 SECONDS)
 #define STEALTH_LOOK_AROUND_TIME (4 SECONDS)
 #define STEALTH_SUSPICIOUS_TIMEOUT (12 SECONDS)
 #define STEALTH_LOSE_TARGET_TIME (4 SECONDS)
@@ -167,20 +165,43 @@
 /// A light EMP cuts a guard's seclite out for this long
 #define STEALTH_LIGHT_EMP_LIGHT (20 SECONDS)
 
-// ===== Real flashlight pools (decision 39, stealth_light.dm) =====
-/// Tiles ahead its pool lands, when nothing stops it first
-#define STEALTH_TORCH_REACH 3
-/// The same, facing a diagonal
-#define STEALTH_TORCH_REACH_DIAGONAL 2
-/// The pool's light power (its seclite blue takes it to about 1.2 white)
-#define STEALTH_TORCH_POWER 1.5
-/// The pool's light range with its centre 2.5 or more tiles off, 2 or more, and nearer (sized so the guard's own
-/// tile stays under the dark line: data/stealth/STATUS.md, decision 39)
-#define STEALTH_TORCH_RANGE_FAR 2.5
-#define STEALTH_TORCH_RANGE_MID 2
-#define STEALTH_TORCH_RANGE_NEAR 1.7
+// ===== Flashlight beams (decisions 39 and 41, stealth_light.dm) =====
+/// The beam's light range in tiles, from where it starts (lit floor ends 4 tiles ahead: data/stealth/STATUS.md, decision 41)
+#define STEALTH_TORCH_RANGE 5
+/// The beam's light power (its seclite blue takes it to about 1.5 white)
+#define STEALTH_TORCH_POWER 1.9
+/// Degrees of the beam at full strength; tg fades it to nothing over the next 30 each side
+#define STEALTH_TORCH_ANGLE 30
+/// Tiles ahead of the guard's own tile the beam starts (the hand, not the body), so its own tile stays dark
+#define STEALTH_TORCH_FORWARD 0.5
 /// tg's seclite colour
 #define STEALTH_TORCH_COLOR "#99ccff"
+/// A turn of 90 degrees or more shows the beam halfway for this long before it lands
+#define STEALTH_TORCH_TURN_STEP (0.15 SECONDS)
+/// A step at a walk shows the beam half a tile back for this long
+#define STEALTH_TORCH_HALF_STEP (0.2 SECONDS)
+/// Suspicious or searching and standing: the beam swings a side, back, the other side, back, one move per this long
+#define STEALTH_TORCH_SWEEP_STEP (0.6 SECONDS)
+/// A seclite that is cut out sputters: world.time offsets it flashes on at, and how long each flash lasts
+#define STEALTH_TORCH_SPUTTER_AT list(0.2 SECONDS, 0.5 SECONDS)
+#define STEALTH_TORCH_SPUTTER_FLASH (0.1 SECONDS)
+/// Loudness of the click when a guard switches its light
+#define STEALTH_TORCH_CLICK_VOLUME 25
+/// The visible cone (decision 42) comes in this many lengths, an eighth of a tile apart; the last is an open beam
+#define STEALTH_BEAM_LENGTHS 22
+/// Pixels from the guard's tile centre to its icon's centre (stealth_beam.dmi is 128x192, the guard at its bottom middle)
+#define STEALTH_BEAM_PIVOT 96
+/// The longest a guard's cone waits for SSlighting to apply its lamp before it shows anyway (decision 42 sync)
+#define STEALTH_BEAM_WAIT_CAP (5 SECONDS)
+/// A lit light someone carries within this many tiles of an unaware guard standing in the dark draws its notice
+/// even behind it (never further than the light itself reaches)
+#define STEALTH_STRAY_LIGHT_RANGE 5
+/// Notice a second from such a light. It only ever fills to suspicious: the guard turns and uses its eyes.
+#define STEALTH_STRAY_LIGHT_RATE 0.5
+/// Bark: someone's light is on it
+#define STEALTH_BARK_LIGHT "stealth_light"
+/// Bark: its own light cut out
+#define STEALTH_BARK_LIGHT_DEAD "stealth_light_dead"
 
 // ===== Readable turns (decision 39, stealth_turns.dm) =====
 /// How long a guard leans towards the side it is about to turn to before it turns
@@ -189,12 +210,70 @@
 #define STEALTH_TURN_LEAN 3
 /// How long the lean takes to show and to go
 #define STEALTH_TURN_LEAN_TIME (0.2 SECONDS)
-/// After a turn where it stands, nothing is plain to it at a glance for this long (yellow; the skill holds the number)
-#define STEALTH_TURN_GRACE (1 SECONDS)
 
 #define FACTION_SCAV "scav"
 
-// ===== Stealth crits and the backstab knife (step 3a, stealth_crits.dm) =====
+// ===== Disguises (decision 40, stealth_disguise.dm) =====
+/// The den's own doors
+#define ACCESS_SCAV "scav"
+/// The den boss's vault (scav_den.dm): only his pass opens it
+#define ACCESS_SCAV_VAULT "scav_vault"
+// What someone wears of the scavs' own
+/// Their face is hidden (tg's get_face_name() finds none)
+#define STEALTH_PIECE_MASK (1<<0)
+/// The scav fatigues, showing, under nothing the guards don't wear
+#define STEALTH_PIECE_CLOTHES (1<<1)
+/// A scav pass in the ID slot
+#define STEALTH_PIECE_ID (1<<2)
+/// What someone wears is worked out again when it is older than this (a mask pulled down, a face wrecked)
+#define STEALTH_DISGUISE_CACHE_TIME (2 SECONDS)
+/// Share of the usual notice gained in the fatigues, in the fatigues and a mask, and in the whole set inside the
+/// guard's near range (beyond it the whole set gains none). Scaled by the guard's skill (`disguise`).
+#define STEALTH_DISGUISE_FILL_CLOTHES 0.5
+#define STEALTH_DISGUISE_FILL_MASKED 0.25
+#define STEALTH_DISGUISE_FILL_FULL 0.05
+/// Tiles within which a guard that sees them plainly stops them, for the same three. Its skill and being wary add to it.
+#define STEALTH_CHALLENGE_RANGE_CLOTHES 5
+#define STEALTH_CHALLENGE_RANGE_MASKED 3
+#define STEALTH_CHALLENGE_RANGE_FULL 2
+/// It reads a pass from this close
+#define STEALTH_CHALLENGE_CHECK_RANGE 2
+/// It reads a pass for this long before it lets them go
+#define STEALTH_CHALLENGE_CHECK_TIME (2 SECONDS)
+/// With no pass shown, it asks again after this long
+#define STEALTH_CHALLENGE_WARN_TIME (3 SECONDS)
+/// With no pass shown after this long, the disguise is blown
+#define STEALTH_CHALLENGE_FAIL_TIME (6 SECONDS)
+/// Further than this from where it stopped them is walking off
+#define STEALTH_CHALLENGE_LEASH 2
+/// How long a guard that read their pass lets them be
+#define STEALTH_PASS_TIME (5 MINUTES)
+/// Someone it waved on is stopped again (the pass came off and went back on) within STEALTH_PASS_RECHECK_COOLDOWN of a
+/// wave, or after STEALTH_PASS_RECHECK_MAX waves within STEALTH_PASS_RECHECK_MEMORY: it sees through them instead.
+#define STEALTH_PASS_RECHECK_COOLDOWN (60 SECONDS)
+#define STEALTH_PASS_RECHECK_MEMORY (5 MINUTES)
+#define STEALTH_PASS_RECHECK_MAX 2
+/// How long a guard remembers the wearer of a disguise it saw through (a face it remembers for good)
+#define STEALTH_MADE_TIME (5 MINUTES)
+/// Tiles within which a guard has a word for one of its own
+#define STEALTH_GREET_RANGE 4
+#define STEALTH_GREET_COOLDOWN (30 SECONDS)
+/// Anything sharp with this much force is a weapon in hand, like any gun or melee weapon
+#define STEALTH_WEAPON_FORCE 10
+/// One of its own goes by
+#define STEALTH_BARK_GREET "stealth_greet"
+/// It asks one of its own for a light
+#define STEALTH_BARK_SMOKE "stealth_smoke"
+/// It stops someone to see their pass
+#define STEALTH_BARK_CHALLENGE "stealth_challenge"
+/// The pass is good
+#define STEALTH_BARK_ID_PASS "stealth_id_pass"
+/// No pass yet: it asks again
+#define STEALTH_BARK_ID_FAIL "stealth_id_fail"
+/// It has seen through a disguise
+#define STEALTH_BARK_BLOWN "stealth_blown"
+
+// ===== Stealth crits, the head shot and the backstab knife (step 3a, decision 45; stealth_crits.dm, stealth_knife.dm) =====
 // Roll bonuses for hyperviolence's aimed crit roll (crit_roll.dm), on a stealth guard only. They go in before wound armour,
 // so armour scales them like the rest of the roll. Numbers argued in data/stealth/STATUS.md, "Step 3a".
 /// Added when the guard was unaware of everyone as the blow began
@@ -203,17 +282,38 @@
 #define STEALTH_CRIT_SUSPICIOUS_BONUS 15
 /// Added on top of either when the attacker aimed at the head (head, eyes or mouth)
 #define STEALTH_CRIT_HEAD_BONUS 35
-/// Added when the backstab knife strikes from behind (tg's check_behind()), whatever the guard's state
-#define STEALTH_BACKSTAB_BONUS 40
-/// The head shot crit (a bullet through the skull) needs a roll this high, and only a stealth hit can roll it
-#define STEALTH_HEAD_SHOT_THRESHOLD 80
-/// Least damage after armour a head shot crit needs
-#define STEALTH_HEAD_SHOT_MIN_DAMAGE 20
-/// A helmet this good against the bullet (after its armour penetration) stops a head shot crit outright
-#define STEALTH_HEAD_SHOT_HELMET_ARMOUR 30
-/// Brain damage a head shot crit deals (brains die at 200)
-#define STEALTH_HEAD_SHOT_BRAIN_DAMAGE 40
-/// How long a head shot crit knocks the guard down
-#define STEALTH_HEAD_SHOT_KNOCKDOWN (4 SECONDS)
+// The head shot (decision 45): a bullet aimed at the head of a guard caught off guard. Graded by what the round can do
+// against what is on the head. Numbers and the gun table: data/stealth/STATUS.md, "Decision 45".
+// The round's power gives burst, down or nothing; each protection step on the head moves it one down the ladder.
+/// Nothing happens beyond the hit itself
+#define STEALTH_HEAD_SHOT_NONE 0
+/// Stopped short of the skull: knocked out for STEALTH_HEAD_SHOT_HELMET_TIME
+#define STEALTH_HEAD_SHOT_HELMET 1
+/// Through the skull: brain damage, a heavy bleed, out cold until the bleed takes him
+#define STEALTH_HEAD_SHOT_DOWN 2
+/// The head bursts (hv_burst_head_apart())
+#define STEALTH_HEAD_SHOT_BURST 3
+/// Head protection (tg's armour against the round after its penetration, plus wound armour) for one step down
+#define STEALTH_HEAD_SHOT_STEP_ONE 20
+/// For two steps down
+#define STEALTH_HEAD_SHOT_STEP_TWO 50
+/// For three steps down: nothing beyond the hit
+#define STEALTH_HEAD_SHOT_STEP_THREE 80
+/// Least power for a round through the skull (power: the round's damage, plus half a positive wound bonus, plus the caliber bonus)
+#define STEALTH_HEAD_SHOT_MIN_POWER 15
+/// Power at which the head bursts
+#define STEALTH_HEAD_SHOT_BURST_POWER 40
+/// Added to the power of a rifle or shotgun round (stealth_heavy_caliber()), once per shot
+#define STEALTH_HEAD_SHOT_HEAVY_CALIBER 15
+/// The power of a round from a suppressed gun is multiplied by this
+#define STEALTH_HEAD_SHOT_SUPPRESSED_MULT 0.75
+/// Brain damage a round through the skull deals (BRAIN_DAMAGE_SEVERE is 100, brains die at 200)
+#define STEALTH_HEAD_SHOT_BRAIN_DAMAGE 120
+/// Blood flow of the wound a round through the skull leaves (tg's critical puncture is 3, a cut throat about 4)
+#define STEALTH_HEAD_SHOT_FLOW 8
+/// How long a round through the skull knocks him out: longer than the bleed takes to put him under for good
+#define STEALTH_HEAD_SHOT_DOWN_TIME (90 SECONDS)
+/// How long a round a helmet stopped knocks him out
+#define STEALTH_HEAD_SHOT_HELMET_TIME (6 SECONDS)
 /// A bullet through the head
 #define WOUND_SERIES_HV_HEAD_SHOT "wound_series_hv_head_shot"

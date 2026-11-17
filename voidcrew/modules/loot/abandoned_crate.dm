@@ -22,6 +22,8 @@ GLOBAL_LIST_INIT(abandoned_crate_common, list(
 	/obj/item/clothing/suit/hooded/wintercoat = 4,
 	/obj/item/stack/medical/gauze/twelve = 4,
 	/obj/item/grenade/smokebomb = 4,
+	/obj/item/walkman = 3,
+	/obj/item/cassette_tape/mixtape = 3,
 ))
 
 /// Worth the code-cracking on its own: the shipment had something on it.

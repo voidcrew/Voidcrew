@@ -35,10 +35,10 @@
 	var/atom/movable/shell = stealth_shell_of(who)
 	return istype(shell, /obj/structure/closet) ? shell : null
 
-/// Whether it has `box` in view (all round, as it keeps an alert target in view).
+/// Whether it has `box` in view (all round, in the light it can see by, as it keeps an alert target in view).
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_sees_closet(obj/structure/closet/box)
 	var/mob/living/guard = pawn
-	if(QDELETED(box) || !isturf(guard.loc) || get_dist(guard, box) > HUMAN_NPC_SIGHT_RANGE)
+	if(QDELETED(box) || !isturf(guard.loc) || get_dist(guard, box) > HUMAN_NPC_SIGHT_RANGE || !stealth_alert_lit(box))
 		return FALSE
 	return can_see(guard, box, HUMAN_NPC_SIGHT_RANGE)
 

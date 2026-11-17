@@ -193,7 +193,7 @@
 	TEST_ASSERT_EQUAL(crew.reputation, 0, "A refused turn-in earned reputation")
 	var/list/card = posting.board_ui_entry(ship, pad)
 	TEST_ASSERT_EQUAL(card["reputation_gain"], 2, "The wanted card lost what it is worth")
-	criminal.adjustBruteLoss(110) // into tg crit
+	criminal.apply_damage(110, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND) // into tg crit
 	TEST_ASSERT_EQUAL(record.board_work_zone, 2, "Capture did not bind its actual field band")
 	TEST_ASSERT_EQUAL(crew.reputation, 0, "Capture earned reputation before a paying turn-in")
 	criminal.forceMove(deck)
@@ -259,7 +259,7 @@
 	TEST_ASSERT_EQUAL(tier_posting.board_claim_zone_work(ship), 0, "An escaped prisoner earned reputation")
 	TEST_ASSERT(!tier_posting.record.board_reputation_claimed, "An unpaid escape consumed a reputation claim")
 	var/mob/living/carbon/human/npc/bounty_criminal/admin_spawn = allocate(/mob/living/carbon/human/npc/bounty_criminal, home)
-	admin_spawn.adjustBruteLoss(110) // into tg crit
+	admin_spawn.apply_damage(110, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND) // into tg crit
 	TEST_ASSERT_NULL(admin_spawn.posting(), "An admin spawn acquired a posting")
 	TEST_ASSERT_EQUAL(crew.reputation, 20, "An admin spawn earned reputation")
 
@@ -287,7 +287,7 @@
 	var/datum/criminal_bounty/posting = board_test_posting(2)
 	var/datum/bounty_record/record = posting.record
 	var/mob/living/carbon/human/npc/bounty_criminal/criminal = board_test_criminal(posting, field)
-	criminal.adjustBruteLoss(110) // into tg crit
+	criminal.apply_damage(110, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND) // into tg crit
 	TEST_ASSERT_EQUAL(record.board_work_zone, 2, "The first sighting did not bind its capture band")
 	TEST_ASSERT(posting.relist("slipped away"), "The escape did not start relisting")
 	TEST_ASSERT_NULL(record.board_work_zone, "An escaped sighting kept its old work band")

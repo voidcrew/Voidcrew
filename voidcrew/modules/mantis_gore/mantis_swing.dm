@@ -294,6 +294,7 @@
 	RegisterSignal(bearer, COMSIG_QDELETING, PROC_REF(on_bearer_deleted))
 	bearer.vis_contents += src
 	QDEL_IN(src, MANTIS_SWING_LIFETIME)
+	sandy_replay_made(src) // a Sandevistan replay plays it again (ware_sandy_replay.dm)
 
 #undef MANTIS_SWING_ICON
 #undef MANTIS_SWING_TIME

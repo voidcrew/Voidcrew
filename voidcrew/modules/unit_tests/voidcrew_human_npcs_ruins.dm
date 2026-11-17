@@ -26,7 +26,9 @@
 			if(isnull(npc))
 				continue
 			TEST_ASSERT_NOTNULL(npc.w_uniform, "[npc_type] has no clothes in zone [zone]")
-			TEST_ASSERT(human_npc_gear_locked(npc.w_uniform), "[npc_type]'s clothes aren't locked to it in zone [zone]")
+			// The scavs' fatigues are loot on purpose (stealth_disguise.dm); their boots stand in for the rest of their dress.
+			var/obj/item/clothes = istype(npc.w_uniform, /obj/item/clothing/under/syndicate/scav) ? npc.shoes : npc.w_uniform
+			TEST_ASSERT(human_npc_gear_locked(clothes), "[npc_type]'s clothes aren't locked to it in zone [zone]")
 			var/obj/item/gun/gun = human_npc_held_gun(npc)
 			var/unarmed_ok = npc_type == /mob/living/carbon/human/npc/ruin/hermit && zone == 1
 			if(!unarmed_ok)

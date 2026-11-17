@@ -638,10 +638,11 @@ GLOBAL_LIST_EMPTY(bounty_kingpin_marks)
 	kingpin_aim_target = WEAKREF(target)
 	var/atom/aim_at = kingpin_crew?.shot_target(target) || target
 	face_atom(aim_at)
-	kingpin_aim_beam = Beam(aim_at, icon_state = "infrared", time = BOUNTY_KINGPIN_REVOLVER_AIM, beam_color = COLOR_RED)
+	var/aim_time = cyberware_dilated_time(src, BOUNTY_KINGPIN_REVOLVER_AIM) // slower in a slow-mo
+	kingpin_aim_beam = Beam(aim_at, icon_state = "infrared", time = aim_time, beam_color = COLOR_RED)
 	visible_message(span_danger("[src] thumbs the hammer back and aims at [target]!"), vision_distance = BOUNTY_KINGPIN_SIGHT)
 	playsound(src, 'sound/items/weapons/gun/general/ballistic_click.ogg', 60, TRUE)
-	kingpin_aim_timer = addtimer(CALLBACK(src, PROC_REF(kingpin_fire)), BOUNTY_KINGPIN_REVOLVER_AIM, TIMER_STOPPABLE | TIMER_DELETE_ME)
+	kingpin_aim_timer = addtimer(CALLBACK(src, PROC_REF(kingpin_fire)), aim_time, TIMER_STOPPABLE | TIMER_DELETE_ME)
 	return TRUE
 
 /**
@@ -2211,7 +2212,8 @@ GLOBAL_LIST_EMPTY(bounty_kingpin_marks)
 		return FALSE
 	if(next.z != crew_seat.z || get_dist(next, crew_seat) > BOUNTY_GOON_LEASH)
 		return FALSE
-	goon.goon_next_move_at = world.time + max(BOUNTY_GOON_STEP, goon.cached_multiplicative_slowdown)
+	// Its own clock's step: a slow-mo pushes this deadline back (cyberware_push_clocks()), so it doesn't count the slow-mo's drag on the walk as well
+	goon.goon_next_move_at = world.time + max(BOUNTY_GOON_STEP, cyberware_undilated_slowdown(goon))
 	return goon.Move(next, get_dir(goon, next))
 
 /// A sidestep for a clear line on `target`: an open tile next to `goon`, no further from them, from which nobody he isn't fighting is in the way
@@ -2253,12 +2255,12 @@ GLOBAL_LIST_EMPTY(bounty_kingpin_marks)
 			goon.goon_next_fire_at = world.time + BOUNTY_GOON_SMG_COOLDOWN
 			playsound(goon, 'sound/items/weapons/gun/smg/smgrack.ogg', 50, TRUE)
 			goon.visible_message(span_warning("[goon] brings [goon.p_their()] SMG up level."), vision_distance = COMBAT_MESSAGE_RANGE)
-			goon.goon_windup_timer = addtimer(CALLBACK(src, PROC_REF(goon_finish_windup), WEAKREF(goon), WEAKREF(target)), BOUNTY_GOON_SMG_WINDUP, TIMER_STOPPABLE | TIMER_DELETE_ME)
+			goon.goon_windup_timer = addtimer(CALLBACK(src, PROC_REF(goon_finish_windup), WEAKREF(goon), WEAKREF(target)), cyberware_dilated_time(goon, BOUNTY_GOON_SMG_WINDUP), TIMER_STOPPABLE | TIMER_DELETE_ME)
 		if(BOUNTY_GOON_WEAPON_SHOTGUN)
 			goon.goon_next_fire_at = world.time + BOUNTY_GOON_SHOTGUN_COOLDOWN
 			playsound(goon, 'sound/items/weapons/gun/shotgun/rack.ogg', 50, TRUE)
 			goon.visible_message(span_warning("[goon] pumps [goon.p_their()] shotgun."), vision_distance = COMBAT_MESSAGE_RANGE)
-			goon.goon_windup_timer = addtimer(CALLBACK(src, PROC_REF(goon_finish_windup), WEAKREF(goon), WEAKREF(target)), BOUNTY_GOON_SHOTGUN_WINDUP, TIMER_STOPPABLE | TIMER_DELETE_ME)
+			goon.goon_windup_timer = addtimer(CALLBACK(src, PROC_REF(goon_finish_windup), WEAKREF(goon), WEAKREF(target)), cyberware_dilated_time(goon, BOUNTY_GOON_SHOTGUN_WINDUP), TIMER_STOPPABLE | TIMER_DELETE_ME)
 		else
 			// Single shots off the Stechkin's own selector, in strings with a pause between them; an empty magazine reloads instead
 			var/obj/item/gun/ballistic/pistol = human_npc_loaded_gun(goon)
@@ -2285,7 +2287,7 @@ GLOBAL_LIST_EMPTY(bounty_kingpin_marks)
 	if(!goon_fire(goon, target))
 		return
 	for(var/pull in 2 to BOUNTY_GOON_SMG_BURST)
-		addtimer(CALLBACK(src, PROC_REF(goon_burst_shot), goon_ref, target_ref), (pull - 1) * BOUNTY_GOON_SMG_BURST_GAP, TIMER_DELETE_ME)
+		addtimer(CALLBACK(src, PROC_REF(goon_burst_shot), goon_ref, target_ref), cyberware_dilated_time(goon, (pull - 1) * BOUNTY_GOON_SMG_BURST_GAP), TIMER_DELETE_ME)
 
 /// The rest of an SMG burst, a trigger pull at a time
 /datum/bounty_kingpin_crew/proc/goon_burst_shot(datum/weakref/goon_ref, datum/weakref/target_ref)
@@ -3232,3 +3234,22 @@ SUBSYSTEM_DEF(bounty_kingpin)
 /// His lounge faction stays neutral; his explicit boss encounter is still profiled.
 /mob/living/carbon/human/npc/bounty_criminal/kingpin/is_npc_zone_exempt()
 	return npc_zone_exempt || npc_spawn_context?.exempt || client || mind
+
+// ===== IN A SLOW-MO =====
+
+// The crew paces its people on clocks of its own, not their AI's: a slow-mo field pushes them back with the rest
+// of the body's deadlines (ware_sandy_timestop.dm, push_deadlines()).
+/mob/living/carbon/human/npc/bounty_kingpin_goon/cyberware_push_clocks(push)
+	. = ..()
+	var/now = world.time
+	if(goon_next_fire_at > now)
+		goon_next_fire_at += push
+	if(goon_fumbled_until > now)
+		goon_fumbled_until += push
+	if(goon_next_move_at > now)
+		goon_next_move_at += push
+
+/mob/living/carbon/human/npc/bounty_criminal/kingpin/cyberware_push_clocks(push)
+	. = ..()
+	if(kingpin_next_aim_at > world.time)
+		kingpin_next_aim_at += push

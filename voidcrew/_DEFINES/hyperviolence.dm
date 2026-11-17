@@ -106,3 +106,10 @@
 #define WOUND_SERIES_HV_CAROTID "wound_series_hv_carotid"
 /// A torn aorta.
 #define WOUND_SERIES_HV_AORTA "wound_series_hv_aorta"
+
+// Knife executions (voidcrew/modules/hyperviolence/overlays_exec/knife_executions.dm).
+
+/// Wind-up before a knife execution cuts the throat.
+#define HV_KNIFE_EXECUTION_WINDUP (1.5 SECONDS)
+/// do_after interaction key for a knife execution wind-up.
+#define HV_KNIFE_EXECUTION_DOAFTER "hv_knife_execution"

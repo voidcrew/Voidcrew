@@ -27,6 +27,9 @@
 	wait_for_hit(target)
 	TEST_ASSERT(target.getBruteLoss() > 0, "The NPC's buckshot never reached the target behind its ally")
 	TEST_ASSERT_EQUAL(ally.getBruteLoss(), 0, "The NPC's buckshot hit its own ally on the way")
+	wait_for_quiet()
+	ally.fully_heal()
+	target.fully_heal()
 
 	// Aimed at its ally, it hits its ally
 	var/obj/item/ammo_casing/c38/aimed = allocate(/obj/item/ammo_casing/c38)
@@ -56,9 +59,56 @@
 	TEST_ASSERT(turned.can_hit_target(ally, FALSE, TRUE), "A reflected NPC shot still passes over the NPC's side")
 	turned.firer = null
 
+	// An ally held by the NPC's enemy is a shield: the shot hits them
+	wait_for_quiet()
+	var/mob/living/carbon/human/consistent/holder = allocate(/mob/living/carbon/human/consistent, locate(start.x + 2, start.y + 1, start.z))
+	holder.faction = list("npc_fire_test_other")
+	ally.fully_heal()
+	target.fully_heal()
+	TEST_ASSERT(holder.start_pulling(ally, supress_message = TRUE), "Test fixture: the enemy couldn't grab the ally")
+	holder.setGrabState(GRAB_AGGRESSIVE)
+	TEST_ASSERT_EQUAL(ally.body_position, STANDING_UP, "Test fixture: the held ally isn't standing")
+	var/obj/item/ammo_casing/c38/shield_round = allocate(/obj/item/ammo_casing/c38)
+	TEST_ASSERT(shield_round.fire_casing(target, shooter, null, 0, TRUE, BODY_ZONE_CHEST, 0, shooter), "The NPC's round at the shield didn't fire")
+	wait_for_hit(ally)
+	TEST_ASSERT(ally.getBruteLoss() > 0, "The NPC's bullet passed over its ally held by the enemy")
+	TEST_ASSERT_EQUAL(target.getBruteLoss(), 0, "The NPC's bullet went through its ally held by the enemy")
+
+	// Only dragged along (a passive pull), the ally is still passed over
+	ally.fully_heal()
+	holder.setGrabState(GRAB_PASSIVE)
+	var/obj/item/ammo_casing/c38/pulled_round = allocate(/obj/item/ammo_casing/c38)
+	TEST_ASSERT(pulled_round.fire_casing(target, shooter, null, 0, TRUE, BODY_ZONE_CHEST, 0, shooter), "The NPC's round past the dragged ally didn't fire")
+	wait_for_hit(target)
+	TEST_ASSERT(target.getBruteLoss() > 0, "The NPC's bullet never passed its ally dragged by the enemy")
+	TEST_ASSERT_EQUAL(ally.getBruteLoss(), 0, "The NPC's bullet hit its ally only dragged by the enemy")
+
+	// Held by someone on its own side, the ally is still passed over
+	target.fully_heal()
+	holder.faction = list("npc_fire_test_side")
+	holder.setGrabState(GRAB_AGGRESSIVE)
+	var/obj/item/ammo_casing/c38/friendly_round = allocate(/obj/item/ammo_casing/c38)
+	TEST_ASSERT(friendly_round.fire_casing(target, shooter, null, 0, TRUE, BODY_ZONE_CHEST, 0, shooter), "The NPC's round past the friendly-held ally didn't fire")
+	wait_for_hit(target)
+	TEST_ASSERT(target.getBruteLoss() > 0, "The NPC's bullet never passed its ally held by its own side")
+	TEST_ASSERT_EQUAL(ally.getBruteLoss(), 0, "The NPC's bullet hit its ally held by its own side")
+	holder.stop_pulling()
+
 /// Waits up to two seconds for `victim` to take brute damage.
 /datum/unit_test/voidcrew_npc_fire_over_allies/proc/wait_for_hit(mob/living/victim)
 	for(var/i in 1 to 20)
 		if(victim.getBruteLoss() > 0)
+			return
+		sleep(0.1 SECONDS)
+
+/// Waits up to three seconds for every shot in the test room to land, so a late pellet can't hit the next check.
+/datum/unit_test/voidcrew_npc_fire_over_allies/proc/wait_for_quiet()
+	for(var/i in 1 to 30)
+		var/flying = FALSE
+		for(var/turf/spot as anything in block(run_loc_floor_bottom_left, run_loc_floor_top_right))
+			if(locate(/obj/projectile) in spot)
+				flying = TRUE
+				break
+		if(!flying)
 			return
 		sleep(0.1 SECONDS)

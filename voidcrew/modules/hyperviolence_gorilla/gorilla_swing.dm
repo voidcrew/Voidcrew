@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 /**
  * # Arm swings
  *
@@ -249,3 +252,5 @@
 #undef SWING_FRAME_BASE
 #undef SWING_FRAME_ARMS
 #undef SWING_FRAME_LAYERS
+
+#undef animate

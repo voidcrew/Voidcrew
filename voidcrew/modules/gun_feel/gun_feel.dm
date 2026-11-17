@@ -103,7 +103,9 @@
 	gun_feel_resolve()
 	var/angle = gun_feel_fire_angle(user, target)
 	gun_feel_kick(user, angle)
-	if(gun_feel_wants_flash())
+	// An execution's flash is at the barrel, on the head, and while its shooter is drawn aiming the gun isn't at the
+	// hip where this one goes (hyperviolence/visuals/execution_motion.dm, execution_aim.dm)
+	if(gun_feel_wants_flash() && !hv_firing_execution && !hv_aim)
 		gun_feel_muzzle_flash(user, angle)
 
 /// Direction of the shot in degrees clockwise from north.

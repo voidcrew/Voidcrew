@@ -319,7 +319,7 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 		REMOVE_TRAIT(src, TRAIT_IMMOBILIZED, BOUNTY_BOSS_BUSY_TRAIT)
 	ai_controller?.CancelActions()
 	if(duration)
-		boss_busy_timer = addtimer(CALLBACK(src, PROC_REF(boss_clear_busy), boss_busy_serial), duration, TIMER_STOPPABLE | TIMER_DELETE_ME)
+		boss_busy_timer = addtimer(CALLBACK(src, PROC_REF(boss_clear_busy), boss_busy_serial), cyberware_dilated_time(src, duration), TIMER_STOPPABLE | TIMER_DELETE_ME)
 	return boss_busy_serial
 
 /// Free again, unless `serial` is stale
@@ -1351,7 +1351,7 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	playsound(src, 'sound/machines/piston/piston_raise.ogg', 60, TRUE)
 	add_filter(BOUNTY_BOSS_SMASH_FILTER, 2, outline_filter(1, BOUNTY_BOSS_SMASH_COLOR))
 	boss_smash_mark = WEAKREF(new /obj/effect/temp_visual/bounty_boss_mark(get_turf(barrier), smash_time, BOUNTY_BOSS_SMASH_COLOR))
-	addtimer(CALLBACK(src, PROC_REF(boss_smash_blow), serial), BOUNTY_BOSS_SMASH_WINDUP, TIMER_DELETE_ME)
+	addtimer(CALLBACK(src, PROC_REF(boss_smash_blow), serial), cyberware_dilated_time(src, BOUNTY_BOSS_SMASH_WINDUP), TIMER_DELETE_ME)
 	return TRUE
 
 /**
@@ -1387,7 +1387,7 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	if(QDELETED(barrier) || !barrier.density || boss_smash_blows >= BOUNTY_BOSS_SMASH_MOST_BLOWS)
 		boss_end_smash(serial)
 		return threw
-	addtimer(CALLBACK(src, PROC_REF(boss_smash_blow), serial), boss_smash_wait(), TIMER_DELETE_ME)
+	addtimer(CALLBACK(src, PROC_REF(boss_smash_blow), serial), cyberware_dilated_time(src, boss_smash_wait()), TIMER_DELETE_ME)
 	return threw
 
 /// How long until it can throw its next smash punch: its body's click and the soonest arm's own cooldown, at least a tick
@@ -1603,7 +1603,7 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	boss.face_atom(target)
 	boss.boss_bark("ability")
 	telegraph(target)
-	addtimer(CALLBACK(src, PROC_REF(finish_windup), serial), windup, TIMER_DELETE_ME)
+	addtimer(CALLBACK(src, PROC_REF(finish_windup), serial), cyberware_dilated_time(boss, windup), TIMER_DELETE_ME) // slower in a slow-mo
 	return TRUE
 
 /**
@@ -2212,3 +2212,14 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 #undef BOUNTY_BOSS_BUSY_TRAIT
 #undef BOUNTY_BOSS_BUSY_SMASH
 #undef BOUNTY_BOSS_SMASH_FILTER
+
+// A slow-mo field pushes its own clocks back with the rest of its deadlines (ware_sandy_timestop.dm, push_deadlines())
+/mob/living/carbon/human/npc/bounty_criminal/boss/cyberware_push_clocks(push)
+	. = ..()
+	var/now = world.time
+	if(boss_next_ability_at > now)
+		boss_next_ability_at += push
+	if(boss_fallback_until > now)
+		boss_fallback_until += push
+	if(boss_cover_rethink_at > now)
+		boss_cover_rethink_at += push

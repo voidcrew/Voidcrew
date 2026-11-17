@@ -6,7 +6,7 @@
 //
 // Every test runs in the walled, lit room of voidcrew_stealth_live with a person on SSmobs' list of players, so
 // the level is awake and guards hear. Those down to hear/cleanup never sleep: the AI is on but never gets a
-// turn, so they pin what one noise does. The ones after them use real tg actions, and the last three let the
+// turn, so they pin what one noise does. The ones after them use real tg actions, and the last four let the
 // real AI run.
 
 #define STEALTH_HEAR_GUARD /mob/living/carbon/human/npc/ruin/trooper/scav
@@ -31,8 +31,10 @@
 /datum/unit_test/voidcrew_stealth_live/hear/proc/ground()
 	var/turf/corner = room.bottom_left_turfs[1]
 	var/turf/far_corner = room.top_right_turfs[1]
+	// A floor kept from an earlier test's room may still have it.
 	for(var/turf/open/spot in block(corner.x, corner.y, corner.z, far_corner.x, far_corner.y, corner.z))
-		spot.AddElement(/datum/element/forced_gravity, 1)
+		if(!spot.has_gravity())
+			spot.AddElement(/datum/element/forced_gravity, 1)
 
 /// A sentry at (dx, dy): awake and in the group.
 /datum/unit_test/voidcrew_stealth_live/hear/proc/sentry(dx, dy, facing = EAST, guard_type = STEALTH_HEAR_GUARD)
@@ -118,13 +120,13 @@
 		var/list/noise = gun.stealth_shot_noise()
 		TEST_ASSERT_EQUAL(noise[1], expected[gun_type], "[gun_type] is the wrong loudness")
 	var/obj/item/gun/ballistic/automatic/pistol/pistol = allocate(/obj/item/gun/ballistic/automatic/pistol, here)
-	TEST_ASSERT_EQUAL(pistol.stealth_shot_noise()[2], 9, "A pistol's reach isn't 9")
+	TEST_ASSERT_EQUAL(pistol.stealth_shot_noise()[2], 8, "A pistol's reach isn't 8")
 	pistol.fire_sound_volume = 10
-	TEST_ASSERT(pistol.stealth_shot_noise()[2] < 9, "A quiet custom gun is heard as far as a loud one")
+	TEST_ASSERT(pistol.stealth_shot_noise()[2] < 8, "A quiet custom gun is heard as far as a loud one")
 	pistol.install_suppressor(new /obj/item/suppressor(pistol))
 	var/list/quiet = pistol.stealth_shot_noise()
 	TEST_ASSERT_EQUAL(quiet[1], "gun_quiet", "A pistol with a suppressor fitted isn't quiet")
-	TEST_ASSERT_EQUAL(quiet[2], 4, "A suppressed shot's reach isn't 4")
+	TEST_ASSERT_EQUAL(quiet[2], 3, "A suppressed shot's reach isn't 3")
 
 /// tg's footstep rules: running is heard, walking and every silencer are not.
 /datum/unit_test/voidcrew_stealth_live/hear/footstep_reach
@@ -134,22 +136,22 @@
 	var/mob/living/carbon/human/runner = person_at(1, 1, FALSE)
 	TEST_ASSERT_EQUAL(stealth_footstep_reach(runner), 0, "A walking step is heard")
 	runner.toggle_move_intent()
-	TEST_ASSERT_EQUAL(stealth_footstep_reach(runner), 5, "A running step barefoot on plain floor doesn't carry 5")
+	TEST_ASSERT_EQUAL(stealth_footstep_reach(runner), 3, "A running step barefoot on plain floor doesn't carry 3")
 	runner.equip_to_slot_or_del(new /obj/item/clothing/shoes/sneakers/black(runner), ITEM_SLOT_FEET)
-	TEST_ASSERT_EQUAL(stealth_footstep_reach(runner), 5, "A running step in shoes on plain floor doesn't carry 5")
+	TEST_ASSERT_EQUAL(stealth_footstep_reach(runner), 3, "A running step in shoes on plain floor doesn't carry 3")
 	var/turf/plating = at(3, 1)
 	plating.ChangeTurf(/turf/open/floor/plating)
 	runner.forceMove(plating)
-	TEST_ASSERT(stealth_footstep_reach(runner) > 5, "Plating is no louder than floor")
+	TEST_ASSERT(stealth_footstep_reach(runner) > 3, "Plating is no louder than floor")
 	runner.forceMove(at(1, 1))
 	ADD_TRAIT(runner, TRAIT_LIGHT_STEP, TRAIT_SOURCE_UNIT_TESTS)
-	TEST_ASSERT_EQUAL(stealth_footstep_reach(runner), 3, "A light step doesn't carry 3")
+	TEST_ASSERT_EQUAL(stealth_footstep_reach(runner), 2, "A light step doesn't carry 2")
 	REMOVE_TRAIT(runner, TRAIT_LIGHT_STEP, TRAIT_SOURCE_UNIT_TESTS)
 	ADD_TRAIT(runner, TRAIT_SILENT_FOOTSTEPS, TRAIT_SOURCE_UNIT_TESTS)
 	TEST_ASSERT_EQUAL(stealth_footstep_reach(runner), 0, "Silent footsteps are heard")
 	REMOVE_TRAIT(runner, TRAIT_SILENT_FOOTSTEPS, TRAIT_SOURCE_UNIT_TESTS)
 	runner.set_body_position(LYING_DOWN)
-	TEST_ASSERT_EQUAL(stealth_footstep_reach(runner), 2, "Crawling doesn't carry 2")
+	TEST_ASSERT_EQUAL(stealth_footstep_reach(runner), 1, "Crawling doesn't carry 1")
 	runner.set_body_position(STANDING_UP)
 	var/obj/structure/closet/locker = allocate(/obj/structure/closet, at(1, 1))
 	runner.forceMove(locker)
@@ -199,30 +201,10 @@
 	for(var/mob/living/guard as anything in list(first, second, third))
 		settle(guard)
 	group.rewind(4 SECONDS)
-	TEST_ASSERT_EQUAL(stealth_noise(at(15, 1), "glass"), 2, "A smash 6 and 8 tiles off wasn't heard by two")
+	TEST_ASSERT_EQUAL(stealth_noise(at(14, 1), "glass"), 2, "A smash 5 and 7 tiles off wasn't heard by two")
 	TEST_ASSERT_EQUAL(third_ai.stealth_state(), "suspicious", "Nobody went to a noise somewhere new")
 	TEST_ASSERT_EQUAL(second_ai.stealth_state(), "unaware", "Two went to the first noise at a new spot")
 	no_targets(list(first, second, third))
-
-/// A sentry leaves its post only for a noise close by.
-/datum/unit_test/voidcrew_stealth_live/hear/sentry_rule
-
-/datum/unit_test/voidcrew_stealth_live/hear/sentry_rule/Run()
-	TEST_ASSERT(hear_room(20, 3), "No room for the test")
-	var/mob/living/carbon/human/npc/post_guard = sentry(6, 1)
-	var/mob/living/carbon/human/npc/route_guard = walker(7, 1)
-	var/datum/ai_controller/basic_controller/human_npc/stealth/post_ai = post_guard.ai_controller
-	TEST_ASSERT_NULL(post_ai.route_id, "A guard with no stop near it claimed a route")
-	TEST_ASSERT_EQUAL(stealth_noise(at(0, 1), "glass"), 2, "Both guards should hear a smash 6 and 7 tiles off")
-	TEST_ASSERT_EQUAL(state_of(post_guard), "unaware", "A sentry left its post for a noise 6 tiles off")
-	TEST_ASSERT(post_ai.glance_until > world.time, "The sentry didn't glance")
-	TEST_ASSERT_EQUAL(state_of(route_guard), "suspicious", "The route guard didn't go in the sentry's place")
-	settle(post_guard)
-	settle(route_guard)
-	post_ai.group.forget_noises()
-	stealth_noise(at(3, 1), "glass")
-	TEST_ASSERT_EQUAL(state_of(post_guard), "suspicious", "A sentry didn't look at a noise 3 tiles off")
-	no_targets(list(post_guard, route_guard))
 
 /// The guard who never came back is missed by the ones who watched it go, once it is overdue.
 /datum/unit_test/voidcrew_stealth_live/hear/missing
@@ -719,6 +701,54 @@
 		sleep(2)
 	TEST_ASSERT(back, "The guard didn't go back to its round: state [guard_ai.stealth_state()], [get_dist(guard, at(2, 2))] and [get_dist(guard, at(8, 2))] tiles from its stops")
 	TEST_ASSERT(!guard_ai.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET), "A smashed bottle gave a guard a target")
+
+/// A bottle smashes 5 tiles behind a sentry: it walks a few steps toward it (STEALTH_SENTRY_INVESTIGATE_RANGE, 4),
+/// looks round, and walks back to its post and its facing.
+/datum/unit_test/voidcrew_stealth_live/hear/sentry_rule
+
+/datum/unit_test/voidcrew_stealth_live/hear/sentry_rule/Run()
+	TEST_ASSERT(make_room(34, 7), "No room for the test")
+	marker = allocate(/obj/effect/landmark/stealth_group, at(0, 6))
+	// The player who keeps the level awake, walled off at the far end.
+	for(var/dy in 0 to 6)
+		var/turf/wall_spot = at(24, dy)
+		wall_spot.ChangeTurf(/turf/closed/wall)
+	person_at(30, 3)
+	ground()
+	var/turf/post = at(14, 3)
+	var/mob/living/carbon/human/npc/guard = guard_at(14, 3, EAST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = wake(guard)
+	var/mob/living/carbon/human/thrower = person_at(0, 3, FALSE)
+	sleep(3 SECONDS)
+	TEST_ASSERT_NULL(guard_ai.route_id, "A guard with no stop near it claimed a route")
+	TEST_ASSERT_EQUAL(guard_ai.home_turf, post, "The sentry's post isn't where it spawned")
+	TEST_ASSERT_EQUAL(guard_ai.stealth_state(), "unaware", "A sentry with nobody in sight isn't unaware")
+	var/turf/landing = at(9, 3)
+	var/obj/item/reagent_containers/cup/glass/bottle/beer/bottle = allocate(/obj/item/reagent_containers/cup/glass/bottle/beer, get_turf(thrower))
+	bottle.throw_at(landing, 14, 2, thrower)
+	// Out of the way before the sentry turns round: this is about the noise, not a sighting.
+	thrower.forceMove(at(32, 5))
+	var/start_time = world.time
+	var/best_dist = 0
+	var/deadline = world.time + 25 SECONDS
+	while(world.time < deadline)
+		best_dist = max(best_dist, get_dist(guard, post))
+		if(best_dist >= 3)
+			break
+		sleep(2)
+	TEST_ASSERT(best_dist >= 3, "The sentry didn't leave its post for a bottle 5 tiles off: it got [best_dist] tiles away, state [guard_ai.stealth_state()], heard [guard_ai.last_heard ? guard_ai.last_heard[1] : "nothing"]")
+	var/back = FALSE
+	deadline = start_time + 60 SECONDS
+	while(world.time < deadline)
+		best_dist = max(best_dist, get_dist(guard, post))
+		if(guard_ai.stealth_state() == "unaware" && get_turf(guard) == post && guard.dir == EAST)
+			back = TRUE
+			break
+		sleep(2)
+	TEST_ASSERT(best_dist <= 5, "The sentry went [best_dist] tiles from its post for a small noise")
+	TEST_ASSERT(back, "The sentry didn't go back to its post: state [guard_ai.stealth_state()], [get_dist(guard, post)] tiles off, facing [dir2text(guard.dir)]")
+	TEST_ASSERT_EQUAL(guard_ai.sentry_dir, EAST, "The sentry's post facing changed")
+	TEST_ASSERT(!guard_ai.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET), "A smashed bottle gave a sentry a target")
 
 /// Someone walking up behind a guard is not heard; the same person running makes it turn.
 /datum/unit_test/voidcrew_stealth_live/hear/live_footsteps

@@ -57,8 +57,8 @@ GLOBAL_LIST_EMPTY(stealth_test_dark_turfs)
  * Whether `tile` is dark enough to hide in. A turf with no lighting object (planet ground lit only by its
  * area's ambient light) reads its area's base light, which get_lumcount() skips (it returns 1 there).
  * Same rule as the bounty AI's ai_tile_is_dark() (bounty_ai_meek.dm), which is a type proc.
- * Every light counts, a guard's own flashlight pool too: it is real light that players see (decision 39).
- * `no_guard_lights` leaves out every guard's pool, so a guard deciding whether its spot needs a light judges by
+ * Every light counts, a guard's own flashlight beam too: it is real light that players see (decision 39).
+ * `no_guard_lights` leaves out every guard's beam, so a guard deciding whether its spot needs a light judges by
  * the room's own light, not by a friend walking past with one (decision 32: no flicker when guards meet).
  */
 /proc/stealth_tile_is_dark(turf/tile, no_guard_lights = FALSE)
@@ -73,6 +73,27 @@ GLOBAL_LIST_EMPTY(stealth_test_dark_turfs)
 		return (tile_area.base_lighting_alpha / 255) + tile.dynamic_lumcount < STEALTH_DARK_LUMCOUNT
 	var/guard_light = no_guard_lights ? stealth_torch_share(tile) : 0
 	return tile.get_lumcount() - guard_light < STEALTH_DARK_LUMCOUNT
+
+/**
+ * Whether the room itself leaves `tile` dark: its fixed lights only, without any guard's beam and without the
+ * lights people carry (tg's overlay lights, which get_lumcount() adds on top). A guard standing somewhere like
+ * that has a reason to wonder whose light it is seeing (decision 41).
+ */
+/proc/stealth_room_is_dark(turf/tile)
+	if(!isturf(tile))
+		return FALSE
+#ifdef UNIT_TESTS
+	if(tile in GLOB.stealth_test_dark_turfs)
+		return GLOB.stealth_test_dark_turfs[tile]
+#endif
+	if(!tile.lighting_object)
+		var/area/tile_area = tile.loc
+		return (tile_area.base_lighting_alpha / 255) < STEALTH_DARK_LUMCOUNT
+	var/room = 0
+	for(var/datum/lighting_corner/corner as anything in list(tile.lighting_corner_NE, tile.lighting_corner_SE, tile.lighting_corner_SW, tile.lighting_corner_NW))
+		if(corner)
+			room += corner.lum_r + corner.lum_g + corner.lum_b
+	return room / 12 - stealth_torch_share(tile) < STEALTH_DARK_LUMCOUNT
 
 /**
  * What `who` is shut inside, as it stands on a turf: the box, locker, bag or car, or the outermost of them.

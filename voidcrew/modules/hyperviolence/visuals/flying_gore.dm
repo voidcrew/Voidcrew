@@ -87,6 +87,7 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 			pixel_y = base_pixel_y + HV_VIS_DY(fling_dir) * 7 + rand(-3, 3)
 	var/datum/component/hv_tumble/tumble = AddComponent(/datum/component/hv_tumble, style, blood_dna, fling_dir, path, on_landed, from, starts_over, starts_turned)
 	tumble.launch()
+	sandy_replay_made(src) // a Sandevistan's recording takes it wherever in the slowed room it comes off (ware_sandy_replay.dm)
 	return TRUE
 
 /// The tiles a part flung from `start` along `fling_dir` crosses, nearest first, up to `distance` of them.
@@ -184,7 +185,7 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	else if(!grounded)
 		step_time *= 3
 	rest_layer = part.layer
-	addtimer(CALLBACK(src, PROC_REF(give_up)), 5 SECONDS, TIMER_DELETE_ME)
+	addtimer(CALLBACK(src, PROC_REF(give_up)), cyberware_dilated_time(part, 5 SECONDS), TIMER_DELETE_ME)
 
 /datum/component/hv_tumble/RegisterWithParent()
 	RegisterSignal(parent, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
@@ -230,7 +231,8 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 /// where it is once it has dropped.
 /datum/component/hv_tumble/proc/launch()
 	start_flight()
-	step_timer = addtimer(CALLBACK(src, PROC_REF(take_step)), length(path) ? world.tick_lag : flight_time(), TIMER_STOPPABLE|TIMER_DELETE_ME)
+	// In a Sandevistan field (cyberware/ware_sandy_timestop.dm) it flies slow.
+	step_timer = addtimer(CALLBACK(src, PROC_REF(take_step)), cyberware_dilated_time(parent, length(path) ? world.tick_lag : flight_time()), TIMER_STOPPABLE|TIMER_DELETE_ME)
 
 /datum/component/hv_tumble/proc/start_flight()
 	var/obj/item/part = parent
@@ -305,12 +307,13 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	steps_taken++
 	path.Cut(1, 2)
 	stepping = TRUE
-	part.set_glide_size(DELAY_TO_GLIDE_SIZE(step_time))
+	var/real_step = cyberware_dilated_time(part, step_time)
+	part.set_glide_size(DELAY_TO_GLIDE_SIZE(real_step))
 	part.forceMove(next)
 	stepping = FALSE
 	if(QDELETED(src))
 		return
-	step_timer = addtimer(CALLBACK(src, PROC_REF(take_step)), step_time, TIMER_STOPPABLE|TIMER_DELETE_ME)
+	step_timer = addtimer(CALLBACK(src, PROC_REF(take_step)), real_step, TIMER_STOPPABLE|TIMER_DELETE_ME)
 
 /// Blood on each tile it crosses. Anything else moving it (a hand, a conveyor) ends the flight.
 /datum/component/hv_tumble/proc/on_moved(obj/item/source, atom/old_loc, movement_dir, forced, list/old_locs)
@@ -324,6 +327,12 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	if(!isturf(crossed) || isgroundlessturf(crossed) || crossed.has_gravity() <= 0)
 		return
 	streaks++
+	// Over wet spray already there it leaves nothing new: its few drops would thin the gout out (the spray is one decal
+	// a tile, and takes the last look it is given).
+	for(var/obj/effect/decal/cleanable/blood/hv_spray/there in crossed)
+		if(!istype(there, /obj/effect/decal/cleanable/blood/hv_spray/wall) && !there.dried && !QDELETED(there))
+			there.add_blood_DNA(blood_dna)
+			return
 	// A few drops under it as it passes, not a line.
 	var/obj/effect/decal/cleanable/blood/hv_spray/streak/trail = hv_blood_lay_spray(crossed, /obj/effect/decal/cleanable/blood/hv_spray/streak/drops, fling_dir, blood_dna)
 	if(istype(trail))
@@ -430,10 +439,12 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	var/list/pivot = part.hv_vis_spin_pivot()
 	var/start_x = part.pixel_x
 	var/start_y = part.pixel_y
-	animate(part, pixel_x = start_x, pixel_y = start_y, transform = base, time = 2.5, tag = HV_VIS_TAG_SPIN)
-	animate(pixel_x = start_x + (end_x - start_x) / 3, pixel_y = start_y + (end_y - start_y) / 3, transform = hv_vis_turned(base, spin * 120, pivot[2], pivot[1]), time = 1.5, easing = LINEAR_EASING)
-	animate(pixel_x = start_x + (end_x - start_x) * 2 / 3, pixel_y = start_y + (end_y - start_y) * 2 / 3, transform = hv_vis_turned(base, spin * 240, pivot[2], pivot[1]), time = 2, easing = LINEAR_EASING)
-	animate(pixel_x = end_x, pixel_y = end_y, transform = base, time = 3, easing = QUAD_EASING|EASE_OUT)
+	// Slower in a Sandevistan field (cyberware/ware_sandy_timestop.dm).
+	var/list/real = cyberware_dilated_steps(part, list(2.5, 1.5, 2, 3)) || list(2.5, 1.5, 2, 3)
+	animate(part, pixel_x = start_x, pixel_y = start_y, transform = base, time = real[1], tag = HV_VIS_TAG_SPIN)
+	animate(pixel_x = start_x + (end_x - start_x) / 3, pixel_y = start_y + (end_y - start_y) / 3, transform = hv_vis_turned(base, spin * 120, pivot[2], pivot[1]), time = real[2], easing = LINEAR_EASING)
+	animate(pixel_x = start_x + (end_x - start_x) * 2 / 3, pixel_y = start_y + (end_y - start_y) * 2 / 3, transform = hv_vis_turned(base, spin * 240, pivot[2], pivot[1]), time = real[3], easing = LINEAR_EASING)
+	animate(pixel_x = end_x, pixel_y = end_y, transform = base, time = real[4], easing = QUAD_EASING|EASE_OUT)
 
 // ---- Limbs and heads coming off ----
 
@@ -499,6 +510,8 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 			. = list(-y, x)
 		else
 			. = list(x, y)
+	// Where tg has moved the body off the middle of its tile: lying down, or held in a grab
+	.[1] += pixel_x - base_pixel_x
 	.[2] += pixel_y - base_pixel_y
 
 /// How far this body is drawn turned from upright as it lies now, in degrees clockwise, the short way round

@@ -104,6 +104,10 @@
 		/datum/shop_sku/general/lighter,
 		/datum/shop_sku/general/cards,
 		/datum/shop_sku/general/plushie,
+		/datum/shop_sku/general/walkman,
+		/datum/shop_sku/general/blank_cassette,
+		/datum/shop_sku/general/mixtape,
+		/datum/shop_sku/general/cassette_deck,
 		// Ship Sundries
 		/datum/shop_sku/general/floor_tiles,
 		/datum/shop_sku/general/iron_sheets,
@@ -150,6 +154,7 @@
 		/datum/shop_sku/ruin_chart/survey,
 		/datum/shop_sku/ruin_chart/blacksite,
 		/datum/shop_sku/ruin_chart/bitrunner_den,
+		/datum/shop_sku/ruin_chart/scav_den,
 	)
 	chart_picks = 3
 	// Barnaby buys honest prospecting hauls at honest prices, plus whatever
@@ -494,6 +499,32 @@
 	category = "Galley & Comforts"
 	item_path = /obj/item/toy/plush/lizard_plushie
 	price_credits = 120
+
+/datum/shop_sku/general/walkman
+	category = "Galley & Comforts"
+	item_path = /obj/item/walkman
+	price_credits = 150
+
+/datum/shop_sku/general/blank_cassette
+	category = "Galley & Comforts"
+	item_path = /obj/item/cassette_tape/blank
+	price_credits = 20
+	stock_min = 4
+	stock_max = 8
+
+/datum/shop_sku/general/mixtape
+	category = "Galley & Comforts"
+	item_path = /obj/item/cassette_tape/mixtape
+	price_credits = 40
+	stock_min = 3
+	stock_max = 6
+
+/datum/shop_sku/general/cassette_deck
+	category = "Galley & Comforts"
+	item_path = /obj/item/cassette_deck
+	price_credits = 200
+	stock_min = 1
+	stock_max = 2
 
 // ===== SHIP SUNDRIES =====
 

@@ -66,8 +66,12 @@
 	INVOKE_ASYNC(src, PROC_REF(async_fire_ranged_attack), firer, target, modifiers)
 	if(isnull(burst_shots))
 		return
+	// VOIDCREW EDIT CHANGE START - cyberware time dilation (voidcrew/modules/cyberware/ware_sandy_timestop.dm): each burst shot waits for the mob's own clock, so a slowed mob's burst slows down too
+	cyberware_burst_start = cyberware_burst_clock(firer)
 	for(var/i in 1 to (burst_shots - 1))
-		addtimer(CALLBACK(src, PROC_REF(async_fire_ranged_attack), firer, target, modifiers), i * burst_intervals)
+		addtimer(CALLBACK(src, PROC_REF(cyberware_burst_shot), firer, target, modifiers, i), i * burst_intervals)
+	// ORIGINAL: addtimer(CALLBACK(src, PROC_REF(async_fire_ranged_attack), firer, target, modifiers), i * burst_intervals)
+	// VOIDCREW EDIT CHANGE END
 
 /// Actually fire the damn thing
 /datum/component/ranged_attacks/proc/async_fire_ranged_attack(mob/living/basic/firer, atom/target, modifiers)

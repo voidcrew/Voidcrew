@@ -115,7 +115,7 @@
 	settle(watcher)
 	watcher_ai.group.forget_noises()
 	// A wooden door, opened through tg's own Open().
-	var/obj/structure/mineral_door/wood/wood = allocate(/obj/structure/mineral_door/wood, at(6, 3))
+	var/obj/structure/mineral_door/wood/wood = allocate(/obj/structure/mineral_door/wood, at(5, 3))
 	INVOKE_ASYNC(wood, TYPE_PROC_REF(/obj/structure/mineral_door, Open))
 	TEST_ASSERT_EQUAL(watcher_ai.stealth_state(), "suspicious", "A guard didn't react to a wooden door opening in front of it")
 	TEST_ASSERT_EQUAL(watcher_ai.last_heard?[1], "door", "A wooden door made no noise")

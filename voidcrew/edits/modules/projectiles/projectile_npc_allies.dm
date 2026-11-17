@@ -26,8 +26,29 @@
 	return ..()
 
 // A reflected, parried or deflected shot takes a new firer: it stops sparing the NPC's side.
+// An ally held by the other side is a shield, not an ally: the shot can hit them (see npc_shot_shield()).
 /obj/projectile/can_hit_target(atom/target, direct_target = FALSE, ignore_loc = FALSE, cross_failed = FALSE)
 	if(npc_side_shooter && firer && firer.weak_reference != npc_side_shooter)
 		npc_side_shooter = null
 		ignored_factions = null
+	if(npc_side_shooter && npc_shot_shield(target))
+		var/list/sides = ignored_factions
+		ignored_factions = null
+		. = ..()
+		ignored_factions = sides
+		return .
 	return ..()
+
+/**
+ * Whether `target` is one of the NPC's side held in an aggressive grab or tighter by a living mob that is
+ * not on that side. tg's grab states are the only test: a passive pull (dragging a body or a cuffed
+ * prisoner) is not a shield. tg's own rules still pass over a held body that is dead or lying helpless.
+ */
+/obj/projectile/proc/npc_shot_shield(atom/target)
+	if(!isliving(target) || !length(ignored_factions))
+		return FALSE
+	var/mob/living/held = target
+	var/mob/living/holder = held.pulledby
+	if(!isliving(holder) || holder.grab_state < GRAB_AGGRESSIVE)
+		return FALSE
+	return faction_check(held.faction, ignored_factions) && !faction_check(holder.faction, ignored_factions)

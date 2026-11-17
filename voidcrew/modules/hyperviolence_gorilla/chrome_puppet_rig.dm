@@ -1,3 +1,6 @@
+// The Sandevistan replay plays a move again: animate() here is journaled for it (cyberware/ware_sandy_replay.dm).
+#define animate(arguments...) sandy_replay_animate(arguments)
+
 /**
  * # The puppet rig ("arm rig")
  *
@@ -408,6 +411,7 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 	if(copy_transform)
 		puppet.transform = body.transform
 	puppets[key] = puppet
+	cyberware_time_rig_picture(puppet, body) // in a Sandevistan slow-mo it looks like the body it stands for
 	// Stood up after the rig was packed, in the same tick: into the same file
 	if(sheet?.made_at == world.time)
 		sheet.redraw()
@@ -793,6 +797,10 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 /// Every puppet flashes white and fades back.
 /datum/chrome_rig/proc/flash()
 	for(var/key in puppets)
+		// In a Sandevistan slow-mo the flash plays through the puppet's tint filter: a second colour filter animated over
+		// the tint was drawn stuck at its flash by the client, a near-white body until the rig let go (ware_sandy_timestop.dm)
+		if(cyberware_time_flash(puppets[key], list(0.4,0,0, 0,0.4,0, 0,0,0.4, 0.6,0.6,0.62), list(0, 0, 0.2 SECONDS)))
+			continue
 		cyberware_flash_fx(puppets[key], 0.2 SECONDS)
 
 #undef CHROME_RIG_HIDE_FILTER
@@ -801,3 +809,5 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 #undef CHROME_RIG_SWING_STEP
 #undef CHROME_RIG_SWAP
 #undef CHROME_RIG_MIN_ARM_LENGTH
+
+#undef animate
