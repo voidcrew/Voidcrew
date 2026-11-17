@@ -132,7 +132,8 @@ GLOBAL_ALIST_INIT(food_quality_description, alist(
 ))
 
 /// Mood events for food quality
-GLOBAL_LIST_INIT(food_quality_events, list(
+// VOIDCREW EDIT CHANGE - BYOND 516.1670+ rejects number keys in list(); upstream deleted this list before its alist pass
+GLOBAL_ALIST_INIT(food_quality_events, alist(
 	FOOD_QUALITY_NORMAL = /datum/mood_event/food,
 	FOOD_QUALITY_NICE = /datum/mood_event/food/nice,
 	FOOD_QUALITY_GOOD = /datum/mood_event/food/good,
