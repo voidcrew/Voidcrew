@@ -157,3 +157,83 @@
 	TEST_ASSERT(!DOING_INTERACTION(npc, "hv_knife_execution"), "A regular human NPC's knife click started the wind-up")
 	npc.npc_rank = 2 // HUMAN_NPC_RANK_BOSS
 	TEST_ASSERT(knife.hv_knife_execution_possible(npc, victim), "A boss NPC could not start a knife execution")
+
+/// How many stand-in arm pieces and knives of the hold from behind exist anywhere.
+/proc/hv_knife_exec_test_pieces()
+	. = 0
+	for(var/obj/effect/abstract/hv_knife_exec_part/piece in world)
+		if(!QDELETED(piece))
+			.++
+
+/// The hold from behind puts stand-in arms on both bodies and takes every one of them away again, cut or broken.
+/datum/unit_test/hv_knife_execution_visuals
+
+/datum/unit_test/hv_knife_execution_visuals/Run()
+	var/mob/living/carbon/human/consistent/attacker = allocate(/mob/living/carbon/human/consistent)
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/knife/combat/knife = hv_knife_exec_setup(attacker, victim)
+	victim.setDir(EAST)
+	var/attacker_filters = length(attacker.filters)
+	var/victim_filters = length(victim.filters)
+	var/attacker_overlays = length(attacker.overlays)
+	var/victim_overlays = length(victim.overlays)
+	var/attacker_layer = attacker.layer
+
+	// Broken: the victim turns round.
+	knife.melee_attack_chain(attacker, victim, list())
+	sleep(0.5 SECONDS)
+	TEST_ASSERT_NOTNULL(knife.hv_vis_exec, "The hold from behind drew nothing")
+	TEST_ASSERT(hv_knife_exec_test_pieces() > 0, "The hold from behind made no stand-in arm")
+	TEST_ASSERT(knife.hv_vis_hide_inhand, "The held knife was still drawn in the real hand under the stand-in one")
+	TEST_ASSERT(length(victim.filters) > victim_filters || length(victim.overlays) > victim_overlays, "The victim's own arm did not come up")
+	victim.setDir(WEST)
+	sleep(1 SECONDS)
+	TEST_ASSERT_NULL(knife.hv_vis_exec, "A broken hold's pictures were still running a second later")
+	TEST_ASSERT_EQUAL(hv_knife_exec_test_pieces(), 0, "A broken hold left stand-in arm pieces behind")
+	TEST_ASSERT(!knife.hv_vis_hide_inhand, "A broken hold left the held knife hidden")
+	TEST_ASSERT_EQUAL(length(attacker.filters), attacker_filters, "A broken hold left a mask on the attacker")
+	TEST_ASSERT_EQUAL(length(victim.filters), victim_filters, "A broken hold left a mask on the victim")
+	TEST_ASSERT_EQUAL(length(attacker.overlays), attacker_overlays, "A broken hold left a cover on the attacker")
+	TEST_ASSERT_EQUAL(length(victim.overlays), victim_overlays, "A broken hold left a cover on the victim")
+	TEST_ASSERT_EQUAL(attacker.layer, attacker_layer, "A broken hold left the attacker on another layer")
+
+	// Carried through: every piece is gone once the victim's hand has left his throat.
+	victim.setDir(EAST)
+	knife.melee_attack_chain(attacker, victim, list())
+	TEST_ASSERT(DOING_INTERACTION(attacker, "hv_knife_execution"), "The second knife click did not start the wind-up")
+	sleep(2.2 SECONDS)
+	TEST_ASSERT(!knife.hv_vis_hide_inhand, "The held knife was still hidden after the attacker let go")
+	TEST_ASSERT_EQUAL(length(attacker.filters), attacker_filters, "The attacker kept a mask after letting go")
+	TEST_ASSERT_EQUAL(attacker.layer, attacker_layer, "The attacker was left on another layer after letting go")
+	sleep(2.5 SECONDS)
+	TEST_ASSERT_NULL(knife.hv_vis_exec, "The execution's pictures never ended")
+	TEST_ASSERT_EQUAL(hv_knife_exec_test_pieces(), 0, "The execution left stand-in arm pieces behind")
+	TEST_ASSERT_EQUAL(length(victim.filters), victim_filters, "The victim kept a mask")
+
+	// Far-hand side view with the victim's near hand full: blade starts behind the attacker, rises at the chin, and
+	// the victim's far arm still comes up.
+	var/mob/living/carbon/human/consistent/west_victim = allocate(/mob/living/carbon/human/consistent)
+	west_victim.forceMove(get_step(attacker, WEST))
+	west_victim.setDir(WEST)
+	attacker.setDir(WEST)
+	attacker.dropItemToGround(knife, force = TRUE)
+	attacker.swap_hand(2)
+	attacker.put_in_active_hand(knife, forced = TRUE)
+	var/obj/item/universal_scanner/held_tool = allocate(/obj/item/universal_scanner)
+	west_victim.put_in_l_hand(held_tool)
+	var/west_vic_filters = length(west_victim.filters)
+	sleep(1.1 SECONDS) // clear the 1 s visual cooldown
+	knife.melee_attack_chain(attacker, west_victim, list())
+	sleep(0.1 SECONDS)
+	var/datum/hv_knife_exec_vis/west_vis = knife.hv_vis_exec
+	TEST_ASSERT_NOTNULL(west_vis, "The west far-hand hold drew nothing")
+	TEST_ASSERT(west_vis.far_cut, "West right-hand hold was not marked far_cut")
+	TEST_ASSERT(west_vis.blade.layer < attacker.layer, "Far-hand blade started over the attacker ([west_vis.blade.layer] vs [attacker.layer])")
+	TEST_ASSERT(west_vis.blade_release_layer < attacker.layer, "Far-hand blade release layer is over the attacker")
+	TEST_ASSERT_NOTNULL(west_vis.arms["v"], "Victim's far arm did not come up when his near hand held a tool")
+	sleep(0.35 SECONDS)
+	TEST_ASSERT(west_vis.blade.layer > MOB_LAYER, "Far-hand blade did not come in front of the neck at the chin")
+	west_victim.setDir(EAST)
+	sleep(1 SECONDS)
+	TEST_ASSERT_EQUAL(hv_knife_exec_test_pieces(), 0, "Broken west hold left stand-in pieces behind")
+	TEST_ASSERT_EQUAL(length(west_victim.filters), west_vic_filters, "Broken west hold left a mask on the victim")
