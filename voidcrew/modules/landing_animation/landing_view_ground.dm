@@ -251,6 +251,7 @@
 	// make that a far smaller file for a client to fetch than the one written above
 	aerial.Blend("#ffffff", ICON_MULTIPLY)
 	kept[key] = list(aerial, world.time + LANDING_AERIAL_KEEP)
+	landing_view_sheet(forget = TRUE)
 	return aerial
 
 /// Draws [tones] (see landing_view_tones()) into a picture's [cells], its lower left corner [shift_x] cells in and [shift_y] up
@@ -310,29 +311,18 @@
 
 /**
  * An icon state shrunk to [grain] pixels to the tile: its rows, bottom row first, each a list of
- * list(red, green, blue) with null where it is clear. Worked out once for each state.
+ * list(red, green, blue) with null where it is clear. Not kept: landing_view_tones() keeps what it makes of it.
  */
 /proc/landing_view_icon_grid(icon_file, state, dir, grain)
-	var/static/list/known = list()
 	// some things keep a bitmask in their dir (pipes), and asking an icon for a pixel facing a way that is no
 	// way at all never comes back
 	var/static/list/real_dirs = list(NORTH, SOUTH, EAST, WEST, NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWEST)
 	if(!(dir in real_dirs))
 		dir = SOUTH
-	var/key = "[icon_file]|[state]|[dir]|[grain]"
-	var/list/grid = known[key]
-	if(grid)
-		return grid
-	grid = list()
-	known[key] = grid
+	var/list/grid = list()
 	if(!icon_file)
 		return grid
-	// one icon for the whole file, read a state at a time: cutting a state out into an icon of its own is slow
-	var/static/list/sheets = list()
-	var/icon/sample = sheets["[icon_file]"]
-	if(!sample)
-		sample = icon(icon_file)
-		sheets["[icon_file]"] = sample
+	var/icon/sample = landing_view_sheet(icon_file)
 	var/width = sample.Width()
 	var/height = sample.Height()
 	var/stride = ICON_SIZE_X / grain
@@ -367,6 +357,22 @@
 			line[col] = total
 		grid += list(line)
 	return grid
+
+/**
+ * One icon for a whole icon file, read a state at a time: cutting each state out into an icon of its own is slow.
+ * Held only while a picture is being made.
+ * * forget - let go of every icon held
+ */
+/proc/landing_view_sheet(icon_file, forget = FALSE)
+	var/static/list/sheets = list()
+	if(forget)
+		sheets = list()
+		return null
+	var/icon/sheet = sheets["[icon_file]"]
+	if(!sheet)
+		sheet = icon(icon_file)
+		sheets["[icon_file]"] = sheet
+	return sheet
 
 /// How much of each of red, green and blue reaches [ground], each 0-1
 /proc/landing_view_light_factor(turf/ground)
