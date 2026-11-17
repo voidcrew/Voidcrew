@@ -95,8 +95,6 @@
 	for(var/turned in list(0, 137))
 		var/datum/landing_view_piece/streaks = add_sky(LANDING_VIEW_LAYER_HEAT + 1, LANDING_VIEW_ICON, "streaks", LANDING_VIEW_ICON_SIZE)
 		streaks.sky.color = palette.heat
-		// they burn: added to what is behind them, not laid over it
-		streaks.sky.blend_mode = BLEND_ADD
 		streaks.turn = turned
 		// they fly outward: each sheet grows, and the second follows the first so there is always one coming
 		var/lead = turned ? 0.9 SECONDS : 0
@@ -108,12 +106,12 @@
 		streaks.alpha.mark(touchdown - 5.6 SECONDS, 0)
 		show(streaks)
 	// and the glow of it over everything outside, flaring and sinking
+	// laid over, not added: added to a bright sky it does not show at all
 	var/datum/landing_view_piece/burn = add_sky(LANDING_VIEW_LAYER_HEAT, fill = palette.heat)
-	burn.sky.blend_mode = BLEND_ADD
 	burn.alpha.mark(touchdown - 9.2 SECONDS, 0)
 	var/flare = TRUE
 	for(var/moment = touchdown - 8.6 SECONDS, moment <= touchdown - 6.4 SECONDS, moment += 0.4 SECONDS)
-		burn.alpha.mark(moment, flare ? 70 : 38, LANDING_CURVE_BOTH)
+		burn.alpha.mark(moment, flare ? 115 : 65, LANDING_CURVE_BOTH)
 		flare = !flare
 	burn.alpha.mark(touchdown - 5.6 SECONDS, 0)
 	show(burn)
@@ -191,10 +189,16 @@
 	shadow.scale.mark(touchdown - 1 SECONDS, 1.15, LANDING_CURVE_BOTH)
 	shadow.scale.mark(touchdown, 1, LANDING_CURVE_OUT)
 	shadow.scale_with = ground.scale
+	// the sun is not straight overhead: from high up the shadow lies well off to one side, and it comes in
+	// under the hull as the hull comes down
+	shadow.slide_x.mark(touchdown - 5 SECONDS, -9)
+	shadow.slide_x.mark(touchdown - 0.4 SECONDS, 0, LANDING_CURVE_OUT)
+	shadow.slide_y.mark(touchdown - 5 SECONDS, 9)
+	shadow.slide_y.mark(touchdown - 0.4 SECONDS, 0, LANDING_CURVE_OUT)
 	shadow.alpha.mark(touchdown - 5 SECONDS, 0)
-	shadow.alpha.mark(touchdown - 4.4 SECONDS, 70)
-	shadow.alpha.mark(touchdown - 3 SECONDS, 70)
-	shadow.alpha.mark(touchdown - 1.2 SECONDS, 130, LANDING_CURVE_BOTH)
+	shadow.alpha.mark(touchdown - 4.4 SECONDS, 100)
+	shadow.alpha.mark(touchdown - 3 SECONDS, 110)
+	shadow.alpha.mark(touchdown - 1.2 SECONDS, 140, LANDING_CURVE_BOTH)
 	// and it is under the hull by the time the hull is down: a landed ship has no rim of shadow round it,
 	// and one that went out as it landed would show
 	shadow.alpha.mark(touchdown - 0.5 SECONDS, 110)

@@ -138,6 +138,10 @@
 		var/slid = seconds > 1 ? 2.2 * (seconds - 1) ** 2.2 : 0
 		ground.slide_x.mark(when, bow_x * slid)
 		ground.slide_y.mark(when, bow_y * slid)
+		// the shadow stays on the ground, and falls further off to one side the higher the hull is
+		var/lean = min(seconds * 2.6, 9)
+		shadow.slide_x.mark(when, bow_x * slid - lean)
+		shadow.slide_y.mark(when, bow_y * slid + lean)
 	// gone once the sky has closed over it
 	ground.alpha.mark(liftoff + 3.7 SECONDS, 255)
 	ground.alpha.mark(liftoff + 3.8 SECONDS, 0)
@@ -175,8 +179,6 @@
 	shadow.scale.mark(liftoff, 1)
 	shadow.scale.mark(liftoff + 1.2 SECONDS, 1.2, LANDING_CURVE_BOTH)
 	shadow.scale_with = ground.scale
-	shadow.slide_x = ground.slide_x
-	shadow.slide_y = ground.slide_y
 	shadow.alpha.mark(liftoff, 0)
 	shadow.alpha.mark(liftoff + 0.3 SECONDS, 140)
 	shadow.alpha.mark(liftoff + 1.4 SECONDS, 110)
