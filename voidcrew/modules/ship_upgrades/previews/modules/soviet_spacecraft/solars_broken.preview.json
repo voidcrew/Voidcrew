@@ -1,0 +1,26 @@
+{
+ "hulls": {},
+ "modules": {
+  "soviet_spacecraft/solars_broken.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 37,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 37,
+     "png": "soviet_spacecraft_solars_broken_standard.png",
+     "src_md5": "2f2f2dce618ebde3d7225d56226457e9",
+     "width": 8
+    }
+   },
+   "width": 8
+  }
+ },
+ "tile_px": 32
+}
