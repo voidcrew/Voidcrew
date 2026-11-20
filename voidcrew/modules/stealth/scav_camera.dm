@@ -300,7 +300,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 		scav_cam_follow(target, eye, seconds_per_tick)
 		if(cam_state == SCAV_CAM_SCAN)
 			cam_state = SCAV_CAM_TRACK
-			playsound(src, 'sound/machines/beep/twobeep.ogg', 30, FALSE, -3)
+			playsound(src, 'voidcrew/sound/machines/scav_camera_lock.ogg', 40, FALSE, -3)
 			update_appearance(UPDATE_ICON_STATE)
 		if(cam_state == SCAV_CAM_TRACK)
 			var/rate = (profile?.notice_rate || 1) / SCAV_CAM_FILL_TIME
