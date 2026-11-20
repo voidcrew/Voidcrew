@@ -1,28 +1,57 @@
 /**
  * # Stealth guards: radios (owner decision 8)
  *
- * Some guard types carry an earpiece (`stealth_radio` on the type, and a working headset in its ears). A
- * carrier that learns of trouble raises a hand to its earpiece, and STEALTH_RADIO_CALL_TIME later says it
- * out loud; every other carrier in its group then knows, wherever it stands, and passes it on by voice to
- * whoever stands next to it.
+ * Some guard types carry an earpiece (`stealth_radio` on the type, and its faction's guard net headset in its ears).
+ * A carrier that learns of trouble raises a hand to its earpiece (a radio shows beside its head mark,
+ * stealth_meter.dm), and STEALTH_RADIO_CALL_TIME later says it into the radio; every other carrier in its group then
+ * knows, wherever it stands, and passes it on by voice to whoever stands next to it. An alarm from a guard that saw
+ * someone names them by the name tg shows for them (get_visible_name()).
+ *
+ * The net is a real tg radio frequency (/obj/item/radio/headset/guard_net, one subtype per faction): the calls and
+ * the answers are tg radio speech, so anyone with a radio on it hears them where the comms module carries it (the
+ * same site), and people next to the speaker hear him as tg lets them. Who answers is decided here, never by what
+ * anyone says on the net: a player talking on a stolen earpiece moves nobody.
  *
  * Players stop a call with tg's own tools and nothing else: drop, stun or silence the speaker before the call
  * is due; run a radio jammer near the speaker or the receiver; EMP the earpiece (tg switches a radio off for
- * 20 s); deafen the receiver. The headset can't be stripped: it is locked gear like the rest of the kit.
+ * 20 s); deafen the receiver; take the earpiece off him (tg's strip menu: it isn't locked gear). A guard without
+ * its own net headset in its ears can't call, and is never issued another.
  *
  * No timers: a pending call is a stamp the guard's scan reads. One alarm delivery per group per
  * STEALTH_RADIO_GROUP_COOLDOWN, so a den full of carriers doesn't echo itself.
  */
 
+/**
+ * A guard faction's earpiece: a headset locked to the faction's frequency. Not locked to the guard's body
+ * (the faction's guard type keeps it out of npc_lock_item()), so tg's strip menu takes it off like anyone's, and
+ * whoever wears it hears the net.
+ */
+/obj/item/radio/headset/guard_net
+	name = "earpiece"
+	desc = "A cheap earpiece, stuck on one channel."
+	freqlock = RADIO_FREQENCY_LOCKED
+	/// The frequency it is locked to
+	var/net_frequency = FREQ_COMMON
+
+/obj/item/radio/headset/guard_net/Initialize(mapload)
+	. = ..()
+	set_frequency(net_frequency)
+
+/obj/item/radio/headset/guard_net/scav
+	name = "scav earpiece"
+	desc = "A battered earpiece, stuck on one channel. Somebody's chewing gum holds the casing together."
+	net_frequency = FREQ_SCAV_NET
+
 /mob/living/carbon/human/npc
 	/// Whether this type is on its group's radio net (it still needs a working headset in its ears)
 	var/stealth_radio = FALSE
 
-/// Its working headset, or null: on the net, headset in the ears and switched on, not in a jammer's range.
+/// Its working headset, or null: on the net, a guard net headset in the ears and switched on, not in a jammer's
+/// range. Any other radio someone puts on it doesn't count.
 /mob/living/carbon/human/npc/proc/stealth_radio_ready()
 	if(!stealth_radio)
 		return null
-	var/obj/item/radio/earpiece = ears
+	var/obj/item/radio/headset/guard_net/earpiece = ears
 	if(!istype(earpiece) || !earpiece.is_on() || is_within_radio_jammer_range(src))
 		return null
 	return earpiece
@@ -30,11 +59,12 @@
 /**
  * Starts a radio call about `where`: a hand to the earpiece now, the call STEALTH_RADIO_CALL_TIME later if it
  * can still make it (stealth_deliver_call()). A call already on its way out is kept unless this one is more
- * urgent, so a run of noises never puts the call off. Returns TRUE if a call is now pending.
+ * urgent, so a run of noises never puts the call off. `name`: the friend a missing call asks after, or the name
+ * of whoever an alarm is about (stealth_call_name()). Returns TRUE if a call is now pending.
  */
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_start_call(kind, turf/where, name)
 	var/mob/living/carbon/human/npc/guard = pawn
-	if(!ishumannpc(guard) || !guard.stealth_radio || !istype(guard.ears, /obj/item/radio))
+	if(!ishumannpc(guard) || !guard.stealth_radio || !istype(guard.ears, /obj/item/radio/headset/guard_net))
 		return FALSE
 	if(guard.stat != CONSCIOUS || stealth_driven() || isnull(where))
 		return FALSE
@@ -42,11 +72,27 @@
 	if(!human_npc_can_talk(guard))
 		return FALSE
 	if(pending_call)
+		// The same alarm, now with a face to it: the call on its way out names them.
+		if(pending_call[STEALTH_CALL_KIND] == kind && name && !pending_call[STEALTH_CALL_NAME])
+			pending_call[STEALTH_CALL_NAME] = name
 		if(pending_call[STEALTH_CALL_KIND] >= kind)
 			return TRUE
 	pending_call = list(kind, where, world.time + STEALTH_RADIO_CALL_TIME, name)
 	guard.visible_message(span_emote("<b>[guard]</b> raises a hand to [guard.p_their()] earpiece."))
+	stealth_meter_update()
 	return TRUE
+
+/// The name an alarm about `seen` gives: what tg shows for them to anyone looking (their face, or the name on the
+/// ID they wear when the face is covered). Null for anyone it can't put a name to ("Unknown"), or for anything but
+/// a person on foot.
+/proc/stealth_call_name(atom/seen)
+	if(!ishuman(seen))
+		return null
+	var/mob/living/carbon/human/person = seen
+	var/shown = person.get_visible_name(add_id_name = FALSE)
+	if(!shown || shown == "Unknown")
+		return null
+	return shown
 
 /// The scan: makes its pending call once it is due, if it still can. A call it can't make is lost, never
 /// retried; if only the radio failed, it says so.
@@ -65,19 +111,24 @@
 		stealth_bark(STEALTH_BARK_RADIO_DEAD)
 		return
 	var/turf/where = call_made[STEALTH_CALL_WHERE]
-	var/bark_kind = STEALTH_BARK_RADIO_ALARM
+	var/name = call_made[STEALTH_CALL_NAME]
+	var/bark_kind = name ? STEALTH_BARK_RADIO_NAMED : STEALTH_BARK_RADIO_ALARM
 	switch(call_made[STEALTH_CALL_KIND])
 		if(STEALTH_CALL_REPORT)
 			bark_kind = STEALTH_BARK_RADIO_REPORT
 		if(STEALTH_CALL_MISSING)
 			bark_kind = STEALTH_BARK_RADIO_MISSING
-	// Said out loud, always: anyone in earshot of the speaker hears where the others are being sent.
-	stealth_bark(bark_kind, where, call_made[STEALTH_CALL_NAME], TRUE)
+	// Said into the radio, every time: anyone on the net hears where the others are being sent.
+	if(!stealth_bark(bark_kind, where, name, TRUE, TRUE) && bark_kind == STEALTH_BARK_RADIO_NAMED)
+		stealth_bark(STEALTH_BARK_RADIO_ALARM, where, null, TRUE, TRUE)
 	group?.radio_call(guard, call_made[STEALTH_CALL_KIND], where)
 
 /// A call that can't go out any more (the speaker was stunned, dropped or taken over).
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_drop_call()
+	if(isnull(pending_call))
+		return
 	pending_call = null
+	stealth_meter_update()
 
 /// Whether `guard` can take a radio call now.
 /datum/stealth_group/proc/radio_receiver(mob/living/carbon/human/npc/guard)
@@ -139,7 +190,7 @@
 			receiver_ai.stealth_hold(where)
 			continue
 		moved++
-		receiver_ai.stealth_bark(STEALTH_BARK_COPY, null, null, TRUE)
+		receiver_ai.stealth_bark(STEALTH_BARK_COPY, null, null, TRUE, TRUE)
 		// Its answer carries to whoever stands near it.
 		var/turf/receiver_turf = get_turf(receiver)
 		var/brought = 0

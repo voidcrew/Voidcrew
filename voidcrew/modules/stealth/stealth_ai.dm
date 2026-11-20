@@ -488,7 +488,7 @@
 	stealth_closet_alerted(target)
 	// It has seen or felt them itself: it calls for help (decision 8).
 	if(news)
-		stealth_first_hand(last_seen_turf)
+		stealth_first_hand(last_seen_turf, target)
 
 /// Alert: turns from its target to `new_target`, and remembers the old one for when this fight ends.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_switch_target(atom/new_target)
@@ -541,9 +541,10 @@
 /**
  * Says a stealth line, at most once per STEALTH_BARK_KIND_COOLDOWN for each kind (abuse P14). `about` is the
  * place the line is about: a line can name its side of the den. `name` is the friend a line asks after.
- * `always` skips the cooldown (a radio call is said every time it is made).
+ * `always` skips the cooldown (a radio call is said every time it is made). `radio`: said into its earpiece as tg
+ * radio speech (stealth_radio.dm) rather than out loud.
  */
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_bark(kind, turf/about, name, always = FALSE)
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_bark(kind, turf/about, name, always = FALSE, radio = FALSE)
 	var/mob/living/carbon/human/npc/body = pawn
 	if(!ishumannpc(body) || body.stat != CONSCIOUS || body.client)
 		return FALSE
@@ -554,10 +555,12 @@
 		var/turf/centre = group?.home
 		voice.fill_side = (about && centre && about.z == centre.z && about != centre) ? dir2text(get_dir(centre, about)) : null
 		voice.fill_name = name
+		voice.fill_radio = radio
 	. = body.npc_bark(kind, force = TRUE)
 	if(voice)
 		voice.fill_side = null
 		voice.fill_name = null
+		voice.fill_radio = FALSE
 	if(.)
 		bark_ready_at[kind] = world.time + STEALTH_BARK_KIND_COOLDOWN
 

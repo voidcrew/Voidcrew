@@ -73,8 +73,11 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 
 /// Decision 34: a guard's seclite is loot like anyone's, so it is never locked to the body (D3 holds for the rest).
 /// Decision 40: so are the scavs' fatigues, balaclava and pass (stealth_disguise.dm).
+/// And a guard's net earpiece, so tg's strip menu takes it off him (stealth_radio.dm).
 /mob/living/carbon/human/npc/npc_lock_item(obj/item/item)
 	if(istype(item, /obj/item/flashlight/seclite/scav) || istype(item, /obj/item/clothing/under/syndicate/scav))
+		return FALSE
+	if(istype(item, /obj/item/radio/headset/guard_net))
 		return FALSE
 	if(istype(item, /obj/item/clothing/mask/balaclava/scav) || istype(item, /obj/item/card/id/advanced/black/scav))
 		return FALSE

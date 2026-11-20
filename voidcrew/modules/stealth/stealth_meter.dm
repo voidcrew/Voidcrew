@@ -10,7 +10,11 @@
  * - While alert or searching, nobody sees their own "?" on that guard.
  * - Suspicious of a noise (stealth_hearing.dm): an empty grey "?" for every player near who has no fill of
  *   their own on that guard. Someone it has started to see gets their own filling "?" instead, so nothing
- *   stacks. A glance, a hold and a radio call show no mark: the turn, the raised hand and the line are the read.
+ *   stacks.
+ * - On edge (wary: after a fight, a search, a hold for a friend's call) with none of the above over its head for
+ *   anyone: a dim amber "!" everyone sees, gone when it calms down. A glance alone shows nothing.
+ * - Calling it in (a pending radio call, stealth_radio.dm): a radio everyone sees beside the head mark, from the
+ *   raised hand until the call is made or lost.
  *
  * Both are drawn on the guard (vis_contents for the public mark, an image located on the guard for the
  * private one), so they show only when the guard itself is in view, never through walls; above the
@@ -34,6 +38,8 @@
 	var/obj/effect/abstract/stealth_mark/mark
 	/// icon_state of the public mark, or null
 	var/public_state
+	/// The radio beside the mark while it is calling it in, in the guard's vis_contents while it shows
+	var/obj/effect/abstract/stealth_mark/call_mark
 	/// REF(player), or "watch:ckey" for an admin watching its sight => list(image, client it was given to)
 	var/list/private_marks = list()
 	/// Timer for the next drain step
@@ -49,6 +55,7 @@
 		deltimer(drain_timer)
 		drain_timer = null
 	set_public(null)
+	set_call(FALSE)
 	for(var/key in private_marks.Copy())
 		remove_private(key)
 	if(guard)
@@ -63,11 +70,14 @@
 		return
 	var/state = controller.stealth_state()
 	var/new_public = stealth_meter_public_state(state, world.time, controller.lost_since, controller.blackboard[BB_STEALTH_STATE_SINCE], controller.calm_until, controller.stealth_skill().search_time)
-	set_public(new_public)
 	// Alert and searching own the mark even once it has drained: no private "?" in the moment before the scan
 	// sends it back to unaware (and clears its notice).
 	var/public_owned = new_public || state == STEALTH_ALERT || state == STEALTH_SEARCHING
 	update_private(public_owned ? null : controller.notice_map, !public_owned && stealth_meter_heard(state, controller.suspicion_heard))
+	if(stealth_meter_aware(state, controller.blackboard[BB_STEALTH_WARY], public_owned, length(private_marks)))
+		new_public = STEALTH_METER_AWARE_STATE
+	set_public(new_public)
+	set_call(!isnull(controller.pending_call))
 	schedule_drain()
 
 /datum/stealth_meter/proc/set_public(new_state)
@@ -85,6 +95,22 @@
 		mark.pixel_z = stealth_meter_offset(guard)
 		guard.vis_contents += mark
 	mark.icon_state = new_state
+
+/// Shows or hides the radio beside the mark.
+/datum/stealth_meter/proc/set_call(calling)
+	if(!calling)
+		if(call_mark)
+			guard?.vis_contents -= call_mark
+			QDEL_NULL(call_mark)
+		return
+	if(call_mark || QDELETED(guard))
+		return
+	call_mark = new
+	call_mark.icon_state = STEALTH_METER_RADIO_STATE
+	SET_PLANE_EXPLICIT(call_mark, ABOVE_LIGHTING_PLANE, guard)
+	call_mark.pixel_z = stealth_meter_offset(guard)
+	call_mark.pixel_w = STEALTH_METER_RADIO_W
+	guard.vis_contents += call_mark
 
 /// The players near the guard who get the empty grey "?" of a heard noise: every living player within
 /// STEALTH_METER_RANGE with no fill of their own in `notice`.
@@ -196,6 +222,8 @@
 	var/offset = stealth_meter_offset(guard)
 	if(mark)
 		mark.pixel_z = offset
+	if(call_mark)
+		call_mark.pixel_z = offset
 	for(var/key in private_marks)
 		var/list/held = private_marks[key]
 		var/image/shown = held[1]
@@ -254,6 +282,13 @@
 /// Whether a guard in `state` shows the heard "?".
 /proc/stealth_meter_heard(state, suspicion_heard)
 	return suspicion_heard && state == STEALTH_SUSPICIOUS
+
+/// Whether a guard shows the dim amber "!": wary, and nothing else over its head for anyone (`public_owned`: alert,
+/// searching or a public mark; `private_count`: the "?"s it shows players).
+/proc/stealth_meter_aware(state, wary, public_owned, private_count)
+	if(!wary || public_owned || private_count)
+		return FALSE
+	return state != STEALTH_ALERT && state != STEALTH_SEARCHING
 
 /// The private "?" for a notice level, or null for none. Fills round to the nearest row.
 /proc/stealth_meter_notice_state(notice)
