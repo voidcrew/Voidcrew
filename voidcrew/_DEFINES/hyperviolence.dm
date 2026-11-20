@@ -111,5 +111,7 @@
 
 /// Wind-up before a knife execution cuts the throat.
 #define HV_KNIFE_EXECUTION_WINDUP (1.5 SECONDS)
+/// How long a cut throat drops its victim for (tg's Knockdown), clutching it.
+#define HV_KNIFE_THROAT_KNOCKDOWN (3 SECONDS)
 /// do_after interaction key for a knife execution wind-up.
 #define HV_KNIFE_EXECUTION_DOAFTER "hv_knife_execution"
