@@ -968,6 +968,13 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"dC" = (
+/obj/machinery/door/airlock/outpost/police{
+	name = "police lift"
+	},
+/obj/effect/turf_decal/delivery/red,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
 "dN" = (
 /obj/effect/landmark/stealth_patrol/police{
 	dir = 8;
@@ -1072,12 +1079,6 @@
 	dir = 5
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
-"eR" = (
-/obj/effect/landmark/outpost_police_lift,
-/obj/effect/turf_decal/box/red,
-/obj/machinery/light/small/directional/east,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "eW" = (
@@ -1428,9 +1429,6 @@
 /obj/effect/turf_decal/trimline/dark_red/corner,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
-"jk" = (
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
 "jn" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 4
@@ -1644,6 +1642,22 @@
 	wait = 200
 	},
 /turf/open/indestructible/light,
+/area/voidcrew/trader_outpost)
+"mS" = (
+/obj/structure/table/wood,
+/obj/effect/spawner/random/entertainment/dice,
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
+	dir = 8
+	},
+/obj/machinery/light/small/directional/east,
+/obj/machinery/status_display/outpost_sign/police_lift/directional/east,
+/turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
 "mT" = (
 /obj/effect/turf_decal/tile/dark_red/anticorner/contrasted{
@@ -2027,6 +2041,20 @@
 "tP" = (
 /obj/effect/spawner/random/trash/cigbutt,
 /turf/open/floor/carpet/neon/simple/red/nodots,
+/area/voidcrew/trader_outpost)
+"ul" = (
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 4
+	},
+/obj/effect/landmark/outpost_police_lift,
+/obj/machinery/light/small/directional/east,
+/turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
 "uq" = (
 /obj/structure/railing/unbreakable{
@@ -2553,21 +2581,6 @@
 /obj/structure/sign/poster/contraband/syndicate_pistol/directional/south{
 	pixel_z = 4
 	},
-/turf/open/indestructible/dark/smooth_large,
-/area/voidcrew/trader_outpost)
-"BL" = (
-/obj/structure/table/wood,
-/obj/effect/spawner/random/entertainment/dice,
-/obj/effect/turf_decal/siding/thinplating_new/dark{
-	dir = 8
-	},
-/obj/effect/turf_decal/trimline/dark_red/filled/line{
-	dir = 8
-	},
-/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
-	dir = 8
-	},
-/obj/machinery/light/small/directional/east,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
 "BP" = (
@@ -3147,12 +3160,6 @@
 	},
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
-"KM" = (
-/obj/effect/landmark/outpost_police_lift,
-/obj/effect/turf_decal/box/red,
-/obj/machinery/light/small/directional/south,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
 "KQ" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 1
@@ -3557,11 +3564,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
-"RK" = (
-/obj/machinery/door/airlock/outpost/police,
-/obj/effect/turf_decal/delivery/red,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
 "RM" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 5
@@ -3713,18 +3715,6 @@
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost/checkpoint)
-"Tt" = (
-/obj/effect/turf_decal/siding/thinplating_new/dark{
-	dir = 10
-	},
-/obj/machinery/iv_drip/saline,
-/obj/effect/turf_decal/trimline/dark_red/filled/line{
-	dir = 10
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/light/floor,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
 "TD" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 8
@@ -3780,6 +3770,19 @@
 	dir = 1
 	},
 /obj/machinery/light/floor,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost)
+"TQ" = (
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 8
+	},
+/obj/structure/outpost_police_lift_panel/directional/north,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
 "TZ" = (
@@ -3883,6 +3886,19 @@
 /obj/machinery/light/red/directional/east,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"Wc" = (
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 8
+	},
+/obj/structure/outpost_police_lift_panel/directional/west,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost)
 "Wf" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 8
@@ -3965,6 +3981,19 @@
 	dir = 8
 	},
 /turf/open/floor/carpet/neon/simple/red/nodots,
+/area/voidcrew/trader_outpost)
+"Xa" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 10
+	},
+/obj/machinery/iv_drip/saline,
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
+	dir = 10
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/floor,
+/obj/machinery/status_display/outpost_sign/police_lift/directional/south,
+/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "Xr" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
@@ -4120,6 +4149,20 @@
 "ZS" = (
 /turf/closed/indestructible/syndicate/outpost,
 /area/voidcrew/trader_outpost/checkpoint)
+"ZY" = (
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 8
+	},
+/obj/effect/landmark/outpost_police_lift,
+/obj/machinery/light/small/directional/south,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/trader_outpost)
 "ZZ" = (
 /obj/structure/chair,
 /obj/machinery/light/small/red/directional/north,
@@ -4289,7 +4332,7 @@ mx
 qp
 eQ
 GA
-Tt
+Xa
 aV
 aa
 aa
@@ -4324,9 +4367,9 @@ jc
 KU
 Oq
 WM
-RK
-jk
-KM
+dC
+Wc
+ZY
 aa
 aC
 aC
@@ -5263,7 +5306,7 @@ aC
 aa
 aa
 dW
-BL
+mS
 aa
 aa
 ca
@@ -5296,7 +5339,7 @@ aC
 aC
 aC
 aa
-RK
+dC
 aa
 aa
 aa
@@ -5330,7 +5373,7 @@ aC
 aC
 aC
 aa
-jk
+TQ
 aa
 vn
 aa
@@ -5364,7 +5407,7 @@ aC
 aC
 aC
 aa
-eR
+ul
 aa
 aC
 aL
