@@ -228,12 +228,14 @@
  * up on its feet instead: still tg's chokehold (immobilized, hands blocked), only not floored, so it stands in front of
  * its holder and takes the shots that come at them (tg's projectiles skip a floored, pinned body). Called every time
  * tg places a held body (the grab, each step, each turn: set_pull_offsets() in stealth_hostage_pose.dm); tg's own
- * release clears the chokehold either way. Puts tg's chokehold floor back when it is no longer held at gunpoint.
+ * release clears the chokehold either way. Puts tg's chokehold floor back when it is no longer held at gunpoint. A body
+ * held with a hand over its mouth (stealth_grip.dm) is held up the same way.
  */
 /mob/living/proc/stealth_hold_upright(mob/living/held)
 	if(!isliving(held) || pulling != held)
 		return
-	if(stealth_hostage_of(src) == held)
+	// Held up in front: at gunpoint, or with a hand over the mouth (stealth_grip.dm).
+	if(stealth_held_in_front(src) == held)
 		if(HAS_TRAIT_FROM(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT))
 			REMOVE_TRAIT(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT)
 			// tg's own stand-up after the floor goes is a 1 s do_after; held up, they're on their feet at once.

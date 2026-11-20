@@ -4,7 +4,8 @@
  * Visual only, under hyperviolence's motion rules (voidcrew/modules/hyperviolence/visuals/_motion_core.dm): nothing
  * here moves, stuns, roots or hurts anyone.
  *
- * A body held at gunpoint (stealth_hostage_of()) is drawn tight against the front of its holder, facing his way,
+ * A body held at gunpoint (stealth_hostage_of()), or with a hand over its mouth (stealth_grip.dm, for now: its own
+ * animation comes later), is drawn tight against the front of its holder, facing his way,
  * through tg's own grab offsets (GRABBING_TRAIT), which tg clears when he lets go:
  * - facing south it stands low in front of him, to his free-hand side, so his gun shows beside its head;
  * - facing north it stands beyond him, to the same side, and he is drawn over it;
@@ -226,7 +227,7 @@
 /mob/living/set_pull_offsets(mob/living/mob_to_set, grab_state = GRAB_PASSIVE, animate = TRUE)
 	stealth_hold_upright(mob_to_set)
 	var/mob/living/carbon/human/holder = ishuman(src) ? src : null
-	if(stealth_hostage_of(holder) == mob_to_set)
+	if(holder && stealth_held_in_front(holder) == mob_to_set)
 		holder.hostage_pose_apply(mob_to_set, animate)
 		return
 	if(mob_to_set.hostage_pose_dir)
@@ -246,7 +247,7 @@
 	if(dir == old_dir || !isliving(pulling))
 		return
 	var/mob/living/held = pulling
-	if(held.hostage_pose_dir || stealth_hostage_of(src) == held)
+	if(held.hostage_pose_dir || stealth_held_in_front(src) == held)
 		set_pull_offsets(held, grab_state)
 
 /// The pose comes and goes with the gun in his hand: posed when one comes out mid-hold, dropped back to tg's grab
@@ -256,7 +257,7 @@
 	var/mob/living/held = pulling
 	if(!isliving(held))
 		return
-	if(stealth_hostage_of(src) == held)
+	if(stealth_held_in_front(src) == held)
 		if(held.hostage_pose_dir == dir && held.hostage_pose_hand == hostage_pose_hand())
 			return
 	else if(!held.hostage_pose_dir)
