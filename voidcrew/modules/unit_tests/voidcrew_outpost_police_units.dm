@@ -235,7 +235,8 @@
 			var/list/gear = police_units_gear(officer)
 			TEST_ASSERT(length(gear) >= 6, "[label] carries only [length(gear)] items")
 			for(var/obj/item/thing as anything in gear)
-				TEST_ASSERT(human_npc_gear_locked(thing) || human_npc_gear_consumable(thing), "[label]'s [thing] is not locked to them")
+				// The desk sergeant's card is the one thing that comes off an officer (owner decision 56)
+				TEST_ASSERT(human_npc_gear_locked(thing) || human_npc_gear_consumable(thing) || istype(thing, /obj/item/card/id/advanced/outpost_sergeant), "[label]'s [thing] is not locked to them")
 
 			// Not a bystander: never stuffed in a locker or a bag
 			TEST_ASSERT(HAS_TRAIT(officer, "no_containment"), "[label] can be put in a closet") // TRAIT_NO_CONTAINMENT
@@ -280,7 +281,7 @@
 			TEST_FAIL("A dead [kind] dropped a holochip")
 		// What they wore is still on the body, locked: nobody can strip it off
 		for(var/obj/item/thing as anything in police_units_gear(officer))
-			TEST_ASSERT(human_npc_gear_locked(thing) || human_npc_gear_consumable(thing), "A dead [kind]'s [thing] is not locked to the body")
+			TEST_ASSERT(human_npc_gear_locked(thing) || human_npc_gear_consumable(thing) || istype(thing, /obj/item/card/id/advanced/outpost_sergeant), "A dead [kind]'s [thing] is not locked to the body")
 			TEST_ASSERT(HAS_TRAIT(thing, TRAIT_NO_STRIP), "A dead [kind]'s [thing] can be stripped")
 		// Revived and killed again: still nothing
 		officer.revive(ADMIN_HEAL_ALL)
