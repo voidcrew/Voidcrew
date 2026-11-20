@@ -240,6 +240,10 @@
 /mob/living/carbon/human/npc/ambient_npc/outpost/dancer/done_telling()
 	return
 
+// A trader goes back to their counter (their routine), never down the lift
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/done_telling()
+	return
+
 /**
  * Running to someone who can raise the alarm: the nearest listener they can reach, re-picked when one moves off, goes
  * down or can't be reached. Beside them, they stand and tell (the police tick does the telling: tell_step()). Gives
