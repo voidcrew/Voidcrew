@@ -169,3 +169,57 @@
 	var/obj/item/circular_saw/cruel/saw = locate() in butcher.held_items
 	TEST_ASSERT_NOTNULL(saw, "The harvester has no saw")
 	TEST_ASSERT(GET_ATOM_BLOOD_DNA_LENGTH(saw), "The harvester's saw is clean")
+
+/// A den camera's head shows the swivel frame nearest its aim, on a wall and in a corner, and every frame's lens sits on
+/// its sprite inside the tile.
+/datum/unit_test/voidcrew_stealth_den_camera_frames
+
+/datum/unit_test/voidcrew_stealth_den_camera_frames/Run()
+	var/list/states = icon_states('voidcrew/icons/obj/machines/scav_camera.dmi')
+	for(var/sprite_dir in GLOB.scav_cam_frames)
+		var/list/frames = GLOB.scav_cam_frames[sprite_dir]
+		TEST_ASSERT_EQUAL(length(frames), 7, "Sprite dir [sprite_dir] hasn't 7 swivel frames")
+		for(var/i in 1 to length(frames))
+			var/list/entry = frames[i]
+			TEST_ASSERT(abs(entry[2]) < 16 && abs(entry[3]) < 16, "Sprite dir [sprite_dir] frame [i]'s lens is off its tile")
+			TEST_ASSERT(abs(entry[2]) >= 4 || abs(entry[3]) >= 4, "Sprite dir [sprite_dir] frame [i]'s lens sits in the tile's middle, not on the mount")
+			if(i > 1)
+				var/step = abs(closer_angle_difference(frames[i - 1][1], entry[1]))
+				TEST_ASSERT(step > 0 && step <= 20, "Sprite dir [sprite_dir] frames [i - 1] and [i] are [step] degrees apart")
+			for(var/prefix in list("scan", "track"))
+				TEST_ASSERT("[prefix]_[sprite_dir]_[i - 1]" in states, "scav_camera.dmi has no [prefix]_[sprite_dir]_[i - 1]")
+
+	// Hung on the north wall: straight out, and each end of its sweep.
+	var/obj/machinery/scav_camera/north = allocate(/obj/machinery/scav_camera/directional/north, run_loc_floor_bottom_left)
+	TEST_ASSERT_EQUAL(north.icon_state, "scan_[NORTH]_3", "A new camera on the north wall doesn't look straight out")
+	for(var/list/check in list(list(180, 4), list(180 - north.sweep, 7), list(180 + north.sweep, 1), list(166, 5), list(200, 3)))
+		north.aim = check[1]
+		north.scav_cam_draw(TRUE)
+		TEST_ASSERT_EQUAL(north.frame_dir, NORTH, "The north wall camera shows another wall's sprite at aim [check[1]]")
+		TEST_ASSERT_EQUAL(north.frame, check[2], "The north wall camera's head is on the wrong frame at aim [check[1]]")
+		TEST_ASSERT_EQUAL(north.icon_state, "scan_[NORTH]_[check[2] - 1]", "The north wall camera's icon didn't follow its frame at aim [check[1]]")
+
+	// Hung on the south wall.
+	var/obj/machinery/scav_camera/south = allocate(/obj/machinery/scav_camera/directional/south, run_loc_floor_bottom_left)
+	for(var/list/check in list(list(0, 4), list(south.sweep, 1), list(360 - south.sweep, 7), list(14, 3)))
+		south.aim = check[1]
+		south.scav_cam_draw(TRUE)
+		TEST_ASSERT_EQUAL(south.frame_dir, SOUTH, "The south wall camera shows another wall's sprite at aim [check[1]]")
+		TEST_ASSERT_EQUAL(south.frame, check[2], "The south wall camera's head is on the wrong frame at aim [check[1]]")
+	// Following someone it shows the in use frames, the same way.
+	south.cam_state = 2
+	south.aim = 0
+	south.scav_cam_draw(TRUE)
+	south.update_appearance(UPDATE_ICON_STATE)
+	TEST_ASSERT_EQUAL(south.icon_state, "track_[SOUTH]_3", "A camera following someone doesn't show its in use frames")
+
+	// In the den's south west corner: on the south wall, turned to look up the corridor and along the other.
+	var/obj/machinery/scav_camera/corner = allocate(/obj/machinery/scav_camera/directional/south, run_loc_floor_bottom_left)
+	corner.facing_offset = 45
+	corner.sprite_dirs = corner.scav_cam_sprite_dirs()
+	TEST_ASSERT(length(corner.sprite_dirs) == 2 && (SOUTH in corner.sprite_dirs) && (SOUTHWEST in corner.sprite_dirs), "A south west corner camera doesn't use both of that corner's sprites")
+	for(var/list/check in list(list(0, SOUTH, 4), list(27, SOUTH, 2), list(63, SOUTHWEST, 2), list(90, SOUTHWEST, 4)))
+		corner.aim = check[1]
+		corner.scav_cam_draw(TRUE)
+		TEST_ASSERT_EQUAL(corner.frame_dir, check[2], "The corner camera shows the wrong wall's sprite at aim [check[1]]")
+		TEST_ASSERT_EQUAL(corner.frame, check[3], "The corner camera's head is on the wrong frame at aim [check[1]]")

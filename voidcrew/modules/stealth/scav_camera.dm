@@ -50,13 +50,37 @@
 #define SCAV_CAM_COLOR_ALARM "#ff3b30"
 /// How the drawn cone is widened to match the view (the beam icon is about 15 degrees each side)
 #define SCAV_CAM_CONE_SCALE 1.25
-/// Pixels back toward the wall the cone starts from (the lens)
-#define SCAV_CAM_LENS_BACK 12
+
+/**
+ * The swivel frames of tg's camera sprite (copied one still per frame into scav_camera.dmi as "scan_<dir>_<frame>" and
+ * "track_<dir>_<frame>"), so the server shows the head where it aims instead of the client running its own swivel loop.
+ * Keyed by sprite dir; each frame is list(head angle, lens x, lens y): the angle in degrees clockwise from north, from
+ * the arm joint to the green lens pixel, and the lens pixel's centre in pixels from the tile's centre (y up).
+ * Measured from the pixels.
+ */
+GLOBAL_LIST_INIT(scav_cam_frames, list(
+	"1" = list(list(214, -12.5, 6.5), list(207, -12.5, 5.5), list(194, -11.5, 5.5), list(180, -10.5, 5.5), list(166, -9.5, 5.5), list(153, -8.5, 5.5), list(146, -8.5, 6.5)), // north wall, top left
+	"2" = list(list(34, -8.5, -6.5), list(27, -8.5, -5.5), list(14, -9.5, -5.5), list(0, -10.5, -5.5), list(346, -11.5, -5.5), list(333, -12.5, -5.5), list(326, -12.5, -6.5)), // south wall, bottom left
+	"4" = list(list(315, 6.5, 13.5), list(297, 5.5, 12.5), list(284, 5.5, 11.5), list(270, 5.5, 10.5), list(256, 5.5, 9.5), list(243, 5.5, 8.5), list(236, 6.5, 8.5)), // east wall, top right
+	"5" = list(list(34, 12.5, -6.5), list(27, 12.5, -5.5), list(14, 11.5, -5.5), list(0, 10.5, -5.5), list(346, 9.5, -5.5), list(333, 8.5, -5.5), list(326, 8.5, -6.5)), // south wall, bottom right
+	"6" = list(list(225, 6.5, -13.5), list(243, 5.5, -12.5), list(256, 5.5, -11.5), list(270, 5.5, -10.5), list(284, 5.5, -9.5), list(297, 5.5, -8.5), list(304, 6.5, -8.5)), // east wall, bottom right
+	"8" = list(list(124, -6.5, 8.5), list(117, -5.5, 8.5), list(104, -5.5, 9.5), list(90, -5.5, 10.5), list(76, -5.5, 11.5), list(63, -5.5, 12.5), list(45, -6.5, 13.5)), // west wall, top left
+	"9" = list(list(214, 8.5, 6.5), list(207, 8.5, 5.5), list(194, 9.5, 5.5), list(180, 10.5, 5.5), list(166, 11.5, 5.5), list(153, 12.5, 5.5), list(146, 12.5, 6.5)), // north wall, top right
+	"10" = list(list(56, -6.5, -8.5), list(63, -5.5, -8.5), list(76, -5.5, -9.5), list(90, -5.5, -10.5), list(104, -5.5, -11.5), list(117, -5.5, -12.5), list(135, -6.5, -13.5)), // west wall, bottom left
+))
+
+/// For a camera in a room's corner, the two sprite dirs whose mounts sit in that corner (one on each wall).
+GLOBAL_LIST_INIT(scav_cam_corner_sprites, list(
+	"[SOUTHWEST]" = list(SOUTH, SOUTHWEST),
+	"[NORTHWEST]" = list(NORTH, WEST),
+	"[NORTHEAST]" = list(EAST, NORTHWEST),
+	"[SOUTHEAST]" = list(NORTHEAST, SOUTHEAST),
+))
 
 /obj/machinery/scav_camera
 	name = "security camera"
 	desc = "A scuffed camera on a swivel mount. A wire runs from it into the wall."
-	icon = 'icons/obj/machines/camera.dmi'
+	icon = 'voidcrew/icons/obj/machines/scav_camera.dmi'
 	icon_state = "camera"
 	base_icon_state = "camera"
 	layer = WALL_OBJ_LAYER
@@ -99,6 +123,12 @@
 	var/emp_until = 0
 	/// Its feed is cut for good (wirecutters)
 	var/feed_cut = FALSE
+	/// Sprite dirs it may show (one for a camera on a wall, two for one in a corner)
+	var/list/sprite_dirs
+	/// The sprite dir it shows now (a GLOB.scav_cam_frames key)
+	var/frame_dir
+	/// The swivel frame it shows now, 1 to 7
+	var/frame = 4
 	/// The drawn cone
 	var/obj/effect/abstract/scav_camera_cone/cone
 	/// Weakref to its den's guards, once found
@@ -111,6 +141,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 /obj/machinery/scav_camera/Initialize(mapload)
 	. = ..()
 	aim = scav_cam_facing()
+	sprite_dirs = scav_cam_sprite_dirs()
+	scav_cam_pick_frame()
+	update_appearance(UPDATE_ICON_STATE)
 	cone = new(src)
 	vis_contents += cone
 	SET_PLANE_EXPLICIT(cone, O_LIGHTING_VISUAL_PLANE, src)
@@ -129,6 +162,36 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 /obj/machinery/scav_camera/proc/scav_cam_facing()
 	return SIMPLIFY_DEGREES(dir2angle(REVERSE_DIR(dir)) + facing_offset)
 
+/// The sprite dirs it may show: its own, or for a corner camera turned off its wall, the two whose mounts sit in that corner.
+/obj/machinery/scav_camera/proc/scav_cam_sprite_dirs()
+	if(!facing_offset || !(dir in GLOB.cardinals))
+		return list(dir)
+	// The other wall of its corner is the one it turns away from.
+	var/other_wall = angle2dir_cardinal(dir2angle(REVERSE_DIR(dir)) + (facing_offset > 0 ? 270 : 90))
+	var/list/corner = GLOB.scav_cam_corner_sprites["[dir | other_wall]"]
+	return corner ? corner.Copy() : list(dir)
+
+/// Shows the swivel frame whose head points nearest its aim. Returns TRUE when the frame changed.
+/obj/machinery/scav_camera/proc/scav_cam_pick_frame()
+	if(!length(sprite_dirs))
+		sprite_dirs = scav_cam_sprite_dirs()
+	var/best_dir = frame_dir
+	var/best_frame = frame
+	var/best_off = INFINITY
+	for(var/sprite_dir in sprite_dirs)
+		var/list/frames = GLOB.scav_cam_frames["[sprite_dir]"]
+		for(var/i in 1 to length(frames))
+			var/off = abs(closer_angle_difference(aim, frames[i][1]))
+			if(off < best_off)
+				best_off = off
+				best_dir = sprite_dir
+				best_frame = i
+	if(best_dir == frame_dir && best_frame == frame)
+		return FALSE
+	frame_dir = best_dir
+	frame = best_frame
+	return TRUE
+
 /obj/machinery/scav_camera/examine(mob/user)
 	. = ..()
 	if(cam_state == SCAV_CAM_OFF)
@@ -140,7 +203,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 	else if(cam_state == SCAV_CAM_OFF)
 		icon_state = "[base_icon_state]_[emp_until > world.time ? "emp" : "off"]"
 	else
-		icon_state = "[base_icon_state][cam_state == SCAV_CAM_SCAN ? "" : "_in_use"]"
+		if(isnull(frame_dir))
+			scav_cam_pick_frame()
+		icon_state = "[cam_state == SCAV_CAM_SCAN ? "scan" : "track"]_[frame_dir]_[frame - 1]"
 	return ..()
 
 /obj/machinery/scav_camera/atom_break(damage_flag)
@@ -337,33 +402,38 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 		cone.color = wanted_color
 	var/wanted_alpha = cam_state == SCAV_CAM_ALARM ? (round(world.time / (3 DECISECONDS)) % 2 ? 255 : 120) : 220
 	cone.alpha = wanted_alpha
-	var/state = "beam_[scav_cam_reach()]"
+	if(scav_cam_pick_frame())
+		update_appearance(UPDATE_ICON_STATE)
+	var/list/lens = GLOB.scav_cam_frames["[frame_dir]"][frame]
+	var/state = "beam_[scav_cam_reach(lens)]"
 	if(cone.icon_state != state)
 		cone.icon_state = state
 	var/matrix/pointing = matrix()
 	pointing.Scale(SCAV_CAM_CONE_SCALE, 1)
-	pointing.Translate(0, STEALTH_BEAM_PIVOT - SCAV_CAM_LENS_BACK)
+	// The beam's bottom middle (its apex) onto the turning point, turned, then onto the lens of the frame the head shows.
+	pointing.Translate(0, STEALTH_BEAM_PIVOT)
 	pointing.Turn(aim)
-	// The lens sits back toward the wall it hangs on.
-	pointing.Translate(0, -STEALTH_BEAM_PIVOT)
+	pointing.Translate(lens[2], lens[3] - STEALTH_BEAM_PIVOT)
 	if(instant)
 		animate(cone, transform = pointing, time = 0)
 	else
 		// Linear: a turned and stretched matrix tweened by angle can flip and swing the cone the long way round.
 		animate(cone, transform = pointing, time = 2 DECISECONDS, flags = ANIMATION_LINEAR_TRANSFORM)
 
-/// How long the drawn cone is along its aim, in quarter tiles: to the first wall or solid door, at most the beam's full length.
-/obj/machinery/scav_camera/proc/scav_cam_reach()
+/// How long the drawn cone is along its aim from `lens` (a GLOB.scav_cam_frames entry), in quarter tiles: to the first
+/// wall or solid door, at most the beam's full length.
+/obj/machinery/scav_camera/proc/scav_cam_reach(list/lens)
 	var/turf/eye = get_turf(src)
 	if(isnull(eye))
 		return STEALTH_BEAM_LENGTHS
 	var/dx = sin(aim)
 	var/dy = cos(aim)
-	var/lens = SCAV_CAM_LENS_BACK / 32
+	var/lens_x = lens ? lens[2] / 32 : 0
+	var/lens_y = lens ? lens[3] / 32 : 0
 	for(var/step in 1 to STEALTH_BEAM_LENGTHS)
 		// a step is a quarter tile, the beam icon's own unit
-		var/along = step / 4 - lens
-		var/turf/at = locate(eye.x + round(dx * along, 1), eye.y + round(dy * along, 1), eye.z)
+		var/along = step / 4
+		var/turf/at = locate(eye.x + round(lens_x + dx * along, 1), eye.y + round(lens_y + dy * along, 1), eye.z)
 		if(isnull(at) || (at != eye && IS_OPAQUE_TURF(at)))
 			return clamp(step, 1, STEALTH_BEAM_LENGTHS)
 	return STEALTH_BEAM_LENGTHS
@@ -401,4 +471,3 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 #undef SCAV_CAM_COLOR_TRACK
 #undef SCAV_CAM_COLOR_ALARM
 #undef SCAV_CAM_CONE_SCALE
-#undef SCAV_CAM_LENS_BACK
