@@ -271,7 +271,7 @@ GLOBAL_LIST_EMPTY(stealth_sight_overlays)
 
 /**
  * The tiles one guard sees, shown to one admin: green for its lit cone, blue for how far it sees into
- * the dark, yellow for the close radius it feels all round. Rebuilt each scan while watched; ends when
+ * the dark, brown for cover too far off to see into, yellow for the close radius it feels all round. Rebuilt each scan while watched; ends when
  * the guard dies, on a second toggle, or after STEALTH_ADMIN_OVERLAY_TIME.
  */
 /datum/stealth_sight_overlay
@@ -340,7 +340,10 @@ GLOBAL_LIST_EMPTY(stealth_sight_overlays)
 		var/dist = get_dist(center, tile)
 		var/colour
 		if(eyes && stealth_in_cone(guard, tile, half_angle) && can_see(center, tile, profile.sight_range))
-			if(dist <= profile.dark_sight_range || night)
+			// Cover it can't see into from here (stealth_cover.dm)
+			if(dist > max(profile.point_blank_range, STEALTH_COVER_RANGE) && stealth_cover_at(tile) && !stealth_ai.stealth_beam_on(tile))
+				colour = "#996633"
+			else if(dist <= profile.dark_sight_range || night)
 				colour = "#3399ff"
 			else
 				colour = "#33cc33"

@@ -773,9 +773,14 @@
 		var/plain_sight = FALSE
 		// In its cone in light it can use, and not in the moment after a turn
 		var/clear = FALSE
+		// Keeping still in foliage, too far off to make out (stealth_cover.dm). Seen getting in, it goes to look.
+		var/covered = !boxed && eyes && stealth_covered(candidate, where, dist)
+		if(covered && stealth_cover_glimpsed(candidate, where))
+			stealth_check_cover(where)
+			return
 		if(boxed)
 			rate = profile.notice_rate
-		else if(eyes && !stealth_is_cloaked(candidate) && stealth_in_cone(guard, where, half_angle))
+		else if(eyes && !covered && !stealth_is_cloaked(candidate) && stealth_in_cone(guard, where, half_angle))
 			// Elbow to elbow in front of it: seen whatever the light (decision 31). Behind or side-on, the
 			// close radius below still applies.
 			var/cap = dist <= STEALTH_ADJACENT_RANGE ? sight_range : stealth_range_onto(where)

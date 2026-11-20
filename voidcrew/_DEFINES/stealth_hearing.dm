@@ -37,6 +37,7 @@
 	STEALTH_NOISE_SCREAM,\
 	STEALTH_NOISE_SHOUT,\
 	STEALTH_NOISE_CRUNCH,\
+	STEALTH_NOISE_RUSTLE,\
 )
 
 // ===== What a guard does about a noise =====

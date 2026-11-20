@@ -311,6 +311,7 @@
 #include "voidcrew_smart_locker.dm"
 #include "voidcrew_stealth.dm"
 #include "voidcrew_stealth_closet.dm"
+#include "voidcrew_stealth_cover.dm"
 #include "voidcrew_stealth_crits.dm"
 #include "voidcrew_stealth_d32.dm"
 #include "voidcrew_stealth_d37.dm"
