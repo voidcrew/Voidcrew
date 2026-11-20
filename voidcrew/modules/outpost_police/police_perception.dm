@@ -12,8 +12,8 @@
  * The police use /datum/outpost_police_perception/stealth (below): sight convicts, sound never does. An officer
  * sees by stealth's own rules (cone, darkness, cloaks, boxes) and its report counts when its radio call goes out,
  * so dropping, stunning, jamming or EMPing the only officer who saw it before the call means nobody is wanted.
- * Traders, checkpoint guards and cameras report at once; townspeople take a moment. The base datum is the plain
- * rule (sight within range, reports at once), kept for tests.
+ * Traders, checkpoint guards and cameras report at once; townspeople have to tell someone in person (police_witness.dm).
+ * The base datum is the plain rule (sight within range, reports at once), kept for tests.
  */
 
 /// The witness test this police uses
@@ -186,6 +186,10 @@
 /datum/outpost_police_perception/proc/can_report(atom/witness)
 	return TRUE
 
+/// Whether `witness` has no radio and makes its report only by telling someone in person (police_witness.dm)
+/datum/outpost_police_perception/proc/tells_in_person(atom/witness)
+	return FALSE
+
 // =========================================================================
 // THE STEALTH RULES (spec-stealth 2; owner decision 19)
 // =========================================================================
@@ -196,8 +200,9 @@
  *   sight, cone or not. Every officer who saw a crime shares one report, made when the first of them gets the
  *   call out (police_wanted.dm confirm_reports(), from the call in police_stealth.dm) or tells an officer with a
  *   working radio, or the desk, in person.
- * - Traders, checkpoint guards and cameras see all round and report at once; townspeople see all round and take
- *   OUTPOST_POLICE_CIVILIAN_REPORT_TIME. Players see as before.
+ * - Traders, checkpoint guards and cameras see all round and report at once. Townspeople see all round and report
+ *   only by telling someone in person (tells_in_person(), police_witness.dm: owner decision 51); morgue and cleaning
+ *   crews take OUTPOST_POLICE_CIVILIAN_REPORT_TIME on their headsets. Players see as before.
  * - hears() stays FALSE: a noise brings officers to look (stealth_noise.dm), never stars.
  */
 /datum/outpost_police_perception/stealth
@@ -246,6 +251,7 @@
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/off_desk in police.outpost.traders)
 		if(!off_desk.mind && !off_desk.client && !trader_at_desk(off_desk) && sees(off_desk, offender))
 			civilians_saw |= off_desk
+	civilians_saw = headset_witnesses_first(civilians_saw)
 	if(length(civilians_saw) && length(officers_saw))
 		last_witnesses = civilians_saw + officers_saw
 		last_witness = civilians_saw[1]
@@ -259,6 +265,13 @@
 		last_witness = civilians_saw[1]
 		return POLICE_WITNESS_SAW
 	return POLICE_WITNESS_NONE
+
+/// `civilians` with the morgue and cleaning crews (who call it in on a headset after a moment) put first
+/datum/outpost_police_perception/proc/headset_witnesses_first(list/civilians)
+	var/list/headsets = list()
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/crew in civilians)
+		headsets += crew
+	return length(headsets) ? headsets | civilians : civilians
 
 /// Whether `thing` is an NPC police officer (never a player in an officer's body, abuse SF3)
 /datum/outpost_police_perception/proc/is_officer(atom/thing)
@@ -380,9 +393,10 @@
 	if(test_plain)
 		return 0
 #endif
-	// Townspeople, recovery crews and traders away from their counter take a moment; a trader at their counter or gate guard reports at once
-	var/mob/living/carbon/human/npc/ambient_npc/npc = witness
-	if(istype(npc) && !npc.mind && !npc.client && !is_officer(npc) && !trader_at_desk(npc))
+	// Morgue and cleaning crews take a moment on their headsets. Townspeople tell someone in person instead
+	// (tells_in_person()); a trader at their counter or gate guard reports at once.
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/crew = witness
+	if(istype(crew) && !crew.mind && !crew.client)
 		return OUTPOST_POLICE_CIVILIAN_REPORT_TIME
 	return 0
 
@@ -391,7 +405,19 @@
 	if(test_plain)
 		return FALSE
 #endif
-	return is_officer(witness)
+	return is_officer(witness) || tells_in_person(witness)
+
+/// A mindless townsperson, off-counter trader or outpost worker: no radio, so they go and tell someone (owner decision 51).
+/// Not an officer, a morgue or cleaning crew member (headset) or a trader at their counter (the desk alarm).
+/datum/outpost_police_perception/stealth/tells_in_person(atom/witness)
+#ifdef UNIT_TESTS
+	if(test_plain)
+		return FALSE
+#endif
+	var/mob/living/carbon/human/npc/ambient_npc/npc = witness
+	if(!istype(npc) || npc.mind || npc.client || is_officer(npc) || trader_at_desk(npc))
+		return FALSE
+	return !istype(npc, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery)
 
 /// An officer reports while awake and not held (stealth_captive()); a townsperson while awake and not tied up; a crew
 /// member only with a working headset
@@ -412,7 +438,11 @@
 		if(!crew.stealth_radio_ready() || !human_npc_can_talk(crew))
 			return FALSE
 	if(istype(person, /mob/living/carbon/human/npc/ambient_npc))
-		return !HAS_TRAIT(person, TRAIT_RESTRAINED)
+		if(HAS_TRAIT(person, TRAIT_RESTRAINED))
+			return FALSE
+		// Someone who has to go and tell tells nobody while held: grabbed, buckled, shut in or on fire (decision 51)
+		if(tells_in_person(person) && ambient_wants_free(person))
+			return FALSE
 	return TRUE
 
 /**
@@ -428,8 +458,9 @@
 	if(officer.stealth_radio_ready())
 		var/datum/ai_controller/basic_controller/human_npc/stealth/brain = officer.ai_controller
 		if(istype(brain) && isnull(brain.pending_call))
+			// Where a witness last saw them, not where they are now (owner decision 52)
 			var/mob/living/offender = report.offender?.resolve()
-			brain.stealth_start_call(STEALTH_CALL_ALARM, get_turf(offender) || get_turf(officer))
+			brain.stealth_start_call(STEALTH_CALL_ALARM, report.seen_turf || get_turf(offender) || get_turf(officer))
 		return FALSE
 	var/turf/here = get_turf(officer)
 	if(!here)

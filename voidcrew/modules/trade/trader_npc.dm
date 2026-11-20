@@ -92,7 +92,7 @@
 	// NOMOBSWAP stops help-intent walkers from place-swapping through the counter
 	ADD_TRAIT(src, TRAIT_NOMOBSWAP, INNATE_TRAIT)
 	RegisterSignal(src, COMSIG_MOUSEDROP_ONTO, PROC_REF(block_being_dragged))
-	RegisterSignal(src, COMSIG_LIVING_GET_PULLED, PROC_REF(on_pulled))
+	// Being grabbed is handled as for every outpost person (outpost_police/police_grab.dm, owner decision 53)
 	RegisterSignal(src, COMSIG_LIVING_REVIVE, PROC_REF(on_revived))
 	guard_alive(TRUE)
 	leash_to(home)
@@ -285,13 +285,6 @@
 	else
 		REMOVE_TRAIT(src, TRAIT_NO_CONTAINMENT, TRADER_ALIVE_TRAIT)
 		REMOVE_TRAIT(src, TRAIT_NO_STORAGE_INSERT, TRADER_ALIVE_TRAIT)
-
-/// Someone grabs a living keeper: moving staff against their will is assault on the staff (M31)
-/mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/on_pulled(datum/source, mob/living/puller)
-	SIGNAL_HANDLER
-	if(stat == DEAD || !isliving(puller) || puller == src || !outpost)
-		return
-	outpost.register_aggression(puller, OUTPOST_CRIME_ASSAULT_STAFF, src)
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/proc/on_revived(datum/source, full_heal_flags)
 	SIGNAL_HANDLER

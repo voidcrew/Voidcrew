@@ -216,13 +216,15 @@ Fighting back against someone who attacked you first is not a crime. Hunters goi
 
 A crime counts only if someone saw it.
 
-- **At once:** traders, checkpoint guards, players from another crew, the checkpoint scanners and the lift panels.
-- **After a few seconds:** shoppers, drinkers and regulars, who have to tell someone first.
+- **At once:** traders at their counters, checkpoint guards, players from another crew, the checkpoint scanners and the lift panels.
+- **In person:** shoppers, drinkers, regulars and workers have no radio. They run to an officer, the police desk, a trader at a counter or a checkpoint guard and tell them. Until someone has been told, nobody is after you, and the police only learn where the witness last saw you.
 - **By radio:** officers, morgue workers, janitors and medics. An officer whose radio is down tells another officer or the desk in person instead.
 
-Hearing a shot never makes a crime, but it brings officers to look.
+Hearing a shot or a scream never makes a crime, but it brings officers to look.
 
-A report that hasn't gone out yet can be stopped. It is dropped if every witness dies, or if none of them can report for two minutes: knocked out, cuffed, or with a jammed or EMPed radio. A radio that comes back inside those two minutes still gets the call through.
+Grabbing someone at the outpost by the neck is the same crime as punching them, and they will yell for help. Pulling someone along is not a crime.
+
+A report that hasn't gone out yet can be stopped. It is dropped if every witness dies, or if none of them can report for two minutes: knocked out, cuffed, held, or with a jammed or EMPed radio. A radio that comes back inside those two minutes still gets the call through, and a witness who gets free or comes round still goes and tells.
 
 ### The response
 
