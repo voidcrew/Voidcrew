@@ -776,6 +776,8 @@
 		var/plain_sight = FALSE
 		// In its cone in light it can use, and not in the moment after a turn
 		var/clear = FALSE
+		// Looking at them: in its cone and close enough for the light. What they hold, drag or stand in only counts then.
+		var/in_view = FALSE
 		// Keeping still in foliage, too far off to make out (stealth_cover.dm). Seen getting in, it goes to look.
 		var/covered = !boxed && eyes && stealth_covered(candidate, where, dist)
 		if(covered && stealth_cover_glimpsed(candidate, where))
@@ -788,6 +790,7 @@
 			// close radius below still applies.
 			var/cap = dist <= STEALTH_ADJACENT_RANGE ? sight_range : stealth_range_onto(where)
 			if(dist <= cap)
+				in_view = TRUE
 				rate = profile.notice_rate * clamp((cap + 1 - dist) / cap, STEALTH_NOTICE_MIN_FALLOFF, 1)
 				if(cap < sight_range)
 					rate *= STEALTH_DARK_MULT
@@ -810,9 +813,10 @@
 		if(!rate)
 			continue
 		// A disguise that holds (decision 40): seen doing what no guard would, it is blown; otherwise notice fills
-		// slower by stage, never jumps to an alert, and close enough they are stopped and asked instead.
+		// slower by stage, never jumps to an alert, and close enough they are stopped and asked instead. Someone it only
+		// senses at its back or by their light hasn't been looked at: it turns first, and judges what it sees then.
 		var/pieces = boxed ? NONE : stealth_fooled(candidate)
-		if(pieces && stealth_breaker(candidate, pieces, where))
+		if(pieces && in_view && stealth_breaker(candidate, pieces, where))
 			if(stealth_blow(candidate))
 				return
 			pieces = NONE
