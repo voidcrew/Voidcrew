@@ -11,6 +11,9 @@
  * tg sends the grab's tightening to the grabber (setGrabState()), so they listen on whoever holds them while they do.
  * A hostage taken by the neck is charged here once, as the grab; the stealth hostage code charges nothing itself, and a
  * hold-up's robbery is its own crime (recovery_robbery.dm).
+ *
+ * A trader or gate guard who can't pull free (out cold, stunned, cuffed) and is dragged off by a player is charged the
+ * same way, once per pull: moving staff against their will shuts their counter for every other crew (abuse M31).
  */
 
 /mob/living/carbon/human/npc/ambient_npc/outpost
@@ -33,6 +36,9 @@
 	if(!isliving(puller) || puller == src || !reacts_to_grabs())
 		return
 	RegisterSignal(puller, COMSIG_MOVABLE_SET_GRAB_STATE, PROC_REF(on_outpost_grip), override = TRUE)
+	if(charges_helpless_pull() && (puller.mind || puller.client) && (stat != CONSCIOUS || HAS_TRAIT(src, TRAIT_INCAPACITATED) || HAS_TRAIT(src, TRAIT_RESTRAINED)))
+		grab_charged = TRUE
+		grab_outpost()?.register_aggression(puller, grab_crime(), src)
 	if(stat != CONSCIOUS || fading || !(puller.mind || puller.client) || !reaction_ready("pulled", OUTPOST_POLICE_PULL_REMARK_COOLDOWN))
 		return
 	if(!buckled)
@@ -61,6 +67,13 @@
 		return
 	grab_charged = TRUE
 	grab_outpost()?.register_aggression(grabber, grab_crime(), src)
+
+/// Whether dragging them off while they can't pull free is charged as a rough grab is (abuse M31: staff only)
+/mob/living/carbon/human/npc/ambient_npc/outpost/proc/charges_helpless_pull()
+	return FALSE
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/charges_helpless_pull()
+	return TRUE
 
 /// The crime a rough grab on them is: hitting them unarmed
 /mob/living/carbon/human/npc/ambient_npc/outpost/proc/grab_crime()
