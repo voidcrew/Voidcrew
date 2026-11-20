@@ -199,6 +199,15 @@
 		TEST_ASSERT_EQUAL(north.frame, check[2], "The north wall camera's head is on the wrong frame at aim [check[1]]")
 		TEST_ASSERT_EQUAL(north.icon_state, "scan_[NORTH]_[check[2] - 1]", "The north wall camera's icon didn't follow its frame at aim [check[1]]")
 
+	// Its cone is masked off the wall it hangs on.
+	TEST_ASSERT_EQUAL(north.scav_cam_walls(), NORTH, "A north wall camera doesn't mask its cone off the north wall")
+	TEST_ASSERT(north.cone in north.cone_holder.vis_contents, "The cone isn't drawn in its masking holder")
+	TEST_ASSERT(north.cone_holder.get_filter("scav_cam_walls"), "The cone's holder has no wall mask")
+	TEST_ASSERT(north.cone.plane == north.cone_holder.plane, "The cone left its holder's plane, so the mask misses it")
+	var/list/mask_states = icon_states('voidcrew/icons/effects/scav_camera_mask.dmi')
+	for(var/walls in list(NORTH, SOUTH, EAST, WEST, NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWEST))
+		TEST_ASSERT("wall_[walls]" in mask_states, "scav_camera_mask.dmi has no wall_[walls]")
+
 	// Hung on the south wall.
 	var/obj/machinery/scav_camera/south = allocate(/obj/machinery/scav_camera/directional/south, run_loc_floor_bottom_left)
 	for(var/list/check in list(list(0, 4), list(south.sweep, 1), list(360 - south.sweep, 7), list(14, 3)))
@@ -217,6 +226,7 @@
 	var/obj/machinery/scav_camera/corner = allocate(/obj/machinery/scav_camera/directional/south, run_loc_floor_bottom_left)
 	corner.facing_offset = 45
 	corner.sprite_dirs = corner.scav_cam_sprite_dirs()
+	TEST_ASSERT_EQUAL(corner.scav_cam_walls(), SOUTHWEST, "A south west corner camera doesn't mask its cone off both walls")
 	TEST_ASSERT(length(corner.sprite_dirs) == 2 && (SOUTH in corner.sprite_dirs) && (SOUTHWEST in corner.sprite_dirs), "A south west corner camera doesn't use both of that corner's sprites")
 	for(var/list/check in list(list(0, SOUTH, 4), list(27, SOUTH, 2), list(63, SOUTHWEST, 2), list(90, SOUTHWEST, 4)))
 		corner.aim = check[1]

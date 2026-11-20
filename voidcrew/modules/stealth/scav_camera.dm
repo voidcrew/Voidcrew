@@ -131,6 +131,8 @@ GLOBAL_LIST_INIT(scav_cam_corner_sprites, list(
 	var/frame = 4
 	/// The drawn cone
 	var/obj/effect/abstract/scav_camera_cone/cone
+	/// What the cone is drawn in: it cuts the cone off its mounting wall(s)
+	var/obj/effect/abstract/scav_camera_cone_holder/cone_holder
 	/// Weakref to its den's guards, once found
 	var/datum/weakref/group_ref
 	/// The guards' skill for its zone, once worked out
@@ -144,15 +146,23 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 	sprite_dirs = scav_cam_sprite_dirs()
 	scav_cam_pick_frame()
 	update_appearance(UPDATE_ICON_STATE)
+	cone_holder = new(src)
+	cone_holder.add_filter("scav_cam_walls", 1, alpha_mask_filter(icon = icon('voidcrew/icons/effects/scav_camera_mask.dmi', "wall_[scav_cam_walls()]")))
+	vis_contents += cone_holder
+	SET_PLANE_EXPLICIT(cone_holder, O_LIGHTING_VISUAL_PLANE, src)
 	cone = new(src)
-	vis_contents += cone
+	cone_holder.vis_contents += cone
+	// The same plane as its holder, or it would leave the holder's group and its mask.
 	SET_PLANE_EXPLICIT(cone, O_LIGHTING_VISUAL_PLANE, src)
 	scav_cam_draw(TRUE)
 
 /obj/machinery/scav_camera/Destroy()
 	if(cone)
-		vis_contents -= cone
+		cone_holder?.vis_contents -= cone
 		QDEL_NULL(cone)
+	if(cone_holder)
+		vis_contents -= cone_holder
+		QDEL_NULL(cone_holder)
 	watched = null
 	group_ref = null
 	profile = null
@@ -164,12 +174,17 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 
 /// The sprite dirs it may show: its own, or for a corner camera turned off its wall, the two whose mounts sit in that corner.
 /obj/machinery/scav_camera/proc/scav_cam_sprite_dirs()
-	if(!facing_offset || !(dir in GLOB.cardinals))
+	var/walls = scav_cam_walls()
+	if(walls == dir)
 		return list(dir)
-	// The other wall of its corner is the one it turns away from.
-	var/other_wall = angle2dir_cardinal(dir2angle(REVERSE_DIR(dir)) + (facing_offset > 0 ? 270 : 90))
-	var/list/corner = GLOB.scav_cam_corner_sprites["[dir | other_wall]"]
+	var/list/corner = GLOB.scav_cam_corner_sprites["[walls]"]
 	return corner ? corner.Copy() : list(dir)
+
+/// The wall(s) it hangs on, as dir bits: its own wall, and for a corner camera the other wall of that corner.
+/obj/machinery/scav_camera/proc/scav_cam_walls()
+	if(!facing_offset || !(dir in GLOB.cardinals))
+		return dir
+	return dir | angle2dir_cardinal(dir2angle(REVERSE_DIR(dir)) + (facing_offset > 0 ? 270 : 90))
 
 /// Shows the swivel frame whose head points nearest its aim. Returns TRUE when the frame changed.
 /obj/machinery/scav_camera/proc/scav_cam_pick_frame()
@@ -447,12 +462,35 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	anchored = TRUE
 	blocks_emissive = EMISSIVE_BLOCK_NONE
-	blend_mode = BLEND_ADD
-	appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM | KEEP_APART | PIXEL_SCALE
+	// Drawn plainly into its holder's group; the holder adds the group onto the scene.
+	blend_mode = BLEND_DEFAULT
+	// No KEEP_APART: it must stay in its holder's KEEP_TOGETHER group to be masked.
+	appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM | PIXEL_SCALE
 	vis_flags = NONE
-	// The icon's bottom middle on the camera tile's centre
-	pixel_x = -48
-	pixel_y = 16
+	// The icon's bottom middle on the camera tile's centre. Vis contents sit at their holder's pixel offset, so this
+	// undoes the holder's -224.
+	pixel_x = -48 + 224
+	pixel_y = 16 + 224
+
+/**
+ * Holds a den camera's cone, unturned, on the cone's plane. KEEP_TOGETHER draws the cone into one group, then applies
+ * this holder's filters to the whole group: an alpha mask (scav_camera_mask.dmi) that keeps only the floor side of the
+ * camera's mounting wall(s), so the cone never draws on them. Its "bounds" icon is 480x480 (all but invisible) and
+ * centred on the camera's tile, the same size as the masks, so the mask sits on the tile whether BYOND centres it on
+ * this icon or on the whole group (the cone, at most about 223 px from the tile's centre, always stays inside it).
+ */
+/obj/effect/abstract/scav_camera_cone_holder
+	name = "camera sweep"
+	icon = 'voidcrew/icons/effects/scav_camera_mask.dmi'
+	icon_state = "bounds"
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	anchored = TRUE
+	blocks_emissive = EMISSIVE_BLOCK_NONE
+	blend_mode = BLEND_ADD
+	appearance_flags = KEEP_TOGETHER | RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM | KEEP_APART | PIXEL_SCALE
+	vis_flags = NONE
+	pixel_x = -224
+	pixel_y = -224
 
 #undef SCAV_CAM_SCAN
 #undef SCAV_CAM_TRACK
