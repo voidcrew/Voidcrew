@@ -8,7 +8,7 @@
  *
  * It sees by the guards' rules: dark tiles hide you past one tile, lockers and boxes hide you, cloaks hide you, and a
  * scav disguise of fatigues and mask passes, except in a room marked off limits (stealth_restricted). It never sees
- * through walls (can_see()). The cone is drawn on the lighting visual plane and lights nothing: what it shows is where
+ * through walls (stealth_can_see()). The cone is drawn on the lighting visual plane and lights nothing: what it shows is where
  * it looks, nothing more.
  *
  * Players can EMP it (off for a while), break it (it has an integrity like any machine) or cut its feed with
@@ -295,7 +295,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 		return FALSE
 	if(dist > 1 && stealth_tile_is_dark(spot))
 		return FALSE
-	if(!can_see(eye, spot, view_range))
+	if(!stealth_can_see(eye, spot, view_range))
 		return FALSE
 	return !scav_cam_waves_through(who, spot)
 

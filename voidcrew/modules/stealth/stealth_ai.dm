@@ -64,7 +64,7 @@
  */
 /datum/ai_controller/basic_controller/human_npc/stealth
 	blackboard = list(
-		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic/human_npc,
+		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic/human_npc/stealth,
 		BB_TARGET_MINIMUM_STAT = HARD_CRIT,
 		BB_AGGRO_RANGE = HUMAN_NPC_SIGHT_RANGE,
 		BB_HUMAN_NPC_SHOT_DELAY = 3 SECONDS,
@@ -533,7 +533,7 @@
 	var/picked = 0
 	while(length(pool) && picked < STEALTH_SEARCH_POINTS)
 		var/turf/spot = pick_n_take(pool)
-		if(!can_see(center, spot, STEALTH_SEARCH_RADIUS))
+		if(!stealth_can_see(center, spot, STEALTH_SEARCH_RADIUS))
 			continue
 		. += spot
 		picked++
@@ -1091,7 +1091,7 @@
 			set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, remembered)
 		return
 	// In plain sight but no longer worth fighting. Someone in the dark beyond its dark sight is just out of view.
-	if(get_dist(guard, remembered) <= HUMAN_NPC_SIGHT_RANGE && stealth_alert_lit(remembered) && can_see(guard, remembered, HUMAN_NPC_SIGHT_RANGE))
+	if(get_dist(guard, remembered) <= HUMAN_NPC_SIGHT_RANGE && stealth_alert_lit(remembered) && stealth_can_see(guard, remembered, HUMAN_NPC_SIGHT_RANGE))
 		clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
 		clear_blackboard_key(BB_STEALTH_FOCUS)
 		var/mob/living/fallen = remembered
@@ -1195,7 +1195,7 @@
 		var/in_sight = dist <= stealth_skill().close_range
 		if(!in_sight && eyes && stealth_in_cone(guard, where, half_angle))
 			in_sight = dist <= stealth_range_onto(where)
-		if(!in_sight || !can_see(guard, where, sight_range))
+		if(!in_sight || !stealth_can_see(guard, where, sight_range))
 			continue
 		seen += key
 		var/news = !(key in group.reported_bodies)

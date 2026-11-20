@@ -162,3 +162,32 @@
 	TEST_ASSERT(locker.opened, "Two guards that saw someone shut in a locker never opened it")
 	TEST_ASSERT(both_claimed, "The two guards never both went after the locker (the test can't tell one opener from one watcher)")
 	TEST_ASSERT_EQUAL(length(openers), 1, "[length(openers)] guards tried to open one locker")
+
+/// Line of sight past wall corners (stealth_can_see()): a line that grazes a wall's corner is blocked, a crack
+/// where two walls touch is blocked, an open diagonal is clear, and it is the same both ways.
+/datum/unit_test/voidcrew_stealth_live/corner_sight
+
+/datum/unit_test/voidcrew_stealth_live/corner_sight/Run()
+	TEST_ASSERT(make_room(6, 6), "No room for the test")
+	// n o o / w o w / o o p, rows from the top: the guard top left, the player bottom right.
+	var/turf/guard_spot = at(0, 4)
+	var/turf/player_spot = at(2, 2)
+	TEST_ASSERT(stealth_can_see(guard_spot, player_spot, 7), "An open diagonal is out of sight")
+	var/turf/left_wall = at(0, 3)
+	var/turf/right_wall = at(2, 3)
+	left_wall.ChangeTurf(/turf/closed/wall)
+	right_wall.ChangeTurf(/turf/closed/wall)
+	TEST_ASSERT(!stealth_can_see(guard_spot, player_spot, 7), "A guard sees round a wall corner")
+	TEST_ASSERT(!stealth_can_see(player_spot, guard_spot, 7), "Sight round a wall corner isn't the same both ways")
+	// n w / w p: a crack where two walls touch at the corner.
+	var/turf/crack_guard = at(4, 4)
+	var/turf/crack_player = at(5, 3)
+	var/turf/crack_a = at(5, 4)
+	var/turf/crack_b = at(4, 3)
+	crack_a.ChangeTurf(/turf/closed/wall)
+	crack_b.ChangeTurf(/turf/closed/wall)
+	TEST_ASSERT(stealth_can_see(crack_guard, crack_player, 7), "Elbow to elbow across a corner is out of sight")
+	var/turf/far_guard = at(3, 5)
+	TEST_ASSERT(!stealth_can_see(far_guard, crack_player, 7), "A guard sees through a crack where two walls touch")
+	// A straight line down an open row is clear.
+	TEST_ASSERT(stealth_can_see(at(0, 0), at(5, 0), 7), "A guard can't see down an open row")

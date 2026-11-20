@@ -148,3 +148,66 @@ GLOBAL_LIST_EMPTY(stealth_test_dark_turfs)
 	. = list()
 	for(var/list/bucket in buckets)
 		. += bucket
+
+/**
+ * Line of sight for guards and cameras. tg's can_see() steps tile to tile toward the target and never looks at the
+ * two tiles a diagonal step slips between, so a guard saw round a wall corner and through a crack where two walls
+ * only touch. This walks every tile the straight line between the two tile centres crosses (a supercover line), and
+ * where that line passes exactly through a corner it counts both tiles beside it: grazing a wall is blocked. The
+ * same tiles are crossed either way, so a guard sees someone exactly when they could see the guard.
+ * Next to each other (one tile apart) is always in sight, as with tg's check. Opaque means IS_OPAQUE_TURF, as in can_see().
+ */
+/proc/stealth_can_see(atom/source, atom/target, length = 5)
+	var/turf/from = get_turf(source)
+	var/turf/dest = get_turf(target)
+	if(isnull(from) || isnull(dest) || from.z != dest.z)
+		return FALSE
+	var/dist = get_dist(from, dest)
+	if(dist > length)
+		return FALSE
+	if(dist <= 1)
+		return TRUE
+	var/dx = abs(dest.x - from.x)
+	var/dy = abs(dest.y - from.y)
+	var/sx = dest.x > from.x ? 1 : -1
+	var/sy = dest.y > from.y ? 1 : -1
+	var/x = from.x
+	var/y = from.y
+	var/z = from.z
+	var/ix = 0
+	var/iy = 0
+	while(ix < dx || iy < dy)
+		// Where the line leaves this tile: through its side (x), its top or bottom (y), or exactly its corner.
+		var/decision = (1 + 2 * ix) * dy - (1 + 2 * iy) * dx
+		if(decision == 0)
+			var/turf/side_x = locate(x + sx, y, z)
+			var/turf/side_y = locate(x, y + sy, z)
+			if((side_x && IS_OPAQUE_TURF(side_x)) || (side_y && IS_OPAQUE_TURF(side_y)))
+				return FALSE
+			x += sx
+			y += sy
+			ix++
+			iy++
+		else if(decision < 0)
+			x += sx
+			ix++
+		else
+			y += sy
+			iy++
+		if(x == dest.x && y == dest.y)
+			return TRUE
+		var/turf/crossed = locate(x, y, z)
+		if(isnull(crossed) || IS_OPAQUE_TURF(crossed))
+			return FALSE
+	return TRUE
+
+/// The human NPC targeting check with stealth_can_see() in place of tg's can_see().
+/datum/targeting_strategy/basic/human_npc/stealth
+	ignore_sight = TRUE
+
+/datum/targeting_strategy/basic/human_npc/stealth/can_attack(mob/living/living_mob, atom/the_target, vision_range)
+	if(isnull(vision_range))
+		vision_range = living_mob.ai_controller?.blackboard[BB_AGGRO_RANGE] || HUMAN_NPC_SIGHT_RANGE
+	if(!..(living_mob, the_target, vision_range))
+		return FALSE
+	return stealth_can_see(living_mob, the_target, vision_range)

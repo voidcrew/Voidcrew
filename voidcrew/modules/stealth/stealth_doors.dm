@@ -155,7 +155,7 @@
 		return FALSE
 	if(!stealth_in_cone(guard, where, stealth_half_angle()))
 		return FALSE
-	return can_see(guard, where, stealth_skill().sight_range)
+	return stealth_can_see(guard, where, stealth_skill().sight_range)
 
 /// It saw a door move: suspicious of `spot`, the side of the door it is on, as at a sighting. Already
 /// suspicious and not yet on its way, it turns there instead.

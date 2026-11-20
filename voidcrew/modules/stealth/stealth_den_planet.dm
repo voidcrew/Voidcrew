@@ -249,7 +249,7 @@ ADMIN_VERB(stealth_den_planet, R_ADMIN|R_DEBUG, "Stealth: Scav Den Planet", "TEM
 		var/turf/eye = get_turf(guard)
 		if(get_dist(eye, spot) > profile.sight_range)
 			continue
-		if(stealth_in_cone(guard, spot, stealth_ai.stealth_half_angle()) && can_see(eye, spot, profile.sight_range))
+		if(stealth_in_cone(guard, spot, stealth_ai.stealth_half_angle()) && stealth_can_see(eye, spot, profile.sight_range))
 			return TRUE
 	return FALSE
 

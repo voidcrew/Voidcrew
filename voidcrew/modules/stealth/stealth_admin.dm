@@ -339,7 +339,7 @@ GLOBAL_LIST_EMPTY(stealth_sight_overlays)
 	for(var/turf/tile as anything in RANGE_TURFS(profile.sight_range, center))
 		var/dist = get_dist(center, tile)
 		var/colour
-		if(eyes && stealth_in_cone(guard, tile, half_angle) && can_see(center, tile, profile.sight_range))
+		if(eyes && stealth_in_cone(guard, tile, half_angle) && stealth_can_see(center, tile, profile.sight_range))
 			// Cover it can't see into from here (stealth_cover.dm)
 			if(dist > max(profile.point_blank_range, STEALTH_COVER_RANGE) && stealth_cover_at(tile) && !stealth_ai.stealth_beam_on(tile))
 				colour = "#996633"
