@@ -82,6 +82,16 @@
 	/// warrant when it is made, as a folded report's do on a counted one
 	var/list/datum/weakref/folded_victims
 	var/list/datum/weakref/folded_sources
+	/// Where and when a witness last saw the offender (queued, then refreshed while one still sees them): what the police
+	/// learn if nobody sees the offender when the report counts (owner decision 52)
+	var/turf/seen_turf
+	var/seen_at = 0
+	/// Townspeople telling someone in person (police_witness.dm): weakref to the teller -> list(weakref to the listener, world.time they started)
+	var/list/telling
+	/// Weakrefs to the townspeople sent to tell someone (at most OUTPOST_POLICE_TELL_RUNNERS at a time)
+	var/list/datum/weakref/runners
+	/// Weakrefs to the townspeople who have told someone, or given up on it
+	var/list/datum/weakref/told
 
 /datum/outpost_pending_report/Destroy()
 	offender = null
@@ -91,6 +101,10 @@
 	followups = null
 	folded_victims = null
 	folded_sources = null
+	seen_turf = null
+	telling = null
+	runners = null
+	told = null
 	return ..()
 
 /// One four or five star incident of one crew at this outpost: the embargo here (decision 25: this outpost only)
@@ -278,7 +292,7 @@
 	return null
 
 /// Applies `crime` onto `offender`'s warrant from `base_heat`, raising heat without stacking onto a weaker crime from the same act
-/datum/outpost_police/proc/apply_upgraded_crime(mob/living/offender, base_heat, crime, atom/victim, obj/item/source)
+/datum/outpost_police/proc/apply_upgraded_crime(mob/living/offender, base_heat, crime, atom/victim, obj/item/source, turf/scene, scene_at = 0)
 	var/datum/mind/mind = offender?.mind
 	if(!mind || QDELETED(src))
 		return null
@@ -287,9 +301,7 @@
 	warrant.heat = max(warrant.heat, heat_after(base_heat, crime))
 	warrant.peak = max(warrant.peak, warrant.heat)
 	warrant.last_crime_at = world.time
-	warrant.last_seen_at = world.time
-	warrant.last_seen_turf = get_turf(offender)
-	warrant.unseen_since = 0
+	note_sighting(warrant, offender, scene, scene_at)
 	if(source)
 		note_evidence(warrant, source)
 	if(isliving(victim) && victim != offender)
@@ -347,14 +359,24 @@
 	report.expires = world.time + max(delay, OUTPOST_POLICE_PENDING_KEEP)
 	report.crime = crime
 	report.offender = WEAKREF(offender)
+	report.seen_turf = get_turf(offender)
+	report.seen_at = world.time
 	if(victim)
 		report.victim = WEAKREF(victim)
 	if(source)
 		report.source = WEAKREF(source)
 	report.witnesses = list()
+	// Due when the slowest witness who reports by waiting is done (a headset crew), whoever was named first
+	var/longest = -1
 	for(var/atom/witness as anything in witnesses)
-		if(witness)
-			report.witnesses += WEAKREF(witness)
+		if(!witness)
+			continue
+		report.witnesses += WEAKREF(witness)
+		if(!perception.reports_by_call(witness))
+			longest = max(longest, perception.report_delay(witness, crime))
+	if(longest >= 0)
+		report.due = world.time + longest
+		report.expires = max(report.expires, world.time + longest)
 	pending_reports += report
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in witnesses)
 		if(perception.is_officer(officer))
@@ -369,6 +391,9 @@
 			pending_reports -= report
 			continue
 		var/mob/living/offender = report.offender?.resolve()
+		// Townspeople on their way to tell someone, or telling them (police_witness.dm)
+		if(!QDELETED(offender))
+			tick_tellers(report, offender)
 		var/list/atom/able = list()
 		var/non_call_able = FALSE
 		var/any_alive = !length(report.witnesses)
@@ -384,6 +409,10 @@
 				able += witness
 				if(!perception.reports_by_call(witness))
 					non_call_able = TRUE
+				// What the police will learn: where a witness who can still tell last saw them (owner decision 52)
+				if(!QDELETED(offender) && perception.sees(witness, offender))
+					report.seen_turf = get_turf(offender)
+					report.seen_at = world.time
 		var/made = !!length(able) && (report.confirmed || (non_call_able && world.time >= report.due))
 		if(!made && length(able) && !report.confirmed)
 			// Officers: a call going, or the words said in person
@@ -409,11 +438,49 @@
 
 /// Counts a pending report that was made, and what followed it while it waited
 /datum/outpost_police/proc/count_report(datum/outpost_pending_report/report, mob/living/offender)
+	var/turf/scene = report_scene(report, offender)
 	if(report.upgrade_base >= 0)
-		apply_upgraded_crime(offender, report.upgrade_base, report.crime, report.victim?.resolve(), report.source?.resolve())
+		apply_upgraded_crime(offender, report.upgrade_base, report.crime, report.victim?.resolve(), report.source?.resolve(), scene, report.seen_at)
 	else
-		count_crime(offender, report.crime, report.victim?.resolve(), report.source?.resolve())
+		count_crime(offender, report.crime, report.victim?.resolve(), report.source?.resolve(), scene = scene, scene_at = report.seen_at)
 	apply_report_extras(report, offender)
+
+/**
+ * Where the police start from when `report` counts (owner decision 52): null while an officer, a scanner, a camera or one
+ * of its witnesses sees `offender` now (their live position, as before), else the place a witness last saw them.
+ */
+/datum/outpost_police/proc/report_scene(datum/outpost_pending_report/report, mob/living/offender)
+	if(!report.seen_turf || QDELETED(offender))
+		return null
+	if(suspect_seen(offender))
+		return null
+	for(var/atom/camera as anything in perception.cameras())
+		if(perception.sees(camera, offender))
+			return null
+	for(var/datum/weakref/ref as anything in report.witnesses)
+		var/atom/witness = ref.resolve()
+		if(!QDELETED(witness) && perception.sees(witness, offender))
+			return null
+	return report.seen_turf
+
+/**
+ * Where `warrant`'s holder was last seen. With no `scene` they are seen where they stand now; with one (a report told
+ * after the fact) the police know only that place and time, and nobody is watching them now: the search and the hide
+ * clock carry on from there.
+ */
+/datum/outpost_police/proc/note_sighting(datum/outpost_warrant/warrant, mob/living/offender, turf/scene, scene_at)
+	if(!scene)
+		warrant.last_seen_at = world.time
+		warrant.last_seen_turf = get_turf(offender)
+		warrant.unseen_since = 0
+		return
+	// An officer may have seen them since the witness did: keep the fresher sighting
+	if(warrant.last_seen_turf && warrant.last_seen_at > scene_at)
+		return
+	warrant.last_seen_at = scene_at || world.time
+	warrant.last_seen_turf = scene
+	if(!warrant.unseen_since)
+		warrant.unseen_since = world.time
 
 /// Folds `report`'s extra weapons, victims and followup killings onto `offender`'s warrant
 /datum/outpost_police/proc/apply_report_extras(datum/outpost_pending_report/report, mob/living/offender)
@@ -500,10 +567,11 @@
 
 /**
  * Puts a witnessed crime on `offender`'s warrant. `derived` marks a crime that follows from one already
- * counted (a killing, an accomplice): it is not seen again and does not say where the offender is.
- * Returns the stars after.
+ * counted (a killing, an accomplice): it is not seen again and does not say where the offender is. A `scene` (a
+ * report told after the fact, report_scene()) is where and when (`scene_at`) a witness last saw them, in place of
+ * where they stand now. Returns the stars after.
  */
-/datum/outpost_police/proc/count_crime(mob/living/offender, crime, atom/victim, obj/item/source, derived = FALSE)
+/datum/outpost_police/proc/count_crime(mob/living/offender, crime, atom/victim, obj/item/source, derived = FALSE, turf/scene, scene_at = 0)
 	SHOULD_NOT_SLEEP(TRUE)
 	var/datum/mind/mind = offender?.mind
 	if(!mind || QDELETED(src))
@@ -516,9 +584,7 @@
 	warrant.peak = max(warrant.peak, warrant.heat)
 	warrant.last_crime_at = world.time
 	if(!derived)
-		warrant.last_seen_at = world.time
-		warrant.last_seen_turf = get_turf(offender)
-		warrant.unseen_since = 0
+		note_sighting(warrant, offender, scene, scene_at)
 	if(source)
 		note_evidence(warrant, source)
 	if(isliving(victim) && victim != offender)

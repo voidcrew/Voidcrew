@@ -1,4 +1,4 @@
-// Outpost police (voidcrew/modules/outpost_police/). Owner: P0 seams, frozen: packages never edit this file.
+// Outpost police (voidcrew/modules/outpost_police/).
 // Unit tests are compiled before this file, so a test uses the literal value with a comment naming the define.
 
 // ===== WANTED LEVEL =====
@@ -59,8 +59,28 @@
 #define OUTPOST_POLICE_NPC_WITNESS_RANGE 8
 /// A report waiting on a witness who can't make it now (out cold, held) is kept this long in case they come round
 #define OUTPOST_POLICE_PENDING_KEEP (2 MINUTES)
-/// A townsperson who saw a crime takes this long to tell anyone
+/// A morgue or cleaning crew member who saw a crime takes this long to call it in on their headset
 #define OUTPOST_POLICE_CIVILIAN_REPORT_TIME (3 SECONDS)
+/// A townsperson tells someone who can raise the alarm in person: from within this many tiles, in clear sight of them,
+/// for OUTPOST_POLICE_RADIOLESS_TIME (police_witness.dm)
+#define OUTPOST_POLICE_TELL_RANGE 3
+/// At most this many townspeople who saw one crime run off to tell someone (nearest to a listener first)
+#define OUTPOST_POLICE_TELL_RUNNERS 3
+/// A runner outranks leaving (AMBIENT_PRIORITY_LEAVE), so a fight starting near them doesn't send them to the lift first
+#define OUTPOST_POLICE_TELL_PRIORITY (AMBIENT_PRIORITY_LEAVE + 1)
+/// An outpost NPC shouts for help at a neck grab no more often than this (it brings officers in earshot to look)
+#define OUTPOST_POLICE_GRAB_SHOUT_COOLDOWN (10 SECONDS)
+/// An outpost NPC grumbles at being pulled no more often than this
+#define OUTPOST_POLICE_PULL_REMARK_COOLDOWN (8 SECONDS)
+// Ambient line contexts (strings/ambient_core.json "default")
+/// A townsperson sets off to tell someone about a crime
+#define AMBIENT_LINE_REPORT_RUN "report_run"
+/// A townsperson tells someone about a crime
+#define AMBIENT_LINE_REPORT_TELL "report_tell"
+/// An outpost NPC is pulled along
+#define AMBIENT_LINE_PULLED "pulled"
+/// An outpost NPC is grabbed by the neck or worse
+#define AMBIENT_LINE_GRABBED "grabbed"
 /// An officer without a working radio reports in person: within this many tiles of an officer with one, or of the desk...
 #define OUTPOST_POLICE_RADIOLESS_RANGE 7
 /// ...for this long
