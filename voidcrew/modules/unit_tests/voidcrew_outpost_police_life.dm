@@ -504,26 +504,6 @@
 	TEST_ASSERT(police.store_property(prisoner, officer), "The strip failed with free lockers")
 	TEST_ASSERT(voice.context_free_at["strip"] > world.time, "The officer said nothing at the jail strip") // POLICE_LINE_STRIP
 
-/// A bang on a shut cell door makes the noise, and the nearest officer who can see the door says to knock it off
-/datum/unit_test/voidcrew_outpost_police_line_cell_knock
-
-/datum/unit_test/voidcrew_outpost_police_line_cell_knock/Run()
-	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
-	var/datum/outpost_police/police = outpost.police
-	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = allocate(/obj/machinery/door/airlock/outpost/glass/police_cell, pa_tile(2, 3))
-	var/datum/outpost_police_cell/cell = allocate(/datum/outpost_police_cell, police, "test")
-	cell.door = door
-	door.holding_cell = cell
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, pa_tile(0, 0))
-	var/mob/living/carbon/human/knocker = police_line_person(pa_tile(2, 2))
-	var/datum/outpost_police_voice/voice = police.life_voice()
-	TEST_ASSERT(door.density, "Setup: the cell door is open")
-	door.try_to_activate_door(knocker)
-	TEST_ASSERT(door.density, "Banging on a cell door opened it")
-	TEST_ASSERT(voice.context_free_at["knock"] > world.time, "Nobody told the knocker to knock it off") // POLICE_LINE_KNOCK
-	TEST_ASSERT_NOTNULL(officer, "The officer went missing")
-	cell.retire()
-
 /// Line picking handles null values, strips \proper, skips cooling-down lines before picking, and avoids immediate repeats
 /datum/unit_test/voidcrew_outpost_police_line_picking
 
@@ -639,7 +619,7 @@
 	brain.stealth_set_state("alert") // STEALTH_ALERT
 	TEST_ASSERT(isnull(officer.held_item) && QDELETED(carried), "An officer kept a coffee mug in hand when going alert")
 
-/// Sleepers, corpses, witness shouts, casual talk, make_way and cell knocks respect context
+/// Sleepers, corpses, witness shouts, casual talk and make_way respect context
 /datum/unit_test/voidcrew_outpost_police_context_checks
 
 /datum/unit_test/voidcrew_outpost_police_context_checks/Run()
@@ -734,22 +714,6 @@
 	qdel(shop_counter)
 	qdel(behind_counter)
 
-	// Cell knock skips a muted closer officer to reach one who can speak, without spinning a buckled sergeant
-	voice.context_free_at.Cut()
-	voice.text_free_at.Cut()
-	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = allocate(/obj/machinery/door/airlock/outpost/glass/police_cell, pa_tile(3, 3))
-	cell.door = door
-	door.holding_cell = cell
-	ADD_TRAIT(officer, TRAIT_MUTE, "unit_test")
-	officer.forceMove(pa_tile(3, 2))
-	var/obj/structure/chair/desk_chair = allocate(/obj/structure/chair, pa_tile(1, 3))
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/desk = police_awake_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant, pa_tile(1, 3))
-	desk.setDir(SOUTH)
-	desk_chair.buckle_mob(desk, force = TRUE)
-	var/mob/living/carbon/human/knocker = police_line_person(pa_tile(3, 4))
-	TEST_ASSERT(istext(cell.answer_knock(knocker)), "A muted closer officer blocked a speaking officer from answering a cell knock")
-	TEST_ASSERT_EQUAL(desk.dir, SOUTH, "Answering a cell knock spun a buckled sergeant")
-	desk_chair.unbuckle_mob(desk, force = TRUE)
 	TEST_ASSERT_NOTNULL(trader, "The trader went missing")
 	police.cells -= cell
 	cell.retire()

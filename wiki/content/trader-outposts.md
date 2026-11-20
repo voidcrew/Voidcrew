@@ -214,7 +214,7 @@ Crimes pile up against the person who did them, shown as **stars** on a wanted a
 | Forcing the checkpoint, emagging the gate scanner, looting a locker | 2 |
 | Armed robbery | At least 2 |
 | Punching or shoving an officer, pulling a suspect away from one | Up to 3 |
-| Walking out of a cell, or carrying a prisoner out | At least 3 |
+| Opening a cell with someone in it, walking out of one, or carrying a prisoner out | At least 3 |
 | Attacking an officer with a weapon or a stun, or trying to cuff one | At least 3 |
 | Killing a shopper or regular | Up to 4 |
 | Killing a visitor or an officer | At least 3, and a lot more besides |
@@ -278,13 +278,13 @@ If you go down in a cell, the door opens for a medic and your time stops. Once y
 
 ### Looting
 
-Officers, guards, traders, medics and cleaning crews drop nothing they wear or carry, and the morgue crew take nothing from a body. Shoppers and regulars carry a little cash, and the first trader behind a counter may drop something from the shelf (see [Killing a trader](#killing-a-trader)).
+Officers, guards, traders, medics and cleaning crews drop nothing they wear or carry (the desk sergeant's ID is the one thing you can take off them), and the morgue crew take nothing from a body. Shoppers and regulars carry a little cash, and the first trader behind a counter may drop something from the shelf (see [Killing a trader](#killing-a-trader)).
 
 Emagging a property locker or the evidence locker, or taking anything out of one that isn't yours, is theft: 2 stars if anyone sees it. Officers take the goods back when they arrest you.
 
 ### Breaking out
 
-The cell doors open for nothing but the cell, and an emag does nothing to them. You can force one with a crowbar or jaws from either side. It takes about twelve seconds, sets off an alarm, and is 3 stars. So is walking out of a cell before your time is up, or carrying a prisoner out. Taking police cuffs off someone is a crime too.
+The cell doors are airlocks that open for the desk sergeant's ID. A sergeant's ID stops working five minutes after it leaves them. The doors can be hacked like any airlock, opened with an airlock override card, or pried with a crowbar once their power is out, and they put themselves right a few minutes later. A plain emag does nothing to them. Opening a cell with someone in it sets off an alarm and is 3 stars for whoever opened it. So is walking out of a cell before your time is up, or carrying a prisoner out. Taking police cuffs off someone is a crime too.
 
 ### Accomplices
 

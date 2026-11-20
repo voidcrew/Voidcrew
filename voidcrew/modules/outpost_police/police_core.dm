@@ -437,7 +437,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/outpost_police_lift_panel, 32)
 	name = "security door"
 	req_access = list(ACCESS_OUTPOST_POLICE)
 
-/// A holding cell's glass door. Opens only through its cell (police_cell.dm, P6).
+/// A holding cell's glass door: an ordinary airlock that opens for cell access (police_cell.dm, P6).
 /obj/machinery/door/airlock/outpost/glass/police_cell
 	name = "cell door"
 	/// Which cell

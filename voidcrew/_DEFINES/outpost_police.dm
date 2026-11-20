@@ -174,10 +174,8 @@
 #define OUTPOST_POLICE_LOCKERS 4
 /// A cell door held open for a prisoner in crit or dead, at most
 #define OUTPOST_POLICE_CELL_MEDIC_OPEN (2 MINUTES)
-/// A cell door stays open this long on release or when forced
+/// A cell door stays open this long on release or when opened by anyone but the police
 #define OUTPOST_POLICE_CELL_OPEN (10 SECONDS)
-/// Forcing a cell door takes this long
-#define OUTPOST_POLICE_CELL_FORCE_TIME (12 SECONDS)
 /// A prisoner carried out of a cell has this long to walk back in
 #define OUTPOST_POLICE_CELL_RETURN (20 SECONDS)
 
@@ -243,6 +241,10 @@
 
 /// Access on officers' IDs: police doors open for it
 #define ACCESS_OUTPOST_POLICE "outpost_police"
+/// Access on the desk sergeant's ID only: the holding cell doors open for it. Never ACCESS_BRIG, which ship security carries.
+#define ACCESS_OUTPOST_CELLS "outpost_cells"
+/// A desk sergeant's ID stops working this long after it leaves its sergeant
+#define OUTPOST_POLICE_SERGEANT_CARD_VOID (5 MINUTES)
 
 // ===== SIGNALS (all sent on the /datum/outpost_police) =====
 

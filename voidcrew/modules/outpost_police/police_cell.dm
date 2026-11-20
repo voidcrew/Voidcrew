@@ -5,11 +5,11 @@
  * release, and the police doors and cell doors (types in police_core.dm). Spec 6.2-6.4 and the cell half of 7.
  *
  * A cell is one /datum/outpost_police_cell per cell_id, built from the landmarks, door and sign the map
- * placed (build_cells()). A bump, a click or an ID never opens its door. The cell opens it to bring a prisoner
- * in, to let an officer out, on release, for a medic, and for a forced door (a crowbar or jaws, from either side
- * while somebody is held or it is shut on someone it does not hold). Otherwise it is hacked like any airlock and
- * mends itself (owner decision 47; the door type below). A cell holding nobody never shuts on a body or a person
- * (abuse MF2).
+ * placed (build_cells()). Its door is an ordinary airlock (owner decision 55): it opens for an ID with cell
+ * access (the desk sergeant's, decision 56), is hacked, pried and overridden like any airlock, and mends itself
+ * (decision 47; the door type below). The cell drives it to bring a prisoner in, to let an officer out, on release
+ * and for a medic. Opened by anyone else while somebody is held, it is the opener's jailbreak (door_opened()). A
+ * cell holding nobody never shuts on a body or a person (abuse MF2).
  *
  * A prisoner is a mind in `prisoners` (mind -> world.time they are let out). `jailed` marks the ones who could
  * not pay. Everything slow about a booking happens in book() on the officer's own actions (the fine, the
@@ -28,10 +28,8 @@
 #define CELL_UNCUFF_TIME (2 SECONDS)
 /// Longest a booking waits for a knocked-down officer to get up and take the cuffs off
 #define CELL_UNCUFF_WAIT (10 SECONDS)
-/// Banging on a cell door is heard no more often than this
-#define CELL_KNOCK_GAP (2 SECONDS)
-/// How far off an officer who can see a cell door answers a bang on it
-#define CELL_KNOCK_HEARD 7
+/// How long after someone works a cell door an opening is still put down to them (a pry with jaws takes 5 seconds)
+#define CELL_OPENER_WINDOW (6 SECONDS)
 
 // =========================================================================
 // THE CELL
@@ -60,8 +58,8 @@
 	var/list/stepped_at = list()
 	/// Who last shoved each prisoner, and when: mind -> list(weakref, world.time)
 	var/list/shoved_by = list()
-	/// Somebody is working on the door with a crowbar right now
-	var/forcing = FALSE
+	/// Set while the cell itself drives its door, so door_opened() knows the police did it
+	var/driving_door = FALSE
 	/// The door stays open until this
 	var/open_until = 0
 	/// Until this, the cell drives its door past a hack (lifts its bolts, shuts it whatever its wires say) for an
@@ -89,8 +87,8 @@
 			door.holding_cell = null
 			// Nobody stays shut in a cell nobody keeps
 			if(!QDELETED(door) && door.density)
-				door.cell_open_permitted = TRUE
-				INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door, open))
+				door.cell_take_over()
+				INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door, open), BYPASS_DOOR_CHECKS)
 		door = null
 	sign = null
 	police = null
@@ -184,6 +182,7 @@
 	var/datum/mind/prisoner = body.mind
 	if(!prisoner)
 		return
+	police?.reclaim_cards(body)
 	prisoners[prisoner] = release_at
 	bodies[prisoner] = WEAKREF(body)
 	if(jail_term)
@@ -333,7 +332,7 @@
 		return TRUE
 	return pass_door()
 
-/// Gives the door permission to open and waits until it has. TRUE if it is open.
+/// Opens the door past its power and wires (and, for an officer at work, its bolts) and waits until it has. TRUE if it is open.
 /datum/outpost_police_cell/proc/pass_door()
 	for(var/attempt in 1 to 6)
 		if(QDELETED(src) || QDELETED(door))
@@ -342,14 +341,13 @@
 			return TRUE
 		if(world.time < override_until)
 			door.cell_take_over()
-		door.cell_open_permitted = TRUE
-		if(door.open())
+		driving_door = TRUE
+		var/opened = door.open(BYPASS_DOOR_CHECKS)
+		driving_door = FALSE
+		if(opened)
 			return TRUE
 		sleep(0.5 SECONDS)
-	if(QDELETED(door))
-		return FALSE
-	door.cell_open_permitted = FALSE
-	return !door.density
+	return !QDELETED(door) && !door.density
 
 /// Look at the door again after `delay`
 /datum/outpost_police_cell/proc/schedule_close_check(delay)
@@ -408,6 +406,8 @@
 		return
 	// An officer at work: the cell shuts its door whatever a hack did to it. Otherwise a door bolted open stays open
 	// until it mends (decision 47).
+	// The door reopening for someone who stepped into it as it shut is the cell's doing too
+	driving_door = TRUE
 	if(world.time < override_until)
 		door.cell_take_over()
 		// An ordinary close, with the door's own sound; only a door left broken by a hack is forced shut
@@ -415,71 +415,30 @@
 			door.close(BYPASS_DOOR_CHECKS)
 	else
 		door.close(FORCING_DOOR_CHECKS)
+	driving_door = FALSE
 	if(!QDELETED(src) && !QDELETED(door) && !door.density)
 		schedule_close_check(1 SECONDS)
 
-/// Whether a crowbar can still be working on the door: shut on a prisoner, or on anyone or any body it does not hold (abuse MF2)
-/datum/outpost_police_cell/proc/still_forceable()
-	return !QDELETED(door) && door.density && (length(prisoners) || stray_inside())
-
 /**
- * `user` pries the door with `tool`, from either side, while somebody is held (spec 7), or while it is shut on
- * somebody it does not hold (abuse MF2). Sleeps for the whole attempt. The door gives for OUTPOST_POLICE_CELL_OPEN;
- * whoever forced it while a prisoner was held, held or not, is a jailbreak.
+ * The door was opened by someone other than the cell: an ID with cell access, a pry, an override card, a pulsed
+ * wire. `opener` is whoever tg names for it (who clicked, bumped, pried, swiped or worked the wires), or null (a
+ * remote signaller). It stands open a while, and opening it while somebody is held is the opener's jailbreak; a
+ * prisoner who walks out with nobody named is their own (escaped()). `evidence` is what they did it with.
  */
-/datum/outpost_police_cell/proc/force_door(mob/living/user, obj/item/tool)
-	if(forcing || !still_forceable())
-		return FALSE
-	forcing = TRUE
-	tool?.play_tool_sound(door, 50)
-	if(tool)
-		user.visible_message(
-			span_warning("[user] wedges [tool] into [door] and starts forcing it!"),
-			span_notice("You wedge [tool] into [door] and start forcing it."),
-		)
-	else
-		user.visible_message(
-			span_warning("[user] starts forcing [door]!"),
-			span_notice("You start forcing [door]."),
-		)
-	if(length(prisoners))
-		playsound(door, 'sound/machines/warning-buzzer.ogg', 60, FALSE, MEDIUM_RANGE_SOUND_EXTRARANGE)
-		police?.cell_station_say(POLICE_LINE_CELL_ALARM)
-	log_game("OUTPOST POLICE: [key_name(user)] started forcing [door] at [AREACOORD(door)] with [tool].")
-	var/succeeded = do_after(user, OUTPOST_POLICE_CELL_FORCE_TIME, target = door, extra_checks = CALLBACK(src, PROC_REF(still_forceable)))
-	if(QDELETED(src))
-		return FALSE
-	forcing = FALSE
-	if(!succeeded)
-		return FALSE
-	if(!QDELETED(door))
-		tool?.play_tool_sound(door, 50)
-		user.visible_message(
-			span_danger("[user] forces [door] open!"),
-			span_notice("You force [door] open."),
-		)
-	log_game("OUTPOST POLICE: [key_name(user)] forced [door] at [AREACOORD(door)].")
-	var/held = length(prisoners)
-	open_door(OUTPOST_POLICE_CELL_OPEN, take_over = FALSE)
-	if(held)
-		police?.report_crime(user, OUTPOST_CRIME_JAILBREAK, null, QDELETED(tool) ? null : tool)
-	return TRUE
-
-/**
- * The door was hacked open (a pulsed wire, a pry with the power out, an override card): it stands open a
- * while as a forced door does, and opening it while somebody is held is `culprit`'s jailbreak, as forcing it is.
- */
-/datum/outpost_police_cell/proc/door_hacked_open(mob/living/culprit, obj/item/tool = null)
+/datum/outpost_police_cell/proc/door_opened(mob/living/opener, obj/item/evidence = null)
 	if(QDELETED(src) || QDELETED(door))
 		return
+	if(is_outpost_police_npc(opener))
+		schedule_close_check(CELL_OFFICER_PASS)
+		return
 	open_door(OUTPOST_POLICE_CELL_OPEN, take_over = FALSE)
-	log_game("OUTPOST POLICE: [culprit ? key_name(culprit) : "nobody known"] hacked [door] open at [AREACOORD(door)].")
+	log_game("OUTPOST POLICE: [opener ? key_name(opener) : "nobody known"] opened [door] at [AREACOORD(door)].")
 	if(!length(prisoners))
 		return
 	playsound(door, 'sound/machines/warning-buzzer.ogg', 60, FALSE, MEDIUM_RANGE_SOUND_EXTRARANGE)
 	police?.cell_station_say(POLICE_LINE_CELL_ALARM)
-	if(culprit)
-		police?.report_crime(culprit, OUTPOST_CRIME_JAILBREAK, null, QDELETED(tool) ? null : tool)
+	if(opener && !QDELETED(opener) && !prisoner_of(opener))
+		police?.report_crime(opener, OUTPOST_CRIME_JAILBREAK, null, QDELETED(evidence) ? null : evidence)
 
 // ----- the wall clock -----
 
@@ -1156,29 +1115,6 @@
 			prisoner.uncuff()
 			return
 
-/// Someone bangs on the door of `cell`: the nearest officer who can see the door tells them to knock it off
-/datum/outpost_police_cell/proc/answer_knock(mob/living/knocker)
-	if(is_outpost_police_npc(knocker))
-		return null
-	var/turf/door_turf = get_turf(door)
-	if(!door_turf || !police)
-		return null
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/best
-	var/best_distance = CELL_KNOCK_HEARD + 1
-	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police.officers)
-		if(!officer.police_can_speak() || officer.z != door_turf.z)
-			continue
-		var/distance = get_dist(officer, door_turf)
-		if(distance >= best_distance || !(door_turf in view(CELL_KNOCK_HEARD, officer)))
-			continue
-		best = officer
-		best_distance = distance
-	if(!best)
-		return null
-	if(!best.buckled)
-		best.face_atom(door)
-	return best.police_say(POLICE_LINE_KNOCK)
-
 /// `officer` tells the prisoner their fine went through: the receipt, said in the cell
 /datum/outpost_police/proc/say_fine_paid(mob/living/officer)
 	if(!istype(officer, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
@@ -1249,71 +1185,98 @@
 	return FALSE
 
 /**
- * A holding cell's door. A bump, a click or an ID never opens it: its cell does (build_cells()), to bring a prisoner
- * in, let an officer out, on release and for a medic. Otherwise it is hacked like any airlock (owner decision 47): a
- * screwdriver opens its panel, its wires cut and pulse as usual (bolts, power, the door motor and the rest), an
- * airlock authentication override card opens it, and a crowbar pries it once its power is out. With the power
- * on, a crowbar or jaws force it the slow way (force_door()). Opened on a held prisoner by any of these, it is the
- * hacker's jailbreak, as forcing it is. A hacked door mends itself after OUTPOST_CHECKPOINT_EMAG_TIME, once nobody
- * stands in the doorway: panel shut, wires whole, power, lights and bolts back.
+ * A holding cell's door: an ordinary airlock (owner decision 55). A click or a bump opens it for an ID with cell
+ * access (ACCESS_OUTPOST_CELLS, on the desk sergeant's card) and is denied otherwise; its panel, wires, crowbar and
+ * the airlock authentication override card work as on any airlock. What is its own:
+ * - it tells its cell when anyone but the cell opens it, and who (door_opened(): the jailbreak);
+ * - a hack mends itself after OUTPOST_CHECKPOINT_EMAG_TIME, once nobody stands in the doorway (decision 47);
+ * - it is never taken apart, plated or welded (outpost property; welders and wrenches stay blocked), and a plain emag
+ *   does nothing to it, as to any tg airlock (decision 48);
+ * - an empty cell's door never shuts on anyone inside (abuse MF2), and no walker plans a route through it.
  */
 /obj/machinery/door/airlock/outpost/glass/police_cell
 	desc = "A cell door with a view."
 	autoclose = FALSE
-	// Wired like a ship's security door: no plating over the wires, and the open wire needs the ID wire cut first
+	// Wired like a ship's airlock: no plating over the wires. The outpost's hackProof and AI lockout stay.
 	security_level = 0 // AIRLOCK_SECURITY_NONE (airlock.dm undefines it)
-	req_access = list(ACCESS_BRIG)
+	req_access = list(ACCESS_OUTPOST_CELLS)
 	// Nobody plans a route through a cell: it is a dead end, and an open door must not draw anyone in
 	can_astar_pass = CANASTARPASS_ALWAYS_PROC
 	/// The cell this door shuts, set by build_cells()
 	var/datum/outpost_police_cell/holding_cell
-	/// Permission for the next open() call only
-	var/cell_open_permitted = FALSE
-	/// Set while an override card swings it open
-	var/hack_opening = FALSE
-	/// Who last worked its panel, wires or lock (the jailbreak is theirs)
-	var/datum/weakref/last_hacker
-	/// What they last worked it with, so the arrest takes the hacking tool as evidence
-	var/datum/weakref/last_hack_tool
-	/// ...and when
-	var/last_hack_at = 0
+	/// Who last worked the door (a click or bump with access, a pry, a swipe, a pulsed wire), with what, and when
+	var/datum/weakref/opener_ref
+	var/datum/weakref/opener_tool_ref
+	var/opener_at = 0
 	/// A mend is on its way
 	var/mend_pending = FALSE
-	/// Set while it mends, so putting its wires back is not taken for more hacking
-	var/mending = FALSE
-	/// Banging on the glass makes a noise no more often than this
-	COOLDOWN_DECLARE(knock_cooldown)
+
+/obj/machinery/door/airlock/outpost/glass/police_cell/Initialize(mapload)
+	. = ..()
+	if(wires)
+		RegisterSignal(wires, COMSIG_PULSE_WIRE, PROC_REF(on_wire_pulsed))
 
 /obj/machinery/door/airlock/outpost/glass/police_cell/Destroy()
 	if(holding_cell?.door == src)
 		holding_cell.door = null
 	holding_cell = null
-	last_hacker = null
-	last_hack_tool = null
+	opener_ref = null
+	opener_tool_ref = null
 	return ..()
 
-/obj/machinery/door/airlock/outpost/glass/police_cell/get_wires()
-	return new /datum/wires/airlock/security/outpost_cell(src)
+/// `who` is working the door with `tool`: an opening in the next few seconds is theirs
+/obj/machinery/door/airlock/outpost/glass/police_cell/proc/note_opener(mob/living/who, obj/item/tool = null)
+	if(!isliving(who))
+		return
+	opener_ref = WEAKREF(who)
+	opener_tool_ref = isitem(tool) ? WEAKREF(tool) : null
+	opener_at = world.time
 
+// Tells its cell it was opened, and by whom when tg knows. The cell's own openings (driving_door) are not reported.
 /obj/machinery/door/airlock/outpost/glass/police_cell/open(forced = DEFAULT_DOOR_CHECKS)
-	if(!density)
-		return TRUE
-	var/by_cell = cell_open_permitted
-	cell_open_permitted = FALSE
-	// A plain request (a bump, a click, a remote) gets nowhere; the cell's say-so, a pulsed wire, a pry with the power
-	// out, an override card does
-	if(!by_cell && forced == DEFAULT_DOOR_CHECKS && !hack_opening)
-		return FALSE
-	// Who did it and with what, taken now: the door swings open over a second or two
-	var/mob/living/culprit = by_cell ? null : hack_culprit()
-	var/obj/item/tool = culprit ? hack_tool() : null
+	if(!density || operating || !holding_cell || holding_cell.driving_door)
+		return ..()
+	var/mob/living/opener
+	var/obj/item/tool
+	if(opener_at && world.time - opener_at <= CELL_OPENER_WINDOW)
+		opener = opener_ref?.resolve()
+		tool = opener_tool_ref?.resolve()
 	. = ..()
-	if(. && !by_cell && !QDELETED(src))
-		holding_cell?.door_hacked_open(culprit, tool)
+	if(. && !QDELETED(src))
+		holding_cell?.door_opened(QDELETED(opener) ? null : opener, QDELETED(tool) ? null : tool)
 
-// Once an opening is allowed above, power, ID and wires do not stop it
-/obj/machinery/door/airlock/outpost/glass/police_cell/try_to_force_door_open(force_type = DEFAULT_DOOR_CHECKS)
-	return ..(BYPASS_DOOR_CHECKS)
+// The opener of a click or a bump is whoever the access check lets through, with the ID that let them
+/obj/machinery/door/airlock/outpost/glass/police_cell/try_to_activate_door(mob/living/user, access_bypass = FALSE)
+	if(density && isliving(user) && (access_bypass || (requiresID() && allowed(user))))
+		note_opener(user, user.get_idcard(TRUE))
+	return ..()
+
+/obj/machinery/door/airlock/outpost/glass/police_cell/bumpopen(mob/living/user)
+	if(density && isliving(user) && requiresID() && allowed(user))
+		note_opener(user, user.get_idcard(TRUE))
+	return ..()
+
+/obj/machinery/door/airlock/outpost/glass/police_cell/try_to_crowbar(obj/item/tool, mob/living/user, forced = FALSE)
+	note_opener(user, tool)
+	return ..()
+
+/obj/machinery/door/airlock/outpost/glass/police_cell/emag_act(mob/user, obj/item/card/emag/emag_card)
+	. = ..()
+	if(.)
+		note_opener(user, emag_card)
+		start_mend()
+
+/// Whoever pulses a wire from the wire panel works the door; a signaller's pulse names nobody
+/obj/machinery/door/airlock/outpost/glass/police_cell/proc/on_wire_pulsed(datum/source, wire, mob/living/user)
+	SIGNAL_HANDLER
+	if(isliving(user))
+		note_opener(user, user.get_active_held_item())
+	start_mend()
+
+// Opening the panel is where every hack starts
+/obj/machinery/door/airlock/outpost/glass/police_cell/screwdriver_act(mob/living/user, obj/item/tool)
+	. = ..()
+	start_mend()
 
 // Abuse MF2: nothing shuts an empty cell's door on a body or a bystander, even a pulsed wire while the station is idle
 /obj/machinery/door/airlock/outpost/glass/police_cell/close(forced = DEFAULT_DOOR_CHECKS, force_crush = FALSE)
@@ -1322,36 +1285,12 @@
 		return FALSE
 	return ..()
 
-/// `who` worked on the door: they answer for what it does next, and a mend is coming
-/obj/machinery/door/airlock/outpost/glass/police_cell/proc/note_hack(mob/living/who, obj/item/tool = null)
-	if(mending || QDELETED(src))
-		return
-	if(isliving(who))
-		var/same_hacker = (last_hacker?.resolve() == who) && last_hack_at && (world.time - last_hack_at <= 10 SECONDS)
-		last_hacker = WEAKREF(who)
-		last_hack_at = world.time
-		if(isitem(tool) && !QDELETED(tool))
-			last_hack_tool = WEAKREF(tool)
-		else if(!same_hacker || !last_hack_tool?.resolve())
-			last_hack_tool = null
-	if(mend_pending)
+/// A mend comes OUTPOST_CHECKPOINT_EMAG_TIME after the door was first worked on
+/obj/machinery/door/airlock/outpost/glass/police_cell/proc/start_mend()
+	if(mend_pending || QDELETED(src))
 		return
 	mend_pending = TRUE
 	addtimer(CALLBACK(src, PROC_REF(mend_hack)), OUTPOST_CHECKPOINT_EMAG_TIME, TIMER_DELETE_ME)
-
-/// Whoever worked the door in the last few seconds, or null
-/obj/machinery/door/airlock/outpost/glass/police_cell/proc/hack_culprit()
-	if(!last_hack_at || world.time - last_hack_at > 10 SECONDS)
-		return null
-	var/mob/living/culprit = last_hacker?.resolve()
-	return isliving(culprit) ? culprit : null
-
-/// What they last worked the door with in the last few seconds, or null
-/obj/machinery/door/airlock/outpost/glass/police_cell/proc/hack_tool()
-	if(!last_hack_at || world.time - last_hack_at > 10 SECONDS)
-		return null
-	var/obj/item/tool = last_hack_tool?.resolve()
-	return isitem(tool) && !QDELETED(tool) ? tool : null
 
 /// Whether anyone (standing or lying) or anything bulky is in the doorway
 /obj/machinery/door/airlock/outpost/glass/police_cell/proc/doorway_occupied()
@@ -1373,7 +1312,6 @@
 		addtimer(CALLBACK(src, PROC_REF(mend_hack)), 3 SECONDS, TIMER_UNIQUE | TIMER_DELETE_ME)
 		return
 	mend_pending = FALSE
-	mending = TRUE
 	obj_flags &= ~EMAGGED
 	panel_open = FALSE
 	if(wires && length(wires.assemblies))
@@ -1390,14 +1328,14 @@
 	lights = TRUE
 	safe = TRUE
 	normalspeed = TRUE
-	autoclose = FALSE
+	autoclose = FALSE // mending the timing wire turns it on
 	emergency = FALSE
+	welded = FALSE
 	aiControlDisabled = initial(aiControlDisabled)
 	unbolt()
-	mending = FALSE
-	last_hacker = null
-	last_hack_tool = null
-	last_hack_at = 0
+	opener_ref = null
+	opener_tool_ref = null
+	opener_at = 0
 	do_sparks(2, TRUE, src)
 	visible_message(span_notice("[src] sparks, and its lights come back on."))
 	update_appearance()
@@ -1411,16 +1349,9 @@
 
 /// Whether anything a hack leaves is still wrong with it
 /obj/machinery/door/airlock/outpost/glass/police_cell/proc/still_hacked()
-	return panel_open || (obj_flags & EMAGGED) || length(wires?.cut_wires) || length(wires?.assemblies) || locked || !hasPower() || isElectrified() || !lights || !safe || !normalspeed || emergency || autoclose || aiControlDisabled != initial(aiControlDisabled) || security_level != initial(security_level)
+	return panel_open || (obj_flags & EMAGGED) || length(wires?.cut_wires) || length(wires?.assemblies) || locked || welded || !hasPower() || isElectrified() || !lights || !safe || !normalspeed || emergency || autoclose || aiControlDisabled != initial(aiControlDisabled) || security_level != initial(security_level)
 
-// Outpost property: hacked, never taken apart or plated over
-/obj/machinery/door/airlock/outpost/glass/police_cell/should_try_removing_electronics()
-	return FALSE
-
-/obj/machinery/door/airlock/outpost/glass/police_cell/try_reinforce(mob/user, obj/item/stack/sheet/material, amt_required, new_security_level)
-	return FALSE
-
-/// The station's door control lifts the bolts and clears hazards for an officer at work (booking, release, a medic): see open_door()
+/// The cell lifts the bolts and clears hazards for an officer at work (booking, release, a medic): see pass_door()
 /obj/machinery/door/airlock/outpost/glass/police_cell/proc/cell_take_over()
 	if(locked)
 		unbolt()
@@ -1429,128 +1360,26 @@
 	if(isElectrified())
 		set_electrified(MACHINE_NOT_ELECTRIFIED)
 
-/obj/machinery/door/airlock/outpost/glass/police_cell/screwdriver_act(mob/living/user, obj/item/tool)
-	. = ..()
-	note_hack(user, tool)
+// Outpost property: never taken apart or plated over
+/obj/machinery/door/airlock/outpost/glass/police_cell/should_try_removing_electronics()
+	return FALSE
 
-/obj/machinery/door/airlock/outpost/glass/police_cell/emag_act(mob/user, obj/item/card/emag/emag_card)
-	. = ..()
-	if(.)
-		note_hack(user, emag_card)
-
-/obj/machinery/door/airlock/outpost/glass/police_cell/finish_emag_act()
-	hack_opening = TRUE
-	. = ..()
-	hack_opening = FALSE
-
-// A pry the normal way once its power is out; with the power on only the slow force works (crowbar_act())
-/obj/machinery/door/airlock/outpost/glass/police_cell/try_to_crowbar(obj/item/tool, mob/living/user, forced = FALSE)
-	if(!density || hasPower() || isnull(tool))
-		return
-	note_hack(user, tool)
-	return ..()
-
-// Its screwdriver and wirecutters get past outpost property (see /datum/element/outpost_property)
-/obj/machinery/door/airlock/outpost/glass/police_cell/outpost_hackable(obj/item/tool)
-	return tool?.tool_behaviour == TOOL_SCREWDRIVER || tool?.tool_behaviour == TOOL_WIRECUTTER
-
-/// A cell door's wires: whoever cuts, pulses or wires an assembly onto one is noted as working the door
-/datum/wires/airlock/security/outpost_cell
-	/// Assembly weakref -> weakref of the mob who attached it, so a remote pulse still knows its hacker
-	var/list/assembly_installers
-
-/datum/wires/airlock/security/outpost_cell/Destroy()
-	assembly_installers = null
-	return ..()
-
-/datum/wires/airlock/security/outpost_cell/cut(wire, mob/living/source)
-	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = holder
-	if(istype(door))
-		door.note_hack(source, isliving(source) ? source.get_active_held_item() : null)
-	return ..()
-
-// A cell door never auto-closes: its cell drives when it shuts, and mending WIRE_TIMING must not turn autoclose on
-/datum/wires/airlock/security/outpost_cell/on_cut(wire, mend = FALSE, mob/living/source = null)
-	if(wire == WIRE_TIMING)
-		var/obj/machinery/door/airlock/door = holder
-		if(istype(door))
-			door.autoclose = FALSE
-		return
-	return ..()
-
-/datum/wires/airlock/security/outpost_cell/pulse(wire, mob/living/user, force = FALSE)
-	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = holder
-	if(istype(door))
-		door.note_hack(user, isliving(user) ? user.get_active_held_item() : null)
-	return ..()
-
-/datum/wires/airlock/security/outpost_cell/attach_assembly(color, obj/item/assembly/S)
-	var/mob/living/holder_mob = isliving(S?.loc) ? S.loc : null
-	. = ..()
-	if(!.)
-		return
-	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = holder
-	var/mob/living/installer = isliving(usr) ? usr : (holder_mob || (istype(door) ? door.hack_culprit() : null))
-	if(installer)
-		LAZYSET(assembly_installers, WEAKREF(S), WEAKREF(installer))
-	if(istype(door))
-		door.note_hack(installer, S)
-
-/datum/wires/airlock/security/outpost_cell/detach_assembly(color)
-	. = ..()
-	if(.)
-		LAZYREMOVE(assembly_installers, WEAKREF(.))
-
-/datum/wires/airlock/security/outpost_cell/pulse_assembly(obj/item/assembly/S)
-	var/datum/weakref/installer_ref = S ? LAZYACCESS(assembly_installers, WEAKREF(S)) : null
-	var/mob/living/installer = installer_ref?.resolve()
-	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = holder
-	if(istype(door) && isliving(installer))
-		door.note_hack(installer, S)
-	return ..()
-
-// Someone got into the doorway as it shut: it opens again for them, and its cell closes it once they have moved
-/obj/machinery/door/airlock/outpost/glass/police_cell/CheckForMobs()
-	if(!(locate(/mob/living) in get_turf(src)))
-		return
-	cell_open_permitted = TRUE
-	open()
-
-/obj/machinery/door/airlock/outpost/glass/police_cell/bumpopen(mob/user)
-	return
-
-/obj/machinery/door/airlock/outpost/glass/police_cell/try_to_activate_door(mob/living/user, access_bypass = FALSE)
-	add_fingerprint(user)
-	// Nothing opens; a hand on the shut door bangs on the glass, and an officer nearby tells them to stop
-	if(density && isliving(user) && Adjacent(user) && COOLDOWN_FINISHED(src, knock_cooldown))
-		COOLDOWN_START(src, knock_cooldown, CELL_KNOCK_GAP)
-		user.visible_message(span_notice("[user] bangs on [src]."), span_notice("You bang on [src]."))
-		playsound(src, 'sound/effects/glass/glassknock.ogg', 50, TRUE)
-		holding_cell?.answer_knock(user)
-	return TRUE // handled
+/obj/machinery/door/airlock/outpost/glass/police_cell/try_reinforce(mob/user, obj/item/stack/sheet/material, amt_required, new_security_level)
+	return FALSE
 
 // A dead end for every walker, open or shut
 /obj/machinery/door/airlock/outpost/glass/police_cell/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
 	return FALSE
 
-// Outpost property lets a crowbar through to this one door (see /datum/element/outpost_property)
+// Outpost property lets a crowbar, a screwdriver and wirecutters through to this one door (see /datum/element/outpost_property)
 /obj/machinery/door/airlock/outpost/glass/police_cell/outpost_forceable()
 	return TRUE
 
-/obj/machinery/door/airlock/outpost/glass/police_cell/crowbar_act(mob/living/user, obj/item/tool)
-	if(!density)
-		return ITEM_INTERACT_BLOCKING
-	// The power out (its wires cut): a pry the normal way
-	if(!hasPower() && !locked && !welded)
-		return ..()
-	if(!density || !holding_cell || holding_cell.forcing || !holding_cell.still_forceable())
-		return ITEM_INTERACT_BLOCKING
-	INVOKE_ASYNC(holding_cell, TYPE_PROC_REF(/datum/outpost_police_cell, force_door), user, tool)
-	return ITEM_INTERACT_SUCCESS
+/obj/machinery/door/airlock/outpost/glass/police_cell/outpost_hackable(obj/item/tool)
+	return tool?.tool_behaviour == TOOL_SCREWDRIVER || tool?.tool_behaviour == TOOL_WIRECUTTER
 
 #undef CELL_BOOKING_STALE
 #undef CELL_OFFICER_PASS
 #undef CELL_UNCUFF_TIME
 #undef CELL_UNCUFF_WAIT
-#undef CELL_KNOCK_GAP
-#undef CELL_KNOCK_HEARD
+#undef CELL_OPENER_WINDOW

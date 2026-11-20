@@ -39,6 +39,22 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		return TRUE
 	return outpost_police_protected_part(thing)
 
+/**
+ * A desk sergeant's card on someone the police have in hand goes back to them: dead at once, and taken (owner
+ * decision 56). The search and the jail strip leave unlocked NPC items alone (outpost_police_protected_part()), and a
+ * live card kept into the cell would open it from the inside.
+ */
+/datum/outpost_police/proc/reclaim_cards(mob/living/person, mob/living/officer)
+	if(QDELETED(person))
+		return
+	for(var/obj/item/card/id/advanced/outpost_sergeant/card as anything in person.get_all_contents_type(/obj/item/card/id/advanced/outpost_sergeant))
+		if(QDELETED(card))
+			continue
+		if(!QDELETED(officer))
+			officer.visible_message(span_notice("[officer] takes [card] off [person]."))
+		card.void_card()
+		qdel(card)
+
 /// Whether `thing` holds a living mob anywhere inside it (a pet carrier, a body bag)
 /proc/outpost_police_holds_mob(obj/item/thing)
 	for(var/mob/living/inside in thing.get_all_contents_type(/mob/living))
@@ -563,6 +579,7 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 /datum/outpost_police/proc/store_property(mob/living/carbon/prisoner, mob/living/officer)
 	if(QDELETED(prisoner) || !prisoner.mind || !ishuman(prisoner))
 		return FALSE
+	reclaim_cards(prisoner, officer)
 	var/mob/living/carbon/human/person = prisoner
 	var/obj/structure/closet/secure_closet/personal/outpost_police/locker = property_locker_for(prisoner, must_shut = TRUE)
 	if(!locker || !locker.reserve_for(prisoner))
@@ -847,6 +864,7 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 /datum/outpost_police/proc/confiscate(mob/living/carbon/suspect, mob/living/officer, list/status_out = null)
 	if(QDELETED(suspect) || QDELETED(officer) || !property_search_check(suspect, officer))
 		return null
+	reclaim_cards(suspect, officer)
 	var/list/take = evidence_candidates(suspect, officer)
 	if(!length(take))
 		if(islist(status_out))
