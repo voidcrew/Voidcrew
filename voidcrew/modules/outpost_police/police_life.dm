@@ -887,6 +887,41 @@
 		return made
 	return made + ..(place, crowd, budget - made)
 
+/**
+ * Officers are not the crowd, so a full concourse never keeps a missing officer away (decision 57: a dead desk
+ * sergeant comes back like the outpost's other people). While players are there, an officer who is due (the role's
+ * gap is up, the post is short and the recovery allows it) comes off the police lift ahead of the crowd. Tests that
+ * hand over their own `roles` are untouched.
+ */
+/datum/controller/subsystem/ambient_npcs/arrive_next(datum/ambient_place/outpost/place, list/roles)
+	if(roles || !istype(place))
+		return ..()
+	var/officer = place.arrive_police()
+	if(officer)
+		return officer
+	var/list/crowd = list()
+	for(var/datum/ambient_outpost_role/role as anything in get_outpost_roles())
+		if(!is_outpost_police_role(role))
+			crowd += role
+	if(!length(crowd))
+		return null
+	return ..(place, crowd)
+
+/// The next officer due back, off a police lift: the desk first, then the beat. Null if none is due or none can come.
+/datum/ambient_place/outpost/proc/arrive_police()
+	var/obj/structure/overmap/trader_outpost/outpost = outpost()
+	if(!outpost?.police?.life_has_station())
+		return null
+	for(var/role_type in list(/datum/ambient_outpost_role/police_sergeant, /datum/ambient_outpost_role/police_beat))
+		var/datum/ambient_outpost_role/role = SSambient_npcs.get_outpost_role(role_type)
+		if(!role?.npc_type || !role.applies_to(outpost) || role_next_at[role.type] > world.time || open_slots(role) <= 0)
+			continue
+		role_next_at[role.type] = world.time + rand(role.gap_low, role.gap_high)
+		var/officer = role.arrive(src, SSambient_npcs.lift_arrival_turf(outpost))
+		if(officer)
+			return officer
+	return null
+
 // =========================================================================
 // ROUTINES
 // =========================================================================
