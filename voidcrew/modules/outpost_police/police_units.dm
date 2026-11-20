@@ -167,7 +167,13 @@
 /// Starts the void when it is away from its sergeant, and stops it when it is back in time
 /obj/item/card/id/advanced/outpost_sergeant/proc/check_holder(datum/source)
 	SIGNAL_HANDLER
-	if(voided || !owner_ref || QDELETED(src))
+	if(voided)
+		// Dead for good; a sergeant back on their feet without one is issued another
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/back = owner_ref?.resolve()
+		if(istype(back))
+			INVOKE_ASYNC(back, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, reissue_card))
+		return
+	if(!owner_ref || QDELETED(src))
 		return
 	if(on_own_sergeant())
 		if(void_timer)
@@ -177,7 +183,7 @@
 	if(!void_timer)
 		void_timer = addtimer(CALLBACK(src, PROC_REF(void_card)), OUTPOST_POLICE_SERGEANT_CARD_VOID, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
-/// Its access is gone for good, and its face says so
+/// Its access is gone for good, and its face says so. Its sergeant, if alive and left without a card, is issued a new one.
 /obj/item/card/id/advanced/outpost_sergeant/proc/void_card()
 	void_timer = null
 	if(voided || QDELETED(src))
@@ -186,6 +192,23 @@
 	clear_access()
 	assignment = "Voided"
 	update_label()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant = owner_ref?.resolve()
+	if(istype(sergeant))
+		sergeant.reissue_card()
+
+/**
+ * A sergeant whose card was taken and has gone dead draws a new one: alive, run by nobody and with no ID on them
+ * (owner decision 56). Without it they could not open the police doors again.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/reissue_card()
+	if(QDELETED(src) || stat == DEAD || mind || client || wear_id)
+		return
+	var/obj/item/card/id/advanced/outpost_sergeant/fresh = new(src)
+	if(!equip_to_slot_if_possible(fresh, ITEM_SLOT_ID, TRUE, TRUE, TRUE, TRUE))
+		return
+	fresh.registered_name = real_name
+	fresh.update_label()
+	fresh.bind_owner(src)
 
 // =========================================================================
 // KIT

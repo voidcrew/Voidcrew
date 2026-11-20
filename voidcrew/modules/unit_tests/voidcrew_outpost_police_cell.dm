@@ -297,6 +297,22 @@
 	TEST_ASSERT("cell_alarm" in police.lines, "Nobody raised the alarm") // POLICE_LINE_CELL_ALARM
 	TEST_ASSERT(prisoner.mind in cell.prisoners, "Opening the door let the prisoner go")
 
+/// A stolen sergeant's card on someone booked into a cell goes back to the police: nobody is shut in with a key (decision 56)
+/datum/unit_test/voidcrew_outpost_police_cell_card_reclaimed
+
+/datum/unit_test/voidcrew_outpost_police_cell_card_reclaimed/Run()
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	var/datum/outpost_police_cell/cell = police_cell_named(police, "a")
+	var/mob/living/carbon/human/prisoner = police_cell_person(cell.tiles[1])
+	police_pin_warrant(police, prisoner.mind, 12)
+	var/obj/item/card/id/advanced/outpost_sergeant/pocketed = allocate(/obj/item/card/id/advanced/outpost_sergeant)
+	var/obj/item/storage/backpack/pack = allocate(/obj/item/storage/backpack, cell.tiles[1])
+	prisoner.equip_to_slot_if_possible(pack, ITEM_SLOT_BACK, disable_warning = TRUE)
+	pocketed.forceMove(pack)
+	cell.admit(prisoner, world.time + 10 MINUTES)
+	TEST_ASSERT(QDELETED(pocketed), "A prisoner was shut in a cell with a sergeant's card in their bag")
+	TEST_ASSERT(!cell.door.allowed(prisoner), "A booked prisoner can open their own cell")
+
 /**
  * Owner decision 56: the desk sergeant's card carries police and cell access, is not locked gear, comes off them,
  * drops when they die, sells for nothing, and voids OUTPOST_POLICE_SERGEANT_CARD_VOID after it leaves them (back on
@@ -337,6 +353,9 @@
 	card.void_card()
 	TEST_ASSERT(card.voided && !length(card.access), "A voided card kept its access")
 	TEST_ASSERT(findtext(card.name, "Voided"), "A voided card does not show it: [card.name]")
+	var/obj/item/card/id/advanced/outpost_sergeant/reissued = sergeant.wear_id
+	TEST_ASSERT(istype(reissued) && reissued != card && !reissued.voided && ("outpost_cells" in reissued.access), "A living sergeant whose card went dead was not issued a new one") // ACCESS_OUTPOST_CELLS
+	TEST_ASSERT(reissued.on_own_sergeant() && !reissued.void_timer, "The new card is not its sergeant's own")
 	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = allocate(/obj/machinery/door/airlock/outpost/glass/police_cell, locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z))
 	TEST_ASSERT(!door.allowed(thief), "A voided card opens a cell door")
 	thief.temporarilyRemoveItemFromInventory(card)

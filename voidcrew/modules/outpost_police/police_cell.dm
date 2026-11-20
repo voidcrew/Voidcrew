@@ -182,6 +182,7 @@
 	var/datum/mind/prisoner = body.mind
 	if(!prisoner)
 		return
+	police?.reclaim_cards(body)
 	prisoners[prisoner] = release_at
 	bodies[prisoner] = WEAKREF(body)
 	if(jail_term)
