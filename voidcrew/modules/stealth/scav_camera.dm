@@ -123,6 +123,8 @@ GLOBAL_LIST_INIT(scav_cam_corner_sprites, list(
 	var/emp_until = 0
 	/// Its feed is cut for good (wirecutters)
 	var/feed_cut = FALSE
+	/// Its alarm beeping, while the siren runs
+	var/datum/looping_sound/scav_cam_alarm/alarm_loop
 	/// Sprite dirs it may show (one for a camera on a wall, two for one in a corner)
 	var/list/sprite_dirs
 	/// The sprite dir it shows now (a GLOB.scav_cam_frames key)
@@ -154,9 +156,11 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 	cone_holder.vis_contents += cone
 	// The same plane as its holder, or it would leave the holder's group and its mask.
 	SET_PLANE_EXPLICIT(cone, O_LIGHTING_VISUAL_PLANE, src)
+	alarm_loop = new(src)
 	scav_cam_draw(TRUE)
 
 /obj/machinery/scav_camera/Destroy()
+	QDEL_NULL(alarm_loop)
 	if(cone)
 		cone_holder?.vis_contents -= cone
 		QDEL_NULL(cone)
@@ -253,6 +257,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 	cam_state = SCAV_CAM_OFF
 	notice = 0
 	watched = null
+	alarm_loop?.stop()
 	if(cone)
 		cone.alpha = 0
 	update_appearance(UPDATE_ICON_STATE)
@@ -312,6 +317,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 			update_appearance(UPDATE_ICON_STATE)
 
 	if(cam_state == SCAV_CAM_ALARM && world.time >= alarm_until)
+		alarm_loop?.stop()
 		cam_state = target ? SCAV_CAM_TRACK : SCAV_CAM_SCAN
 		notice = 0
 		update_appearance(UPDATE_ICON_STATE)
@@ -397,7 +403,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 	alarm_until = world.time + SCAV_CAM_ALARM_TIME
 	alarm_ready_at = world.time + SCAV_CAM_ALARM_COOLDOWN
 	update_appearance(UPDATE_ICON_STATE)
-	playsound(src, 'sound/effects/siren.ogg', 70, FALSE, 6)
+	alarm_loop?.start()
 	var/turf/spot = get_turf(target)
 	target.log_message("was seen by [src] at [AREACOORD(spot)], which sounded the den's alarm.", LOG_GAME)
 	var/datum/stealth_group/group = scav_cam_group()
@@ -452,6 +458,16 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 		if(isnull(at) || (at != eye && IS_OPAQUE_TURF(at)))
 			return clamp(step, 1, STEALTH_BEAM_LENGTHS)
 	return STEALTH_BEAM_LENGTHS
+
+/// A den camera's alarm: one beep loop, for as long as its siren runs (max_loops stops it if its level empties and
+/// process() stops looking).
+/datum/looping_sound/scav_cam_alarm
+	mid_sounds = 'voidcrew/sound/machines/scav_camera_alarm.ogg'
+	mid_length = 1 SECONDS
+	max_loops = SCAV_CAM_ALARM_TIME / (1 SECONDS)
+	volume = 60
+	extra_range = 6
+	vary = FALSE
 
 /// The drawn cone of a den camera: light on the lighting visual plane, lighting nothing.
 /obj/effect/abstract/scav_camera_cone
