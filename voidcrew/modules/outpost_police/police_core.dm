@@ -401,6 +401,27 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 /obj/effect/landmark/outpost_police_lift
 	name = "outpost police lift"
 
+/// The lit sign beside a police lift's door, on the public side
+/obj/machinery/status_display/outpost_sign/police_lift
+	name = "police lift sign"
+	desc = "A lit sign by a lift the police keep to themselves."
+	top_line = "POLICE"
+	bottom_line = "LIFT"
+
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_sign/police_lift, 32)
+
+/// The panel on the wall of a police lift car. Set dressing: the lift answers only to the police.
+/obj/structure/outpost_police_lift_panel
+	name = "police lift panel"
+	desc = "A lift panel with a badge reader where the buttons should be."
+	icon = 'icons/obj/wallmounts.dmi'
+	icon_state = "elevpanel0"
+	anchored = TRUE
+	density = FALSE
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+
+MAPPING_DIRECTIONAL_HELPERS(/obj/structure/outpost_police_lift_panel, 32)
+
 /// The sergeant's tile at the desk. Consumed at link.
 /obj/effect/landmark/outpost_police_desk
 	name = "outpost police desk"
