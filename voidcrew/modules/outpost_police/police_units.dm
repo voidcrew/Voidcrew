@@ -101,6 +101,91 @@
 	sechud_icon_state = SECHUD_SECURITY_OFFICER
 	access = list(ACCESS_OUTPOST_POLICE)
 
+/// The desk sergeant's: the police doors and the holding cells (owner decision 56). Its own trim for the reason above.
+/datum/id_trim/outpost_police/sergeant
+	access = list(ACCESS_OUTPOST_POLICE, ACCESS_OUTPOST_CELLS)
+
+/**
+ * The desk sergeant's ID (owner decision 56). It is not locked gear (GLOB.human_npc_not_gear): it comes off them
+ * through the strip menu like anything on a person, and drops when they die. OUTPOST_POLICE_SERGEANT_CARD_VOID after
+ * it leaves its sergeant, or its sergeant dies or a player takes the body, its access is gone for good. Back on its own
+ * living sergeant in time, it stays good. Every sergeant gets a new one. It sells for nothing and holds no materials,
+ * as locked gear does (human_npc_gear.dm).
+ */
+/obj/item/card/id/advanced/outpost_sergeant
+	trim_changeable = FALSE
+	custom_materials = null
+	custom_price = null
+	/// The sergeant it was issued to (bind_owner())
+	var/datum/weakref/owner_ref
+	/// Runs while it is away from them
+	var/void_timer
+	/// Its access is gone
+	var/voided = FALSE
+
+/obj/item/card/id/advanced/outpost_sergeant/Initialize(mapload)
+	. = ..()
+	RegisterSignal(src, COMSIG_ITEM_PRE_EXPORT, PROC_REF(refuse_export))
+	RegisterSignal(src, COMSIG_MOVABLE_MOVED, PROC_REF(check_holder))
+
+/obj/item/card/id/advanced/outpost_sergeant/Destroy()
+	owner_ref = null
+	if(void_timer)
+		deltimer(void_timer)
+		void_timer = null
+	return ..()
+
+/obj/item/card/id/advanced/outpost_sergeant/proc/refuse_export(datum/source)
+	SIGNAL_HANDLER
+	return COMPONENT_STOP_EXPORT
+
+/// Issues it to `sergeant`: it works while it is on them, they are alive and no player has the body
+/obj/item/card/id/advanced/outpost_sergeant/proc/bind_owner(mob/living/sergeant)
+	if(!isliving(sergeant) || QDELETED(sergeant))
+		return
+	owner_ref = WEAKREF(sergeant)
+	RegisterSignals(sergeant, list(COMSIG_LIVING_DEATH, COMSIG_LIVING_REVIVE, COMSIG_MOB_LOGIN, COMSIG_MOB_MIND_TRANSFERRED_INTO), PROC_REF(check_holder))
+	RegisterSignal(sergeant, COMSIG_QDELETING, PROC_REF(owner_gone))
+	check_holder()
+
+/// A sergeant who leaves alive (off shift by the lift, an outpost unloading) takes their card; a dead one's stays where it fell
+/obj/item/card/id/advanced/outpost_sergeant/proc/owner_gone(mob/living/source)
+	SIGNAL_HANDLER
+	if(source.stat != DEAD && !QDELETED(src))
+		qdel(src)
+		return
+	check_holder()
+
+/// Whether it is on its own sergeant, alive and run by nobody
+/obj/item/card/id/advanced/outpost_sergeant/proc/on_own_sergeant()
+	var/mob/living/owner = owner_ref?.resolve()
+	if(!owner || QDELING(owner) || owner.stat == DEAD || owner.mind || owner.client)
+		return FALSE
+	return get(loc, /mob/living) == owner
+
+/// Starts the void when it is away from its sergeant, and stops it when it is back in time
+/obj/item/card/id/advanced/outpost_sergeant/proc/check_holder(datum/source)
+	SIGNAL_HANDLER
+	if(voided || !owner_ref || QDELETED(src))
+		return
+	if(on_own_sergeant())
+		if(void_timer)
+			deltimer(void_timer)
+			void_timer = null
+		return
+	if(!void_timer)
+		void_timer = addtimer(CALLBACK(src, PROC_REF(void_card)), OUTPOST_POLICE_SERGEANT_CARD_VOID, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/// Its access is gone for good, and its face says so
+/obj/item/card/id/advanced/outpost_sergeant/proc/void_card()
+	void_timer = null
+	if(voided || QDELETED(src))
+		return
+	voided = TRUE
+	clear_access()
+	assignment = "Voided"
+	update_label()
+
 // =========================================================================
 // KIT
 // =========================================================================
@@ -214,6 +299,8 @@
 /datum/outfit/outpost_police/sergeant
 	name = "Outpost Police: desk sergeant"
 	head = /obj/item/clothing/head/hats/warden/drill
+	id = /obj/item/card/id/advanced/outpost_sergeant
+	id_trim = /datum/id_trim/outpost_police/sergeant
 
 /datum/outfit/outpost_police/sergeant/halcyon
 	name = "Outpost Police: Halcyon desk sergeant"
@@ -392,6 +479,10 @@
 	if(istype(card))
 		card.registered_name = real_name
 		card.update_label()
+	// A sergeant's card is theirs alone (decision 56)
+	if(istype(card, /obj/item/card/id/advanced/outpost_sergeant))
+		var/obj/item/card/id/advanced/outpost_sergeant/desk_card = card
+		desk_card.bind_owner(src)
 	desc = "[unit_title()], [kit.force_name]."
 	// On the roster of the police who keep this outpost, if any (roles and dispatch add them as well: no harm)
 	if(!mind && !client)

@@ -28,8 +28,8 @@
 //
 // The exceptions, explicit and tested:
 // * GLOB.human_npc_not_gear: items whose loss would break something outside the NPC (a ship key, a
-//   contract's recovery item, bounty proof, a paper someone has to read). Never locked; they drop at
-//   the NPC's feet when it dies.
+//   contract's recovery item, bounty proof, a paper someone has to read), and a desk sergeant's ID,
+//   which players may take (outpost police). Never locked; they drop at the NPC's feet when it dies.
 // * GLOB.human_npc_consumable_gear: things an NPC uses up (grenades, barrier grenades, bottles, syringe
 //   darts, medipens, pills, bandages and other medical stacks, thrown spears, stars and bolas). They
 //   may leave its body the way a person's would: thrown, fired, dropped or knocked out of its hand.
@@ -46,6 +46,7 @@ GLOBAL_LIST_INIT(human_npc_not_gear, typecacheof(list(
 	/obj/item/mission_recovery,
 	/obj/item/bounty_proof,
 	/obj/item/paper,
+	/obj/item/card/id/advanced/outpost_sergeant, // a desk sergeant's ID: taken off them like a person's (outpost police, decision 56)
 )))
 
 /// Items an NPC uses up: they leave its body like a person's would, but never become loot.
