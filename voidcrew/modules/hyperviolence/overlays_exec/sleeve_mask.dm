@@ -58,19 +58,19 @@
 	cut_overlay(worn)
 	// Built as tg builds the missing-hand glove mask (update_worn_gloves()): an atom's appearance carries the
 	// render target. A mutable_appearance carrying it was drawn on screen as a white limb.
+	// One mask and one filter per lost limb: an overlay on the mask is not part of its render target, and was drawn
+	// on screen as a plain white limb whenever two or more limbs were lost.
 	var/static/atom/movable/mask
 	if(isnull(mask))
 		mask = new(null)
 	mask.icon = HV_SLEEVE_MASK_ICON
-	mask.icon_state = "missing_[missing[1]]"
-	// Set at once, not through the overlay queue: the appearance is copied below.
-	mask.overlays.Cut()
-	for(var/i in 2 to length(missing))
-		mask.overlays += mutable_appearance(HV_SLEEVE_MASK_ICON, "missing_[missing[i]]")
-	mask.render_target = "*hv_sleeves [cache_index] [REF(src)]"
-	worn.overlays += mask
-	// Before the height filters (priority 1), so the mask cuts the sprite it was drawn for.
-	worn.add_filter(HV_SLEEVE_MASK_FILTER, 0, alpha_mask_filter(render_source = mask.render_target, flags = MASK_INVERSE))
+	for(var/i in 1 to length(missing))
+		mask.icon_state = "missing_[missing[i]]"
+		mask.render_target = "*hv_sleeves [cache_index] [missing[i]] [REF(src)]"
+		// Its appearance now: the atom itself, added more than once, came out as the last limb's mask every time
+		worn.overlays += mask.appearance
+		// Before the height filters (priority 1), so the mask cuts the sprite it was drawn for.
+		worn.add_filter(i == 1 ? HV_SLEEVE_MASK_FILTER : "[HV_SLEEVE_MASK_FILTER] [missing[i]]", 0, alpha_mask_filter(render_source = mask.render_target, flags = MASK_INVERSE))
 	add_overlay(worn)
 
 #undef HV_SLEEVE_MASK_FILTER

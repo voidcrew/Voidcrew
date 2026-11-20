@@ -164,13 +164,42 @@
 		/datum/shop_sku/ripperdoc/governor_delete = 3,
 		/datum/shop_sku/ripperdoc/redline = 3,
 		/datum/shop_sku/ripperdoc/cascade = 3,
+		/datum/shop_sku/rig_bay_mech/gygax = 1,
+		/datum/shop_sku/rig_bay_mech/durand = 2,
+		/datum/shop_sku/rig_bay_mech/showpiece/honker = 2,
+		/datum/shop_sku/rig_bay_mech/showpiece/paddy = 2,
+		/datum/shop_sku/rig_bay_mech/showpiece/justice = 2,
+		/datum/shop_sku/rig_bay_mech/showpiece/phazon = 2,
+		/datum/shop_sku/rig_bay_mech/showpiece/savannah_ivanov = 2,
+		/datum/shop_sku/rig_bay_mech/showpiece/marauder = 2,
+		/datum/shop_sku/rig_bay_gear/arm/missile_rack = 2,
+		/datum/shop_sku/rig_bay_gear/arm/lmg = 1,
+		/datum/shop_sku/rig_bay_gear/arm/laser = 1,
+		/datum/shop_sku/rig_bay_gear/arm/laser_heavy = 1,
+		/datum/shop_sku/rig_bay_gear/arm/scattershot = 1,
+		/datum/shop_sku/rig_bay_gear/arm/carbine = 1,
+		/datum/shop_sku/rig_bay_gear/arm/ion = 1,
+		/datum/shop_sku/rig_bay_gear/arm/tesla = 1,
+		/datum/shop_sku/rig_bay_gear/arm/flashbang_launcher = 1,
+		/datum/shop_sku/rig_bay_gear/ammo/lmg = 1,
+		/datum/shop_sku/rig_bay_gear/ammo/scattershot = 1,
+		/datum/shop_sku/rig_bay_gear/ammo/incendiary = 1,
+		/datum/shop_sku/rig_bay_gear/ammo/flashbang = 1,
+		/datum/shop_sku/rig_bay_gear/ammo/missiles = 2,
+		/datum/shop_sku/rig_bay_gear/projectile_shielding = 1,
 		/datum/shop_sku/ripperdoc/mantis_scorch = 3,
 		/datum/shop_sku/ripperdoc/monowire_live = 3,
+		// plasma_weapons module (plasma_shop.dm)
+		/datum/shop_sku/outfitter/kestrel = 1,
+		/datum/shop_sku/outfitter/cinder = 1,
+		/datum/shop_sku/outfitter/plasma_cartridge = 1,
+		/datum/shop_sku/black_market/hornet = 1,
+		/datum/shop_sku/black_market/rotating/furnace = 2,
 	)
 
 /datum/unit_test/voidcrew_zone_shops/catalog/Run()
 	var/list/expected = expected_tags()
-	TEST_ASSERT_EQUAL(length(expected), 140, "The retained permission catalog is incomplete")
+	TEST_ASSERT_EQUAL(length(expected), 168, "The retained permission catalog is incomplete")
 	var/datum/voidcrew_crew_record/crew = allocate(/datum/voidcrew_crew_record)
 	for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku))
 		var/permission = expected[sku_type] || 0

@@ -227,7 +227,9 @@ def find_problems(static, docs, policy, exceptions, exceptions_text=""):
     voucher_value = dm.eval("VOUCHER_CREDIT_VALUE")
     if not isinstance(voucher_value, (int, float)):
         raise ValueError(f"VOUCHER_CREDIT_VALUE should be a plain number, not {voucher_value!r}")
-    paths = sorted({*dm.compiled_types("/obj/item"), *(path for path in static.routed_types() if path.startswith("/obj/item"))})
+    # Whole mechs are vehicles, not items, but the Rig Bay sells them like gear.
+    roots = ("/obj/item", "/obj/vehicle/sealed/mecha")
+    paths = sorted({*(path for root in roots for path in dm.compiled_types(root)), *(path for path in static.routed_types() if path.startswith(roots))})
     ordinary = [row["path"] for row in policy.get("ordinary_ingredients") or []]
     steps, covers = reachable(static, paths, checked, ordinary)
     entries = {}

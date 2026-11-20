@@ -724,6 +724,10 @@ GLOBAL_DATUM(outpost_cluster_armer, /datum/weakref)
 
 /// Shoves, bare hands and stamina hits aren't vandalism; only a real damaging hit is
 /datum/element/outpost_property/proc/register_hit(obj/source, atom/attacker, obj/item/weapon)
+	register_outpost_property_hit(source, attacker, weapon)
+
+/// A damaging hit on outpost property (or a Rig Bay mech) counts as aggression at the outpost it stands in.
+/proc/register_outpost_property_hit(atom/source, atom/attacker, obj/item/weapon)
 	var/mob/living/offender = outpost_living_attacker(attacker)
 	if(!offender)
 		return

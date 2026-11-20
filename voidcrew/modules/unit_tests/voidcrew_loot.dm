@@ -292,7 +292,7 @@
 
 /// A working copy may be consumed without damaging another crate's singleton tables.
 /datum/unit_test/voidcrew_cache_weapon_pools/Run()
-	var/list/main_counts = list("armory" = list(3, 6, 5), "syndicate" = list(2, 4, 4), "plunder" = list(5, 6, 4), "freight" = list(4, 2))
+	var/list/main_counts = list("armory" = list(4, 8, 5), "syndicate" = list(2, 4, 4), "plunder" = list(5, 7, 6), "freight" = list(5, 2))
 	for(var/family in main_counts)
 		var/list/counts = main_counts[family]
 		var/list/classes = GLOB.loot_gun_pools[family]
@@ -301,7 +301,8 @@
 			var/list/pool = classes[class]
 			TEST_ASSERT_EQUAL(length(pool), counts[text2num(class)], "Main gun class changed size")
 			for(var/entry in pool)
-				TEST_ASSERT_EQUAL(pool[entry], 10, "Main gun class is not uniform")
+				// The Old Furnace is the one rare unique in the main pools
+				TEST_ASSERT_EQUAL(pool[entry], entry == /obj/item/gun/energy/plasma_weapon/rifle/old_furnace ? 1 : 10, "Main gun class is not uniform")
 	var/list/melee_counts = list(9, 6, 4)
 	for(var/class in GLOB.loot_melee_pools)
 		var/list/pool = GLOB.loot_melee_pools[class]
@@ -393,52 +394,78 @@
 
 /datum/unit_test/voidcrew_cache_weapon_population
 	var/datum/loot_theme/saved_theme
+	var/list/saved_freight_guns
 
 /datum/unit_test/voidcrew_cache_weapon_population/Destroy()
 	if(saved_theme)
 		GLOB.loot_themes[/datum/loot_theme/armory] = saved_theme
+	if(saved_freight_guns)
+		GLOB.loot_gun_pools["freight"] = saved_freight_guns
 	return ..()
+
+/// Fills a fresh armory cache in `zone` and checks it paid one weapon, a reload only if that weapon is a ballistic
+/// gun (energy guns recharge and come alone, see GLOB.loot_gun_spare_ammo), and its zone's draws. Returns the weapon.
+/datum/unit_test/voidcrew_cache_weapon_population/proc/check_cache(zone, bonus, gun)
+	var/obj/structure/closet/crate/zone_loot/cache = allocate(/obj/structure/closet/crate/zone_loot/armory)
+	cache.theme = /datum/loot_theme/armory
+	cache.bonus_draws = bonus
+	cache.loot_zone = zone
+	cache.PopulateContents()
+	var/list/minimums = list(2, 3, 4)
+	var/list/maximums = list(3, 4, 5)
+	var/weapons = 0
+	var/guns = 0
+	var/obj/item/weapon
+	for(var/obj/item/item in cache)
+		if(istype(item, /obj/item/gun) && !istype(item, /obj/item/gun/energy/disabler))
+			weapons++
+			guns++
+			weapon = item
+		else if((item.type in GLOB.loot_melee_pools["1"]) || (item.type in GLOB.loot_melee_pools["2"]) || (item.type in GLOB.loot_melee_pools["3"]))
+			weapons++
+			weapon = item
+	TEST_ASSERT_EQUAL(weapons, 1, "Cache did not pay exactly one weapon, bonus=[bonus]")
+	TEST_ASSERT_EQUAL(guns, gun, "Cache ignored the forced gun/melee outcome")
+	var/reloads = istype(weapon, /obj/item/gun/ballistic) ? 1 : 0
+	var/prizes = length(cache.contents) - reloads
+	TEST_ASSERT(prizes >= minimums[zone] + bonus && prizes <= maximums[zone] + bonus, "Weapon roll ([weapon?.type]) changed the cache's draw count: [prizes] draws in zone [zone], bonus [bonus]")
+	var/list/contents = cache.contents.Copy()
+	cache.PopulateContents()
+	TEST_ASSERT_EQUAL(length(cache.contents), length(contents), "Repeated population paid again")
+	for(var/atom/movable/item as anything in contents)
+		qdel(item)
+	cache.dump_contents()
+	cache.PopulateContents()
+	TEST_ASSERT_EQUAL(length(cache.contents), 0, "Emptying a cache allowed replenishment")
+	return weapon?.type
 
 /datum/unit_test/voidcrew_cache_weapon_population/Run()
 	saved_theme = GLOB.loot_themes[/datum/loot_theme/armory]
 	var/datum/loot_theme/armory/test_theme = allocate(/datum/loot_theme/armory)
-	// Freight's main guns all have one boxed reload. The test controls the
+	// Freight's ballistic guns bring one boxed reload; its Kestrel recharges and comes alone. The test controls the
 	// Bernoulli outcome while retaining the real cache population path.
 	test_theme.gun_pool = "freight"
 	test_theme.gun_extras = null
 	test_theme.melee_extras = null
 	GLOB.loot_themes[/datum/loot_theme/armory] = test_theme
-	var/list/minimums = list(2, 3, 4)
-	var/list/maximums = list(3, 4, 5)
 	for(var/gun in list(FALSE, TRUE))
 		test_theme.gun_chance = gun ? list(100, 100, 100) : list(0, 0, 0)
 		for(var/zone in list(1, 2, 3))
 			for(var/bonus in list(0, 2))
-				var/obj/structure/closet/crate/zone_loot/cache = allocate(/obj/structure/closet/crate/zone_loot/armory)
-				cache.theme = /datum/loot_theme/armory
-				cache.bonus_draws = bonus
-				cache.loot_zone = zone
-				cache.PopulateContents()
-				var/weapons = 0
-				var/guns = 0
-				for(var/obj/item/item in cache)
-					if(istype(item, /obj/item/gun) && !istype(item, /obj/item/gun/energy/disabler))
-						weapons++
-						guns++
-					else if((item.type in GLOB.loot_melee_pools["1"]) || (item.type in GLOB.loot_melee_pools["2"]) || (item.type in GLOB.loot_melee_pools["3"]))
-						weapons++
-				TEST_ASSERT_EQUAL(weapons, 1, "Cache did not pay exactly one weapon, bonus=[bonus]")
-				TEST_ASSERT_EQUAL(guns, gun, "Cache ignored the forced gun/melee outcome")
-				var/prizes = length(cache.contents) - (gun ? 1 : 0)
-				TEST_ASSERT(prizes >= minimums[zone] + bonus && prizes <= maximums[zone] + bonus, "Weapon roll changed the cache's draw count")
-				var/list/contents = cache.contents.Copy()
-				cache.PopulateContents()
-				TEST_ASSERT_EQUAL(length(cache.contents), length(contents), "Repeated population paid again")
-				for(var/atom/movable/item as anything in contents)
-					qdel(item)
-				cache.dump_contents()
-				cache.PopulateContents()
-				TEST_ASSERT_EQUAL(length(cache.contents), 0, "Emptying a cache allowed replenishment")
+				check_cache(zone, bonus, gun)
+
+	// Each kind of freight gun on its own, so the outcome doesn't hang on the roll: a ballistic gun brings a reload,
+	// a Kestrel (cell-charged) comes alone, and neither changes the draw count
+	saved_freight_guns = GLOB.loot_gun_pools["freight"]
+	test_theme.gun_chance = list(100, 100, 100)
+	for(var/forced_gun in list(/obj/item/gun/energy/frontier_laser/pistol, /obj/item/gun/ballistic/automatic/pistol))
+		var/list/only = list()
+		only[forced_gun] = 10
+		GLOB.loot_gun_pools["freight"] = list("1" = only, "2" = only, "3" = only)
+		for(var/zone in list(1, 2, 3))
+			TEST_ASSERT_EQUAL(check_cache(zone, 0, TRUE), forced_gun, "A cache forced to [forced_gun] paid something else")
+	GLOB.loot_gun_pools["freight"] = saved_freight_guns
+	saved_freight_guns = null
 
 	var/turf/origin = SSovermap.get_unused_overmap_square_in_zone_band(1)
 	var/turf/destination = SSovermap.get_unused_overmap_square_in_zone_band(3)
@@ -719,6 +746,7 @@
 			/obj/item/gun/ballistic/shotgun/musket,
 			/obj/item/gun/ballistic/shotgun/toy,
 			/obj/item/gun/ballistic/shotgun/toy/crossbow,
+			/obj/item/gun/energy/frontier_laser/pistol,
 			/obj/item/hatchet,
 			/obj/item/knife/combat,
 			/obj/item/knife/combat/bone,
@@ -784,12 +812,14 @@
 			/obj/item/gun/energy/e_gun/dragnet,
 			/obj/item/gun/energy/e_gun/mini,
 			/obj/item/gun/energy/e_gun/old,
+			/obj/item/gun/energy/frontier_laser/smg,
 			/obj/item/gun/energy/ionrifle,
 			/obj/item/gun/energy/ionrifle/carbine,
 			/obj/item/gun/energy/laser,
 			/obj/item/gun/energy/laser/luxurypaywall,
 			/obj/item/gun/energy/laser/retro,
 			/obj/item/gun/energy/laser/retro/old,
+			/obj/item/gun/energy/plasma_weapon/pistol/loot,
 			/obj/item/gun/magic/hook/marlinspike,
 			/obj/item/gun/syringe/rapidsyringe,
 			/obj/item/gun/syringe/syndicate,
@@ -852,6 +882,8 @@
 			/obj/item/gun/energy/laser/hellgun,
 			/obj/item/gun/energy/laser/scatter,
 			/obj/item/gun/energy/lasercannon/unrestricted,
+			/obj/item/gun/energy/plasma_weapon/rifle/loot,
+			/obj/item/gun/energy/plasma_weapon/rifle/old_furnace,
 			/obj/item/gun/energy/recharge/ebow,
 			/obj/item/gun/energy/temperature/unrestricted,
 			/obj/item/gun/energy/xray,

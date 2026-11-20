@@ -182,13 +182,16 @@
 			"I'd like the good chassis. Yes, I know I haven't been measured.",
 			"The seal on the left glove keeps letting go.",
 			"Have you got plating that isn't safety orange?",
-			"A jetpack module. My captain says no. My captain isn't here."
+			"A jetpack module. My captain says no. My captain isn't here.",
+			"Is that Ripley spoken for?",
+			"How much to take the yellow one off the chains?"
 		],
 		"trader_reply": [
 			"Stand on the mark and lift your arms. Higher.",
 			"That noise is your warranty leaving.",
 			"Bench install's free. Corridor installs cost fingers.",
-			"Hold still. Breathe in. Now don't."
+			"Hold still. Breathe in. Now don't.",
+			"Money on the counter first."
 		]
 	},
 	"vex": {

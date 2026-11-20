@@ -264,6 +264,13 @@
 	var/obj/item/stock_parts/power_store/cell = item.get_cell()
 	if(istype(cell))
 		state += "c:[round(cell.charge * 10 / max(cell.maxcharge, 1))]"
+	// Plasma is counted per shot, finer than the tenths above (plasma_weapons module)
+	if(istype(item, /obj/item/plasma_cartridge))
+		var/obj/item/plasma_cartridge/cartridge = item
+		state += "p:[round(cartridge.stored, 0.01)]"
+	else if(istype(item, /obj/item/gun/energy/plasma_weapon))
+		var/obj/item/gun/energy/plasma_weapon/plasma_gun = item
+		state += "p:[round(plasma_gun.chamber_mol(), 0.01)]"
 	if(istype(item, /obj/item/gun/ballistic))
 		var/obj/item/gun/ballistic/gun = item
 		state += "a:[gun.get_ammo()]"

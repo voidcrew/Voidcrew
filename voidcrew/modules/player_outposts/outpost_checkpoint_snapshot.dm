@@ -46,6 +46,8 @@ GLOBAL_LIST_INIT(outpost_checkpoint_excluded, typecacheof(list(
 	/obj/structure/trap,
 	// Made of the spear and head it holds; clear_stock() takes those and it falls apart.
 	/obj/structure/headpike,
+	// Trader outpost fixture: a saved one would deal shop mechs onto a hull.
+	/obj/structure/rig_bay_stand,
 	// Outpost property that works a ship bay's side rooms, never a ship's fitting.
 	/obj/structure/outpost_yard_droid,
 	// A trader outpost morgue crew's bag (outpost_police/recovery_morgue.dm): only ever the crew's, never a ship's.
