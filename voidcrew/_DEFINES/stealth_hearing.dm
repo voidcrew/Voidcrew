@@ -85,6 +85,8 @@
 #define STEALTH_BARK_MISSING "stealth_missing"
 #define STEALTH_BARK_RADIO_REPORT "stealth_radio_report"
 #define STEALTH_BARK_RADIO_ALARM "stealth_radio_alarm"
+/// The alarm when it can name who it saw (%NAME%)
+#define STEALTH_BARK_RADIO_NAMED "stealth_radio_named"
 #define STEALTH_BARK_RADIO_MISSING "stealth_radio_missing"
 #define STEALTH_BARK_COPY "stealth_copy"
 #define STEALTH_BARK_RADIO_DEAD "stealth_radio_dead"
@@ -173,3 +175,13 @@
 #define STEALTH_NOISE_VIEW_TIME (4 SECONDS)
 /// icon_state of the empty grey "?" over a guard that heard something (stealth_meter.dmi)
 #define STEALTH_METER_HEARD_STATE "q_y0"
+/// icon_state of the radio beside the mark while a guard is calling it in (stealth_meter.dmi)
+#define STEALTH_METER_RADIO_STATE "radio"
+/// pixel_w of the radio: beside the head mark, toward the earpiece
+#define STEALTH_METER_RADIO_W 8
+/// icon_state of the dim amber "!" over a guard that is on edge (wary) with nothing else over its head
+#define STEALTH_METER_AWARE_STATE "ex_a"
+
+// ===== Guard radio nets =====
+/// The scav guards' radio frequency (a guard net headset's, stealth_radio.dm). Free range, so any radio can tune to it.
+#define FREQ_SCAV_NET 1531

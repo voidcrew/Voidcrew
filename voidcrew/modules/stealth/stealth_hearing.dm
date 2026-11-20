@@ -119,14 +119,14 @@
 	return TRUE
 
 /// It has just learned something first hand at `where` (a sighting, a touch, a hit from nowhere, a body):
-/// it shouts, and calls it in if it carries a radio.
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_first_hand(turf/where)
+/// it shouts, and calls it in if it carries a radio. `seen`: whoever it saw, whom the call names if it can.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_first_hand(turf/where, atom/seen)
 	var/mob/living/carbon/human/npc/guard = pawn
 	if(QDELETED(guard) || guard.stat != CONSCIOUS || stealth_driven() || !stealth_ready)
 		return
 	stealth_shout()
 	if(ishumannpc(guard) && guard.stealth_radio)
-		stealth_start_call(STEALTH_CALL_ALARM, where || get_turf(guard))
+		stealth_start_call(STEALTH_CALL_ALARM, where || get_turf(guard), stealth_call_name(seen))
 
 // ===== Footsteps =====
 

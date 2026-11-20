@@ -29,6 +29,7 @@
 		STEALTH_BARK_MISSING = list("%NAME%? ...%NAME%!", "Where's %NAME% got to?", "Should've been back by now."),
 		STEALTH_BARK_RADIO_REPORT = list("Checking something, %SIDE% side.", "Checking something."),
 		STEALTH_BARK_RADIO_ALARM = list("Contact, %SIDE% side! Get over here!", "Trouble, %SIDE% side!", "Trouble! Get over here!"),
+		STEALTH_BARK_RADIO_NAMED = list("Contact, %SIDE% side! It's %NAME%!", "Got %NAME% on the %SIDE% side!", "It's %NAME%! Get over here!", "%NAME%'s here! Move!"),
 		STEALTH_BARK_RADIO_MISSING = list("%NAME%, come in.", "%NAME%'s not answering.", "Got one not answering."),
 		STEALTH_BARK_COPY = list("Copy.", "Moving.", "On my way."),
 		STEALTH_BARK_RADIO_DEAD = list("Radio's dead.", "Nothing but static."),
@@ -66,8 +67,11 @@
 	var/say_as
 	/// For the bark being said now: the side of the den a line names ("east"), or null
 	var/fill_side
-	/// For the bark being said now: the friend a line asks after, or null. A guard's own name, never player text.
+	/// For the bark being said now: the friend a line asks after, or who an alarm is about (the name tg shows for
+	/// them), or null. It goes out through say(), which escapes it.
 	var/fill_name
+	/// For the bark being said now: said into the earpiece (tg's ";" headset prefix) rather than out loud
+	var/fill_radio = FALSE
 
 // A line and an emote together read as a script: a kind with both gets one or the other, picked once a bark.
 // The spot line always comes, even right after a stealth line.
@@ -97,7 +101,9 @@
 		if(findtext(line, "%NAME%"))
 			if(!fill_name)
 				continue
-			line = replacetext(line, "%NAME%", fill_name) // xss-safe: an NPC guard's own name, set by code, never player text
+			line = replacetext(line, "%NAME%", fill_name) // xss-safe: spoken through say(), which html_encodes the whole line
+		if(fill_radio)
+			line = ";[line]"
 		. += line
 
 /mob/living/carbon/human/npc/ruin/trooper/scav
@@ -140,7 +146,7 @@
 /mob/living/carbon/human/npc/ruin/trooper/scav/lookout/npc_dress(datum/human_npc_order/order)
 	. = ..()
 	if(isnull(ears))
-		equip_to_slot_or_del(new /obj/item/radio/headset(src), ITEM_SLOT_EARS)
+		equip_to_slot_or_del(new /obj/item/radio/headset/guard_net/scav(src), ITEM_SLOT_EARS)
 
 /obj/effect/spawner/human_npc/ruin/scav
 	name = "scav guard spawner"

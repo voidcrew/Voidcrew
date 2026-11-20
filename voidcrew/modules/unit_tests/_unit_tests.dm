@@ -323,6 +323,7 @@
 #include "voidcrew_stealth_hearing.dm"
 #include "voidcrew_stealth_hostage.dm"
 #include "voidcrew_stealth_light.dm"
+#include "voidcrew_stealth_radio_net.dm"
 #include "voidcrew_survey_archive.dm"
 #include "voidcrew_survey_capabilities.dm"
 #include "voidcrew_survey_identity.dm"
