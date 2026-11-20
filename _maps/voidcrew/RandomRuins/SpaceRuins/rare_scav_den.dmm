@@ -337,7 +337,7 @@
 "bv" = (
 /obj/structure/closet/crate/trashcart,
 /obj/effect/turf_decal/bot,
-/obj/effect/spawner/random/trash/garbage,
+/obj/effect/spawner/random/trash/garbage/scav_den,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "bw" = (
@@ -422,7 +422,7 @@
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
 "de" = (
-/obj/effect/spawner/random/trash/garbage,
+/obj/effect/spawner/random/trash/garbage/scav_den,
 /turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/powered)
 "df" = (
@@ -898,7 +898,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/powered)
 "qt" = (
-/obj/effect/spawner/random/trash/garbage,
+/obj/effect/spawner/random/trash/garbage/scav_den,
 /turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/powered)
 "qC" = (
@@ -1104,7 +1104,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "us" = (
-/obj/effect/spawner/random/trash/garbage,
+/obj/effect/spawner/random/trash/garbage/scav_den,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "uu" = (
@@ -1163,7 +1163,7 @@
 /area/ruin/space/has_grav/powered)
 "vZ" = (
 /obj/structure/closet/crate/bin,
-/obj/effect/spawner/random/trash/garbage,
+/obj/effect/spawner/random/trash/garbage/scav_den,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "wg" = (
@@ -1245,7 +1245,7 @@
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
 "yF" = (
-/obj/effect/spawner/random/trash/garbage,
+/obj/effect/spawner/random/trash/garbage/scav_den,
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/powered)
 "yG" = (
@@ -1505,7 +1505,7 @@
 /area/ruin/space/has_grav/powered)
 "FH" = (
 /obj/effect/turf_decal/tile/red/full,
-/obj/effect/spawner/random/trash/garbage,
+/obj/effect/spawner/random/trash/garbage/scav_den,
 /obj/effect/landmark/stealth_patrol{
 	route = "e";
 	order = 2;
@@ -1753,7 +1753,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "Nu" = (
-/obj/effect/spawner/random/trash/garbage,
+/obj/effect/spawner/random/trash/garbage/scav_den,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "NB" = (
@@ -1785,7 +1785,7 @@
 /area/ruin/space/has_grav/powered)
 "Ok" = (
 /obj/machinery/light/small/red/dim/directional/east,
-/obj/effect/spawner/random/trash/garbage,
+/obj/effect/spawner/random/trash/garbage/scav_den,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "Os" = (
@@ -1868,7 +1868,7 @@
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/powered)
 "QP" = (
-/obj/effect/spawner/random/trash/garbage,
+/obj/effect/spawner/random/trash/garbage/scav_den,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "QT" = (
@@ -2019,7 +2019,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "VX" = (
-/obj/effect/spawner/random/trash/garbage,
+/obj/effect/spawner/random/trash/garbage/scav_den,
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered)
 "VY" = (
@@ -2033,7 +2033,7 @@
 /area/ruin/space/has_grav/powered)
 "Wg" = (
 /obj/effect/turf_decal/tile/red/full,
-/obj/effect/spawner/random/trash/garbage,
+/obj/effect/spawner/random/trash/garbage/scav_den,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "Wu" = (
@@ -2153,7 +2153,7 @@
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "ZX" = (
-/obj/effect/spawner/random/trash/garbage,
+/obj/effect/spawner/random/trash/garbage/scav_den,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 8
 	},

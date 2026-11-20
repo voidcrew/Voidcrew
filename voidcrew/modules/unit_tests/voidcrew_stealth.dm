@@ -873,4 +873,33 @@
 		sleep(1)
 	TEST_ASSERT(!came_back, "A mark came back over a cuffed guard")
 
+
+/// A guard that slips goes down for real and gets up wary, not searching. Any other knockdown still sends it looking.
+/datum/unit_test/voidcrew_stealth_slip
+
+/datum/unit_test/voidcrew_stealth_slip/Run()
+	var/datum/turf_reservation/block = stealth_block(20, 5)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	var/turf/slip_turf = stealth_at(block, 2, 2)
+	slip_turf.AddElement(/datum/element/forced_gravity, 1)
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 2, 2)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = stealth_ai(guard)
+	TEST_ASSERT(guard.slip(4 SECONDS, null), "The guard didn't slip (no-slip shoes, or no gravity?)")
+	TEST_ASSERT(guard.IsKnockdown(), "A guard that slipped wasn't knocked down")
+	TEST_ASSERT(guard_ai.blackboard["stealth_wary"], "A guard that slipped isn't wary")
+	TEST_ASSERT_NOTEQUAL(guard_ai.stealth_state(), "searching", "A guard that slipped went searching")
+	guard.SetParalyzed(0)
+	guard.SetKnockdown(0)
+	TEST_ASSERT(!guard.IsKnockdown(), "The guard is still down")
+	sleep(0.5 SECONDS)
+	TEST_ASSERT(guard_ai.blackboard["stealth_wary"], "A guard up from a slip isn't wary")
+	TEST_ASSERT_NOTEQUAL(guard_ai.stealth_state(), "searching", "A guard up from a slip went searching")
+	// A knockdown that wasn't a slip: it gets up and looks round, as before.
+	var/mob/living/carbon/human/npc/other = stealth_guard(block, 17, 2)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/other_ai = stealth_ai(other)
+	other.Knockdown(4 SECONDS)
+	other.SetKnockdown(0)
+	TEST_ASSERT_EQUAL(other_ai.stealth_state(), "searching", "A guard up from a knockdown that wasn't a slip isn't searching")
+	qdel(block)
+
 #undef STEALTH_TEST_GUARD

@@ -226,13 +226,17 @@ ADMIN_VERB(stealth_den_planet, R_ADMIN|R_DEBUG, "Stealth: Scav Den Planet", "TEM
 		if(tile.x >= rect[1] - pad && tile.x <= rect[3] + pad && tile.y >= rect[2] - pad && tile.y <= rect[4] + pad)
 			tracker.surface_spawn_turfs -= tile
 
-/// Stealth guards near the front door
+/// Living stealth guards near the front door. Read from the mobs themselves, not the patrol groups: a guard only
+/// joins its group on its first think (stealth_setup()), and dormant AI doesn't think until someone is near.
 /proc/stealth_test_guards_near(turf/door_turf)
 	. = list()
 	if(isnull(door_turf))
 		return
-	for(var/mob/living/guard as anything in stealth_guards_on_level(door_turf.z))
-		if(get_dist(guard, door_turf) <= 30)
+	for(var/mob/living/guard as anything in GLOB.mob_living_list)
+		if(guard.stat == DEAD || !istype(guard.ai_controller, /datum/ai_controller/basic_controller/human_npc/stealth))
+			continue
+		var/turf/where = get_turf(guard)
+		if(where?.z == door_turf.z && get_dist(where, door_turf) <= 30)
 			. += guard
 
 /// Whether any of `guards` has `spot` in its sight cone right now

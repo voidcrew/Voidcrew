@@ -250,6 +250,33 @@
 	yellow = list(/datum/outfit/ruin_npc/scav_den/butcher/boss = 1)
 	red = list(/datum/outfit/ruin_npc/scav_den/butcher/boss/smg = 1)
 
+// ===== The den's trash =====
+
+/**
+ * tg's garbage without anything a guard trips over on its rounds: no banana peels (botanical_waste), no armed
+ * mousetraps, and no glass shards, broken bottles or broken lights (caltrops). Broken glass is a floor decal here.
+ */
+/obj/effect/spawner/random/trash/garbage/scav_den
+	name = "den garbage spawner"
+	loot = list(
+		/obj/effect/spawner/random/trash/food_packaging = 20,
+		/obj/item/trash/can = 15,
+		/obj/effect/decal/cleanable/glass = 15,
+		/obj/effect/spawner/random/trash/cigbutt = 10,
+		/obj/effect/spawner/random/trash/bacteria = 5,
+		/obj/effect/spawner/random/trash/crushed_can = 5,
+		/obj/item/reagent_containers/cup/glass/drinkingglass = 5,
+		/obj/item/stack/cable_coil = 5,
+		/obj/item/grown/corncob = 2,
+		/obj/item/food/deadmouse = 1,
+		/obj/item/trash/candle = 1,
+		/obj/item/rag = 1,
+		/obj/item/trash/flare = 1,
+		/obj/item/popsicle_stick = 1,
+		/obj/item/reagent_containers/syringe = 1,
+		/obj/item/reagent_containers/cup/glass/sillycup = 1,
+	)
+
 /obj/effect/spawner/human_npc/ruin/scav/den
 	name = "den guard spawner"
 	npc_type = /mob/living/carbon/human/npc/ruin/trooper/scav/den

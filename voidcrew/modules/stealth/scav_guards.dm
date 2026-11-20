@@ -40,6 +40,7 @@
 		STEALTH_BARK_BLOWN = list("You're not one of us!", "That's not one of ours!", "Who the hell are you?"),
 		STEALTH_BARK_LIGHT = list("Whose light is that?", "Who's got a light on?", "Kill that light."),
 		STEALTH_BARK_LIGHT_DEAD = list("Light's dead.", "Come on. Work.", "Cheap junk."),
+		STEALTH_BARK_SLIP = list("Damn it!", "Who left that there?", "Ow. Ow."),
 	)
 	emotes = list(
 		HUMAN_NPC_BARK_DOWNED = list("collapses."),

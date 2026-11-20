@@ -43,6 +43,8 @@
 #define STEALTH_BARK_CLOSET_OPEN "stealth_closet_open"
 /// It gives up on a locker or crate it can't get open (decision 33)
 #define STEALTH_BARK_CLOSET_GIVE_UP "stealth_closet_give_up"
+/// It slipped on something
+#define STEALTH_BARK_SLIP "stealth_slip"
 
 // ===== What a stealth goto is for =====
 #define STEALTH_GOTO_PATROL "patrol"
@@ -92,6 +94,8 @@
 #define STEALTH_SEARCH_RADIUS 5
 #define STEALTH_BODY_SCAN_INTERVAL (2 SECONDS)
 #define STEALTH_BARK_KIND_COOLDOWN (8 SECONDS)
+/// Past the end of a slip's knockdown, how long getting up still counts as getting up from the slip
+#define STEALTH_SLIP_GRACE (1 SECONDS)
 #define STEALTH_GROUP_RADIUS 48
 #define STEALTH_ROUTE_CLAIM_RANGE 2
 #define STEALTH_PATROL_DEFAULT_WAIT (6 SECONDS)

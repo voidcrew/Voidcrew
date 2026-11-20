@@ -191,6 +191,10 @@
 	var/turf/harm_turf
 	/// world.time it may next react to harm with nobody named
 	var/next_harm_at = 0
+	/// world.time it last slipped (on a peel, a wet floor): the stuns landing in that same tick are the fall
+	var/slipped_at = -1
+	/// world.time the knockdown from its last slip is over, or 0. Getting up before then is just getting up.
+	var/slip_down_until = 0
 	/// Its health when it last had nothing to explain, and when that was
 	var/health_mark
 	var/health_mark_at = 0
@@ -211,6 +215,7 @@
 	RegisterSignals(new_pawn, list(COMSIG_ATOM_EX_ACT, COMSIG_LIVING_IGNITED, COMSIG_MOB_FLASHED), PROC_REF(on_harmed))
 	RegisterSignals(new_pawn, STEALTH_STUN_SIGNALS, PROC_REF(on_stunned))
 	RegisterSignal(new_pawn, COMSIG_LIVING_STATUS_REMOVED, PROC_REF(on_status_removed))
+	RegisterSignal(new_pawn, COMSIG_ON_CARBON_SLIP, PROC_REF(on_slipped))
 	RegisterSignal(new_pawn, COMSIG_AI_BLACKBOARD_KEY_SET(BB_BASIC_MOB_CURRENT_TARGET), PROC_REF(on_target_set))
 	RegisterSignal(new_pawn, COMSIG_ATOM_POST_DIR_CHANGE, PROC_REF(on_pawn_turned))
 	RegisterSignals(new_pawn, STEALTH_LIGHT_SIGNALS, PROC_REF(on_light_cue))
@@ -227,6 +232,7 @@
 			COMSIG_LIVING_IGNITED,
 			COMSIG_MOB_FLASHED,
 			COMSIG_LIVING_STATUS_REMOVED,
+			COMSIG_ON_CARBON_SLIP,
 			COMSIG_AI_BLACKBOARD_KEY_SET(BB_BASIC_MOB_CURRENT_TARGET),
 			COMSIG_ATOM_POST_DIR_CHANGE,
 		) + STEALTH_HANDLED_SIGNALS + STEALTH_STUN_SIGNALS + STEALTH_LIGHT_SIGNALS)
@@ -1331,7 +1337,24 @@
 	if(amount > 0)
 		// Whatever it was about to say on the radio is lost.
 		stealth_drop_call()
+		// Its own slip (tg sends the slip signal just before the knockdown, in the same tick) is no attack.
+		if(slipped_at == world.time)
+			slip_down_until = max(slip_down_until, world.time + amount + STEALTH_SLIP_GRACE)
+			return
 		stealth_note_harm()
+
+/**
+ * It slipped. The fall is real (tg knocks it down right after this), but nobody did it to it: it gets up
+ * wary, not searching. Stamped with world.time so only the stuns in this same tick count as the fall.
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/on_slipped(datum/source)
+	SIGNAL_HANDLER
+	var/mob/living/guard = pawn
+	if(QDELETED(guard) || guard.stat == DEAD || guard.client)
+		return
+	slipped_at = world.time
+	stealth_set_wary()
+	stealth_bark(STEALTH_BARK_SLIP)
 
 /**
  * Something hurt or stunned it. Judged a moment later, once the blow behind it has had the chance to name
@@ -1342,6 +1365,8 @@
 	var/mob/living/carbon/human/npc/guard = pawn
 	if(harm_pending || QDELETED(guard) || guard.stat == DEAD || guard.client)
 		return
+	// Real harm while it's down from a slip: getting up is no longer just getting up.
+	slip_down_until = 0
 	// Its own surrender puts it on the floor.
 	if(ishumannpc(guard) && guard.npc_surrendering)
 		return
@@ -1438,6 +1463,9 @@
 	if(QDELETED(guard) || guard.stat != CONSCIOUS || guard.client)
 		return
 	stealth_set_wary()
+	// Getting up from its own slip.
+	if(slip_down_until && world.time <= slip_down_until)
+		return
 	if(blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
 		return
 	// Already looking, and only just: one stun often ends as several effects.
