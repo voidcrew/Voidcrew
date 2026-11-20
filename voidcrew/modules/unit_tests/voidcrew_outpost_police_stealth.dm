@@ -221,7 +221,7 @@
 	police.tick_warrants()
 	TEST_ASSERT_EQUAL(police.get_warrant(brawler.mind)?.heat, 25, "A witness whose radio came back never called the report in")
 
-/// A trader at their counter reports at once; dragged away from their counter, they report after the civilian delay and can be silenced before it lands
+/// A trader at their counter reports at once; away from their counter, they have to tell someone in person first, and can be silenced before they do
 /datum/unit_test/voidcrew_stealth_live/police/trader
 
 /datum/unit_test/voidcrew_stealth_live/police/trader/Run()
@@ -235,18 +235,24 @@
 	police.close_warrant(brawler.mind, TRUE)
 	keeper.forceMove(at(3, 4)) // off the counter (home is 1,1): no desk alarm within reach
 	police.recent_reports.Cut()
-	TEST_ASSERT_NULL(police.report_crime(brawler, "shot", victim), "A trader away from their counter reported instantaneously instead of queueing a civilian report")
+	TEST_ASSERT_NULL(police.report_crime(brawler, "shot", victim), "A trader away from their counter reported instantaneously instead of waiting to tell someone")
 	TEST_ASSERT_EQUAL(length(police.pending_reports), 1, "An off-counter trader queued [length(police.pending_reports)] pending reports, not 1")
 	TEST_ASSERT(!police.get_warrant(brawler.mind)?.heat, "An off-counter trader's delayed report put heat on immediately") // a closed warrant may stay on file at no heat
 
 	var/datum/outpost_pending_report/pending = police.pending_reports[1]
-	pending.due = world.time - 1
+	police.desk_turf = at(5, 4) // the police desk two tiles from them
 	keeper.set_stat(UNCONSCIOUS)
 	police.tick_warrants()
-	TEST_ASSERT(!police.get_warrant(brawler.mind)?.heat, "An unconscious off-counter trader still delivered their delayed report") // a closed warrant may stay on file at no heat
+	TEST_ASSERT_NULL(LAZYACCESS(pending.telling, WEAKREF(keeper)), "An unconscious off-counter trader started telling the desk")
+	TEST_ASSERT(!police.get_warrant(brawler.mind)?.heat, "An unconscious off-counter trader still made their report") // a closed warrant may stay on file at no heat
 	keeper.set_stat(CONSCIOUS)
 	police.tick_warrants()
-	TEST_ASSERT_EQUAL(police.get_warrant(brawler.mind)?.heat, 25, "An awake off-counter trader's delayed report never landed once due")
+	var/list/entry = LAZYACCESS(pending.telling, WEAKREF(keeper))
+	TEST_ASSERT_NOTNULL(entry, "An awake off-counter trader beside the desk did not start telling it")
+	entry[2] = world.time - 3 SECONDS // OUTPOST_POLICE_RADIOLESS_TIME
+	police.tick_warrants()
+	TEST_ASSERT_EQUAL(police.get_warrant(brawler.mind)?.heat, 25, "An awake off-counter trader who told the desk never made their report")
+	police.desk_turf = null
 
 // ===== SOUND SUMMONS =====
 
@@ -678,9 +684,15 @@
 	TEST_ASSERT_EQUAL(length(police.pending_reports), 1, "The townspeople's report was not queued")
 	ADD_TRAIT(first_local, TRAIT_RESTRAINED, TRAIT_SOURCE_UNIT_TESTS)
 	var/datum/outpost_pending_report/local_report = police.pending_reports[1]
-	local_report.due = world.time
+	police.desk_turf = at(6, 1) // the police desk within telling reach of both
+	police.tick_warrants()
+	TEST_ASSERT_NULL(LAZYACCESS(local_report.telling, WEAKREF(first_local)), "A restrained townsperson started telling the desk")
+	var/list/entry = LAZYACCESS(local_report.telling, WEAKREF(second_local))
+	TEST_ASSERT_NOTNULL(entry, "The free townsperson did not start telling the desk")
+	entry[2] = world.time - 3 SECONDS // OUTPOST_POLICE_RADIOLESS_TIME
 	police.tick_warrants()
 	TEST_ASSERT_EQUAL(police.get_warrant(brawler.mind)?.heat, 25, "Restraining one of two witnessing townspeople silenced the other")
+	police.desk_turf = null
 	REMOVE_TRAIT(first_local, TRAIT_RESTRAINED, TRAIT_SOURCE_UNIT_TESTS)
 
 /// Fading-out NPCs neither witness crimes, hold a suspect's hide clock, nor finish delayed reports, and a player in an officer's body reports immediately on stealth rules
@@ -703,7 +715,7 @@
 	departing.fading = FALSE
 	qdel(departing)
 
-	// A townsperson who starts fading out before their 3s report finishes cannot complete the report, nor witness a new one
+	// A townsperson who starts fading out before they have told anyone cannot complete the report, nor witness a new one
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/local = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost, at(5, 4))
 	local.set_place(place)
 	police.recent_reports.Cut()
