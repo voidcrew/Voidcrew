@@ -113,6 +113,7 @@
  * as locked gear does (human_npc_gear.dm).
  */
 /obj/item/card/id/advanced/outpost_sergeant
+	trim = /datum/id_trim/outpost_police/sergeant
 	trim_changeable = FALSE
 	custom_materials = null
 	custom_price = null
@@ -144,7 +145,7 @@
 	if(!isliving(sergeant) || QDELETED(sergeant))
 		return
 	owner_ref = WEAKREF(sergeant)
-	RegisterSignals(sergeant, list(COMSIG_LIVING_DEATH, COMSIG_LIVING_REVIVE, COMSIG_MOB_LOGIN, COMSIG_MOB_MIND_TRANSFERRED_INTO), PROC_REF(check_holder))
+	RegisterSignals(sergeant, list(COMSIG_LIVING_DEATH, COMSIG_LIVING_REVIVE, COMSIG_MOB_LOGIN, COMSIG_MOB_MIND_INITIALIZED, COMSIG_MOB_MIND_TRANSFERRED_INTO), PROC_REF(check_holder))
 	RegisterSignal(sergeant, COMSIG_QDELETING, PROC_REF(owner_gone))
 	check_holder()
 
