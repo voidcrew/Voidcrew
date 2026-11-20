@@ -30,24 +30,37 @@
 
 /// Whether `holder` can clamp a hand over `target`'s mouth now (see the top of this file).
 /proc/stealth_grip_can_clamp(mob/living/holder, mob/living/target)
+	return isnull(stealth_grip_refusal(holder, target))
+
+/// Why `holder` can't clamp a hand over `target`'s mouth now, for the logs, or null if it can. "not a guard" for
+/// anyone the hold never applies to.
+/proc/stealth_grip_refusal(mob/living/holder, mob/living/target)
 	if(!isliving(holder) || !ishumannpc(target) || holder == target)
-		return FALSE
+		return "not a guard"
 	var/mob/living/carbon/human/npc/guard = target
 	if(!istype(guard.ai_controller, /datum/ai_controller/basic_controller/human_npc/stealth))
-		return FALSE
-	if(holder.zone_selected != BODY_ZONE_PRECISE_MOUTH || holder.get_active_held_item())
-		return FALSE
+		return "not a guard"
+	if(holder.zone_selected != BODY_ZONE_PRECISE_MOUTH)
+		return "mouth not aimed at ([holder.zone_selected])"
+	var/obj/item/in_hand = holder.get_active_held_item()
+	if(in_hand)
+		return "active hand holds [in_hand]"
 	if(holder.incapacitated || HAS_TRAIT(holder, TRAIT_PACIFISM) || !holder.hv_can_execute())
-		return FALSE
+		return "holder can't (incapacitated or pacifist)"
 	if(holder.stealth_grip_holding || guard.stealth_grip_held || holder.pulling == guard || holder.max_grab < GRAB_NECK)
-		return FALSE
+		return "already holding or held"
 	if(!(guard.status_flags & CANPUSH) || HAS_TRAIT(guard, TRAIT_PUSHIMMUNE) || guard.buckled || guard.pulledby)
-		return FALSE
+		return "guard can't be grabbed (buckled, pulled or push immune)"
 	if(!isturf(holder.loc) || !isturf(guard.loc) || !holder.Adjacent(guard) || guard.body_position != STANDING_UP)
-		return FALSE
+		return "not adjacent or guard not standing"
 	if(isnull(guard.get_bodypart(BODY_ZONE_HEAD)) || guard.is_mouth_covered(ITEM_SLOT_HEAD))
-		return FALSE
-	return check_behind(holder, guard) && guard.stealth_caught_off_guard(holder)
+		return "no head or mouth covered by headgear"
+	if(!check_behind(holder, guard))
+		return "not behind (guard faces [dir2text(guard.dir)], holder is [dir2text(get_dir(guard, holder))] of him)"
+	if(!guard.stealth_caught_off_guard(holder))
+		var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = guard.ai_controller
+		return "guard on guard ([guard_ai.stealth_state()])"
+	return null
 
 /// The body `holder` has in the hand-over-the-mouth hold, or null.
 /proc/stealth_grip_victim_of(mob/living/holder)
@@ -82,7 +95,11 @@
 		var/datum/stealth_grip/grip = stealth_grip_holding
 		if(grip && grip.held == target && pulling == target && grip.squeeze())
 			return TRUE
-		if(stealth_grip_can_clamp(src, target))
+		var/refusal = stealth_grip_refusal(src, target)
+		// Aimed at a guard's mouth and it didn't take: say why in the attack log (playtest diagnosis).
+		if(refusal && refusal != "not a guard" && zone_selected == BODY_ZONE_PRECISE_MOUTH)
+			log_combat(src, target, "tried a hand over the mouth on", addition = "refused: [refusal]")
+		if(isnull(refusal))
 			if(target.check_block(src, 0, "[src]'s grab", UNARMED_ATTACK))
 				return FALSE
 			var/datum/stealth_grip/new_grip = new(src, target)
