@@ -93,13 +93,13 @@
 		return "Out of stock."
 	return ..()
 
-/datum/shop_sku/rig_bay_mech/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/rig_bay_mech/try_purchase(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	if(!mech_ready())
 		return FALSE
 	return ..()
 
 /// No crate over the counter: the stand lowers this exact mech for the buyer's crew.
-/datum/shop_sku/rig_bay_mech/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/rig_bay_mech/dispense(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	var/obj/vehicle/sealed/mecha/mech = stand?.held_mech
 	if(mech_ready() && stand.release_mech(user))
 		return mech
@@ -184,7 +184,7 @@
 		return "I've filled that order already."
 
 /// The shop has charged and nothing in between can yield, so the shared cap is taken only on a real hand-over.
-/datum/shop_sku/rig_bay_mech/showpiece/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/rig_bay_mech/showpiece/dispense(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	. = ..()
 	if(.)
 		get_crew_ship(user)?.get_crew_record()?.claim_purchase(RIG_BAY_SHOWPIECE_CAP, 1)
