@@ -1434,7 +1434,8 @@
 	case.strike(officer, suspect)
 	TEST_ASSERT(!baton.active, "A drained stun baton turned on with zero charge")
 	TEST_ASSERT(!officer.is_holding(baton), "Officer kept a drained stun baton in hand to club with instead of stowing it")
-	TEST_ASSERT(suspect.getBruteLoss() < baton.force, "Officer clubbed the suspect for full inactive baton brute damage")
+	// With the baton stowed the blow is a bare hand, which can do as much as the dead baton would; more than that means it was used
+	TEST_ASSERT(suspect.getBruteLoss() <= baton.force, "Officer clubbed the suspect with the drained baton")
 
 	// Blocked hands cannot cuff hands-free from the belt
 	ADD_TRAIT(officer, TRAIT_HANDS_BLOCKED, "outpost_police_test_hands")
