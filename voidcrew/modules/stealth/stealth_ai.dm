@@ -542,7 +542,7 @@
  * Says a stealth line, at most once per STEALTH_BARK_KIND_COOLDOWN for each kind (abuse P14). `about` is the
  * place the line is about: a line can name its side of the den. `name` is the friend a line asks after.
  * `always` skips the cooldown (a radio call is said every time it is made). `radio`: said into its earpiece as tg
- * radio speech (stealth_radio.dm) rather than out loud.
+ * radio speech (stealth_radio.dm), and out loud in full to everyone in earshot.
  */
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_bark(kind, turf/about, name, always = FALSE, radio = FALSE)
 	var/mob/living/carbon/human/npc/body = pawn
@@ -556,7 +556,9 @@
 		voice.fill_side = (about && centre && about.z == centre.z && about != centre) ? dir2text(get_dir(centre, about)) : null
 		voice.fill_name = name
 		voice.fill_radio = radio
+	body.stealth_calling_aloud = radio
 	. = body.npc_bark(kind, force = TRUE)
+	body.stealth_calling_aloud = FALSE
 	if(voice)
 		voice.fill_side = null
 		voice.fill_name = null

@@ -45,6 +45,14 @@
 /mob/living/carbon/human/npc
 	/// Whether this type is on its group's radio net (it still needs a working headset in its ears)
 	var/stealth_radio = FALSE
+	/// Set while it makes a radio call (stealth_bark()): the call goes into the earpiece and is said out loud too
+	var/stealth_calling_aloud = FALSE
+
+/// A guard's radio call is shouted into the earpiece: everyone in earshot hears it in full, not tg's headset mumble.
+/mob/living/carbon/human/npc/radio(message, list/message_mods = list(), list/spans, language)
+	. = ..()
+	if(stealth_calling_aloud && (. & REDUCE_RANGE))
+		. &= ~(ITALICS | REDUCE_RANGE)
 
 /// Its working headset, or null: on the net, a guard net headset in the ears and switched on, not in a jammer's
 /// range. Any other radio someone puts on it doesn't count.

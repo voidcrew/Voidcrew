@@ -31,6 +31,19 @@
 	TEST_ASSERT_EQUAL(lookout.ears, plain, "Test fixture: a plain headset didn't go on")
 	TEST_ASSERT_NULL(lookout.stealth_radio_ready(), "A plain headset put the lookout back on the net")
 
+/// A radio call goes into the earpiece and is said out loud in full; anything else he says on it is tg's headset mumble.
+/datum/unit_test/voidcrew_stealth_radio_aloud
+
+/datum/unit_test/voidcrew_stealth_radio_aloud/Run()
+	var/mob/living/carbon/human/npc/lookout = allocate(STEALTH_TEST_LOOKOUT, run_loc_floor_bottom_left)
+	var/list/mods = list(MODE_HEADSET = TRUE)
+	var/mumbled = lookout.radio("Radio check.", mods.Copy(), list(), /datum/language/common)
+	TEST_ASSERT(mumbled & REDUCE_RANGE, "Ordinary headset speech from a guard isn't tg's reduced range")
+	lookout.stealth_calling_aloud = TRUE
+	var/called = lookout.radio("Trouble!", mods.Copy(), list(), /datum/language/common)
+	lookout.stealth_calling_aloud = FALSE
+	TEST_ASSERT(!(called & (REDUCE_RANGE | ITALICS)), "A guard's radio call is only heard from the next tile")
+
 /// The name an alarm gives: the face tg shows, else the ID on someone whose face is covered, else none.
 /datum/unit_test/voidcrew_stealth_radio_call_name
 
