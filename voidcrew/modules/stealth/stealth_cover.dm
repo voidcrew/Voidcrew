@@ -16,8 +16,16 @@
  * - A guard's own flashlight beam on the tile shows it what is there. Another guard's beam does not.
  * - Only people: a stealth guard never hides this way, nor does anyone who isn't a human on a turf of their own.
  *
+ * - Someone holding a person up in front of them (at gunpoint, or a hand over the mouth) is not hidden: the body
+ *   in front of them sticks out of any bush.
+ *
  * What counts is a typecache (stealth_cover_typecache()), read only: no flora or biome is changed. A potted plant
- * counts only on the tile the map put it on (abuse review: a bought, printed or dragged plant is no portable hide).
+ * counts only on the tile the map put it on, and foliage only where it grew: one dug up with a shovel hides nobody
+ * until it is planted back in the same hole (abuse review: a bought, printed, dug up or dragged plant is no
+ * portable hide).
+ *
+ * Only where guards can be (stealth_guards_about()): elsewhere a step onto foliage costs no contents scan, plays no
+ * rustle and makes no noise.
  */
 
 /// Every type that hides someone keeping still on its tile
@@ -52,7 +60,11 @@ GLOBAL_LIST_EMPTY(stealth_test_beam_turfs)
 	for(var/obj/thing in tile)
 		if(!GLOB.stealth_cover_typecache[thing.type])
 			continue
-		if(istype(thing, /obj/item/kirbyplants))
+		if(istype(thing, /obj/structure/flora))
+			var/obj/structure/flora/growing = thing
+			if(!growing.anchored || growing.uprooted || growing.stealth_moved)
+				continue
+		else if(istype(thing, /obj/item/kirbyplants))
 			var/obj/item/kirbyplants/plant = thing
 			// Dead ones too, whatever their type: a pot of dry stalks hides nobody.
 			if(plant.dead || plant.stealth_cover_spot != tile)
@@ -71,6 +83,8 @@ GLOBAL_LIST_EMPTY(stealth_test_beam_turfs)
 	if(person.body_position != LYING_DOWN && world.time - person.stealth_moved_at < STEALTH_COVER_SETTLE)
 		return FALSE
 	if(world.time - person.stealth_shot_at < STEALTH_COVER_SETTLE)
+		return FALSE
+	if(!isnull(stealth_held_in_front(who)))
 		return FALSE
 	return !isnull(stealth_cover_at(where))
 
@@ -103,19 +117,19 @@ GLOBAL_LIST_EMPTY(stealth_test_beam_turfs)
 	/// world.time this person may next rustle
 	var/stealth_rustle_at = 0
 
-// Every human move, one assignment; a player stepping onto cover also rustles. Only players rustle, so crowds of
-// NPCs cost nothing more.
+// Every human move, one assignment; a player stepping onto cover where guards can be also rustles. Only players
+// rustle, so crowds of NPCs cost nothing more.
 /mob/living/carbon/human/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
 	. = ..()
 	stealth_moved_at = world.time
 	if(!forced && client && isturf(loc))
 		stealth_cover_step()
 
-/// A step of its own: a quiet rustle on a cover tile, for players and for guards.
+/// A step of its own: a quiet rustle on a cover tile, for players and for guards. Only where guards can be.
 /mob/living/carbon/human/proc/stealth_cover_step()
 	if(world.time < stealth_rustle_at || (movement_type & MOVETYPES_NOT_TOUCHING_GROUND) || buckled)
 		return
-	if(isnull(stealth_cover_at(loc)))
+	if(!stealth_guards_about(loc) || isnull(stealth_cover_at(loc)))
 		return
 	stealth_rustle_at = world.time + STEALTH_COVER_RUSTLE_COOLDOWN
 	var/crawling = body_position == LYING_DOWN
@@ -129,6 +143,24 @@ GLOBAL_LIST_EMPTY(stealth_test_beam_turfs)
 		var/mob/living/carbon/human/shooter = user
 		shooter.stealth_moved_at = world.time
 		shooter.stealth_shot_at = world.time
+
+// ===== Foliage =====
+
+/obj/structure/flora
+	/// Set when it is planted back somewhere other than where it was dug up: it is no cover any more
+	var/stealth_moved = FALSE
+	/// The tile it was dug up from while it is out of the ground, else null
+	var/turf/stealth_dug_from
+
+/obj/structure/flora/uproot(mob/living/user)
+	stealth_dug_from = get_turf(src)
+	return ..()
+
+/obj/structure/flora/replant(mob/living/user)
+	if(get_turf(src) != stealth_dug_from)
+		stealth_moved = TRUE
+	stealth_dug_from = null
+	return ..()
 
 // ===== Potted plants =====
 

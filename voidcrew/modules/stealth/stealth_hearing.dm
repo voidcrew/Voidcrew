@@ -142,7 +142,7 @@
  * A running step on plain floor in shoes carries STEALTH_FOOTSTEP_RANGE. Any other floor or footwear scales
  * that by how far tg plays its sound to players compared with the plain one (tg's own tables: plating and
  * wood ring a little further, bare feet on carpet and the Light Step quirk a little less). A living mob that
- * is not a carbon counts as running whenever it moves.
+ * is not a carbon counts as running whenever it moves, if tg plays steps for it at all.
  */
 /proc/stealth_footstep_reach(mob/living/walker)
 	if(SHOULD_DISABLE_FOOTSTEPS(walker))
@@ -151,6 +151,9 @@
 	if(!istype(ground) || isnull(ground.footstep))
 		return 0
 	if(walker.buckled || walker.throwing || (walker.movement_type & (VENTCRAWLING | FLYING)) || HAS_TRAIT(walker, TRAIT_IMMOBILIZED))
+		return 0
+	// A mob tg gives no footsteps (a cyborg, most big fauna without the element) makes none here either.
+	if(!iscarbon(walker) && !stealth_has_footsteps(walker))
 		return 0
 	if(walker.body_position == LYING_DOWN)
 		return STEALTH_FOOTSTEP_CRAWL_RANGE
@@ -189,6 +192,16 @@
 	var/audible = CALCULATE_MAX_SOUND_AUDIBLE_DISTANCE(volume, sound_range, 1, SOUND_FALLOFF_EXPONENT)
 	return clamp(round(STEALTH_FOOTSTEP_RANGE * audible / STEALTH_FOOTSTEP_PLAYER_RANGE, 1), 0, STEALTH_FOOTSTEP_MAX_RANGE)
 
+/// Whether tg's footstep element plays steps for `walker` (it listens for the walker's moves).
+/proc/stealth_has_footsteps(mob/living/walker)
+	var/listeners = walker._listen_lookup?[COMSIG_MOVABLE_MOVED]
+	if(islist(listeners))
+		for(var/datum/listener as anything in listeners)
+			if(istype(listener, /datum/element/footstep))
+				return TRUE
+		return FALSE
+	return istype(listeners, /datum/element/footstep)
+
 /**
  * The scan's ear for footsteps, before it looks. Everyone near whose turf changed since the last scan and
  * whose step carries this far (walls and doors muffle it) is heard: no line of sight needed.
@@ -220,7 +233,13 @@
 			continue
 		// A sharper or duller ear than the yellow tuning (decision 38), never past the furthest step listened for.
 		var/reach = min(round(stealth_footstep_reach(walker) * hearing_mult, 1), STEALTH_FOOTSTEP_MAX_RANGE)
-		if(!reach || get_dist(here, where) > reach || stealth_muffled_dist(where, here) > reach)
+		var/dist = get_dist(here, where)
+		if(!reach || dist > reach)
+			continue
+		// Thin air or none: as tg plays the step to a player standing here (stealth_air_carry()).
+		if(dist > 1)
+			reach = round(reach * stealth_air_carry(where, here), 1)
+		if(dist > reach || stealth_muffled_dist(where, here) > reach)
 			continue
 		LAZYSET(heard_now, key, TRUE)
 		last_heard = list("footsteps", world.time)

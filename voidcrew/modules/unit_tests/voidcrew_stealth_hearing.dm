@@ -295,9 +295,11 @@
 	TEST_ASSERT_EQUAL(friend_ai.search_center, get_turf(shooter), "It isn't looking where its friend fired from")
 	settle(friend)
 	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, at(9, 1))
-	TEST_ASSERT_EQUAL(stealth_noise(door, "door"), 0, "A door with one of their own beside it was heard")
-	door.forceMove(at(11, 1))
-	TEST_ASSERT_EQUAL(stealth_noise(door, "door"), 1, "A door with nobody beside it wasn't heard")
+	door.stealth_user_ref = WEAKREF(friend)
+	door.stealth_user_at = world.time
+	TEST_ASSERT_EQUAL(stealth_noise(door, "door"), 0, "A door one of their own worked was heard")
+	door.stealth_user_at = -1
+	TEST_ASSERT_EQUAL(stealth_noise(door, "door"), 1, "A door nobody of theirs worked wasn't heard")
 	TEST_ASSERT(friend_ai.glance_until > world.time, "A guard didn't glance at a door")
 	friend_ai.group.forget_noises()
 	TEST_ASSERT_EQUAL(stealth_noise(at(6, 1), "thud", null, shooter), 1, "A friend's fall wasn't heard")
@@ -634,7 +636,7 @@
 	TEST_ASSERT_EQUAL(guard_ai.stealth_state(), "suspicious", "A whistle 4 tiles off wasn't heard")
 	TEST_ASSERT_EQUAL(guard_ai.last_heard[1], "voice", "It heard something other than a voice")
 
-/// A real explosion 12 tiles off, the other side of a wall: the guard runs to it.
+/// A real explosion 12 tiles off, the other side of a wall, big enough that tg plays it there: the guard runs to it.
 /datum/unit_test/voidcrew_stealth_live/hear/real_blast
 
 /datum/unit_test/voidcrew_stealth_live/hear/real_blast/Run()
@@ -644,7 +646,7 @@
 		wall_spot.ChangeTurf(/turf/closed/wall)
 	var/mob/living/carbon/human/npc/guard = walker(16, 2, EAST)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = guard.ai_controller
-	explosion(at(4, 2), devastation_range = 0, heavy_impact_range = 0, light_impact_range = 1)
+	explosion(at(4, 2), devastation_range = 0, heavy_impact_range = 1, light_impact_range = 2)
 	var/deadline = world.time + 10 SECONDS
 	while(guard_ai.stealth_state() != "searching" && world.time < deadline)
 		sleep(1)

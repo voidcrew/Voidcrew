@@ -118,7 +118,7 @@
 	TEST_ASSERT(locker.open(mate), "Test fixture: the locker didn't open for a guard")
 	TEST_ASSERT_NULL(guard_ai.last_heard, "A guard heard one of its own open a locker")
 
-/// A door beside one of the group is theirs, unless that one is a captive: cuffed or hands up under a gun.
+/// A door one of the group works is theirs, unless that one is a captive: cuffed or hands up under a gun.
 /datum/unit_test/voidcrew_stealth_live/hear/fix_member_beside
 
 /datum/unit_test/voidcrew_stealth_live/hear/fix_member_beside/Run()
@@ -127,15 +127,15 @@
 	var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = guard.ai_controller
 	var/datum/stealth_group/group = guard_ai.group
 	var/turf/door_spot = at(9, 2)
-	TEST_ASSERT(group.member_beside(door_spot, group.living_members()), "A free guard beside a door doesn't count as beside it")
+	TEST_ASSERT(group.member_uses_door(guard, door_spot, group.living_members()), "A free guard at a door doesn't count as using it")
 	ADD_TRAIT(guard, TRAIT_RESTRAINED, TRAIT_SOURCE_UNIT_TESTS)
-	TEST_ASSERT(!group.member_beside(door_spot, group.living_members()), "A cuffed guard beside a door makes it theirs")
+	TEST_ASSERT(!group.member_uses_door(guard, door_spot, group.living_members()), "A cuffed guard at a door makes it theirs")
 	REMOVE_TRAIT(guard, TRAIT_RESTRAINED, TRAIT_SOURCE_UNIT_TESTS)
 	var/mob/living/carbon/human/aimer = person_at(6, 2, FALSE)
 	guard_ai.holdup_aimer = WEAKREF(aimer)
-	TEST_ASSERT(!group.member_beside(door_spot, group.living_members()), "A guard with its hands up beside a door makes it theirs")
+	TEST_ASSERT(!group.member_uses_door(guard, door_spot, group.living_members()), "A guard with its hands up at a door makes it theirs")
 	guard_ai.holdup_aimer = null
-	TEST_ASSERT(group.member_beside(door_spot, group.living_members()), "A guard let go doesn't count as beside a door again")
+	TEST_ASSERT(group.member_uses_door(guard, door_spot, group.living_members()), "A guard let go doesn't count as using a door again")
 
 /// Small noises aren't alarms: lures don't thin out the answer to gunfire. And a louder noise of the same kind just
 /// after a quiet one is heard, not folded into it.
