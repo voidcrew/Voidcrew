@@ -276,7 +276,7 @@
 	return !!strategy?.can_attack(guard, who, stealth_skill().sight_range)
 
 /// Whether `who`, seen on `where` in a disguise of `pieces`, is doing something no guard of the den would: a weapon
-/// in hand, pulling a fallen guard, holding one of its own up in front of them, or standing in an off-limits room the
+/// in hand, pulling or carrying a fallen guard, holding one of its own up in front of them, or standing in an off-limits room the
 /// pass doesn't excuse.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_breaker(mob/living/carbon/human/who, pieces, turf/where)
 	if(stealth_holds_one_of_ours(who))
@@ -284,10 +284,14 @@
 	for(var/obj/item/held in who.held_items)
 		if(isgun(held) || istype(held, /obj/item/melee) || (held.force >= STEALTH_WEAPON_FORCE && held.get_sharpness()))
 			return TRUE
-	var/mob/living/pulled = who.pulling
 	var/mob/living/guard = pawn
-	if(isliving(pulled) && guard.faction_check_atom(pulled) && (pulled.stat != CONSCIOUS || pulled.body_position == LYING_DOWN || HAS_TRAIT(pulled, TRAIT_RESTRAINED)))
-		return TRUE
+	// Dragged, or over the shoulder: tg's fireman carry buckles the body to the carrier and ends the pull.
+	var/list/hauled = who.buckled_mobs ? who.buckled_mobs.Copy() : list()
+	if(who.pulling)
+		hauled += who.pulling
+	for(var/mob/living/body in hauled)
+		if(guard.faction_check_atom(body) && (body.stat != CONSCIOUS || body.body_position == LYING_DOWN || HAS_TRAIT(body, TRAIT_RESTRAINED)))
+			return TRUE
 	var/list/rooms = group?.off_limits()
 	var/excused = rooms?[where]
 	return !isnull(excused) && !(excused && (pieces & STEALTH_PIECE_ID))

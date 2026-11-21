@@ -17,6 +17,15 @@
    "reason": "Hides your face. Cloth.",
    "tier": "none"
   },
+  "/obj/item/clothing/mask/balaclava/scav": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "",
+   "name": "scav balaclava",
+   "rank": 1,
+   "reason": "A renamed balaclava. Hides your face. Only taken off scav den guards.",
+   "tier": "none"
+  },
   "/obj/item/clothing/mask/bandana": {
    "confidence": "high",
    "group": "cosmetic and harmless",

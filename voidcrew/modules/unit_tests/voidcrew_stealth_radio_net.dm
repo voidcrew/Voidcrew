@@ -127,7 +127,12 @@
 	TEST_ASSERT_NOTNULL(block, "No room for the test")
 	var/mob/living/carbon/human/npc/lookout = allocate(STEALTH_TEST_LOOKOUT, stealth_at(block, 1, 1))
 	var/datum/ai_controller/basic_controller/human_npc/stealth/lookout_ai = lookout.ai_controller
-	var/obj/item/radio/headset/guard_net/scav/stolen = allocate(/obj/item/radio/headset/guard_net/scav, stealth_at(block, 6, 1))
+	// Worn by someone: tg headsets only listen while on a mob (possibly_deactivate_in_loc()), so one on the floor hears nothing.
+	var/mob/living/carbon/human/consistent/thief = allocate(/mob/living/carbon/human/consistent, stealth_at(block, 6, 1))
+	var/obj/item/radio/headset/guard_net/scav/stolen = allocate(/obj/item/radio/headset/guard_net/scav)
+	thief.equip_to_slot_if_possible(stolen, ITEM_SLOT_EARS)
+	TEST_ASSERT_EQUAL(thief.ears, stolen, "Test fixture: the stolen earpiece didn't go on")
+	TEST_ASSERT(stolen.get_listening(), "Test fixture: a worn scav earpiece isn't listening")
 	var/list/heard = list()
 	RegisterSignal(stolen, COMSIG_RADIO_RECEIVE_MESSAGE, PROC_REF(on_heard))
 	heard_into = heard

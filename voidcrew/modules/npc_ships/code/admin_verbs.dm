@@ -285,8 +285,14 @@ ADMIN_VERB(force_z_level_active, R_DEBUG, "Force Z-Level Active", "Keep a z-leve
 // activator dummy has no client, so on a forced-active level the AI would sit idle and never plan.
 /datum/ai_controller/should_idle()
 	var/turf/pawn_turf = get_turf(pawn)
-	if(pawn_turf && GLOB.z_level_activator_dummies["[pawn_turf.z]"])
-		return FALSE
+	if(pawn_turf)
+		var/mob/living/dummy = GLOB.z_level_activator_dummies["[pawn_turf.z]"]
+		if(!QDELETED(dummy))
+			return FALSE
+		if(dummy) // Deleted some other way than the verb: forget it, or the level never idles again.
+			GLOB.z_level_activator_dummies -= "[pawn_turf.z]"
+			if(length(SSmobs.clients_by_zlevel) >= pawn_turf.z)
+				SSmobs.clients_by_zlevel[pawn_turf.z] -= dummy
 	return ..()
 
 /// Global list of room visualization overlays (ship_ref -> list of overlay images)

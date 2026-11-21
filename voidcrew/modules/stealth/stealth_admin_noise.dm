@@ -112,15 +112,17 @@ ADMIN_VERB(stealth_make_noise, R_DEBUG, "Stealth Noise", "Make a noise stealth g
 /proc/stealth_guard_hearing_summary(mob/living/carbon/human/npc/guard, datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai)
 	var/radio_text = "none"
 	if(guard.stealth_radio)
-		var/obj/item/radio/earpiece = guard.ears
+		var/obj/item/radio/headset/guard_net/earpiece = guard.ears
 		if(!istype(earpiece))
-			radio_text = "none"
+			radio_text = istype(guard.ears, /obj/item/radio) ? "wrong headset" : "none"
 		else if(!earpiece.is_on())
 			radio_text = "off"
 		else if(is_within_radio_jammer_range(guard))
 			radio_text = "jammed"
-		else
+		else if(guard.stealth_radio_ready())
 			radio_text = "ok"
+		else
+			radio_text = "not ready"
 	. = "radio [radio_text]"
 	if(stealth_ai.pending_call)
 		. += " (calling in [max(0, round((stealth_ai.pending_call[STEALTH_CALL_DUE] - world.time) / (1 SECONDS)))]s)"
