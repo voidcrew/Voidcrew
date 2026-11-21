@@ -324,6 +324,7 @@
 #include "voidcrew_stealth_fix2_den.dm"
 #include "voidcrew_stealth_fix2_hands.dm"
 #include "voidcrew_stealth_fix2_senses.dm"
+#include "voidcrew_stealth_fix3.dm"
 #include "voidcrew_stealth_fix_brain.dm"
 #include "voidcrew_stealth_fix_den.dm"
 #include "voidcrew_stealth_fix_radio.dm"

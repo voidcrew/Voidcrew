@@ -410,7 +410,7 @@
 	stealth_meter_update()
 
 /**
- * The scan, while it has someone stopped. Blown: the clothing is off, it knows them now, they run, they are more
+ * The scan, while it has someone stopped. Blown: the clothing is off, it knows them now, they run off, they are more
  * than STEALTH_CHALLENGE_LEASH from where it stopped them, it can't see them or get to them, they do what no
  * guard would, or they still show no pass STEALTH_CHALLENGE_FAIL_TIME after it got to them. Passed: the pass is on them and it has
  * looked at it for STEALTH_CHALLENGE_CHECK_TIME from within STEALTH_CHALLENGE_CHECK_RANGE.
@@ -433,7 +433,11 @@
 	if(get_turf(guard) != where)
 		stand_dir = stealth_dir_to(guard, where)
 		guard.setDir(stand_dir)
-	var/ran = who.move_intent == MOVE_INTENT_RUN && entry && entry[STEALTH_ENTRY_TURF] != where
+	// Running off: a run step that took them farther from it since the last scan. A run step toward it or to the side
+	// is fine (everyone starts on run), and so is being dragged (pulledby). A shove leaves tg nothing to tell it from
+	// their own step, so a shove away counts. Walking off is the leash's and the give-up clock's business.
+	var/turf/was = entry?[STEALTH_ENTRY_TURF]
+	var/ran = who.move_intent == MOVE_INTENT_RUN && isturf(was) && was != where && !who.pulledby && get_dist(guard, where) > get_dist(guard, was)
 	var/late = checked_at && !(pieces & STEALTH_PIECE_ID) && world.time - checked_at >= STEALTH_CHALLENGE_FAIL_TIME
 	// Stopped where it can't get to them (behind a railing or a window): keeping out of reach is no way to show a pass.
 	var/out_of_reach = stealth_walk_gave_up(where)

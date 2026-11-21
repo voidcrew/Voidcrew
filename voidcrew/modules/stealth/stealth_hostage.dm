@@ -47,7 +47,7 @@ GLOBAL_LIST_EMPTY(stealth_standoffs)
 		planning_subtrees = subtrees
 	return ..()
 
-/// The body `holder` holds at gunpoint now: a neck grab or tighter on a living body on their tile, a gun in a hand.
+/// The body `holder` holds at gunpoint now: a neck grab or tighter on a living body on their tile, a real gun (stealth_threat_gun()) in a hand.
 /// `at` asks about the body on another tile instead (the one he has just stepped off).
 /proc/stealth_hostage_of(mob/living/holder, atom/at)
 	if(!isliving(holder) || holder.stat != CONSCIOUS)
@@ -55,9 +55,30 @@ GLOBAL_LIST_EMPTY(stealth_standoffs)
 	var/mob/living/held = holder.pulling
 	if(!isliving(held) || held.stat == DEAD || holder.grab_state < GRAB_NECK || held.loc != (at || holder.loc))
 		return null
-	if(!isgun(holder.get_active_held_item()) && !isgun(holder.get_inactive_held_item()))
+	if(!stealth_threat_gun(holder.get_active_held_item()) && !stealth_threat_gun(holder.get_inactive_held_item()))
 		return null
 	return held
+
+/// tg guns that aren't built to hurt or stun anyone: foam toys, laser tag and practice lasers, medbeams, syringe and
+/// dart guns, chem guns. Typed, not by what is loaded: an empty pistol still holds a hostage, a loaded toy never does.
+GLOBAL_LIST_INIT(stealth_fake_guns, typecacheof(list(
+	/obj/item/gun/ballistic/automatic/toy,
+	/obj/item/gun/ballistic/automatic/pistol/toy,
+	/obj/item/gun/ballistic/shotgun/toy,
+	/obj/item/gun/energy/laser/redtag,
+	/obj/item/gun/energy/laser/bluetag,
+	/obj/item/gun/energy/laser/practice,
+	/obj/item/gun/energy/laser/carbine/practice,
+	/obj/item/gun/energy/e_gun/mini/practice_phaser,
+	/obj/item/gun/medbeam,
+	/obj/item/gun/syringe,
+	/obj/item/gun/chem,
+)))
+
+/// Whether `thing` is a real gun, one built to hurt or stun people (disablers and stun guns count): what it takes to
+/// hold a hostage or keep a guard's hands up. A guard still reads any gun in a hand as a weapon at a glance.
+/proc/stealth_threat_gun(obj/item/thing)
+	return isgun(thing) && !is_type_in_typecache(thing, GLOB.stealth_fake_guns)
 
 /// Whether it stands off against `holder` holding `hostage`: one of its own, and a holder it still deals with.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_standoff_with(mob/living/holder, mob/living/hostage)

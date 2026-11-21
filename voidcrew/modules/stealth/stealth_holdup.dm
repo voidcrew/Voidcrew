@@ -134,7 +134,7 @@
 	stealth_holdup_break()
 
 /// Whether someone still has it covered: a gun held on it (tg's hold-up, anyone's), a hostile's grab on it, or the one
-/// it gave up to right next to it with a gun still in hand (walking up to cuff it).
+/// it gave up to right next to it with a real gun (stealth_threat_gun()) still in hand (walking up to cuff it).
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_holdup_covered()
 	var/mob/living/guard = pawn
 	if(guard.has_status_effect(/datum/status_effect/grouped/heldup))
@@ -145,7 +145,7 @@
 	var/mob/living/aimer = holdup_aimer?.resolve()
 	if(QDELETED(aimer) || aimer.stat != CONSCIOUS || get_dist(aimer, guard) > 1)
 		return FALSE
-	return isgun(aimer.get_active_held_item()) || isgun(aimer.get_inactive_held_item())
+	return stealth_threat_gun(aimer.get_active_held_item()) || stealth_threat_gun(aimer.get_inactive_held_item())
 
 /// Nobody covers it any more: it makes its move.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_holdup_break()
