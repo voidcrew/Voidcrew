@@ -1,5 +1,5 @@
 /**
- * # Scav den cameras (owner decision 10)
+ * # Scav den cameras
  *
  * A wall camera that sweeps a visible cone back and forth across the room in front of it. A player caught in the cone,
  * in light (or right under it), fills its notice; while it fills the camera stops and follows them and the cone turns
@@ -7,14 +7,14 @@
  * the spot, so the nearest few run there and search, the rest hold wary and the lookouts call it in on the radio).
  *
  * It sees by the guards' rules: dark tiles hide you past one tile, lockers and boxes hide you (a mech or a car doesn't),
- * cloaks hide you, and a scav disguise of fatigues and mask passes, except in a room marked off limits
- * (stealth_restricted). Right under it or beside it, it sees you whichever way it points. It never sees through walls
+ * cloaks hide you, and a scav disguise of fatigues and mask passes, except with a weapon out, a hostage held or a
+ * fallen guard in tow, or in a room marked off limits (stealth_restricted). Right under it or beside it, it sees you whichever way it points. It never sees through walls
  * (stealth_can_see()). It watches people who are up and free: a cuffed or downed NPC (a crew's captive) is nothing to
  * it. The cone is drawn on the lighting visual plane and lights nothing: what it shows is where it looks, nothing more.
  *
  * Players can EMP it (off for a while), break it (it has an integrity like any machine) or cut its feed with
  * wirecutters (from beside it, where it sees you). The guards' skill profile for the den's zone sets
- * how fast its notice fills (decision 38).
+ * how fast its notice fills.
  *
  * It runs on SSfastprocess, and only while a player is on its level; otherwise it stands still and costs nothing. A cut
  * or broken camera stops processing (a repaired one starts again).
@@ -424,12 +424,19 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 	return !scav_cam_waves_through(who, spot)
 
 /// Whether a scav disguise gets `who` past it: fatigues and a mask, anywhere but an off-limits room (a pass excuses
-/// one that allows it).
+/// one that allows it), and only while they do nothing a guard of the den wouldn't (stealth_breaker(): a weapon out,
+/// a hostage held, a fallen guard in tow).
 /obj/machinery/scav_camera/proc/scav_cam_waves_through(mob/living/who, turf/spot)
 	var/pieces = stealth_disguise_of(who)
 	if(stealth_disguise_stage(pieces) < 3)
 		return FALSE
 	var/datum/stealth_group/group = scav_cam_group()
+	// It judges by the guards' own rules, through any guard of the den, standing or fallen.
+	for(var/mob/living/guard as anything in group?.living_members())
+		var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = guard.ai_controller
+		if(istype(guard_ai) && guard_ai.group == group)
+			return !guard_ai.stealth_breaker(who, pieces, spot)
+	// No guard left to judge by: nobody to drag or hold up, only the off-limits rooms.
 	var/list/off_limits = group?.off_limits()
 	if(isnull(off_limits) || isnull(off_limits[spot]))
 		return TRUE

@@ -94,11 +94,17 @@
 	var/datum/ai_controller/controller = lookout.ai_controller
 	var/key = "[run_loc_floor_bottom_left.z]"
 	TEST_ASSERT_NULL(GLOB.z_level_activator_dummies[key], "Test fixture: the test level is already forced active")
-	var/mob/living/carbon/human/consistent/dummy = allocate(/mob/living/carbon/human/consistent, run_loc_floor_top_right)
+	var/z_level = run_loc_floor_bottom_left.z
+	// Made as the verb makes it.
+	var/mob/living/dummy = allocate(/mob/living, run_loc_floor_top_right)
 	GLOB.z_level_activator_dummies[key] = dummy
+	SSmobs.clients_by_zlevel[z_level] += dummy
+	z_level_activator_watch(dummy)
 	TEST_ASSERT(!controller.should_idle(), "A forced-active level let its AI idle")
 	qdel(dummy)
-	controller.should_idle()
 	var/left = GLOB.z_level_activator_dummies[key]
+	var/listed = (dummy in SSmobs.clients_by_zlevel[z_level])
 	GLOB.z_level_activator_dummies -= key
+	SSmobs.clients_by_zlevel[z_level] -= dummy
 	TEST_ASSERT_NULL(left, "A deleted level activator is still kept")
+	TEST_ASSERT(!listed, "A deleted level activator still counts as a player on its level")

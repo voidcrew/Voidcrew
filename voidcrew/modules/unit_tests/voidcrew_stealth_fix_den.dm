@@ -1,4 +1,4 @@
-// Review fixes for the scav den (voidcrew/modules/stealth/scav_camera.dm, scav_den.dm). Unit tests compile before
+// The scav den's cameras, guards' eyes and vault (voidcrew/modules/stealth/scav_camera.dm, scav_den.dm). Unit tests compile before
 // voidcrew/_DEFINES, so values are written out: camera states SCAN 1, TRACK 2, ALARM 3, OFF 4; FACTION_SCAV "scav".
 
 /// A den camera on the north wall of a fresh room, driven only by hand (its own sweep on SSfastprocess is stopped).
@@ -171,10 +171,11 @@
 
 /datum/unit_test/voidcrew_stealth_den_vault_once/Run()
 	var/obj/structure/closet/crate/secure/scav_vault/crate = allocate(/obj/structure/closet/crate/secure/scav_vault, run_loc_floor_bottom_left)
-	TEST_ASSERT_EQUAL(crate.spawn_turf, run_loc_floor_bottom_left, "The vault didn't note where it was placed")
+	// The test level may or may not be tied to the overmap: either the zone is noted, or where to read it is.
+	TEST_ASSERT(!isnull(crate.vault_zone) || crate.spawn_turf == run_loc_floor_bottom_left, "The vault didn't note its zone or where it was placed")
 	TEST_ASSERT(!crate.vault_rolled, "The vault rolled before anyone opened it")
 	crate.forceMove(run_loc_floor_top_right)
-	TEST_ASSERT_EQUAL(crate.spawn_turf, run_loc_floor_bottom_left, "Moving the vault changed where it reads its zone")
+	TEST_ASSERT(!isnull(crate.vault_zone) || crate.spawn_turf == run_loc_floor_bottom_left, "Moving the vault changed where it reads its zone")
 	crate.locked = FALSE
 	TEST_ASSERT(crate.open(null, force = TRUE), "Test fixture: the vault didn't open")
 	TEST_ASSERT(crate.vault_rolled, "Opening the vault didn't roll it")
