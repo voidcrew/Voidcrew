@@ -168,7 +168,7 @@
 #define STEALTH_LIGHT_EMP_LIGHT (20 SECONDS)
 
 // ===== Flashlight beams (decisions 39 and 41, stealth_light.dm) =====
-/// The beam's light range in tiles, from where it starts (lit floor ends 4 tiles ahead: data/stealth/STATUS.md, decision 41)
+/// The beam's light range in tiles, from where it starts (the lit floor ends 4 tiles ahead of the guard)
 #define STEALTH_TORCH_RANGE 5
 /// The beam's light power (its seclite blue takes it to about 1.5 white)
 #define STEALTH_TORCH_POWER 1.9
@@ -277,7 +277,7 @@
 
 // ===== Stealth crits, the head shot and the backstab (step 3a, decision 45; stealth_crits.dm, knife_executions.dm) =====
 // Roll bonuses for hyperviolence's aimed crit roll (crit_roll.dm), on a stealth guard only. They go in before wound armour,
-// so armour scales them like the rest of the roll. Numbers argued in data/stealth/STATUS.md, "Step 3a".
+// so armour scales them like the rest of the roll.
 /// Added when the guard was unaware of everyone as the blow began
 #define STEALTH_CRIT_UNAWARE_BONUS 30
 /// Added when it was only suspicious
@@ -285,7 +285,7 @@
 /// Added on top of either when the attacker aimed at the head (head, eyes or mouth)
 #define STEALTH_CRIT_HEAD_BONUS 35
 // The head shot (decision 45): a bullet aimed at the head of a guard caught off guard. Graded by what the round can do
-// against what is on the head. Numbers and the gun table: data/stealth/STATUS.md, "Decision 45".
+// against what is on the head.
 // The round's power gives burst, down or nothing; each protection step on the head moves it one down the ladder.
 /// Nothing happens beyond the hit itself
 #define STEALTH_HEAD_SHOT_NONE 0

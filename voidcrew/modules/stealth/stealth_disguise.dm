@@ -47,8 +47,8 @@
 	name = initial(name)
 
 /// The suit types the guards' own outfits wear over their fatigues: type => TRUE. Read from the scav types' outfit
-/// tables, so a new dress is picked up. Not kept in a static: the unit test build has no room for one more
-/// (data/stealth/STATUS.md, "Decision 40"), and it is only asked for someone wearing a suit over the fatigues.
+/// tables, so a new dress is picked up. Not kept in a static: the unit test build has no room for one more,
+/// and it is only asked for someone wearing a suit over the fatigues.
 /proc/stealth_guard_suits()
 	var/list/suits = list()
 	for(var/mob/living/carbon/human/npc/guard_type as anything in typesof(/mob/living/carbon/human/npc/ruin/trooper/scav))
