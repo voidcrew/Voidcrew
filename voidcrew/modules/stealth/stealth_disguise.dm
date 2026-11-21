@@ -236,8 +236,11 @@
 			listener.passes -= key
 
 /// `who`'s STEALTH_PIECE_* flags if their disguise holds for this guard: the clothing is on and it hasn't seen
-/// through them. 0 otherwise.
+/// through them. 0 otherwise, and always 0 for its own side: a friend in the den's colours is no disguise.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_fooled(mob/living/who)
+	var/mob/living/guard = pawn
+	if(guard?.faction_check_atom(who))
+		return NONE
 	var/pieces = stealth_disguise_of(who)
 	if(!(pieces & STEALTH_PIECE_CLOTHES) || stealth_knows(who))
 		return NONE
@@ -405,8 +408,8 @@
 
 /**
  * The scan, while it has someone stopped. Blown: the clothing is off, it knows them now, they run, they are more
- * than STEALTH_CHALLENGE_LEASH from where it stopped them, it can't see them, they do what no guard would, or
- * they still show no pass STEALTH_CHALLENGE_FAIL_TIME after it got to them. Passed: the pass is on them and it has
+ * than STEALTH_CHALLENGE_LEASH from where it stopped them, it can't see them or get to them, they do what no
+ * guard would, or they still show no pass STEALTH_CHALLENGE_FAIL_TIME after it got to them. Passed: the pass is on them and it has
  * looked at it for STEALTH_CHALLENGE_CHECK_TIME from within STEALTH_CHALLENGE_CHECK_RANGE.
  */
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_check_challenge()
@@ -429,7 +432,9 @@
 		guard.setDir(stand_dir)
 	var/ran = who.move_intent == MOVE_INTENT_RUN && entry && entry[STEALTH_ENTRY_TURF] != where
 	var/late = checked_at && !(pieces & STEALTH_PIECE_ID) && world.time - checked_at >= STEALTH_CHALLENGE_FAIL_TIME
-	if(!pieces || ran || late || get_dist(where, start_turf) > STEALTH_CHALLENGE_LEASH || !stealth_sees(who) || stealth_breaker(who, pieces, where))
+	// Stopped where it can't get to them (behind a railing or a window): keeping out of reach is no way to show a pass.
+	var/out_of_reach = stealth_walk_gave_up(where)
+	if(!pieces || ran || late || out_of_reach || get_dist(where, start_turf) > STEALTH_CHALLENGE_LEASH || !stealth_sees(who) || stealth_breaker(who, pieces, where))
 		if(!stealth_blow(who) && stealth_state() == STEALTH_SUSPICIOUS)
 			stealth_go_searching(where)
 			stealth_first_hand(where)

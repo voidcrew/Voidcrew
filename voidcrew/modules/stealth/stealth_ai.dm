@@ -187,6 +187,8 @@
 	var/harm_pending = FALSE
 	/// How long before that harm a touch still explains it
 	var/harm_window = 0
+	/// Whether that harm was a blow it felt land (a blast, fire, a flash, a stun), not health slipping away
+	var/harm_felt = FALSE
 	/// Where it stood when that harm landed
 	var/turf/harm_turf
 	/// world.time it may next react to harm with nobody named
@@ -470,8 +472,9 @@
 	last_seen_turf = where
 	blackboard[BB_STEALTH_LAST_SEEN_AT] = world.time
 
-/// Alert on `target` (a mob, or the mech someone sits in).
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_go_alert(atom/target)
+/// Alert on `target` (a mob, or the mech someone sits in). `named`: FALSE when it only felt them and never got a look,
+/// so its call for help can't put a name to them.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_go_alert(atom/target, named = TRUE)
 	if(QDELETED(target))
 		return
 	var/news = stealth_state() != STEALTH_ALERT
@@ -489,7 +492,7 @@
 	stealth_closet_alerted(target)
 	// It has seen or felt them itself: it calls for help (decision 8).
 	if(news)
-		stealth_first_hand(last_seen_turf, target)
+		stealth_first_hand(last_seen_turf, named ? target : null)
 
 /// Alert: turns from its target to `new_target`, and remembers the old one for when this fight ends.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_switch_target(atom/new_target)
@@ -803,9 +806,6 @@
 			var/cap = dist <= STEALTH_ADJACENT_RANGE ? sight_range : stealth_range_onto(where, boxed ? null : candidate)
 			if(dist <= cap)
 				in_view = TRUE
-				// One of its own held up in front of them, in plain view: no double take, at any range it sees.
-				if(!boxed && stealth_holds_one_of_ours(candidate))
-					plain_sight = TRUE
 				rate = profile.notice_rate * clamp((cap + 1 - dist) / cap, STEALTH_NOTICE_MIN_FALLOFF, 1)
 				if(cap < sight_range)
 					rate *= STEALTH_DARK_MULT
@@ -816,6 +816,10 @@
 					plain_sight = plain_sight || (clear && dist <= profile.point_blank_range)
 					if(dist <= profile.near_range)
 						rate *= profile.near_mult
+				// One of its own held up in front of them, in plain view: no double take, light or dark, out to the
+				// range it goes alert at (decision 18), and not in the moment after it turns (decision 39).
+				if(!boxed && !turning && dist <= profile.alert_max_range && stealth_holds_one_of_ours(candidate))
+					plain_sight = TRUE
 		if(!rate && dist <= close_range && (night_vision || !stealth_tile_is_dark(where)))
 			// At its shoulder, in light that is really there (abuse P7). Its own beam lands ahead of it, so
 			// someone right behind it in the dark is not seen (decisions 32 and 39).
@@ -1200,7 +1204,10 @@
 		if(member == guard)
 			continue
 		var/key = REF(member)
-		if(!(member.stat == DEAD || HAS_TRAIT(member, TRAIT_CRITICAL_CONDITION) || HAS_TRAIT(member, TRAIT_RESTRAINED) || member.body_position == LYING_DOWN))
+		// On the floor from its own slip: nobody did that to it (on_slipped()).
+		var/datum/ai_controller/basic_controller/human_npc/stealth/member_ai = member.ai_controller
+		var/slipped = istype(member_ai) && member_ai.slip_down_until >= world.time
+		if(!(member.stat == DEAD || HAS_TRAIT(member, TRAIT_CRITICAL_CONDITION) || HAS_TRAIT(member, TRAIT_RESTRAINED) || (member.body_position == LYING_DOWN && !slipped)))
 			// On its feet again.
 			seen -= key
 			group.reported_bodies -= key
@@ -1262,9 +1269,16 @@
 	// Whoever of its group sees it happen sees through a disguise (decision 40).
 	if(isliving(source))
 		group?.witness(source, guard)
+	// Out cold, it feels nothing (decision 44). The witnesses above still saw it.
+	if(guard.stat >= UNCONSCIOUS)
+		return FALSE
 	stealth_set_wary()
 	var/atom/who = isliving(source) ? bounty_ai_target_for(source) : source
 	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(blackboard[BB_TARGETING_STRATEGY])
+	var/can_fight = strategy?.can_attack(guard, who)
+	// Whoever laid hands on it is no friend, whatever they wear (decision 40).
+	if(can_fight && isliving(source) && stealth_fooled(source))
+		stealth_make(source)
 	var/atom/target = blackboard[BB_BASIC_MOB_CURRENT_TARGET]
 	if(stealth_state() == STEALTH_ALERT && !QDELETED(target))
 		if(who == target)
@@ -1272,12 +1286,13 @@
 		if(isliving(source))
 			stealth_remember(source)
 		var/nearer = get_dist(guard, who) + STEALTH_SWITCH_MARGIN <= get_dist(guard, target)
-		if((nearer || world.time >= next_switch_at) && strategy?.can_attack(guard, who))
+		if((nearer || world.time >= next_switch_at) && can_fight)
 			stealth_switch_target(who)
 			return TRUE
 		return FALSE
-	if(strategy?.can_attack(guard, who))
-		stealth_go_alert(who)
+	if(can_fight)
+		// Hit from behind or out of the dark, it fights back but has no face to call out.
+		stealth_go_alert(who, isliving(source) && stealth_sees(source))
 		return TRUE
 	stealth_go_searching(get_turf(source))
 	stealth_bark(STEALTH_BARK_HIT_UNSEEN)
@@ -1288,6 +1303,9 @@
 	if(source.client)
 		return
 	if(stealth_touched(attacker))
+		return
+	// Out cold, it can't take a target either (decision 44).
+	if(source.stat >= UNCONSCIOUS)
 		return
 	if(!blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
 		return ..()
@@ -1300,6 +1318,10 @@
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/on_bumped(atom/source, atom/movable/bumper)
 	SIGNAL_HANDLER
 	if(isliving(bumper))
+		// One of its own, really: routes cross in doorways all the time.
+		var/mob/living/guard = pawn
+		if(guard.faction_check_atom(bumper))
+			return
 		// One of its own, so it thinks, walking into it: it wants a look at them (decision 40).
 		var/pieces = stealth_scanning() ? stealth_fooled(bumper) : NONE
 		if(!pieces)
@@ -1393,9 +1415,13 @@
  * who dealt it (tg reports an item hit's attacker after its damage). Harm someone is named for within
  * `window` is theirs and stealth_touched() has dealt with it.
  */
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_note_harm(window = 0.2 SECONDS)
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_note_harm(window = 0.2 SECONDS, felt = TRUE)
 	var/mob/living/carbon/human/npc/guard = pawn
-	if(harm_pending || QDELETED(guard) || guard.stat == DEAD || guard.client)
+	if(harm_pending)
+		if(felt)
+			harm_felt = TRUE
+		return
+	if(QDELETED(guard) || guard.stat == DEAD || guard.client)
 		return
 	// Real harm while it's down from a slip: getting up is no longer just getting up.
 	slip_down_until = 0
@@ -1403,6 +1429,7 @@
 	if(ishumannpc(guard) && guard.npc_surrendering)
 		return
 	harm_pending = TRUE
+	harm_felt = felt
 	harm_window = window
 	harm_turf = get_turf(guard)
 	addtimer(CALLBACK(src, PROC_REF(stealth_judge_harm)), 0.2 SECONDS)
@@ -1410,6 +1437,8 @@
 /// Harm nobody was named for (a blast, fire, gas, a flashbang): it and the friends near it go looking there.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_judge_harm()
 	harm_pending = FALSE
+	var/felt = harm_felt
+	harm_felt = FALSE
 	var/turf/where = harm_turf
 	harm_turf = null
 	var/mob/living/guard = pawn
@@ -1422,7 +1451,8 @@
 	next_harm_at = world.time + STEALTH_HARM_COOLDOWN
 	stealth_setup()
 	stealth_trouble_at(where)
-	if(guard.stat == CONSCIOUS)
+	// Health slipping away (bleeding, gas) sends it looking, but gives it nothing to shout or radio about.
+	if(felt && guard.stat == CONSCIOUS)
 		stealth_first_hand(where)
 	for(var/mob/living/friend as anything in group?.living_members())
 		if(friend == guard)
@@ -1459,7 +1489,7 @@
 		return
 	health_mark = health
 	health_mark_at = world.time
-	stealth_note_harm(STEALTH_HARM_WINDOW)
+	stealth_note_harm(STEALTH_HARM_WINDOW, FALSE)
 
 /// Carried off the level: drops its route and holds where it is (abuse R3). The base controller already
 /// listens for the level change.
@@ -1762,6 +1792,10 @@
 	// Stamped each time the walk starts or starts again (after a stun, or the level waking), so time spent
 	// not walking never counts against it.
 	controller.goto_started = world.time
+	// Alert, it goes after them where it last saw them by a path round corners: its straight chase stalls on
+	// the first wall. The chase comes back when the walk ends.
+	if(controller.stealth_state() == STEALTH_ALERT && controller.goto_purpose == STEALTH_GOTO_SEARCH)
+		human_npc_set_ai_movement(controller, /datum/ai_movement/jps/stealth)
 	set_movement_target(controller, controller.goto_turf)
 
 /datum/ai_behavior/stealth_goto/perform(seconds_per_tick, datum/ai_controller/basic_controller/human_npc/stealth/controller)
@@ -1794,7 +1828,9 @@
 				controller.goto_result = "failed"
 				controller.stealth_walk_failed()
 		controller.goto_timed_out = FALSE
-	return ..()
+	. = ..()
+	if(istype(controller) && controller.stealth_state() == STEALTH_ALERT && !istype(controller.ai_movement, /datum/ai_movement/basic_avoidance))
+		human_npc_set_ai_movement(controller, /datum/ai_movement/basic_avoidance/stealth)
 
 /**
  * Standing: at a stop, a sentry's post, staring at something, or looking round. Turns its head now and

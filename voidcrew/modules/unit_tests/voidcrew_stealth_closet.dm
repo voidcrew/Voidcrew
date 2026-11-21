@@ -186,7 +186,7 @@
 	var/turf/crack_b = at(4, 3)
 	crack_a.ChangeTurf(/turf/closed/wall)
 	crack_b.ChangeTurf(/turf/closed/wall)
-	TEST_ASSERT(stealth_can_see(crack_guard, crack_player, 7), "Elbow to elbow across a corner is out of sight")
+	TEST_ASSERT(!stealth_can_see(crack_guard, crack_player, 7), "Elbow to elbow, a guard sees through a crack where two walls touch")
 	var/turf/far_guard = at(3, 5)
 	TEST_ASSERT(!stealth_can_see(far_guard, crack_player, 7), "A guard sees through a crack where two walls touch")
 	// A straight line down an open row is clear.

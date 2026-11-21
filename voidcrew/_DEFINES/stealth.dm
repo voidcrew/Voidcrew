@@ -210,8 +210,8 @@
 #define STEALTH_TURN_TELL (0.6 SECONDS)
 /// Pixels of that lean
 #define STEALTH_TURN_LEAN 3
-/// How long the lean takes to show and to go
-#define STEALTH_TURN_LEAN_TIME (0.2 SECONDS)
+/// The lean's key in tg's mob offsets (add_offsets()); it shows and goes over tg's own offset animation
+#define STEALTH_TURN_LEAN_SOURCE "stealth_lean"
 
 #define FACTION_SCAV "scav"
 
