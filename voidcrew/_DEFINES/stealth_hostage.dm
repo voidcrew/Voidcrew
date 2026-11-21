@@ -15,3 +15,16 @@
 #define STEALTH_BARK_HOSTAGE_BACK "stealth_hostage_back"
 #define STEALTH_BARK_HOSTAGE_EXECUTED "stealth_hostage_executed"
 #define STEALTH_BARK_HOSTAGE_RELEASED "stealth_hostage_released"
+
+/// Between two sounds from a body held up in front (a mumble under the hand, or a check for a scared line).
+#define STEALTH_HOSTAGE_VOICE_MIN (3 SECONDS)
+#define STEALTH_HOSTAGE_VOICE_MAX (5 SECONDS)
+/// How far a mumble under the hand carries.
+#define STEALTH_HOSTAGE_MUMBLE_RANGE 2
+/// Between two scared lines from a hostage held at gunpoint who can talk.
+#define STEALTH_HOSTAGE_PLEA_MIN (8 SECONDS)
+#define STEALTH_HOSTAGE_PLEA_MAX (14 SECONDS)
+
+/// What a hostage says at gunpoint, and what he tries to say under the hand (garbled).
+#define STEALTH_BARK_HOSTAGE_PLEA "stealth_hostage_plea"
+#define STEALTH_BARK_HOSTAGE_MUFFLED "stealth_hostage_muffled"

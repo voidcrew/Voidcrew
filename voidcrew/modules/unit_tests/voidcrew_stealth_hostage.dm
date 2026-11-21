@@ -87,3 +87,94 @@
 	holder.stop_pulling()
 	TEST_ASSERT_EQUAL(hostage.hostage_pose_dir, 0, "Still posed after being let go")
 	qdel(block)
+
+/// Shooting your own hostage in the head or mouth (a player holding a player, tg's neck grab with a gun): the execution,
+/// with its wind-up, the same in combat mode and out of it.
+/datum/unit_test/voidcrew_stealth_hostage_execution
+
+/datum/unit_test/voidcrew_stealth_hostage_execution/Run()
+	var/datum/turf_reservation/block = stealth_block(6, 9)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	var/row = 1
+	for(var/combat in list(FALSE, TRUE))
+		for(var/zone in list(BODY_ZONE_HEAD, BODY_ZONE_PRECISE_MOUTH))
+			var/mob/living/carbon/human/holder = stealth_person(block, 2, row)
+			var/mob/living/carbon/human/hostage = stealth_person(block, 3, row)
+			row += 2
+			ADD_TRAIT(hostage, TRAIT_PIERCEIMMUNE, INNATE_TRAIT) // no stray shrapnel
+			var/obj/item/gun/ballistic/automatic/pistol/pistol = allocate(/obj/item/gun/ballistic/automatic/pistol)
+			pistol.can_misfire = FALSE
+			pistol.chambered.loaded_projectile.damage = 20 // doubled at the muzzle: 40, under the burst line
+			holder.put_in_active_hand(pistol, forced = TRUE)
+			holder.set_combat_mode(combat)
+			holder.setDir(EAST)
+			stealth_test_grab(holder, hostage, GRAB_NECK)
+			TEST_ASSERT_EQUAL(stealth_held_in_front(holder), hostage, "Test fixture: the hostage isn't held in front")
+			TEST_ASSERT(pistol.hv_execution_possible(holder, hostage), "Your own hostage can't be executed (combat mode [combat])")
+			holder.zone_selected = zone
+			var/obj/item/bodypart/head/head = hostage.get_bodypart(BODY_ZONE_HEAD)
+			var/started = world.time
+			TEST_ASSERT(pistol.melee_attack_chain(holder, hostage, list()), "The click on your own hostage didn't end the attack chain ([zone], combat mode [combat])")
+			TEST_ASSERT(world.time - started >= 1 SECONDS, "Your own hostage was shot with no wind-up ([zone], combat mode [combat])")
+			TEST_ASSERT(world.time - started < 10 SECONDS, "Your own hostage got tg's slow mouth shot ([zone], combat mode [combat])")
+			TEST_ASSERT(head.brute_dam > 0, "The execution of your own hostage didn't fire ([zone], combat mode [combat])")
+			holder.stop_pulling()
+	qdel(block)
+
+/// The hostage's voice: under the hand he mumbles (garbled, heard close by) and stops once let go; held at gunpoint in an
+/// ordinary neck grab he says a scared line now and then, and no guard's awareness changes for it.
+/datum/unit_test/voidcrew_stealth_hostage_voice
+
+/datum/unit_test/voidcrew_stealth_hostage_voice/Run()
+	var/datum/turf_reservation/block = stealth_block(9, 5)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	var/muffled = stealth_muffle_words("Help me!")
+	var/regex/shape = regex(@"^Mm*f m+f!$")
+	TEST_ASSERT(shape.Find(muffled), "A muffled line came out as \"[muffled]\"")
+
+	// Under the hand.
+	var/mob/living/carbon/human/npc/guard = d45_bare_guard(block, 4, 1)
+	var/mob/living/carbon/human/person = stealth_person(block, 3, 1)
+	var/datum/stealth_grip/grip = grip_clamp(person, guard)
+	TEST_ASSERT_NOTNULL(guard.stealth_hostage_voice_timer, "A guard with a hand over his mouth has no voice beat")
+	TEST_ASSERT_EQUAL(guard.stealth_hostage_sound(person), "mumble", "A guard with a hand over his mouth made no mumble")
+	TEST_ASSERT(HAS_TRAIT_FROM(guard, TRAIT_MUTE, "stealth_grip"), "The mumble took the mute off")
+	var/obj/item/gun/ballistic/automatic/pistol/pistol = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	person.put_in_inactive_hand(pistol, forced = TRUE)
+	TEST_ASSERT_EQUAL(guard.stealth_hostage_sound(person), "mumble", "Under the hand with a gun on him, he didn't mumble (or he spoke)")
+	person.stop_pulling()
+	TEST_ASSERT(QDELETED(grip), "Test fixture: letting go didn't end the hold")
+	TEST_ASSERT_NULL(guard.stealth_hostage_sound(person), "Let go, he still mumbles")
+	if(guard.stealth_hostage_voice_timer)
+		deltimer(guard.stealth_hostage_voice_timer)
+		guard.stealth_hostage_voice_timer = null
+	guard.stealth_hostage_voice_tick()
+	TEST_ASSERT_NULL(guard.stealth_hostage_voice_timer, "Let go, his voice beat kept going")
+
+	// At gunpoint, an ordinary neck grab: a scared line, once in a while; the guards' awareness doesn't move for it.
+	var/mob/living/carbon/human/npc/hostage = stealth_guard(block, 3, 3, WEST)
+	var/mob/living/carbon/human/npc/watcher = stealth_guard(block, 7, 3, WEST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/watcher_ai = stealth_ai(watcher)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/hostage_ai = stealth_ai(hostage)
+	var/mob/living/carbon/human/holder = stealth_person(block, 2, 3)
+	var/obj/item/gun/ballistic/automatic/pistol/second = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	holder.put_in_active_hand(second, forced = TRUE)
+	holder.setDir(EAST)
+	stealth_test_grab(holder, hostage, GRAB_NECK)
+	TEST_ASSERT_EQUAL(stealth_hostage_of(holder), hostage, "Test fixture: no hostage")
+	TEST_ASSERT(!stealth_grip_holds(holder, hostage), "Test fixture: an ordinary neck grab is a hand over the mouth")
+	var/watcher_state = watcher_ai.stealth_state()
+	var/hostage_state = hostage_ai.stealth_state()
+	TEST_ASSERT_EQUAL(hostage.stealth_hostage_sound(holder), "plea", "A hostage at gunpoint said nothing")
+	TEST_ASSERT_NULL(hostage.stealth_hostage_sound(holder), "A hostage at gunpoint pleaded twice in a row")
+	TEST_ASSERT_EQUAL(watcher_ai.stealth_state(), watcher_state, "A hostage's scared line changed a guard's awareness")
+	TEST_ASSERT_EQUAL(hostage_ai.stealth_state(), hostage_state, "His own scared line changed the hostage's awareness")
+	TEST_ASSERT_NULL(watcher_ai.pending_call, "A hostage's scared line started a radio call")
+	// Can't talk: nothing.
+	hostage.stealth_hostage_next_plea = 0
+	ADD_TRAIT(hostage, TRAIT_MUTE, TRAIT_SOURCE_UNIT_TESTS)
+	TEST_ASSERT_NULL(hostage.stealth_hostage_sound(holder), "A hostage who can't talk pleaded")
+	REMOVE_TRAIT(hostage, TRAIT_MUTE, TRAIT_SOURCE_UNIT_TESTS)
+	holder.stop_pulling()
+	TEST_ASSERT_NULL(hostage.stealth_hostage_sound(holder), "Let go, he still pleads")
+	qdel(block)

@@ -217,6 +217,8 @@
 	lines[STEALTH_BARK_HOSTAGE_BACK] = list("I'm backing off.", "Okay. Backing up.", "Fine. Fine.")
 	lines[STEALTH_BARK_HOSTAGE_EXECUTED] = list("You son of a-", "Take them down!", "No more talking!")
 	lines[STEALTH_BARK_HOSTAGE_RELEASED] = list("Now!", "Take them!", "Get clear!")
+	lines[STEALTH_BARK_HOSTAGE_PLEA] = list("Don't shoot!", "Easy! Easy!", "Do what they say!", "Please...", "Don't do anything stupid!", "I don't want to die!")
+	lines[STEALTH_BARK_HOSTAGE_MUFFLED] = list("Help!", "Help me!", "Let me go!", "Get off me!", "Somebody help!", "Please, no!")
 	emotes[STEALTH_BARK_HOSTAGE] = list("raises a hand slowly.", "keeps their gun low.")
 	emotes[STEALTH_BARK_HOSTAGE_DROP] = list("puts their weapon down.")
 
@@ -236,6 +238,7 @@
 		return
 	// Held up in front: at gunpoint, or with a hand over the mouth (stealth_grip.dm).
 	if(stealth_held_in_front(src) == held)
+		held.stealth_hostage_voice_start()
 		if(HAS_TRAIT_FROM(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT))
 			REMOVE_TRAIT(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT)
 			// tg's own stand-up after the floor goes is a 1 s do_after; held up, they're on their feet at once.
@@ -243,3 +246,100 @@
 			held.get_up(instant = TRUE)
 	else if(grab_state >= GRAB_NECK && !HAS_TRAIT_FROM(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT))
 		ADD_TRAIT(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT)
+
+// ---------------------------------------------------------------------------------------------
+// The hostage's own voice
+
+/**
+ * A body held up in front makes sound. Under the hand over the mouth (stealth_grip.dm) he is still TRAIT_MUTE (no
+ * shout, no radio, no alarm): every few seconds he mumbles against the hand, an audible message heard only right
+ * next to him, his words garbled by the rule tg's muffles_speech element uses for a muzzle. Held at gunpoint with an
+ * ordinary neck grab and able to talk, an NPC now and then says a scared line out loud through tg's say(). Neither
+ * reaches a guard's awareness: the stealth AI doesn't listen to speech (stealth_noise_sources.dm), and only the
+ * holder's own words are heard as standoff demands (on_standoff_demand()). One timer per held body, from the moment
+ * the hold puts him in front (stealth_hold_upright()) until he is no longer held in front.
+ */
+/mob/living
+	/// The timer for this body's next stealth_hostage_voice_tick(), while it is held up in front.
+	var/stealth_hostage_voice_timer
+	/// world.time this body may next say a scared line at gunpoint.
+	var/stealth_hostage_next_plea = 0
+
+/// Starts this body's hostage voice, if it isn't running.
+/mob/living/proc/stealth_hostage_voice_start()
+	if(stealth_hostage_voice_timer)
+		return
+	stealth_hostage_voice_timer = addtimer(CALLBACK(src, PROC_REF(stealth_hostage_voice_tick)), rand(STEALTH_HOSTAGE_VOICE_MIN, STEALTH_HOSTAGE_VOICE_MAX), TIMER_STOPPABLE|TIMER_DELETE_ME)
+
+/// One beat of the hostage voice: a sound if there is one, then the next beat while he is still held in front.
+/mob/living/proc/stealth_hostage_voice_tick()
+	stealth_hostage_voice_timer = null
+	var/mob/living/holder = pulledby
+	if(QDELETED(src) || stat == DEAD || isnull(holder) || stealth_held_in_front(holder) != src)
+		return
+	stealth_hostage_sound(holder)
+	stealth_hostage_voice_start()
+
+/**
+ * The sound this body makes now, held up in front of `holder`: "mumble" under the hand, "plea" for a scared line at
+ * gunpoint, or null for none (out cold, can't talk, a player in the body, nothing to say yet).
+ */
+/mob/living/proc/stealth_hostage_sound(mob/living/holder)
+	if(stat != CONSCIOUS || isnull(holder))
+		return null
+	if(stealth_grip_holds(holder, src))
+		var/muffled = stealth_muffle_words(pick(stealth_hostage_lines(STEALTH_BARK_HOSTAGE_MUFFLED) || list("Help!")))
+		audible_message(
+			span_emote("<b>[src]</b> mumbles against [holder]'s hand, \"[muffled]\""),
+			hearing_distance = STEALTH_HOSTAGE_MUMBLE_RANGE,
+			self_message = span_emote("You mumble against [holder]'s hand, \"[muffled]\""),
+		)
+		return "mumble"
+	// A player speaks for himself.
+	if(client || stealth_hostage_of(holder) != src || world.time < stealth_hostage_next_plea || !human_npc_can_talk(src))
+		return null
+	var/list/pleas = stealth_hostage_lines(STEALTH_BARK_HOSTAGE_PLEA)
+	if(!length(pleas))
+		return null
+	stealth_hostage_next_plea = world.time + rand(STEALTH_HOSTAGE_PLEA_MIN, STEALTH_HOSTAGE_PLEA_MAX)
+	INVOKE_ASYNC(src, TYPE_PROC_REF(/atom/movable, say), pick(pleas))
+	return "plea"
+
+/// This body's voice lines of `kind`, or null: a human NPC's own voice (the scavs' is in this file).
+/mob/living/proc/stealth_hostage_lines(kind)
+	return null
+
+/mob/living/carbon/human/npc/stealth_hostage_lines(kind)
+	if(!ispath(npc_voice, /datum/human_npc_voice))
+		return null
+	var/datum/human_npc_voice/voice = human_npc_singleton(npc_voice)
+	var/list/found = voice.lines[kind]
+	return length(found) ? found : null
+
+/**
+ * `text` as it comes out through a hand or a gag: the rule of tg's muffles_speech element (each word becomes its length
+ * in "m", give or take one, and an "f"), kept to sentence case with the line's own punctuation. tg's own copy is a
+ * signal handler on a worn item, so it is the same rule written here rather than a shared proc.
+ */
+/proc/stealth_muffle_words(text)
+	var/list/words = splittext(text, " ")
+	var/list/out = list()
+	var/capital = TRUE
+	for(var/word in words)
+		var/letters = word
+		var/tail = ""
+		while(length(letters) && findtext("!?.,-", copytext(letters, length(letters))))
+			tail = copytext(letters, length(letters)) + tail
+			letters = copytext(letters, 1, length(letters))
+		if(!length(letters))
+			out += tail
+			continue
+		var/new_word = ""
+		for(var/i in 1 to max(1, length(letters) + rand(-1, 1)))
+			new_word += "m"
+		new_word += "f"
+		if(capital)
+			new_word = capitalize(new_word)
+		out += "[new_word][tail]"
+		capital = length(tail) && findtext("!?.", copytext(tail, length(tail)))
+	return jointext(out, " ")
