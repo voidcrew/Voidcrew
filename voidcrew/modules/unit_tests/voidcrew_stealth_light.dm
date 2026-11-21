@@ -75,7 +75,7 @@
 	TEST_ASSERT(stealth_ai.stealth_light_shows(), "The light didn't come on in the dark")
 	guard.emp_act(EMP_LIGHT)
 	TEST_ASSERT(!stealth_ai.stealth_light_shows(), "An EMP didn't cut the guard's light out")
-	// It sputters as it dies (decision 41): a flash of the beam with the light counted off, then dark again.
+	// It sputters as it dies: a flash of the beam with the light counted off, then dark again.
 	stealth_ai.stealth_sputter(stealth_ai.sputter_serial, TRUE)
 	TEST_ASSERT(stealth_ai.torch.light_on && !stealth_ai.stealth_light_shows(), "A cut-out seclite doesn't sputter")
 	stealth_ai.stealth_sputter(stealth_ai.sputter_serial, FALSE)
@@ -98,7 +98,7 @@
 	GLOB.stealth_test_dark_turfs[here] = FALSE
 	qdel(block)
 
-/// Decision 41: the lamp sits on the guard's tile and its beam starts half a tile ahead; a turn passes through the
+/// The lamp sits on the guard's tile and its beam starts half a tile ahead; a turn passes through the
 /// halfway point, a turn of its own is led by the beam, a step at a walk carries the beam half a tile at a time, and
 /// a searching guard sweeps it side to side.
 /datum/unit_test/voidcrew_stealth_light_pool
@@ -195,9 +195,9 @@
 	TEST_ASSERT(QDELETED(torch), "A deleted guard left its lamp behind")
 	qdel(block)
 
-/// Decision 41, real lighting: the beam is a wedge. It lights 1 to 4 tiles ahead and the tiles beside 2 and 3
+/// Real lighting: the beam is a wedge. It lights 1 to 4 tiles ahead and the tiles beside 2 and 3
 /// ahead; the guard's own tile, its sides, its back, 5 ahead and two tiles off the line stay dark. A wall stops it.
-/// Decision 42: the cone players see shows and hides with the light, points where the beam points, and stops at a wall.
+/// The cone players see shows and hides with the light, points where the beam points, and stops at a wall.
 /datum/unit_test/voidcrew_stealth_light_cone
 
 /datum/unit_test/voidcrew_stealth_light_cone/Run()
@@ -363,7 +363,7 @@
 	qdel(guard)
 	qdel(block)
 
-/// Decision 41: a lit flashlight carried behind an unaware guard that stands in the dark makes it suspicious, never
+/// A lit flashlight carried behind an unaware guard that stands in the dark makes it suspicious, never
 /// alert, and it turns to look. Unlit, out of the light's reach, or in a lit room, it draws nothing.
 /datum/unit_test/voidcrew_stealth_stray_light
 
@@ -427,7 +427,7 @@
 	var/mob/living/carbon/human/person = stealth_person(block, 5, 2)
 	var/turf/spot = get_turf(person)
 	TEST_ASSERT(stealth_tile_is_dark(spot), "Reserved test space isn't dark, so the light can't be tested")
-	// Without a light: 3 tiles off in the dark fills slowly (no near fill in the dark, decision 39).
+	// Without a light: 3 tiles off in the dark fills slowly (no near fill in the dark).
 	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 2, 2)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
 	qdel(stealth_ai.stealth_light())
@@ -490,8 +490,8 @@
 	TEST_ASSERT(stealth_ai.search_for_body, "The search isn't marked as over a body")
 	qdel(block)
 
-/// Elbow to elbow: someone on the next tile in front is seen in the dark (an alert, decision 32); behind or side-on
-/// is not; two ahead in the dark fills slowly (no near fill in the dark, decision 39).
+/// Elbow to elbow: someone on the next tile in front is seen in the dark (an alert); behind or side-on
+/// is not; two ahead in the dark fills slowly (no near fill in the dark).
 /datum/unit_test/voidcrew_stealth_adjacent
 
 /datum/unit_test/voidcrew_stealth_adjacent/Run()

@@ -114,15 +114,15 @@
 	npc_voice = /datum/human_npc_voice/scav
 	npc_outfit_table = /datum/human_npc_outfit_table/ruin/syndicate/sword
 
-/// Whatever outfit its table picks, a scav guard wears the scavs' own fatigues under it (stealth_disguise.dm, decision 40).
+/// Whatever outfit its table picks, a scav guard wears the scavs' own fatigues under it (stealth_disguise.dm).
 /mob/living/carbon/human/npc/ruin/trooper/scav/equipOutfit(outfit, visuals_only = FALSE)
 	var/datum/outfit/dressed = ispath(outfit) ? new outfit() : outfit
 	if(istype(dressed))
 		dressed.uniform = /obj/item/clothing/under/syndicate/scav
 	return ..(dressed, visuals_only)
 
-/// Every scav guard carries a seclite it switches on in the dark (stealth_light.dm, decision 31), and a pass in its own
-/// name; about half wear a balaclava, where nothing else is on their face (decision 40).
+/// Every scav guard carries a seclite it switches on in the dark (stealth_light.dm), and a pass in its own
+/// name; about half wear a balaclava, where nothing else is on their face.
 /mob/living/carbon/human/npc/ruin/trooper/scav/npc_dress(datum/human_npc_order/order)
 	. = ..()
 	stealth_give_light()

@@ -1,4 +1,4 @@
-// Stealth guards, owner decision 33 (voidcrew/modules/stealth/stealth_closet.dm): a guard that saw its target get into
+// Stealth guards (voidcrew/modules/stealth/stealth_closet.dm): a guard that saw its target get into
 // a locker opens it; one that didn't leaves it shut. Values from voidcrew/_DEFINES are written out:
 // STEALTH_LOSE_TARGET_TIME 4 s, STEALTH_CLOSET_SEEN_WINDOW 1.5 s. States are written as text.
 
