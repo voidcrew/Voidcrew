@@ -95,6 +95,10 @@
 		var/datum/stealth_grip/grip = stealth_grip_holding
 		if(grip && grip.held == target && pulling == target && grip.squeeze())
 			return TRUE
+		// A body held up in front with something in the grabbing hand (the gun): the click does nothing. tg's grab would
+		// tighten it to a strangle, and the squeeze is only for an empty hand.
+		if(pulling == target && grab_state >= GRAB_NECK && get_active_held_item() && isturf(target.loc) && (stealth_hostage_of(src, target.loc) == target || stealth_grip_holds(src, target)))
+			return TRUE
 		var/refusal = stealth_grip_refusal(src, target)
 		// Aimed at a guard's mouth and it didn't take: say why in the attack log (playtest diagnosis).
 		if(refusal && refusal != "not a guard" && zone_selected == BODY_ZONE_PRECISE_MOUTH)

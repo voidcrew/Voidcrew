@@ -252,25 +252,49 @@
  * Walking with a body held in front. tg's pull only drags a pulled thing after its puller once it is a tile apart or
  * diagonal (atom/movable/Move()), so a body held on the holder's own tile is left on the tile he steps off, and is no
  * longer held in front. Held in front (at gunpoint, or with a hand over the mouth), it comes along onto his new tile
- * in the same step, as tg's own pull moves it (move_from_pull(), only without turning it to face the way it is
- * dragged: the pose keeps it facing his way). Each step of a diagonal move is a step of its own here, so a crate on
- * one leg of it changes nothing.
+ * in the same step (Moved(), before tg turns him to face his step, so the pose just swings round), and after any move
+ * of his a body he still holds that way but that ended up on a tile next to his is brought back onto it (Move()).
+ * Each step of a diagonal move is a step of its own here, so a crate on one leg of it changes nothing.
  */
 /mob/living/carbon/human/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
 	. = ..()
-	var/mob/living/held = pulling
-	if(forced || !isliving(held) || held.loc != old_loc || held.moving_from_pull || !isturf(loc) || !isturf(old_loc))
-		return
-	if(get_dist(old_loc, loc) > 1 || old_loc.z != z)
-		return
-	if(stealth_hostage_of(src, old_loc) != held && !stealth_grip_holds(src, held))
-		return
-	held.moving_from_pull = src
-	held.Move(loc, get_dir(old_loc, loc), glide_size, FALSE)
-	held.moving_from_pull = null
+	if(!forced && isturf(old_loc))
+		stealth_hold_close()
 
-/// The body held in front is dragged onto its holder's tile (Moved() above): he lets it in, as he lets in a body lying
-/// at his feet.
+/mob/living/carbon/human/Move(atom/newloc, direct, glide_size_override)
+	. = ..()
+	stealth_hold_close()
+
+/**
+ * Brings the body this holder neck-grabs, at gunpoint or with a hand over its mouth, onto his tile from the tile next
+ * to it, as tg's own pull moves a pulled thing (move_from_pull()), only without turning it to face the way it is
+ * dragged: the pose keeps it facing his way. FALSE if there was nothing to bring in or it didn't move.
+ */
+/mob/living/carbon/human/proc/stealth_hold_close()
+	var/mob/living/held = pulling
+	if(!isliving(held) || held.loc == loc || held.moving_from_pull || held.buckled || !isturf(loc) || !isturf(held.loc))
+		return FALSE
+	if(held.z != z || get_dist(held, src) > 1)
+		return FALSE
+	if(stealth_hostage_of(src, held.loc) != held && !stealth_grip_holds(src, held))
+		return FALSE
+	held.moving_from_pull = src
+	held.Move(loc, get_dir(held, loc), glide_size, FALSE)
+	held.moving_from_pull = null
+	return held.loc == loc
+
+/// Clicking a tile next to him with a body held in front (tg's Move_Pulled()) turns him to face it, the body swinging
+/// round with him; it never pushes the body off his tile.
+/mob/living/carbon/human/Move_Pulled(atom/moving_atom)
+	var/mob/living/held = pulling
+	if(!isliving(held) || !isturf(held.loc) || (stealth_hostage_of(src, held.loc) != held && !stealth_grip_holds(src, held)))
+		return ..()
+	stealth_hold_close()
+	face_atom(moving_atom)
+	return FALSE
+
+/// The body held in front is dragged onto its holder's tile (stealth_hold_close() above): he lets it in, as he lets in
+/// a body lying at his feet.
 /mob/living/carbon/human/CanAllowThrough(atom/movable/mover, border_dir)
 	. = ..()
 	if(!. && mover == pulling && mover.moving_from_pull == src && grab_state >= GRAB_NECK)
