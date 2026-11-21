@@ -13,9 +13,12 @@
 	shooter.zone_selected = BODY_ZONE_HEAD
 	return gun
 
-/// A bare-headed guard (no helmet, no mask) at (dx, dy), facing east.
+/// A bare-headed guard (no helmet, no mask) at (dx, dy), facing east. tg's own aim roll is off for it
+/// (TRAIT_DESIGNATED_TARGET): even point-blank, a shot at the head lands elsewhere about one time in fourteen, and these
+/// tests are about what a head hit does.
 /datum/unit_test/proc/d45_bare_guard(datum/turf_reservation/block, dx, dy)
 	var/mob/living/carbon/human/npc/guard = stealth_guard(block, dx, dy)
+	ADD_TRAIT(guard, TRAIT_DESIGNATED_TARGET, TRAIT_GENERIC)
 	if(guard.head)
 		qdel(guard.head)
 	if(guard.wear_mask)
