@@ -164,23 +164,23 @@
  * the moment it loads. The colosseum site indexes it at link_interior for
  * the post-match restock hook.
  */
-/mob/living/basic/outpost_trader/colosseum
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/colosseum
 	name = "lanista"
 	desc = "The Grand Colosseum's gear merchant. Everything on the rack survived the arena, and it's priced like it."
 	shop_type = /datum/outpost_shop/vendor/colosseum_armory
 
-/mob/living/basic/outpost_trader/colosseum/Initialize(mapload)
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/colosseum/Initialize(mapload)
 	shop = new shop_type(null)
 	shop.trader_npc = src
 	return ..()
 
-/mob/living/basic/outpost_trader/colosseum/Destroy()
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/colosseum/Destroy()
 	// This trader owns its shop (no outpost holds it)
 	QDEL_NULL(shop)
 	if(GLOB.colosseum_site?.armory_trader == src)
 		GLOB.colosseum_site.armory_trader = null
 	return ..()
 
-/mob/living/basic/outpost_trader/colosseum/examine(mob/user)
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/colosseum/examine(mob/user)
 	. = ..()
 	. += span_notice("Winnings from the vault spend just fine here.")

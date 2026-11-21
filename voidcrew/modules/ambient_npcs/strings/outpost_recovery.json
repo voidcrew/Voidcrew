@@ -1,0 +1,829 @@
+{
+	"_owner": "R4 (outpost recovery crews, spec-rehydrate.md 3.3). Keys: RECOVERY_LINE_* in voidcrew/_DEFINES/outpost_recovery.dm, plus the ambient contexts (idle, talk, work, chat, reply, attacked, violence, leave) and conversations. Placeholders: {name}, {other}, {place}.",
+	"halcyon": {
+		"call": [
+			"Desk to all units. The concourse is quiet. Cleaning crew on their way.",
+			"All units, stand easy. The crew is coming down to clear up.",
+			"Desk to beat. Quiet now. Sending the cleaners and the morgue crew.",
+			"Desk to all units. All clear. Cleaners on the way down."
+		],
+		"first_body": [
+			"Oh dear. Right. Gloves on.",
+			"Well. That's one.",
+			"Poor soul. Somebody tell the desk.",
+			"Oh, the poor thing. Bag, please."
+		],
+		"officer_body": [
+			"That's one of the officers. Radio the desk.",
+			"Oh no. It's one of security. Tell the desk.",
+			"One of theirs. Careful with this one.",
+			"Oh no, that's an officer. The desk needs to know."
+		],
+		"bagged": [
+			"One bagged, concourse.",
+			"Bagged. Sending it down.",
+			"One away. Who's next?",
+			"Bagged and zipped. Concourse."
+		],
+		"tray": [
+			"One in the morgue. Tray's shut.",
+			"Morgue has one more. Tray's closed.",
+			"Settled in the morgue. Somebody will come asking.",
+			"Morgue's got one more. All tidy."
+		],
+		"lift": [
+			"Lift, please. Concourse.",
+			"Calling the lift. Hold the door.",
+			"Lift coming down. Mind your fingers.",
+			"Lift to the concourse, please."
+		],
+		"mess": [
+			"Who bleeds like this? Honestly.",
+			"I only did this floor on Tuesday.",
+			"That is not coming out with soap.",
+			"There's brass in every corner.",
+			"Somebody's been very careless.",
+			"Oh, look at the state of it."
+		],
+		"mind_floor": [
+			"Mind the floor, it's wet.",
+			"Careful there. Wet floor.",
+			"Watch your step, please.",
+			"Wet floor, love. Go round.",
+			"Slippery there. Careful."
+		],
+		"idle": [
+			"Quiet now. Funny, that.",
+			"Another day. Same floor.",
+			"Somebody put the kettle on.",
+			"There. Nearly sparkling.",
+			"Lovely and quiet now."
+		],
+		"talk": [
+			"Mind the wet bits.",
+			"Busy, sorry. Terrible morning.",
+			"Can't stop. The mop's drying.",
+			"Sorry, dear. Mind the bucket.",
+			"Hello. Don't step there, please."
+		],
+		"work": [
+			"Round and round.",
+			"Nearly there.",
+			"This floor never learns.",
+			"Little circles. Little circles.",
+			"One more patch."
+		],
+		"chat": [
+			"Did you see the state of the diner?",
+			"It'll be a long shift.",
+			"Somebody left a bottle in the planter again.",
+			"Did you hear about the fuss upstairs?",
+			"My back's killing me."
+		],
+		"reply": [
+			"Don't remind me.",
+			"I know.",
+			"Tell me about it.",
+			"Never again, I say.",
+			"You're telling me."
+		],
+		"attacked": [
+			"Hey! I'm only the cleaner!",
+			"Stop that! I just mop!",
+			"Ow! What did I do?",
+			"Leave me alone! Help!"
+		],
+		"violence": [
+			"Not again! I just cleaned!",
+			"Get down! Everyone get down!",
+			"Oh no, not in here!",
+			"Everybody down! Mind the bucket!"
+		],
+		"leave": [
+			"That's me done.",
+			"Bag's full. Heading down.",
+			"Lift, then home.",
+			"All done. Lift, please."
+		],
+		"conversations": [
+			{
+				"opener": "Do you ever get the smell out of your gloves?",
+				"replies": [
+					"Never.",
+					"Not for a week."
+				]
+			},
+			{
+				"opener": "What's the worst one you've seen?",
+				"replies": [
+					"Today.",
+					"Don't ask."
+				]
+			},
+			{
+				"opener": "Did you get the stain by the diner?",
+				"replies": [
+					"Twice.",
+					"It's coming back.",
+					"Leave it till morning."
+				]
+			}
+		],
+		"medic_found": [
+			"Stay with me. You're all right.",
+			"Easy now. I've got you.",
+			"Don't try to sit up. Let me look.",
+			"Breathe. Slowly. I'm here."
+		],
+		"medic_stable": [
+			"Medic to desk. One patient stable, concourse.",
+			"Desk, medic. They're breathing on their own now.",
+			"One back on their feet. Moving on.",
+			"Medic to desk. Patient's stable. All good."
+		],
+		"medic_lost": [
+			"Medic to desk. Lost one. Morgue crew, please.",
+			"Desk, medic. I couldn't keep them.",
+			"They're gone. Sorry. Morgue crew to me.",
+			"Desk, medic. They didn't make it. Morgue crew, please."
+		],
+		"morgue_idle": [
+			"All quiet now. Good.",
+			"Nobody left on the floor, I hope.",
+			"Cold work, this.",
+			"Give them a minute of peace."
+		],
+		"morgue_talk": [
+			"Step back, please. Morgue staff.",
+			"Give us room to work, please.",
+			"Nothing to see here, friend.",
+			"Mind the bag, please."
+		],
+		"morgue_work": [
+			"Easy with the zip.",
+			"Watch the corners.",
+			"Steady on the turn.",
+			"Careful now."
+		],
+		"morgue_chat": [
+			"Quiet shift until ten minutes ago.",
+			"At least the trays are cold.",
+			"Check the lobby side when we're done.",
+			"My shoulders feel this."
+		],
+		"morgue_reply": [
+			"Every time.",
+			"Poor things.",
+			"Let's finish up.",
+			"Quietly does it."
+		],
+		"morgue_attacked": [
+			"Stop! Morgue staff!",
+			"Put that away! I carry the dead!",
+			"Back off! Security!",
+			"Leave us be! Help!"
+		],
+		"morgue_violence": [
+			"Down! It's starting again!",
+			"Get back to the lift!",
+			"Oh no, not more of it!",
+			"Heads down! Move!"
+		],
+		"morgue_leave": [
+			"That's the last of them.",
+			"All accounted for. Heading down.",
+			"Morgue's settled. Heading down.",
+			"Done up here. Lift, please."
+		],
+		"morgue_conversations": [
+			{
+				"opener": "How many trays have we got free?",
+				"replies": [
+					"Enough, I hope.",
+					"Check the end wall."
+				]
+			},
+			{
+				"opener": "Did the desk log that last one?",
+				"replies": [
+					"Yes.",
+					"Called it in."
+				]
+			}
+		],
+		"medic_idle": [
+			"Everyone's breathing. Good.",
+			"Checking the belt before we go.",
+			"Quiet at last.",
+			"Nobody else down, I hope."
+		],
+		"medic_talk": [
+			"Clear the way, please. Medic.",
+			"Step back and give them air.",
+			"Unless you're bleeding, let me work.",
+			"All clear here, thank goodness."
+		],
+		"medic_work": [
+			"Hold pressure there.",
+			"Pulse is coming back.",
+			"One more strip.",
+			"Steady breathing."
+		],
+		"medic_chat": [
+			"Nearly out of gauze after that.",
+			"Good thing we got here when we did.",
+			"Check behind the stalls before we go.",
+			"Long morning for the clinic."
+		],
+		"medic_reply": [
+			"Same here.",
+			"Could have been worse.",
+			"Just glad they're up.",
+			"Right behind you."
+		],
+		"medic_attacked": [
+			"Hey! I'm a medic!",
+			"Stop that! Medical staff!",
+			"Help! Security!",
+			"Don't shoot the medic!"
+		],
+		"medic_violence": [
+			"Get down! Keep your heads down!",
+			"Leave the kit! Get down!",
+			"Not again! Take cover!",
+			"Everyone down!"
+		],
+		"medic_leave": [
+			"Kit's packed. Heading down.",
+			"Nobody else hurt. Lift, please.",
+			"All patched up here.",
+			"Medic signing off. Lift, please."
+		],
+		"medic_conversations": [
+			{
+				"opener": "Any epinephrine left on your belt?",
+				"replies": [
+					"One pen.",
+					"Just the last one."
+				]
+			},
+			{
+				"opener": "How's the guard by the gate?",
+				"replies": [
+					"Breathing.",
+					"Up and walking."
+				]
+			}
+		]
+	},
+	"quartermain": {
+		"call": [
+			"Desk to all. Concourse secure. Cleanup crew inbound.",
+			"All units, hold position. Sending the crew.",
+			"Concourse quiet. Cleanup is on the way.",
+			"Desk to all. Clear. Crew's on the lift."
+		],
+		"first_body": [
+			"Not in my contract.",
+			"Great. Another one.",
+			"Right. Bag.",
+			"Another one for the books."
+		],
+		"officer_body": [
+			"That's security. Tell the desk.",
+			"Depot officer down. Radio it in.",
+			"One of ours. Get a bag.",
+			"Security uniform. Somebody tell the desk."
+		],
+		"bagged": [
+			"One bagged. Concourse.",
+			"Bagged. Going down.",
+			"One for the lift.",
+			"Bagged. Logging it."
+		],
+		"tray": [
+			"One in the morgue. Logged.",
+			"Morgue has one. Tray's shut.",
+			"Tray's closed. Next.",
+			"In the tray. Signed off."
+		],
+		"lift": [
+			"Lift. Concourse. Now.",
+			"Need the lift down here.",
+			"Calling the lift. Depot floor.",
+			"Lift. We're waiting."
+		],
+		"mess": [
+			"This isn't in the rota.",
+			"Who signs off on this much blood?",
+			"Brass again. Everywhere.",
+			"Overtime for this. I mean it.",
+			"Not in the job spec.",
+			"That'll need a second pass."
+		],
+		"mind_floor": [
+			"Floor's wet. Walk round.",
+			"Wet floor. Go round.",
+			"Mind your feet.",
+			"Floor's wet. Slip and it's on you."
+		],
+		"idle": [
+			"Quiet. Suits me.",
+			"Depot's never this quiet.",
+			"Shift's half done.",
+			"Break's in ten.",
+			"Another shift, another mop."
+		],
+		"talk": [
+			"Wet floor. Go round.",
+			"Working. Move along.",
+			"Can't stop. Rota's tight.",
+			"Busy. Ask the desk.",
+			"Mind the bucket."
+		],
+		"work": [
+			"Nearly there.",
+			"One more tile.",
+			"Mop, bucket, repeat.",
+			"Scrub. Rinse. Again.",
+			"Last patch."
+		],
+		"chat": [
+			"Union's going to hear about this.",
+			"Anyone seen the supervisor?",
+			"Overtime's not paying for this.",
+			"Who orders these mops?",
+			"Supervisor's on my back again."
+		],
+		"reply": [
+			"Same here.",
+			"Tell me about it.",
+			"Figures.",
+			"Same as always.",
+			"Yep."
+		],
+		"attacked": [
+			"Hey! Depot staff!",
+			"Back off! I clean floors!",
+			"Hey! I'm on shift!",
+			"Get off me! Security!"
+		],
+		"violence": [
+			"Not on the clean floor!",
+			"Down! Get down!",
+			"Everyone down!",
+			"Somebody call Security!"
+		],
+		"leave": [
+			"Done here.",
+			"Clocking off.",
+			"Bag's full. Going down.",
+			"Shift's over. Lift."
+		],
+		"conversations": [
+			{
+				"opener": "Is this overtime or isn't it?",
+				"replies": [
+					"Ask the supervisor.",
+					"It had better be."
+				]
+			},
+			{
+				"opener": "How long till the next freighter?",
+				"replies": [
+					"Too soon.",
+					"Not long enough."
+				]
+			},
+			{
+				"opener": "Did they fix the floor buffer?",
+				"replies": [
+					"No.",
+					"Next month, they say.",
+					"It ate a mop."
+				]
+			}
+		],
+		"medic_found": [
+			"Hey. Hey. Look at me. You're fine.",
+			"Hold still, mate. This'll sting.",
+			"Right, where's it hurt? Everywhere. Figures.",
+			"Stay down. I've got this."
+		],
+		"medic_stable": [
+			"Medic. One patched up. They'll walk.",
+			"Desk, medic. Got one back. Next.",
+			"One's up and grumbling.",
+			"Desk, medic. Patient stable. Moving on."
+		],
+		"medic_lost": [
+			"Medic. Lost one. Send the bag.",
+			"Desk, medic. Too late for this one.",
+			"Gone. Morgue crew, my position.",
+			"Medic to desk. One dead. Morgue crew."
+		],
+		"morgue_idle": [
+			"Floor's clear.",
+			"Waiting on the desk.",
+			"Trays are cold, at least.",
+			"Quiet. Keep it that way."
+		],
+		"morgue_talk": [
+			"Clear the lane. Morgue crew.",
+			"Move aside. Working.",
+			"Hands off the bags.",
+			"Ask the desk, not me."
+		],
+		"morgue_work": [
+			"Seal and tag.",
+			"Mind the door.",
+			"Watch the corners.",
+			"Straight to the tray."
+		],
+		"morgue_chat": [
+			"Paperwork on this will take an hour.",
+			"Two lifts and no stretcher.",
+			"Check the back corridor before we clock off.",
+			"Depot never stays quiet long."
+		],
+		"morgue_reply": [
+			"Mm.",
+			"Every shift.",
+			"Log it and move on.",
+			"Tell the desk."
+		],
+		"morgue_attacked": [
+			"Back off! Morgue crew!",
+			"Hands off! Depot staff!",
+			"Hey! Security!",
+			"I only bag the dead!"
+		],
+		"morgue_violence": [
+			"Contact! Back to the lift!",
+			"Leave the bag! Down!",
+			"More shooting! Clear out!",
+			"Not again!"
+		],
+		"morgue_leave": [
+			"Floor's clear. Going down.",
+			"All logged. Lift.",
+			"Morgue's shut. Clocking off.",
+			"Done up here. Lift."
+		],
+		"morgue_conversations": [
+			{
+				"opener": "How many left on the concourse?",
+				"replies": [
+					"None I can see.",
+					"Check the lobby."
+				]
+			},
+			{
+				"opener": "Did you tag that last bag?",
+				"replies": [
+					"Done.",
+					"Logged with the desk."
+				]
+			}
+		],
+		"medic_idle": [
+			"Nobody else bleeding.",
+			"Checking the kit.",
+			"Quiet on the floor.",
+			"Waiting on the clear."
+		],
+		"medic_talk": [
+			"Step back. Medic working.",
+			"Give them room to breathe.",
+			"Move along unless you're hurt.",
+			"Depot medical. Keep clear."
+		],
+		"medic_work": [
+			"Pressure on it.",
+			"Pulse is steady.",
+			"Hold still.",
+			"Last suture."
+		],
+		"medic_chat": [
+			"Burned through half a roll of gauze.",
+			"Quartermaster owes me two pens.",
+			"Check the checkpoint before we head down.",
+			"At least that one's breathing."
+		],
+		"medic_reply": [
+			"Copy that.",
+			"Seen worse.",
+			"Good enough to walk.",
+			"Noted."
+		],
+		"medic_attacked": [
+			"Hey! Depot medic!",
+			"Back off! Medical staff!",
+			"Hands off! I'm treating people!",
+			"Don't hit the medic!"
+		],
+		"medic_violence": [
+			"Shots! Get down!",
+			"Stay low! Keep moving!",
+			"Heads low!",
+			"Take cover!"
+		],
+		"medic_leave": [
+			"Kit's empty enough. Lift.",
+			"All stable. Going down.",
+			"Medical clear. Heading out.",
+			"Done here. Lift."
+		],
+		"medic_conversations": [
+			{
+				"opener": "Got any sutures left?",
+				"replies": [
+					"Half a pack.",
+					"Barely."
+				]
+			},
+			{
+				"opener": "Anyone else down by the stalls?",
+				"replies": [
+					"All up.",
+					"Checked twice."
+				]
+			}
+		]
+	},
+	"undertow": {
+		"call": [
+			"Desk to all. It's quiet. Send in the sweepers.",
+			"All guards, stand down. The crew's coming for the mess.",
+			"Concourse is yours again. Cleanup's on the way.",
+			"Desk to all. Shooting's done. Send the sweepers."
+		],
+		"first_body": [
+			"Huh. Fresh.",
+			"Well. There goes someone's evening.",
+			"Bag. Now. Before it gets worse.",
+			"Another one. Course."
+		],
+		"officer_body": [
+			"Guard's down. Tell the desk.",
+			"That's a guard. Be nice to this one.",
+			"Bad luck, guard. Radio it.",
+			"Dead guard. Desk'll want to know."
+		],
+		"bagged": [
+			"One bagged. Concourse.",
+			"Bagged. Off it goes.",
+			"That's one for the lift.",
+			"Bagged. Next."
+		],
+		"tray": [
+			"One in the morgue. It's quiet in there.",
+			"Tray's shut. Don't open it.",
+			"Morgue's got another.",
+			"Another one on ice."
+		],
+		"lift": [
+			"Lift. Concourse. Move it.",
+			"Calling the lift. Again.",
+			"Lift. I haven't got all day.",
+			"Lift. Now. It's starting to smell."
+		],
+		"mess": [
+			"Somebody always bleeds on the nice floor.",
+			"I don't get paid enough for this.",
+			"It's never just one stain.",
+			"The brass gets everywhere.",
+			"Somebody's insides. Lovely.",
+			"Bleach. All of it."
+		],
+		"mind_floor": [
+			"Wet floor. Fall on your own time.",
+			"Careful. It's wet. I'm not carrying you.",
+			"Mind it. It's slick.",
+			"Slip and you're next."
+		],
+		"idle": [
+			"Quiet. I hate quiet.",
+			"Don't ask what's in the bag.",
+			"Another day in paradise.",
+			"Nobody's shooting. Yet.",
+			"Smells like iron in here."
+		],
+		"talk": [
+			"Not now. Busy.",
+			"Floor's wet. Good luck.",
+			"Don't look at me. I just clean.",
+			"Back off. Working.",
+			"Mop's not for sale."
+		],
+		"work": [
+			"Round and round.",
+			"One more.",
+			"It never ends.",
+			"Scrub it. Forget it.",
+			"Red never comes out."
+		],
+		"chat": [
+			"Guards are useless.",
+			"Third time this month.",
+			"Pay's late again.",
+			"Who keeps shooting the lights?",
+			"Bar fight again. Look at this."
+		],
+		"reply": [
+			"Tell me about it.",
+			"Don't start.",
+			"Yeah.",
+			"Typical.",
+			"Never does."
+		],
+		"attacked": [
+			"Oi! I just mop!",
+			"Hey! Wrong person!",
+			"Get off! I'm the cleaner!",
+			"Touch me again and see."
+		],
+		"violence": [
+			"Not on my floor!",
+			"Great. More mess.",
+			"Here we go again.",
+			"Down! Stay down!"
+		],
+		"leave": [
+			"That's me done.",
+			"Bag's full. I'm out.",
+			"Lift. Then a drink.",
+			"Done. Don't call me back."
+		],
+		"conversations": [
+			{
+				"opener": "Which one's worse, the blood or the paperwork?",
+				"replies": [
+					"The paperwork.",
+					"Depends who bled."
+				]
+			},
+			{
+				"opener": "You think they pay hazard rates for this?",
+				"replies": [
+					"Ha.",
+					"Ask nicely."
+				]
+			},
+			{
+				"opener": "Third body this week.",
+				"replies": [
+					"Slow week.",
+					"You're counting?",
+					"Keep it down."
+				]
+			}
+		],
+		"medic_found": [
+			"Don't die on me. Not today.",
+			"Lie still. You're not dead yet.",
+			"Teeth together. This bit hurts.",
+			"Stay still or bleed. Your choice."
+		],
+		"medic_stable": [
+			"Medic. This one will live.",
+			"Desk, medic. Patched one. Won't last, never does.",
+			"One's up. Next idiot.",
+			"Desk, medic. Stable. For now."
+		],
+		"medic_lost": [
+			"Medic. Lost one. Bag it.",
+			"Desk, medic. This one's done. Morgue.",
+			"Gone. Somebody else's problem now.",
+			"Medic to desk. Dead. Send the bag."
+		],
+		"morgue_idle": [
+			"Nobody left twitching.",
+			"Light night, for here.",
+			"Smells like cold plastic.",
+			"Quiet. Won't last."
+		],
+		"morgue_talk": [
+			"Out of the way. Carrying.",
+			"Eyes front. Nothing to see.",
+			"Don't touch the zip.",
+			"Move. Heavy load."
+		],
+		"morgue_work": [
+			"Zip it shut.",
+			"Watch the boots.",
+			"One more for the drawer.",
+			"Mind the threshold."
+		],
+		"morgue_chat": [
+			"Freezer's humming overtime tonight.",
+			"At least they don't argue.",
+			"Third haul since breakfast.",
+			"Guards left half of them in the doorway."
+		],
+		"morgue_reply": [
+			"Always.",
+			"Don't ask.",
+			"Figures.",
+			"Keep moving."
+		],
+		"morgue_attacked": [
+			"Oi! I bag corpses, I don't make them!",
+			"Hands off! Morgue crew!",
+			"Back off! Guards!",
+			"Try that again and you're next in the drawer."
+		],
+		"morgue_violence": [
+			"More work incoming! Get down!",
+			"Back to the lift! Now!",
+			"Here we go again!",
+			"Stay down!"
+		],
+		"morgue_leave": [
+			"Drawers are shut. I'm out.",
+			"Floor's clear. Lift.",
+			"That's the lot. Going down.",
+			"Done. Leaving before they make more."
+		],
+		"morgue_conversations": [
+			{
+				"opener": "Any drawers left in the back?",
+				"replies": [
+					"One or two.",
+					"Barely."
+				]
+			},
+			{
+				"opener": "Someone coming for that spacer?",
+				"replies": [
+					"Maybe.",
+					"Their crew's problem."
+				]
+			}
+		],
+		"medic_idle": [
+			"Nobody else bleeding out.",
+			"Counting what's left in the belt.",
+			"Quiet. For five minutes.",
+			"They'll live. Probably."
+		],
+		"medic_talk": [
+			"Back up. Medic.",
+			"Give me elbow room.",
+			"Patch yourself up, I'm busy.",
+			"Don't stand in the blood."
+		],
+		"medic_work": [
+			"Hold it shut.",
+			"Still got a pulse.",
+			"Quit squirming.",
+			"Stitches hold."
+		],
+		"medic_chat": [
+			"Half my gauze went on one guard.",
+			"Nobody here dies quietly.",
+			"Check the bar before we leave.",
+			"Good thing epinephrine's cheap."
+		],
+		"medic_reply": [
+			"Lucky them.",
+			"Every time.",
+			"Close enough.",
+			"Sure."
+		],
+		"medic_attacked": [
+			"Oi! I patch people up!",
+			"Hands off the medic!",
+			"Guards! Get this idiot off me!",
+			"Shoot the medic, real clever!"
+		],
+		"medic_violence": [
+			"Heads down! Again!",
+			"Find cover! Now!",
+			"Not waiting around for this!",
+			"Keep your head down!"
+		],
+		"medic_leave": [
+			"Belt's light. Heading down.",
+			"Nobody left to patch. Lift.",
+			"Done patching. I'm out.",
+			"Lift. Need a drink."
+		],
+		"medic_conversations": [
+			{
+				"opener": "Any pens left on you?",
+				"replies": [
+					"One.",
+					"Used the lot."
+				]
+			},
+			{
+				"opener": "Think that last one stays upright?",
+				"replies": [
+					"Till tonight.",
+					"Not my bet."
+				]
+			}
+		]
+	}
+}

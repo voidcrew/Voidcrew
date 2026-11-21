@@ -123,7 +123,7 @@
 			"Come back when your ledger's a bit greener.",
 		),
 		TRADER_LINE_IDLE = list(
-			"Every plant in this room has a name. The turrets don't, that felt wrong.",
+			"Every plant in this room has a name. The beat officers know most of them.",
 			"Real dirt. Shipped in eighty crates, one apology to customs at a time.",
 			"The bees know the way to the pond and back. Nobody taught them. I don't ask.",
 			"Bring me grafts with something actually in them. A cutting off a wheat stalk is just a cutting.",

@@ -328,6 +328,10 @@
 		var/mob/living/carbon/human/npc/npc_path = npc_type
 		var/rules = initial(npc_path.npc_combat_sense)
 		for(var/civilian_root in never)
+			// The station's officers are ambient NPCs with a fighting brain: whether they have combat sense is
+			// outpost_police/police_units.dm's call, and one with rules must still plan it (checked below)
+			if(ispath(npc_type, /mob/living/carbon/human/npc/ambient_npc/outpost/police))
+				break
 			if(ispath(npc_type, civilian_root))
 				TEST_ASSERT_NULL(rules, "[npc_type] is a civilian or a prisoner and has combat sense")
 		if(isnull(rules))

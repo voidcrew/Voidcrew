@@ -233,7 +233,7 @@
 /obj/structure/overmap/trader_outpost/shipyard_refusal(mob/living/user, obj/structure/overmap/ship/ship)
 	if(ship && is_ship_embargoed(ship))
 		return "[name] won't deal with your ship."
-	if(user?.mind && is_marked_aggressor(user.mind))
+	if(is_user_barred(user))
 		return "[name] won't deal with you."
 	return null
 

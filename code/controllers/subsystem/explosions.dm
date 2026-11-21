@@ -299,12 +299,6 @@ ADMIN_VERB(check_bomb_impacts, R_DEBUG, "Check Bomb Impact", "See what the effec
 	epicenter = get_turf(epicenter)
 	if(!epicenter)
 		return
-	// VOIDCREW: suppress the blast before smoke, flashes, fire, or chain reactions.
-	// VOIDCREW EDIT START: Stop protected outpost blasts before smoke, flash, ignition and damage (voidcrew/modules/trade/outpost_security.dm).
-	if(is_trader_outpost_protected(epicenter))
-		log_game("OUTPOST PROTECTION: Suppressed explosion ([devastation_range], [heavy_impact_range], [light_impact_range]) at [AREACOORD(epicenter)]. Cause: [explosion_cause]. Last fingerprints: [key_name(explosion_cause?.fingerprintslast)].")
-		return
-	// VOIDCREW EDIT END
 
 	if(isnull(flame_range))
 		flame_range = light_impact_range
@@ -398,10 +392,6 @@ ADMIN_VERB(check_bomb_impacts, R_DEBUG, "Check Bomb Impact", "See what the effec
 	//flash mobs
 	if(flash_range)
 		for(var/mob/living/L in viewers(flash_range, epicenter))
-			// VOIDCREW EDIT START: Stop protected outpost blasts before smoke, flash, ignition and damage (voidcrew/modules/trade/outpost_security.dm).
-			if(is_trader_outpost_protected(L)) // VOIDCREW
-				continue
-			// VOIDCREW EDIT END
 			L.flash_act()
 
 	var/list/affected_turfs = prepare_explosion_turfs(max_range, epicenter, protect_epicenter, explosion_direction, explosion_arc)
@@ -412,16 +402,13 @@ ADMIN_VERB(check_bomb_impacts, R_DEBUG, "Check Bomb Impact", "See what the effec
 	// This is gonna be an array, index'd by turfs
 	var/list/cached_exp_block = list()
 	var/list/held_throwturf = src.held_throwturf
+	// VOIDCREW EDIT ADDITION START: who the blast caught at a trader outpost (voidcrew/modules/trade/outpost_security.dm)
+	var/list/outpost_blast_victims
+	// VOIDCREW EDIT ADDITION END
 
 	//lists are guaranteed to contain at least 1 turf at this point
 	//we presuppose that we'll be iterating away from the epicenter
 	for(var/turf/explode as anything in affected_turfs)
-		// VOIDCREW: outside blasts cannot damage, ignite, or throw outpost contents.
-		// VOIDCREW EDIT START: Stop protected outpost blasts before smoke, flash, ignition and damage (voidcrew/modules/trade/outpost_security.dm).
-		if(is_trader_outpost_protected(explode))
-			cached_exp_block[explode] = INFINITY
-			continue
-		// VOIDCREW EDIT END
 		var/our_x = explode.x
 		var/our_y = explode.y
 		var/dist = CHEAP_HYPOTENUSE(our_x, our_y, x0, y0)
@@ -445,6 +432,11 @@ ADMIN_VERB(check_bomb_impacts, R_DEBUG, "Check Bomb Impact", "See what the effec
 			severity = EXPLODE_HEAVY
 		else if(dist + (block * EXPLOSION_BLOCK_LIGHT) < light_impact_range)
 			severity = EXPLODE_LIGHT
+
+		// VOIDCREW EDIT ADDITION START: a blast that catches someone at a trader outpost is an attack (voidcrew/modules/trade/outpost_security.dm)
+		if(severity != EXPLODE_NONE)
+			outpost_blast_victims = note_outpost_blast_victims(explode, outpost_blast_victims)
+		// VOIDCREW EDIT ADDITION END
 
 		if(explode == epicenter) // Ensures explosives detonating from bags trigger other explosives in that bag
 			var/list/items = list()
@@ -490,6 +482,11 @@ ADMIN_VERB(check_bomb_impacts, R_DEBUG, "Check Bomb Impact", "See what the effec
 		log_world("## DEBUG: Explosion([x0],[y0],[z0])(d[devastation_range],h[heavy_impact_range],l[light_impact_range]): Took [took] seconds.")
 
 	explosion_index += 1
+
+	// VOIDCREW EDIT ADDITION START: the police hear of it like any other attack (voidcrew/modules/trade/outpost_security.dm)
+	if(outpost_blast_victims)
+		GLOB.outpost_pvp_enforcement.on_outpost_bombing(explosion_cause, outpost_blast_victims)
+	// VOIDCREW EDIT ADDITION END
 
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_EXPLOSION, epicenter, devastation_range, heavy_impact_range, light_impact_range, took, orig_dev_range, orig_heavy_range, orig_light_range, explosion_cause, explosion_index)
 

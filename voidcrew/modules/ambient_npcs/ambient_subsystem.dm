@@ -673,7 +673,7 @@ SUBSYSTEM_DEF(ambient_npcs)
 	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in living_npcs())
 		npc.react_convoy(outpost)
 
-// Its turrets never shoot its own people; with nobody on the concourse, whoever joins holds still until someone comes
+// Its own people carry the staff faction (FACTION_TURRET); with nobody on the concourse, whoever joins holds still until someone comes
 /datum/ambient_place/outpost/add_npc(mob/living/carbon/human/npc/ambient_npc/npc)
 	. = ..()
 	npc.faction |= FACTION_TURRET
@@ -699,12 +699,23 @@ SUBSYSTEM_DEF(ambient_npcs)
 	until += opens_at
 	refill_at = refill_at ? min(refill_at, opens_at) : opens_at
 
-// A real blow is violence at the outpost, as against a visitor: its strikes, and everyone near ducks (register_aggression())
+/// The living person behind `attacker`: `attacker` itself, or the driver of a mecha
+/proc/outpost_living_attacker(atom/attacker)
+	if(isliving(attacker))
+		return attacker
+	if(ismecha(attacker))
+		var/obj/vehicle/sealed/mecha/mech = attacker
+		for(var/mob/living/pilot in mech.return_drivers())
+			return pilot
+	return null
+
+// A real blow is violence at the outpost, as against a visitor: a crime for its police, and everyone near ducks (register_aggression())
 /datum/ambient_place/outpost/npc_attacked(mob/living/carbon/human/npc/ambient_npc/npc, atom/attacker, attack_flags)
-	if(!(attack_flags & ATTACKER_DAMAGING_ATTACK) || !isliving(attacker))
+	var/mob/living/offender = outpost_living_attacker(attacker)
+	if(!(attack_flags & ATTACKER_DAMAGING_ATTACK) || !offender)
 		return
 	var/obj/structure/overmap/trader_outpost/outpost = outpost()
-	outpost?.register_aggression(attacker)
+	outpost?.register_aggression(offender, OUTPOST_CRIME_ASSAULT_CIVILIAN, npc)
 
 // Its people drop no more than AMBIENT_OUTPOST_CASH_CAP between them in a round
 /datum/ambient_place/outpost/cash_for(mob/living/carbon/human/npc/ambient_npc/npc, amount)
@@ -780,6 +791,9 @@ SUBSYSTEM_DEF(ambient_npcs)
 			passages[tile] = TRUE
 	for(var/turf/tile as anything in floor)
 		if(passages[tile] || (locate(/obj/machinery/door) in tile))
+			continue
+		// Nobody stands about in the morgue or the janitor's closet (outpost_police/recovery_core.dm)
+		if(outpost?.recovery?.back_rooms?[tile])
 			continue
 		// Nobody stands about in the checkpoint lobby (outpost_checkpoint.dm)
 		if(istype(tile.loc, /area/voidcrew/trader_outpost/checkpoint))

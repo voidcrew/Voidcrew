@@ -479,7 +479,7 @@
 	record_metric(METRIC_TRADE, "shop_purchase", subject = sku.item_path || sku.type, credits = -credits_paid, vouchers = -vouchers_paid, quantity = quantity, details = details, actor = user)
 
 /// `sales` sale-units sold to a trader's wanted ledger. Call after the seller is paid.
-/proc/metric_shop_buyback(datum/shop_buyback/buyback, mob/living/user, mob/living/basic/outpost_trader/vendor, sales)
+/proc/metric_shop_buyback(datum/shop_buyback/buyback, mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor, sales)
 	if(!SSmetrics.accepting || !buyback || sales <= 0)
 		return
 	var/list/details = list("name" = buyback.name, "sales" = sales)

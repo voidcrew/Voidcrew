@@ -259,7 +259,7 @@ GLOBAL_LIST_INIT(hv_crits, hv_crit_init_list())
 /mob/living/proc/hv_crit_situation_bonus(mob/living/attacker, atom/source, obj/item/bodypart/limb)
 	return 0
 
-/// The crit roll for this limb. tg's wound roll plus the battered, helpless and situation bonuses, run
+/// The crit roll for this limb. tg's wound roll plus the battered, helpless, attacker and situation bonuses, run
 /// through check_woundings_mods() so wound armour and existing wounds count as they do for tg.
 /obj/item/bodypart/proc/hv_crit_roll(wounding_type, damage, wound_bonus, exposed_wound_bonus, mob/living/attacker, atom/source)
 	var/easily_wounded = HAS_TRAIT(owner, TRAIT_EASILY_WOUNDED)

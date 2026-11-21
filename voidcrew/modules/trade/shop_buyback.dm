@@ -231,7 +231,7 @@
  * pays out over the counter. Returns TRUE on success.
  * * quiet - suppress the per-sale chat line (bulk mode prints its own total)
  */
-/datum/shop_buyback/proc/try_sell(mob/living/user, mob/living/basic/outpost_trader/vendor, quiet = FALSE)
+/datum/shop_buyback/proc/try_sell(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor, quiet = FALSE)
 	if(demand <= 0)
 		return FALSE
 
@@ -311,7 +311,7 @@
  * Sells as many sale-units as demand and the seller's carry allow.
  * Returns how many units were sold.
  */
-/datum/shop_buyback/proc/try_sell_bulk(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_buyback/proc/try_sell_bulk(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	var/sold = 0
 	var/safety = 50
 	while(demand > 0 && safety-- > 0)

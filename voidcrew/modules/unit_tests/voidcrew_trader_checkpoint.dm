@@ -14,7 +14,7 @@
 	var/datum/outpost_checkpoint/checkpoint
 	var/obj/machinery/door/airlock/outpost/checkpoint/outer/outer
 	var/obj/machinery/door/airlock/outpost/checkpoint/inner/inner
-	var/mob/living/basic/outpost_trader/checkpoint_guard/guard
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/guard
 	var/obj/machinery/outpost_checkpoint_sensor/sensor
 	/// In front of the outer door
 	var/turf/lobby
@@ -73,7 +73,7 @@
 	sensor = allocate(/obj/machinery/outpost_checkpoint_sensor/directional/west, chamber[1])
 	sensor.checkpoint_id = "test_checkpoint"
 	if(with_guard)
-		guard = allocate(/mob/living/basic/outpost_trader/checkpoint_guard/halcyon, locate(origin.x + 4, origin.y + 6, origin.z))
+		guard = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/halcyon, locate(origin.x + 4, origin.y + 6, origin.z))
 		guard.checkpoint_id = "test_checkpoint"
 	host.link_interior_machinery()
 	checkpoint = host.checkpoints["test_checkpoint"]
@@ -136,6 +136,9 @@
 
 /datum/unit_test/voidcrew_trader_checkpoint/gun_classification/Run()
 	TEST_ASSERT(fixture(FALSE), "Could not prepare the checkpoint")
+	var/datum/outpost_police/police = host.police
+	// Firing a gun is a crime only if seen: an officer stands on the concourse
+	police_port_witness(host, secured)
 	var/mob/living/carbon/human/person = visitor(chamber[1])
 	var/obj/item/gun/held_gun = allocate(gun_type)
 	TEST_ASSERT(person.put_in_hands(held_gun), "Could not hold [gun_type] for the scan")
@@ -144,19 +147,22 @@
 	TEST_ASSERT_EQUAL(checkpoint.state, expected_state, "The scan misclassified [gun_type]")
 	person.forceMove(secured)
 	host.armed_sweep(list(person))
-	TEST_ASSERT(!host.is_armed_trespasser(person.mind), "[gun_type] was flagged before the sighting grace")
+	TEST_ASSERT_NULL(police.get_warrant(person.mind), "[gun_type] was reported before the sighting grace")
 	if(!restricted)
 		TEST_ASSERT(!length(host.armed_sightings), "Holding [gun_type] started an armed sighting")
 	host.armed_sightings[person.mind] = world.time - 2 SECONDS // OUTPOST_ARMED_SIGHTING_GRACE
 	host.armed_sweep(list(person))
-	TEST_ASSERT_EQUAL(!!host.is_armed_trespasser(person.mind), restricted, "Holding [gun_type] was misclassified after the sighting grace")
+	TEST_ASSERT_EQUAL(!!police.get_stars(person.mind), restricted, "Holding [gun_type] was misclassified after the sighting grace")
 	TEST_ASSERT(!length(host.armed_sightings), "An armed sighting of [gun_type] was left pending")
+	if(restricted)
+		// The gun in hand is what the officers take at the arrest
+		TEST_ASSERT(WEAKREF(held_gun) in police.get_warrant(person.mind)?.evidence, "The drawn [gun_type] is not evidence against its holder")
 	// A separate visitor proves the fired-gun signal independently of the holding check.
 	var/mob/living/carbon/human/shooter = visitor(secured)
 	var/obj/item/gun/fired_gun = allocate(gun_type)
 	TEST_ASSERT(shooter.put_in_hands(fired_gun), "Could not hold [gun_type] for firing")
 	SEND_SIGNAL(shooter, COMSIG_MOB_FIRED_GUN, fired_gun, lobby, null, null, list(0, 0))
-	TEST_ASSERT_EQUAL(!!host.is_armed_trespasser(shooter.mind), restricted, "Firing [gun_type] was misclassified")
+	TEST_ASSERT_EQUAL(!!police.get_stars(shooter.mind), restricted, "Firing [gun_type] was misclassified")
 	var/obj/item/gun/goods = allocate(gun_type, secured)
 	var/obj/item/handed_over = outpost_seal_goods(goods)
 	if(restricted)
@@ -442,7 +448,10 @@
 	var/mob/living/carbon/human/friend = visitor(chamber[2])
 	allocate(/obj/item/gun/ballistic/automatic/pistol, friend)
 	var/obj/item/paper/weapons_permit/receipt = allocate(/obj/item/paper/weapons_permit, friend)
+	holder.real_name = "Jane <script>alert(1)</script>"
 	receipt.fill_in(holder, host, host.weapon_permits[holder.mind])
+	TEST_ASSERT(!findtext(receipt.get_raw_text(), "<script>"), "Weapons permit receipt left raw HTML unescaped")
+	holder.real_name = "Jane"
 	TEST_ASSERT(scan_now(friend), "Could not start a scan")
 	TEST_ASSERT_EQUAL(checkpoint.state, "rejecting", "Someone else's permit let a gun through") // CHECKPOINT_REJECTING
 	settle()
@@ -467,7 +476,7 @@
 
 // ===== FORCING THE INNER DOOR =====
 
-/// Prying starts a long, alarmed attempt; a breached door flags anyone who goes through it from the chamber
+/// Prying starts a long, alarmed attempt; a breached door puts anyone who goes through it from the chamber on record
 /datum/unit_test/voidcrew_trader_checkpoint/forced_entry/Run()
 	TEST_ASSERT(fixture(), "Could not prepare the checkpoint")
 	TEST_ASSERT(inner.outpost_forceable() && !outer.outpost_forceable(), "Only the inner door may be forced")
@@ -487,20 +496,27 @@
 	sleep(2 SECONDS)
 	TEST_ASSERT(!checkpoint.forcing, "Walking away did not stop the attempt")
 	TEST_ASSERT(inner.density, "An abandoned attempt opened the door")
-	// When it gives, whoever goes through from the chamber is an armed trespasser; someone already inside is not
+	// When it gives, whoever goes through from the chamber is on record at two stars; someone already inside is not
 	var/mob/living/carbon/human/insider = visitor(secured)
 	burglar.forceMove(chamber[1])
+	// force_inner() notes who forced the door and with what when it succeeds: the crowbar is evidence
+	checkpoint.breacher_ref = WEAKREF(burglar)
+	checkpoint.breach_tool_ref = WEAKREF(crowbar)
 	checkpoint.breach(burglar)
 	sleep(2 SECONDS)
 	TEST_ASSERT(!inner.density, "A breach did not open the inner door")
 	TEST_ASSERT(checkpoint.request_outer(visitor()), "The outer door stayed interlocked during a breach")
 	burglar.Move(get_turf(inner), NORTH)
 	TEST_ASSERT_EQUAL(get_turf(burglar), get_turf(inner), "Could not walk into the breached doorway")
-	TEST_ASSERT(host.is_armed_trespasser(burglar.mind), "Going through a forced door was not flagged")
+	var/datum/outpost_warrant/warrant = host.police.get_warrant(burglar.mind)
+	TEST_ASSERT_NOTNULL(warrant, "Going through a forced door was not a crime")
+	TEST_ASSERT_EQUAL(host.police.get_stars(burglar.mind), 2, "Going through a forced door was not two stars") // CHECKPOINT_BREACH: floor and ceiling of two
+	TEST_ASSERT(WEAKREF(crowbar) in warrant.evidence, "The crowbar that forced the door is not evidence")
 	TEST_ASSERT(host.is_user_barred(burglar), "Going through a forced door did not bar them")
+	host.police.sleep_tick() // wanted now: the police tick must not order units while this waits
 	burglar.forceMove(secured)
 	insider.Move(get_turf(inner), SOUTH)
-	TEST_ASSERT(!host.is_armed_trespasser(insider.mind), "Stepping into the doorway from inside was flagged")
+	TEST_ASSERT_NULL(host.police.get_warrant(insider.mind), "Stepping into the doorway from inside was a crime")
 	// It does not shut on whoever stands in it
 	checkpoint.end_breach()
 	sleep(2 SECONDS)
@@ -511,9 +527,11 @@
 
 // ===== ARMED TRESPASS =====
 
-/// A gun drawn past the checkpoint flags its holder once it stays out; holstered, permitted or in the lobby it does not
+/// A gun drawn past the checkpoint puts its holder on record once it stays out, as one star and an arrest, never a shooting; holstered, permitted or in the lobby it does not
 /datum/unit_test/voidcrew_trader_checkpoint/drawn_gun/Run()
 	TEST_ASSERT(fixture(FALSE), "Could not prepare the checkpoint")
+	var/datum/outpost_police/police = host.police
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_port_witness(host, secured)
 	var/mob/living/carbon/human/person = visitor(secured)
 	var/obj/item/gun/ballistic/automatic/pistol/gun = allocate(/obj/item/gun/ballistic/automatic/pistol)
 	var/obj/item/storage/backpack/bag = allocate(/obj/item/storage/backpack)
@@ -523,18 +541,17 @@
 	TEST_ASSERT(!length(host.armed_sightings), "A holstered gun was noticed")
 	person.put_in_hands(gun)
 	host.armed_sweep(list(person))
-	TEST_ASSERT(!host.is_armed_trespasser(person.mind), "A gun was flagged the moment it came out")
+	TEST_ASSERT_NULL(police.get_warrant(person.mind), "A gun was reported the moment it came out")
 	host.armed_sightings[person.mind] = world.time - 2 SECONDS // OUTPOST_ARMED_SIGHTING_GRACE
 	host.armed_sweep(list(person))
-	TEST_ASSERT(host.is_armed_trespasser(person.mind), "A gun kept out past the checkpoint was not flagged")
-	var/obj/machinery/porta_turret/outpost/turret = allocate(/obj/machinery/porta_turret/outpost, secured)
-	turret.outpost = host
-	TEST_ASSERT(turret.valid_target(person), "The turrets ignore an armed trespasser")
-	// The hostile window ends before the bar does
-	host.armed_trespassers[person.mind] = world.time - 10 MINUTES - 1 // OUTPOST_TRESPASS_HOSTILE_DURATION
-	TEST_ASSERT(!turret.valid_target(person), "The turrets kept shooting after the hostile window")
-	TEST_ASSERT(host.is_user_barred(person), "The bar ended with the hostile window")
-	host.trespass_bars[person.mind] = world.time - 1
+	TEST_ASSERT_EQUAL(police.get_stars(person.mind), 1, "A gun kept out past the checkpoint was not one star") // WEAPON_DRAWN: floor and ceiling of one
+	TEST_ASSERT(host.is_user_barred(person), "A gun kept out past the checkpoint did not bar its holder")
+	// One star is the baton and the cuffs: the officers do not shoot for a drawn gun
+	TEST_ASSERT_EQUAL(police.force_level(person), 1, "A drawn gun is more than an arrest") // POLICE_FORCE_ARREST
+	// A target to keep in view (spec-stealth 1.3), never one to shoot
+	TEST_ASSERT(!police_plans_shot(officer, person), "An officer would shoot someone for a drawn gun")
+	// Their record closing lifts the bar
+	police.close_warrant(person.mind, TRUE)
 	TEST_ASSERT(!host.is_user_barred(person), "The bar did not lift")
 	// A permit holder, and anyone in the lobby, may carry openly
 	var/mob/living/carbon/human/holder = visitor(secured)
@@ -545,16 +562,21 @@
 	host.armed_sightings[holder.mind] = world.time - 2 SECONDS
 	host.armed_sightings[arrival.mind] = world.time - 2 SECONDS
 	host.armed_sweep(list(holder, arrival))
-	TEST_ASSERT(!host.is_armed_trespasser(holder.mind), "A permit holder was flagged for carrying")
-	TEST_ASSERT(!host.is_armed_trespasser(arrival.mind), "Someone in the checkpoint lobby was flagged")
+	TEST_ASSERT_NULL(police.get_warrant(holder.mind), "A permit holder was reported for carrying")
+	TEST_ASSERT_NULL(police.get_warrant(arrival.mind), "Someone in the checkpoint lobby was reported")
 
-/// Firing a gun past the checkpoint without a permit flags the shooter at once
+/// Firing a gun past the checkpoint without a permit is gunfire, and the gun is evidence
 /datum/unit_test/voidcrew_trader_checkpoint/fired_gun/Run()
 	TEST_ASSERT(fixture(FALSE), "Could not prepare the checkpoint")
+	// Gunfire is a crime only if seen
+	police_port_witness(host, secured)
 	var/mob/living/carbon/human/shooter = visitor(secured)
 	var/obj/item/gun/ballistic/automatic/pistol/gun = allocate(/obj/item/gun/ballistic/automatic/pistol)
 	SEND_SIGNAL(shooter, COMSIG_MOB_FIRED_GUN, gun, lobby, null, null, list(0, 0))
-	TEST_ASSERT(host.is_armed_trespasser(shooter.mind), "Firing past the checkpoint was not flagged")
+	var/datum/outpost_warrant/warrant = host.police.get_warrant(shooter.mind)
+	TEST_ASSERT_NOTNULL(warrant, "Firing past the checkpoint was not a crime")
+	TEST_ASSERT(host.police.get_stars(shooter.mind) >= 1, "Firing past the checkpoint was not worth a star") // GUNFIRE: 15 heat, one star is 10
+	TEST_ASSERT(WEAKREF(gun) in warrant.evidence, "The gun that was fired is not evidence")
 
 /// The traders and the permit desk refuse an armed trespasser, and the desk sells them nothing
 /datum/unit_test/voidcrew_trader_checkpoint/refused_service/Run()
@@ -781,3 +803,97 @@
 	// Already past it, nobody sets off through it
 	ambient_cross_checkpoint_on_arrival(npc, host)
 	TEST_ASSERT_NULL(npc.activity, "Someone on the concourse set off through the checkpoint")
+	// Emagged gate: an arriving NPC still crosses cleanly without freezing when the interlock is down
+	checkpoint.disabled_until = world.time + 1800
+	npc.forceMove(lobby)
+	ambient_cross_checkpoint_on_arrival(npc, host)
+	crossing = npc.activity
+	TEST_ASSERT(istype(crossing), "An NPC did not cross an emagged checkpoint")
+	crossing.next_ask_at = 0
+	npc.activity_step(1)
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(!outer.density, "An NPC could not open the outer door of an emagged checkpoint")
+	TEST_ASSERT_EQUAL(npc.activity_step(1), 1, "An NPC did not enter the chamber of an emagged checkpoint") // AMBIENT_STEP_MOVE
+	npc.forceMove(crossing.spot)
+	crossing.next_ask_at = 0
+	npc.activity_step(1)
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(!inner.density, "An NPC in the chamber could not open the inner door while outer was still open on an emagged gate")
+	npc.end_activity()
+	checkpoint.disabled_until = 0
+
+	// Stale weakref on an unlocked empty checkpoint locker does not wedge it against new claims
+	var/obj/structure/closet/secure_closet/outpost_rental/checkpoint/locker = allocate(/obj/structure/closet/secure_closet/outpost_rental/checkpoint, lobby)
+	var/obj/item/card/id/vanished = new(lobby)
+	locker.id_card = WEAKREF(vanished)
+	locker.locked = FALSE
+	qdel(vanished)
+	var/mob/living/carbon/human/claimer = visitor(lobby)
+	var/obj/item/card/id/fresh_id = allocate(/obj/item/card/id, claimer)
+	fresh_id.registered_name = "Fresh Visitor"
+	locker.attackby(fresh_id, claimer, list(), list())
+	TEST_ASSERT(locker.locked && locker.id_card?.resolve() == fresh_id, "A destroyed ID card wedged an unlocked checkpoint locker")
+
+	// Player-possessed officer body does not get police checkpoint clearance for weapons
+	host.ensure_police()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/cop = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, chamber[1])
+	host.police.add_officer(cop)
+	TEST_ASSERT(outpost_checkpoint_police_cleared(cop, host), "On-duty NPC officer was not cleared at the checkpoint")
+	TEST_ASSERT(!length(checkpoint.inspect_chamber()), "On-duty NPC officer's kit was refused by the checkpoint scan")
+	cop.mind_initialize()
+	TEST_ASSERT(!outpost_checkpoint_police_cleared(cop, host), "Player-minded officer body bypassed checkpoint weapon clearance")
+	TEST_ASSERT(length(checkpoint.inspect_chamber()) > 0, "Armed player-minded officer body was not refused by the checkpoint scan")
+	qdel(cop)
+
+	// lobby_checkpoint() prefers an unjammed checkpoint over a closer one stuck in rejecting with contraband on the floor
+	var/datum/outpost_checkpoint/second = new
+	second.outpost = host
+	second.checkpoint_id = "second_checkpoint"
+	second.lobby_turf = locate(host.template_bottom_left.x + 4, host.template_bottom_left.y + 1, host.template_bottom_left.z)
+	second.state = "idle" // CHECKPOINT_IDLE
+	host.checkpoints["second_checkpoint"] = second
+	var/obj/item/gun/energy/e_gun/mini/jam_gun = allocate(/obj/item/gun/energy/e_gun/mini, chamber[1])
+	checkpoint.state = "rejecting" // CHECKPOINT_REJECTING
+	TEST_ASSERT_EQUAL(host.lobby_checkpoint(lobby), second, "lobby_checkpoint picked a jammed rejecting checkpoint over a working one")
+	qdel(jam_gun)
+	checkpoint.state = "idle" // CHECKPOINT_IDLE
+	host.checkpoints -= "second_checkpoint"
+	second.outpost = null
+	qdel(second)
+
+/// A guard booth door never opens from outside because of a distant police lift, and a mended gate waits for both doors to shut before scanning
+/datum/unit_test/voidcrew_trader_checkpoint/booth_door_and_mend_interlock/Run()
+	TEST_ASSERT(fixture(), "Could not prepare the checkpoint")
+	host.ensure_police()
+	var/turf/desk = guard.shop.counter_turf
+	var/turf/inside_booth = get_step(desk, SOUTH)
+	var/turf/booth_door_turf = get_step(inside_booth, SOUTH)
+	var/turf/outside_booth = get_step(booth_door_turf, SOUTH)
+	inside_booth.ChangeTurf(/turf/open/indestructible)
+	booth_door_turf.ChangeTurf(/turf/open/indestructible)
+	outside_booth.ChangeTurf(/turf/open/indestructible)
+	var/obj/machinery/door/airlock/outpost/police/booth_door = allocate(/obj/machinery/door/airlock/outpost/police, booth_door_turf)
+	booth_door.outpost = host
+	// Put a police lift across the map on the outside side of the booth door
+	var/turf/distant_lift = locate(outside_booth.x, max(1, outside_booth.y - 6), outside_booth.z)
+	host.police.lift_turfs = list(distant_lift)
+	var/mob/living/carbon/human/lobby_visitor = visitor(outside_booth)
+	TEST_ASSERT(!booth_door.unrestricted_side(lobby_visitor), "A distant police lift let an unbadged visitor open the guard booth from outside")
+	lobby_visitor.forceMove(inside_booth)
+	TEST_ASSERT(booth_door.unrestricted_side(lobby_visitor), "Someone inside the guard booth could not open the booth door to leave")
+
+	// When a disabled gate mends while both doors were open and the inner door is still open, outer closing waits for inner before scanning
+	var/mob/living/carbon/human/occupant = visitor(chamber[1])
+	TEST_ASSERT_NOTNULL(occupant, "Could not place an occupant in the chamber")
+	checkpoint.disabled_until = world.time - 1
+	outer.density = TRUE
+	inner.density = FALSE
+	checkpoint.on_door_closed(outer)
+	TEST_ASSERT_EQUAL(checkpoint.state, "idle", "The checkpoint started scanning while the inner door was still open") // CHECKPOINT_IDLE
+	inner.density = TRUE
+	checkpoint.on_door_closed(inner)
+	TEST_ASSERT_EQUAL(checkpoint.state, "scanning", "The checkpoint did not scan its chamber once the inner door finished closing") // CHECKPOINT_SCANNING
+	checkpoint.set_state("idle") // CHECKPOINT_IDLE
+	checkpoint.end_disable()
+	TEST_ASSERT_EQUAL(checkpoint.state, "scanning", "end_disable() left someone waiting in a closed chamber unscanned") // CHECKPOINT_SCANNING
+	checkpoint.set_state("idle") // CHECKPOINT_IDLE

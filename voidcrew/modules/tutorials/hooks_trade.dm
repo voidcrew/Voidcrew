@@ -29,37 +29,37 @@
 	if(tutorial_is_chrome_path(bought))
 		tutorial_credit(user, TUTORIAL_STEP_CHROME_BUY)
 
-/datum/shop_sku/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/try_purchase(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	. = ..()
 	if(. == TRUE)
 		tutorial_credit_purchase(user, src)
 
-/datum/shop_sku/barter/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/barter/try_purchase(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	. = ..()
 	if(. == TRUE)
 		tutorial_credit_purchase(user, src)
 
-/datum/shop_sku/anomaly_chart/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/anomaly_chart/try_purchase(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	. = ..()
 	if(. == TRUE)
 		tutorial_credit_purchase(user, src)
 
-/datum/shop_sku/ruin_chart/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/ruin_chart/try_purchase(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	. = ..()
 	if(. == TRUE)
 		tutorial_credit_purchase(user, src)
 
-/datum/shop_sku/rumor/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/rumor/try_purchase(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	. = ..()
 	if(. == TRUE)
 		tutorial_credit_purchase(user, src)
 
-/datum/shop_buyback/try_sell(mob/living/user, mob/living/basic/outpost_trader/vendor, quiet = FALSE)
+/datum/shop_buyback/try_sell(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor, quiet = FALSE)
 	. = ..()
 	if(. == TRUE)
 		tutorial_credit(user, TUTORIAL_STEP_TRADE_SELL)
 
-/datum/shop_buyback/try_sell_bulk(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_buyback/try_sell_bulk(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	. = ..()
 	if(. > 0)
 		tutorial_credit(user, TUTORIAL_STEP_TRADE_SELL)
@@ -75,9 +75,9 @@
 
 /// A trader who runs a shop. Checkpoint guards are traders by type but sell nothing.
 /proc/tutorial_is_shopkeeper(atom/candidate)
-	if(!istype(candidate, /mob/living/basic/outpost_trader) || istype(candidate, /mob/living/basic/outpost_trader/checkpoint_guard))
+	if(!istype(candidate, /mob/living/carbon/human/npc/ambient_npc/outpost/trader) || istype(candidate, /mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard))
 		return FALSE
-	var/mob/living/basic/outpost_trader/trader = candidate
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = candidate
 	return !isnull(trader.shop)
 
 /datum/vc_tutorial_step/trade_travel/live_line(mob/user)
@@ -130,7 +130,7 @@
 	return panel.berth.ship == get_crew_ship(user)
 
 /datum/vc_tutorial_step/trade_buy/highlight_filter(mob/user, atom/candidate)
-	return !istype(candidate, /mob/living/basic/outpost_trader) || tutorial_is_shopkeeper(candidate)
+	return !istype(candidate, /mob/living/carbon/human/npc/ambient_npc/outpost/trader) || tutorial_is_shopkeeper(candidate)
 
 /// A whole credit amount with thousands commas: 12500 -> "12,500".
 /proc/tutorial_credits_text(amount)
@@ -149,9 +149,9 @@
 
 /// Only traders with a wanted list buy anything.
 /datum/vc_tutorial_step/trade_sell/highlight_filter(mob/user, atom/candidate)
-	if(!istype(candidate, /mob/living/basic/outpost_trader))
+	if(!istype(candidate, /mob/living/carbon/human/npc/ambient_npc/outpost/trader))
 		return TRUE
 	if(!tutorial_is_shopkeeper(candidate))
 		return FALSE
-	var/mob/living/basic/outpost_trader/trader = candidate
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = candidate
 	return length(trader.shop.buybacks) > 0

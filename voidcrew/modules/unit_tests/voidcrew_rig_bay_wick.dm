@@ -6,21 +6,14 @@
  *   y+3  .   L   .  .  .     L: the stand's front tile (its lane)
  *   y+2  .   .   .  .  W     W: Wick's spawn tile
  *   y+1  T   T   T  T  T     T: work thresholds, the edge of his room
- *   y+0  .   .   .  .  .     a stand-in player, outside the room
+ *   y+0  .   .   .  .  .     outside the room
+ *
+ * His routine is stepped by hand, a beat at a time, rather than by his AI.
  *
  * Voidcrew defines are not visible from test files: the trait on a hanging mech is "rig_bay_clamped"
  * (TRAIT_RIG_BAY_CLAMPED), his serve range is 3 tiles and he waits 30 s after a customer leaves.
  */
 /datum/unit_test/voidcrew_rig_bay_wick
-	/// Stand-ins for players, counted on their level so his AI runs
-	var/list/mob/living/present = list()
-
-/datum/unit_test/voidcrew_rig_bay_wick/Destroy()
-	for(var/mob/living/someone as anything in present)
-		for(var/level in 1 to length(SSmobs.clients_by_zlevel))
-			SSmobs.clients_by_zlevel[level] -= someone
-	present = null
-	return ..()
 
 /datum/unit_test/voidcrew_rig_bay_wick/proc/at(dx, dy)
 	return locate(run_loc_floor_bottom_left.x + dx, run_loc_floor_bottom_left.y + dy, run_loc_floor_bottom_left.z)
@@ -44,12 +37,11 @@
 	TEST_ASSERT(service.accepts(mech), "Wick won't work on a hanging mech")
 	qdel(service)
 	var/turf/home = at(4, 2)
-	var/mob/living/basic/outpost_trader/suit_fitter/wick = allocate(/mob/living/basic/outpost_trader/suit_fitter, home)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter/wick = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter, home)
 	wick.start_rig_bay_routine()
 	var/datum/component/outpost_ambient_worker/rig_bay_wick/worker = wick.GetComponent(/datum/component/outpost_ambient_worker/rig_bay_wick)
 	TEST_ASSERT_NOTNULL(worker, "Wick has no work routine")
-	var/datum/ai_controller/basic_controller/rig_bay_wick/brain = wick.ai_controller
-	TEST_ASSERT(istype(brain), "Wick has the wrong AI controller: [wick.ai_controller]")
+	TEST_ASSERT_EQUAL(worker.home, home, "Wick's room is not rooted at his counter")
 
 	// His room: everything above the thresholds, less the stand and its lane
 	var/list/room = worker.get_room()
@@ -65,57 +57,61 @@
 		TEST_ASSERT_NOTNULL(spot, "Wick finds nowhere to stand to work on the mech")
 		TEST_ASSERT(spot != lane, "Wick picked the stand's front tile to work on the mech from")
 
-	// A player in the outpost, outside the bay, so his AI runs. No client: not a customer.
-	var/mob/living/carbon/human/bystander = allocate(/mob/living/carbon/human/consistent, at(0, 0))
-	present += bystander
-	SSmobs.clients_by_zlevel[bystander.z] += bystander
-	brain.can_idle = FALSE
-	brain.reset_ai_status()
-	TEST_ASSERT_EQUAL(brain.ai_status, AI_STATUS_ON, "Wick's AI does not run with a player near")
-
-	// Free to work: he walks to the mech and works on it, and never leaves his room or stands in the lane
-	worker.next_work_at = 0
+	// Free to work: he walks to the mech and works on it, and never leaves his room or stands in the lane.
+	// His routine is stepped here by hand, a beat at a time, as the ambient runner steps it.
+	wick.end_activity()
+	wick.rig_bay_next_job_at = 0
 	var/worked = FALSE
-	for(var/beat in 1 to 60)
-		sleep(0.5 SECONDS)
+	for(var/beat in 1 to 40)
+		run_beat(wick)
 		check_place(wick, room, stand_tile, lane, "while working")
 		if(istype(worker.work, /datum/outpost_ambient_work/mech_service))
 			worked = TRUE
 			break
 	TEST_ASSERT(worked, "Wick never started work on the hanging mech")
+	TEST_ASSERT(istype(wick.activity, /datum/ambient_activity/rig_bay_job), "Wick worked outside his job routine: [wick.activity?.type]")
 	TEST_ASSERT(get_dist(wick, mech) == 1, "Wick is working on the mech from [get_dist(wick, mech)] tiles away")
+	TEST_ASSERT(!wick.shop || !wick.shop.is_open(), "Wick's counter traded while he was out on the floor")
 
-	// A customer walks up: he stops, and takes no job however long they stay
+	// A customer walks up: he stops, goes back to his counter and takes no job however long they stay
 	var/turf/customer_tile
 	for(var/turf/tile as anything in room)
-		if(tile != get_turf(wick) && get_dist(tile, wick) <= 3 && !tile.is_blocked_turf(exclude_mobs = FALSE))
+		if(tile != get_turf(wick) && tile != home && get_dist(tile, wick) <= 3 && !tile.is_blocked_turf(exclude_mobs = FALSE))
 			customer_tile = tile
 			break
 	TEST_ASSERT_NOTNULL(customer_tile, "No free tile near Wick for a customer")
 	var/mob/living/carbon/human/customer = allocate(/mob/living/carbon/human/consistent, customer_tile)
 	customer.mock_client = new /datum/client_interface()
-	var/stopped = FALSE
-	for(var/beat in 1 to 12)
-		sleep(0.5 SECONDS)
-		if(isnull(worker.work))
-			stopped = TRUE
-			break
-	TEST_ASSERT(stopped, "Wick kept working with a customer [get_dist(wick, customer)] tiles away")
-	for(var/beat in 1 to 16)
+	run_beat(wick)
+	TEST_ASSERT(isnull(worker.work), "Wick kept working with a customer [get_dist(wick, customer)] tiles away")
+	for(var/beat in 1 to 30)
 		// Whatever rest he was owed, he still waits on the customer
-		worker.next_work_at = 0
-		sleep(0.5 SECONDS)
+		wick.rig_bay_next_job_at = 0
+		run_beat(wick)
 		check_place(wick, room, stand_tile, lane, "while serving")
 		TEST_ASSERT(isnull(worker.work) && isnull(worker.planned_work), "Wick took a job with a customer [get_dist(wick, customer)] tiles away")
-	TEST_ASSERT_EQUAL(brain.blackboard["rig_bay_wick_customer"], customer, "Wick is not serving the customer beside him")
+	TEST_ASSERT_EQUAL(get_turf(wick), home, "Wick did not go back to his counter for the customer")
+	TEST_ASSERT_EQUAL(wick.rig_bay_customer_ref?.resolve(), customer, "Wick is not serving the customer")
 
 	// They leave: he holds off a while before the next job
 	customer.mock_client = null
 	qdel(customer)
-	sleep(2 SECONDS)
+	for(var/beat in 1 to 4)
+		run_beat(wick)
 	TEST_ASSERT(isnull(worker.work), "Wick went back to work the moment the customer left")
-	TEST_ASSERT(worker.next_work_at >= world.time + 20 SECONDS, "Wick will be back at work [(worker.next_work_at - world.time) / 10] s after the customer left, not about 30 s")
+	TEST_ASSERT(wick.rig_bay_next_job_at >= world.time + 20 SECONDS, "Wick will be back at work [(wick.rig_bay_next_job_at - world.time) / 10] s after the customer left, not about 30 s")
 	check_place(wick, room, stand_tile, lane, "after serving")
+
+/// One beat of his routine, as /datum/ai_behavior/ambient_activity runs it
+/datum/unit_test/voidcrew_rig_bay_wick/proc/run_beat(mob/living/carbon/human/npc/ambient_npc/wick)
+	var/datum/ambient_activity/current = wick.next_activity()
+	if(!current)
+		return
+	if(!current.at_spot())
+		// The plain counter walk (not expected here): straight to its spot
+		wick.forceMove(current.spot)
+	if(wick.activity_step(1) == 2) // AMBIENT_STEP_DONE
+		wick.end_activity()
 
 /datum/unit_test/voidcrew_rig_bay_wick/proc/check_place(mob/living/wick, list/room, turf/stand_tile, turf/lane, when)
 	var/turf/here = get_turf(wick)

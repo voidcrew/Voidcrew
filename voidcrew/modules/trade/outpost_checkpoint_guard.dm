@@ -1,41 +1,74 @@
 /**
  * # Checkpoint guards and weapons permits
  *
- * Each trader outpost's lobby checkpoint has a guard in a glass booth (the Undertow's sits behind an open desk). The guard is an ordinary
- * outpost trader (godmode, Trade and Talk radial, the TraderShop window) whose only stock is the
- * weapons permit, and is the checkpoint's voice (outpost_checkpoint.dm announce()).
+ * Each trader outpost's lobby checkpoint has a guard sitting behind a desk (a table counter) at the gate. The guard
+ * is an outpost trader (a real person: trader_npc.dm) whose only stock is the weapons permit, and is
+ * the checkpoint's voice while he is up (outpost_checkpoint.dm announce()); dead or out cold, the wall scanner speaks
+ * and the gate scans as before. His desk is shut until he is back or a replacement sits down (shop.is_open()). He
+ * never leaves the desk, drops nothing and has no till.
  *
  * The permit is a record the outpost keeps against the buyer's mind (grant_weapons_permit(),
  * outpost_trespass.dm); the paper the guard hands over is a receipt and proves nothing by itself.
  * It is sold like any SKU, so barred customers (aggressors, embargoed crews, armed trespassers) are
  * refused by the shop flow before it gets this far.
- *
- * Like every trader, the guard is a documented invulnerable fixture (owner ruling OC-1; see the top of
- * trader_npc.dm), not a human NPC body: the checkpoint has to be there for every crew all round.
  */
 
-/mob/living/basic/outpost_trader/checkpoint_guard
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard
 	name = "guard"
-	desc = "Outpost security, behind armored glass."
+	desc = "Outpost security, sat behind the permit desk."
 	/// The checkpoint this guard keeps: matches its doors' checkpoint_id
 	var/checkpoint_id
 	/// Set when the outpost links its interior
 	var/datum/outpost_checkpoint/checkpoint
 
-/mob/living/basic/outpost_trader/checkpoint_guard/Destroy()
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/Destroy()
 	if(checkpoint?.guard == src)
 		checkpoint.guard = null
 	checkpoint = null
 	return ..()
 
-/mob/living/basic/outpost_trader/checkpoint_guard/halcyon
+// His card reads his name, as an officer's does
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/setup_from_shop()
+	. = ..()
+	var/obj/item/card/id/card = wear_id
+	if(istype(card))
+		card.registered_name = real_name
+		card.update_label()
+
+// He keeps his post behind the desk
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/may_flee()
+	return FALSE
+
+// A permit desk has nothing worth taking
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/drop_from_shelf()
+	if(shop)
+		shop.drop_spent = TRUE
+	return null
+
+// A replacement takes over the checkpoint his desk belongs to (his type's checkpoint_id, as the map's guard has)
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/take_counter(datum/outpost_shop/new_shop, turf/counter, is_first)
+	. = ..()
+	if(checkpoint || !outpost || !checkpoint_id)
+		return
+	var/datum/outpost_checkpoint/post = outpost.checkpoints[checkpoint_id]
+	if(!post)
+		return
+	if(post.guard && post.guard != src)
+		post.guard.checkpoint = null
+	post.guard = src
+	checkpoint = post
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/halcyon
+	checkpoint_id = "halcyon_arrivals"
 	shop_type = /datum/outpost_shop/vendor/checkpoint/halcyon
 
-/mob/living/basic/outpost_trader/checkpoint_guard/quartermain
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/quartermain
+	checkpoint_id = "quartermain_gate"
 	shop_type = /datum/outpost_shop/vendor/checkpoint/quartermain
 
-/mob/living/basic/outpost_trader/checkpoint_guard/undertow
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/undertow
 	desc = "Outpost security, leaning on a scuffed desk."
+	checkpoint_id = "undertow_door"
 	shop_type = /datum/outpost_shop/vendor/checkpoint/undertow
 
 // =========================================================================
@@ -57,6 +90,9 @@
 	head = /obj/item/clothing/head/helmet/blueshirt
 	gloves = /obj/item/clothing/gloves/color/black
 	shoes = /obj/item/clothing/shoes/jackboots
+	// A police card for the booth door, locked to the body with the rest of the kit (human_npc_gear.dm)
+	id = /obj/item/card/id/advanced
+	id_trim = /datum/id_trim/outpost_police
 
 /datum/outpost_shop/vendor/checkpoint/halcyon
 	outpost_name = "\improper Halcyon Arrivals"
@@ -110,6 +146,9 @@
 	head = /obj/item/clothing/head/helmet/sec
 	gloves = /obj/item/clothing/gloves/color/black
 	shoes = /obj/item/clothing/shoes/jackboots
+	// A police card for the booth door, locked to the body with the rest of the kit (human_npc_gear.dm)
+	id = /obj/item/card/id/advanced
+	id_trim = /datum/id_trim/outpost_police
 
 /datum/outpost_shop/vendor/checkpoint/quartermain
 	outpost_name = "\improper Depot Gate"
@@ -162,6 +201,9 @@
 	glasses = /obj/item/clothing/glasses/sunglasses
 	gloves = /obj/item/clothing/gloves/color/black
 	shoes = /obj/item/clothing/shoes/jackboots
+	// A police card for the booth door, locked to the body with the rest of the kit (human_npc_gear.dm)
+	id = /obj/item/card/id/advanced
+	id_trim = /datum/id_trim/outpost_police
 
 /datum/outpost_shop/vendor/checkpoint/undertow
 	outpost_name = "\improper The Door"
@@ -230,7 +272,7 @@
 	if(!user.mind || !shop?.outpost)
 		return "No permit for you."
 
-/datum/shop_sku/weapons_permit/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/weapons_permit/dispense(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	stock = 1
 	var/obj/structure/overmap/trader_outpost/outpost = shop?.outpost
 	var/runs_out = outpost?.grant_weapons_permit(user)
@@ -247,7 +289,8 @@
 /obj/item/paper/weapons_permit/proc/fill_in(mob/living/holder, obj/structure/overmap/trader_outpost/outpost, runs_out)
 	var/holder_name = holder?.real_name || "the bearer"
 	name = "weapons permit ([holder_name])"
-	var/where = outpost?.name || "this outpost"
+	var/safe_holder = html_encode(holder_name)
+	var/safe_where = html_encode(outpost?.name || "this outpost")
 	var/until = runs_out ? station_time_timestamp("hh:mm", runs_out) : "--:--"
-	add_raw_text("<center><b>WEAPONS PERMIT</b><br>[where]</center><hr>Issued to: <b>[holder_name]</b><br>Valid until: <b>[until]</b> station time<br>Valid at this outpost only. Not transferable.")
+	add_raw_text("<center><b>WEAPONS PERMIT</b><br>[safe_where]</center><hr>Issued to: <b>[safe_holder]</b><br>Valid until: <b>[until]</b> station time<br>Valid at this outpost only. Not transferable.")
 	update_appearance()

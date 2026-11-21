@@ -158,7 +158,7 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 	/// The wagering hall's bookmaker console (mapped, or fallback-spawned at link)
 	var/obj/machinery/computer/colosseum_bookmaker/bookmaker
 	/// The concourse gear stall's lanista (mapped, or fallback-spawned at link)
-	var/mob/living/basic/outpost_trader/colosseum/armory_trader
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/colosseum/armory_trader
 
 	/// Arena gate poddoors, keyed by mapped id ("colo_gate_red" -> list of doors)
 	var/list/gate_doors = list()
@@ -395,7 +395,7 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 			qdel(colo_mark)
 		// The gear stall's shopkeeper is self-sufficient (owns its own shop
 		// datum), indexing it here only wires the post-match restock hook
-		for(var/mob/living/basic/outpost_trader/colosseum/merchant in interior_turf)
+		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/colosseum/merchant in interior_turf)
 			armory_trader = merchant
 		for(var/obj/machinery/machine in interior_turf)
 			if(istype(machine, /obj/machinery/outpost_elevator))

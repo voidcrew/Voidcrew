@@ -97,6 +97,10 @@
 		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 30, TRUE)
 		to_chat(user, span_warning("Halcyon's till refuses the connection: your crew is under trade embargo."))
 		return
+	if(!outpost.shop.is_open()) // nobody at the counter (outpost recovery, shop.dm)
+		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 30, TRUE)
+		to_chat(user, span_warning("Halcyon's till doesn't answer."))
+		return
 
 	var/datum/outpost_shop/shop = outpost.shop
 	// Only lines the holder can actually sell right now make the menu
@@ -133,10 +137,14 @@
 		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 30, TRUE)
 		to_chat(user, span_warning("Halcyon's till refuses the connection: your crew is under trade embargo."))
 		return
+	if(!outpost.shop.is_open()) // nobody at the counter (outpost recovery, shop.dm)
+		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 30, TRUE)
+		to_chat(user, span_warning("Halcyon's till doesn't answer."))
+		return
 
 	// try_sell prints its own receipts; the vendor arg is only a payout drop
 	// fallback and try_sell handles it being null (interior not loaded yet)
-	var/mob/living/basic/outpost_trader/vendor = shop.trader_npc
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor = shop.trader_npc
 	var/sold = FALSE
 	if(mode == "Sell one")
 		sold = buyback.try_sell(user, vendor)
@@ -303,6 +311,10 @@
 		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 30, TRUE)
 		to_chat(user, span_warning("Halcyon's stockroom refuses the order: your crew is under trade embargo."))
 		return
+	if(!outpost.shop.is_open()) // nobody at the counter (outpost recovery, shop.dm)
+		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 30, TRUE)
+		to_chat(user, span_warning("Halcyon's stockroom doesn't answer."))
+		return
 
 	var/datum/outpost_shop/shop = outpost.shop
 	// The core shelf, plain credit-priced goods only. Vouchers never spend
@@ -341,6 +353,10 @@
 	if(outpost.is_user_barred(user))
 		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 30, TRUE)
 		to_chat(user, span_warning("Halcyon's stockroom refuses the order: your crew is under trade embargo."))
+		return
+	if(!outpost.shop.is_open()) // nobody at the counter (outpost recovery, shop.dm)
+		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 30, TRUE)
+		to_chat(user, span_warning("Halcyon's stockroom doesn't answer."))
 		return
 	if(uses_left <= 0)
 		return

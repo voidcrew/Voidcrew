@@ -1,22 +1,13 @@
 // Trade economy defines (vouchers, trader outposts)
 
-/// How long an outpost trade embargo against a ship lasts after aggression
+/// How long an outpost trade embargo against a ship lasts by default (admins set their own)
 #define OUTPOST_EMBARGO_DURATION (15 MINUTES)
 
-/// How long a marked aggressor stays a turret target and is refused service.
-/// Matches the embargo their crew serves for the same offense, so both lift
-/// together. Also how long unspent warning strikes linger before they reset.
-#define OUTPOST_AGGRESSION_MARK_DURATION OUTPOST_EMBARGO_DURATION
-
-/// How many violent infractions at an outpost it takes before turrets open fire.
-/// Earlier offenses only issue a warning; the final strike marks the aggressor.
-#define OUTPOST_AGGRESSION_STRIKES 3
-
-/// Grace window after an infraction during which further hits don't add strikes.
+/// Grace window after a crime during which further hits from the same offender fold into it.
 /// A single swing reaches register_aggression through more than one route (the
 /// machine's own attacked_by override and the outpost_property relay), all in the
 /// same tick. Kept under CLICK_CD_MELEE (0.8 s) so it only folds those duplicates
-/// together: every real swing is its own strike.
+/// together: every real swing is its own crime (outpost_police/police_wanted.dm).
 #define OUTPOST_AGGRESSION_GRACE (0.5 SECONDS)
 
 /// How long a victim may retaliate against their attacker after the latest unprovoked hit.
@@ -169,10 +160,6 @@
 #define OUTPOST_CHECKPOINT_FORCED_OPEN_TIME (10 SECONDS)
 /// Minimum gap between two lines from the checkpoint about the same thing
 #define OUTPOST_CHECKPOINT_LINE_COOLDOWN (4 SECONDS)
-/// Turrets treat an armed trespasser as hostile until this long after they were last seen armed inside
-#define OUTPOST_TRESPASS_HOSTILE_DURATION (10 MINUTES)
-/// An armed trespasser is refused by the traders, the permit desk and the checkpoint until this long after they were last seen armed inside
-#define OUTPOST_TRESPASS_BAR_DURATION (30 MINUTES)
 /// How often the outpost looks for drawn guns past the checkpoint
 #define OUTPOST_ARMED_SWEEP_INTERVAL (2 SECONDS)
 /// A gun has to stay in hand this long before it counts as drawn (a gun shoved into someone's hand can be dropped)

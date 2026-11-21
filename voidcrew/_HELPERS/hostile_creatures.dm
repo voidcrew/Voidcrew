@@ -1,6 +1,6 @@
 /**
  * Shared "would this creature start a fight" classification for automated defenses
- * (hull defense turrets, outpost enforcement turrets). Reads the creature's own AI
+ * (hull defense turrets, trader outpost police officers). Reads the creature's own AI
  * rather than its type or faction, so livestock, pets and passive fauna are left
  * alone while anything that goes looking for a target is treated as hostile.
  */
@@ -39,7 +39,7 @@ GLOBAL_LIST_INIT(turret_retaliating_subtrees, typecacheof(list(
 /proc/creature_threatens_people(mob/living/creature)
 	// No strategy to look up without a running controller: none at all, or a mob that has not
 	// initialized yet, whose ai_controller is still a type path (a trader outpost's crew while
-	// the outpost loads, with its turrets already scanning).
+	// the outpost loads, with its officers already about).
 	var/datum/ai_controller/controller = creature.ai_controller
 	var/strategy_type = istype(controller) ? controller.blackboard[BB_TARGETING_STRATEGY] : null
 	var/datum/targeting_strategy/basic/of_size/sizer = strategy_type ? GET_TARGETING_STRATEGY(strategy_type) : null
@@ -75,7 +75,7 @@ GLOBAL_LIST_INIT(turret_retaliating_subtrees, typecacheof(list(
 	if(istype(creature, /mob/living/carbon/human/npc/outpost_prisoner))
 		return is_loose_outpost_prisoner(creature)
 	// Bounty criminals, decoys and companions (voidcrew/modules/bounties/bounty_criminal.dm), real human bodies:
-	// trader-outpost turrets leave them to the hunters, and no turret shoots a criminal already in crit,
+	// trader-outpost officers leave them to the hunters, and no turret shoots a criminal already in crit,
 	// stunned or cuffed (tg's states).
 	if(istype(creature, /mob/living/carbon/human/npc/bounty_criminal) || istype(creature, /mob/living/carbon/human/npc/bounty_companion))
 		if(bounty_turret_ignores(creature, istype(get_area(creature), /area/voidcrew/trader_outpost)))
