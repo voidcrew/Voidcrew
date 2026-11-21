@@ -199,9 +199,15 @@
 	second.SetKnockdown(0)
 	stabber.forceMove(stealth_at(block, 3, 3))
 	stabber.zone_selected = BODY_ZONE_CHEST
+	TEST_ASSERT(blade.hv_knife_execution_possible(stabber, second), "Back behind it, the combat knife no longer backstabs")
+	// Made to order, so the checks hold whatever tg does to the plastic knife: an edge with no force, then force with no edge.
 	var/obj/item/knife/plastic/spork = allocate(/obj/item/knife/plastic)
-	if(!(spork.get_sharpness() & SHARP_EDGED) || spork.force <= 0)
-		TEST_ASSERT(!spork.hv_knife_execution_possible(stabber, second), "A blunt plastic knife backstabs")
+	spork.force = 0
+	spork.sharpness = SHARP_EDGED
+	TEST_ASSERT(!spork.hv_knife_execution_possible(stabber, second), "A knife with no force backstabs")
+	spork.force = 10
+	spork.sharpness = NONE
+	TEST_ASSERT(!spork.hv_knife_execution_possible(stabber, second), "A blunt knife backstabs")
 	// A SWAT helmet (wound 15): tg's wound maths keeps the critical slash out; an ordinary stab to the head.
 	var/mob/living/carbon/human/npc/helmeted = d45_bare_guard(block, 4, 5)
 	d45_helmet(helmeted, /obj/item/clothing/head/helmet/swat)

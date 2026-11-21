@@ -50,9 +50,14 @@
 	victim.Knockdown(30 SECONDS)
 	TEST_ASSERT(knife.hv_knife_execution_possible(attacker, victim), "A helpless target could not be executed from the front")
 
+	// Made to order, so the checks hold whatever tg does to the plastic knife: an edge with no force, then force with no edge.
 	var/obj/item/knife/plastic/spork = allocate(/obj/item/knife/plastic)
-	if(!(spork.get_sharpness() & SHARP_EDGED) || spork.force <= 0)
-		TEST_ASSERT(!spork.hv_knife_execution_possible(attacker, victim), "A blunt plastic knife started an execution")
+	spork.force = 0
+	spork.sharpness = SHARP_EDGED
+	TEST_ASSERT(!spork.hv_knife_execution_possible(attacker, victim), "A knife with no force started an execution")
+	spork.force = 10
+	spork.sharpness = NONE
+	TEST_ASSERT(!spork.hv_knife_execution_possible(attacker, victim), "A blunt knife started an execution")
 
 /// A held wind-up from behind ends in tg's real throat slit (decision 45's maths). A player victim keeps the 1.5 s hold;
 /// only an unaware stealth guard is cut on the click (voidcrew_stealth_d45_backstab).
@@ -201,11 +206,20 @@
 	victim.setDir(EAST)
 	knife.melee_attack_chain(attacker, victim, list())
 	TEST_ASSERT(DOING_INTERACTION(attacker, "hv_knife_execution"), "The second knife click did not start the wind-up")
-	sleep(2.2 SECONDS)
+	// Waits on what it checks, with a long deadline, so a slow timer only makes the test slower.
+	var/deadline = world.time + 6 SECONDS
+	while(DOING_INTERACTION(attacker, "hv_knife_execution") && world.time < deadline)
+		sleep(world.tick_lag)
+	TEST_ASSERT(!DOING_INTERACTION(attacker, "hv_knife_execution"), "The wind-up never finished")
+	deadline = world.time + 6 SECONDS
+	while((knife.hv_vis_hide_inhand || length(attacker.filters) != attacker_filters || attacker.layer != attacker_layer) && world.time < deadline)
+		sleep(world.tick_lag)
 	TEST_ASSERT(!knife.hv_vis_hide_inhand, "The held knife was still hidden after the attacker let go")
 	TEST_ASSERT_EQUAL(length(attacker.filters), attacker_filters, "The attacker kept a mask after letting go")
 	TEST_ASSERT_EQUAL(attacker.layer, attacker_layer, "The attacker was left on another layer after letting go")
-	sleep(2.5 SECONDS)
+	deadline = world.time + 8 SECONDS
+	while(knife.hv_vis_exec && world.time < deadline)
+		sleep(world.tick_lag)
 	TEST_ASSERT_NULL(knife.hv_vis_exec, "The execution's pictures never ended")
 	TEST_ASSERT_EQUAL(hv_knife_exec_test_pieces(), 0, "The execution left stand-in arm pieces behind")
 	TEST_ASSERT_EQUAL(length(victim.filters), victim_filters, "The victim kept a mask")
@@ -222,16 +236,23 @@
 	var/obj/item/universal_scanner/held_tool = allocate(/obj/item/universal_scanner)
 	west_victim.put_in_l_hand(held_tool)
 	var/west_vic_filters = length(west_victim.filters)
-	sleep(1.1 SECONDS) // clear the 1 s visual cooldown
+	// Clear the 1 s visual cooldown.
+	deadline = world.time + 3 SECONDS
+	while(world.time < knife.hv_vis_hold_after && world.time < deadline)
+		sleep(world.tick_lag)
+	// The hold's pictures are made on the click itself, before its do_after sleeps, so the blade's start is read in the
+	// same tick, well before its 0.33 s turn; the turn is then waited for.
 	knife.melee_attack_chain(attacker, west_victim, list())
-	sleep(0.1 SECONDS)
 	var/datum/hv_knife_exec_vis/west_vis = knife.hv_vis_exec
 	TEST_ASSERT_NOTNULL(west_vis, "The west far-hand hold drew nothing")
 	TEST_ASSERT(west_vis.far_cut, "West right-hand hold was not marked far_cut")
 	TEST_ASSERT(west_vis.blade.layer < attacker.layer, "Far-hand blade started over the attacker ([west_vis.blade.layer] vs [attacker.layer])")
 	TEST_ASSERT(west_vis.blade_release_layer < attacker.layer, "Far-hand blade release layer is over the attacker")
 	TEST_ASSERT_NOTNULL(west_vis.arms["v"], "Victim's far arm did not come up when his near hand held a tool")
-	sleep(0.35 SECONDS)
+	deadline = world.time + 1 SECONDS
+	while(!QDELETED(west_vis) && !QDELETED(west_vis.blade) && west_vis.blade.layer <= MOB_LAYER && world.time < deadline)
+		sleep(world.tick_lag)
+	TEST_ASSERT(!QDELETED(west_vis) && !QDELETED(west_vis.blade), "The west hold ended before the blade came round")
 	TEST_ASSERT(west_vis.blade.layer > MOB_LAYER, "Far-hand blade did not come in front of the neck at the chin")
 	west_victim.setDir(EAST)
 	sleep(1 SECONDS)
