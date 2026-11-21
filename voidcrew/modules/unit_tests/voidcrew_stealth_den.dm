@@ -183,6 +183,8 @@
 			var/list/entry = frames[i]
 			TEST_ASSERT(abs(entry[2]) < 16 && abs(entry[3]) < 16, "Sprite dir [sprite_dir] frame [i]'s lens is off its tile")
 			TEST_ASSERT(abs(entry[2]) >= 4 || abs(entry[3]) >= 4, "Sprite dir [sprite_dir] frame [i]'s lens sits in the tile's middle, not on the mount")
+			TEST_ASSERT(length(entry) == 5, "Sprite dir [sprite_dir] frame [i] has no head centre")
+			TEST_ASSERT(abs(entry[4] - entry[2]) <= 3 && abs(entry[5] - entry[3]) <= 3, "Sprite dir [sprite_dir] frame [i]'s cone starts off its head")
 			if(i > 1)
 				var/step = abs(closer_angle_difference(frames[i - 1][1], entry[1]))
 				TEST_ASSERT(step > 0 && step <= 20, "Sprite dir [sprite_dir] frames [i - 1] and [i] are [step] degrees apart")

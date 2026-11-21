@@ -54,19 +54,21 @@
 /**
  * The swivel frames of tg's camera sprite (copied one still per frame into scav_camera.dmi as "scan_<dir>_<frame>" and
  * "track_<dir>_<frame>"), so the server shows the head where it aims instead of the client running its own swivel loop.
- * Keyed by sprite dir; each frame is list(head angle, lens x, lens y): the angle in degrees clockwise from north, from
- * the arm joint to the green lens pixel, and the lens pixel's centre in pixels from the tile's centre (y up).
+ * Keyed by sprite dir; each frame is list(head angle, lens x, lens y, head x, head y): the angle in degrees clockwise from
+ * north, from the arm joint to the green lens pixel; the lens pixel's centre and the head's centre (the mean of its
+ * pixels), in pixels from the tile's centre (y up). The cone starts at the head's centre, so its light comes out of the
+ * head.
  * Measured from the pixels.
  */
 GLOBAL_LIST_INIT(scav_cam_frames, list(
-	"1" = list(list(214, -12.5, 6.5), list(207, -12.5, 5.5), list(194, -11.5, 5.5), list(180, -10.5, 5.5), list(166, -9.5, 5.5), list(153, -8.5, 5.5), list(146, -8.5, 6.5)), // north wall, top left
-	"2" = list(list(34, -8.5, -6.5), list(27, -8.5, -5.5), list(14, -9.5, -5.5), list(0, -10.5, -5.5), list(346, -11.5, -5.5), list(333, -12.5, -5.5), list(326, -12.5, -6.5)), // south wall, bottom left
-	"4" = list(list(315, 6.5, 13.5), list(297, 5.5, 12.5), list(284, 5.5, 11.5), list(270, 5.5, 10.5), list(256, 5.5, 9.5), list(243, 5.5, 8.5), list(236, 6.5, 8.5)), // east wall, top right
-	"5" = list(list(34, 12.5, -6.5), list(27, 12.5, -5.5), list(14, 11.5, -5.5), list(0, 10.5, -5.5), list(346, 9.5, -5.5), list(333, 8.5, -5.5), list(326, 8.5, -6.5)), // south wall, bottom right
-	"6" = list(list(225, 6.5, -13.5), list(243, 5.5, -12.5), list(256, 5.5, -11.5), list(270, 5.5, -10.5), list(284, 5.5, -9.5), list(297, 5.5, -8.5), list(304, 6.5, -8.5)), // east wall, bottom right
-	"8" = list(list(124, -6.5, 8.5), list(117, -5.5, 8.5), list(104, -5.5, 9.5), list(90, -5.5, 10.5), list(76, -5.5, 11.5), list(63, -5.5, 12.5), list(45, -6.5, 13.5)), // west wall, top left
-	"9" = list(list(214, 8.5, 6.5), list(207, 8.5, 5.5), list(194, 9.5, 5.5), list(180, 10.5, 5.5), list(166, 11.5, 5.5), list(153, 12.5, 5.5), list(146, 12.5, 6.5)), // north wall, top right
-	"10" = list(list(56, -6.5, -8.5), list(63, -5.5, -8.5), list(76, -5.5, -9.5), list(90, -5.5, -10.5), list(104, -5.5, -11.5), list(117, -5.5, -12.5), list(135, -6.5, -13.5)), // west wall, bottom left
+	"1" = list(list(214, -12.5, 6.5, -10.9, 7.1), list(207, -12.5, 5.5, -11.1, 6.7), list(194, -11.5, 5.5, -10.8, 6.8), list(180, -10.5, 5.5, -10.5, 6.7), list(166, -9.5, 5.5, -10.2, 6.8), list(153, -8.5, 5.5, -9.9, 6.7), list(146, -8.5, 6.5, -10.1, 7.1)), // north wall, top left
+	"2" = list(list(34, -8.5, -6.5, -10.1, -7.1), list(27, -8.5, -5.5, -9.9, -6.7), list(14, -9.5, -5.5, -10.2, -6.9), list(0, -10.5, -5.5, -10.5, -6.7), list(346, -11.5, -5.5, -10.8, -6.9), list(333, -12.5, -5.5, -11.1, -6.7), list(326, -12.5, -6.5, -10.9, -7.1)), // south wall, bottom left
+	"4" = list(list(315, 6.5, 13.5, 7.1, 11.9), list(297, 5.5, 12.5, 6.7, 11.1), list(284, 5.5, 11.5, 6.9, 10.8), list(270, 5.5, 10.5, 6.7, 10.5), list(256, 5.5, 9.5, 6.9, 10.2), list(243, 5.5, 8.5, 6.7, 9.9), list(236, 6.5, 8.5, 7.1, 10.1)), // east wall, top right
+	"5" = list(list(34, 12.5, -6.5, 10.9, -7.1), list(27, 12.5, -5.5, 11.1, -6.7), list(14, 11.5, -5.5, 10.8, -6.9), list(0, 10.5, -5.5, 10.5, -6.7), list(346, 9.5, -5.5, 10.2, -6.9), list(333, 8.5, -5.5, 9.9, -6.7), list(326, 8.5, -6.5, 10.1, -7.1)), // south wall, bottom right
+	"6" = list(list(225, 6.5, -13.5, 7.1, -11.9), list(243, 5.5, -12.5, 6.7, -11.1), list(256, 5.5, -11.5, 6.9, -10.8), list(270, 5.5, -10.5, 6.7, -10.5), list(284, 5.5, -9.5, 6.9, -10.2), list(297, 5.5, -8.5, 6.7, -9.9), list(304, 6.5, -8.5, 7.1, -10.1)), // east wall, bottom right
+	"8" = list(list(124, -6.5, 8.5, -7.1, 10.1), list(117, -5.5, 8.5, -6.7, 9.9), list(104, -5.5, 9.5, -6.8, 10.2), list(90, -5.5, 10.5, -6.7, 10.5), list(76, -5.5, 11.5, -6.8, 10.8), list(63, -5.5, 12.5, -6.7, 11.1), list(45, -6.5, 13.5, -7.1, 11.9)), // west wall, top left
+	"9" = list(list(214, 8.5, 6.5, 10.1, 7.1), list(207, 8.5, 5.5, 9.9, 6.7), list(194, 9.5, 5.5, 10.2, 6.8), list(180, 10.5, 5.5, 10.5, 6.7), list(166, 11.5, 5.5, 10.8, 6.8), list(153, 12.5, 5.5, 11.1, 6.7), list(146, 12.5, 6.5, 10.9, 7.1)), // north wall, top right
+	"10" = list(list(56, -6.5, -8.5, -7.1, -10.1), list(63, -5.5, -8.5, -6.7, -9.9), list(76, -5.5, -9.5, -6.8, -10.2), list(90, -5.5, -10.5, -6.7, -10.5), list(104, -5.5, -11.5, -6.8, -10.8), list(117, -5.5, -12.5, -6.7, -11.1), list(135, -6.5, -13.5, -7.1, -11.9)), // west wall, bottom left
 ))
 
 /// For a camera in a room's corner, the two sprite dirs whose mounts sit in that corner (one on each wall).
@@ -425,36 +427,36 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 	cone.alpha = wanted_alpha
 	if(scav_cam_pick_frame())
 		update_appearance(UPDATE_ICON_STATE)
-	var/list/lens = GLOB.scav_cam_frames["[frame_dir]"][frame]
-	var/state = "beam_[scav_cam_reach(lens)]"
+	var/list/shown = GLOB.scav_cam_frames["[frame_dir]"][frame]
+	var/state = "beam_[scav_cam_reach(shown)]"
 	if(cone.icon_state != state)
 		cone.icon_state = state
 	var/matrix/pointing = matrix()
 	pointing.Scale(SCAV_CAM_CONE_SCALE, 1)
-	// The beam's bottom middle (its apex) onto the turning point, turned, then onto the lens of the frame the head shows.
+	// The beam's bottom middle (its apex) onto the turning point, turned, then into the head of the frame it shows.
 	pointing.Translate(0, STEALTH_BEAM_PIVOT)
 	pointing.Turn(aim)
-	pointing.Translate(lens[2], lens[3] - STEALTH_BEAM_PIVOT)
+	pointing.Translate(shown[4], shown[5] - STEALTH_BEAM_PIVOT)
 	if(instant)
 		animate(cone, transform = pointing, time = 0)
 	else
 		// Linear: a turned and stretched matrix tweened by angle can flip and swing the cone the long way round.
 		animate(cone, transform = pointing, time = 2 DECISECONDS, flags = ANIMATION_LINEAR_TRANSFORM)
 
-/// How long the drawn cone is along its aim from `lens` (a GLOB.scav_cam_frames entry), in quarter tiles: to the first
+/// How long the drawn cone is along its aim from the head of `shown` (a GLOB.scav_cam_frames entry), in quarter tiles: to the first
 /// wall or solid door, at most the beam's full length.
-/obj/machinery/scav_camera/proc/scav_cam_reach(list/lens)
+/obj/machinery/scav_camera/proc/scav_cam_reach(list/shown)
 	var/turf/eye = get_turf(src)
 	if(isnull(eye))
 		return STEALTH_BEAM_LENGTHS
 	var/dx = sin(aim)
 	var/dy = cos(aim)
-	var/lens_x = lens ? lens[2] / 32 : 0
-	var/lens_y = lens ? lens[3] / 32 : 0
+	var/start_x = shown ? shown[4] / 32 : 0
+	var/start_y = shown ? shown[5] / 32 : 0
 	for(var/step in 1 to STEALTH_BEAM_LENGTHS)
 		// a step is a quarter tile, the beam icon's own unit
 		var/along = step / 4
-		var/turf/at = locate(eye.x + round(lens_x + dx * along, 1), eye.y + round(lens_y + dy * along, 1), eye.z)
+		var/turf/at = locate(eye.x + round(start_x + dx * along, 1), eye.y + round(start_y + dy * along, 1), eye.z)
 		if(isnull(at) || (at != eye && IS_OPAQUE_TURF(at)))
 			return clamp(step, 1, STEALTH_BEAM_LENGTHS)
 	return STEALTH_BEAM_LENGTHS
