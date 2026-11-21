@@ -159,13 +159,14 @@
 	group.forget_noises()
 	// A guard that can't stand works no door for the rest: floored, or paralysed.
 	bystander.forceMove(at(9, 2))
-	ADD_TRAIT(bystander, TRAIT_FLOORED, TRAIT_SOURCE_UNIT_TESTS)
-	TEST_ASSERT(!group.member_uses_door(bystander, at(8, 2), group.living_members()), "A floored guard works a door for the rest")
-	REMOVE_TRAIT(bystander, TRAIT_FLOORED, TRAIT_SOURCE_UNIT_TESTS)
 	ADD_TRAIT(bystander, TRAIT_INCAPACITATED, TRAIT_SOURCE_UNIT_TESTS)
 	TEST_ASSERT(!group.member_uses_door(bystander, at(8, 2), group.living_members()), "A paralysed guard works a door for the rest")
 	REMOVE_TRAIT(bystander, TRAIT_INCAPACITATED, TRAIT_SOURCE_UNIT_TESTS)
-	TEST_ASSERT(group.member_uses_door(bystander, at(8, 2), group.living_members()), "A guard back on its feet can't work a door")
+	TEST_ASSERT(group.member_uses_door(bystander, at(8, 2), group.living_members()), "A guard no longer paralysed can't work a door")
+	// Floored last: it lies there a moment after the trait goes.
+	ADD_TRAIT(bystander, TRAIT_FLOORED, TRAIT_SOURCE_UNIT_TESTS)
+	TEST_ASSERT(!group.member_uses_door(bystander, at(8, 2), group.living_members()), "A floored guard works a door for the rest")
+	REMOVE_TRAIT(bystander, TRAIT_FLOORED, TRAIT_SOURCE_UNIT_TESTS)
 	// A wooden door a guard opened and walked away from, shut by someone else: theirs no longer.
 	var/obj/structure/mineral_door/wood/wood = allocate(/obj/structure/mineral_door/wood, at(5, 3))
 	wood.stealth_user_ref = WEAKREF(bystander)
