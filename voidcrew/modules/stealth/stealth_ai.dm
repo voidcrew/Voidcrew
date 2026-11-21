@@ -1787,7 +1787,7 @@
 	controller.goto_started = world.time
 	// Alert, it goes after them where it last saw them by a path round corners: its straight chase stalls on
 	// the first wall. The chase comes back when the walk ends.
-	if(controller.stealth_state() == STEALTH_ALERT)
+	if(controller.stealth_state() == STEALTH_ALERT && controller.goto_purpose == STEALTH_GOTO_SEARCH)
 		human_npc_set_ai_movement(controller, /datum/ai_movement/jps/stealth)
 	set_movement_target(controller, controller.goto_turf)
 
@@ -1822,7 +1822,7 @@
 				controller.stealth_walk_failed()
 		controller.goto_timed_out = FALSE
 	. = ..()
-	if(istype(controller) && controller.stealth_state() == STEALTH_ALERT)
+	if(istype(controller) && controller.stealth_state() == STEALTH_ALERT && !istype(controller.ai_movement, /datum/ai_movement/basic_avoidance))
 		human_npc_set_ai_movement(controller, /datum/ai_movement/basic_avoidance/stealth)
 
 /**
