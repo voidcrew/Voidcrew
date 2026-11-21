@@ -266,6 +266,7 @@
 	pending_call = null
 	heard_map = null
 	heard_now = null
+	heard_at = null
 	made = null
 	passes = null
 	waved = null
@@ -734,6 +735,8 @@
 	var/list/disguised
 	var/mob/living/suspect
 	var/mob/living/stopped = challenge?.resolve()
+	// Cover it saw someone get into a moment ago (stealth_cover.dm): it goes to look there once the scan is done.
+	var/turf/cover_glimpse
 	for(var/mob/living/candidate as anything in stealth_candidates(guard, HUMAN_NPC_SIGHT_RANGE))
 		// Only those it could perceive count toward the cap, so bystanders it can't see never crowd a player out.
 		if(judged >= STEALTH_MAX_CANDIDATES)
@@ -789,9 +792,9 @@
 		var/in_view = FALSE
 		// Keeping still in foliage, too far off to make out (stealth_cover.dm). Seen getting in, it goes to look.
 		var/covered = !boxed && eyes && stealth_covered(candidate, where, dist)
-		if(covered && stealth_cover_glimpsed(candidate, where))
-			stealth_check_cover(where)
-			return
+		if(covered && isnull(cover_glimpse) && stealth_cover_glimpsed(candidate, where))
+			cover_glimpse = where
+			continue
 		if(boxed)
 			rate = profile.notice_rate
 		else if(eyes && !covered && !stealth_is_cloaked(candidate) && stealth_in_cone(guard, where, half_angle))
@@ -854,8 +857,8 @@
 			entry = list(0, null, 0)
 			notice[key] = entry
 		// First seen counts as moving: it just came into view. Sight knows moved or still, nothing more:
-		// running is heard, not seen (stealth_hear_footsteps()).
-		if(entry[STEALTH_ENTRY_TURF] == where)
+		// running is heard, not seen (stealth_hear_footsteps()). Only heard there before is not seen there.
+		if(entry[STEALTH_ENTRY_SEEN_AT] && entry[STEALTH_ENTRY_TURF] == where)
 			rate *= STEALTH_STILL_MULT
 		if(candidate.body_position == LYING_DOWN)
 			rate *= STEALTH_LYING_MULT
@@ -898,8 +901,9 @@
 		else if(!heard_now?[key])
 			// Unseen and unheard this scan.
 			entry[STEALTH_ENTRY_NOTICE] = max(0, entry[STEALTH_ENTRY_NOTICE] - STEALTH_NOTICE_DECAY * scan_seconds)
-			if(world.time - entry[STEALTH_ENTRY_SEEN_AT] > STEALTH_NOTICE_FORGET)
+			if(world.time - max(entry[STEALTH_ENTRY_SEEN_AT], LAZYACCESS(heard_at, key)) > STEALTH_NOTICE_FORGET)
 				notice -= key
+				LAZYREMOVE(heard_at, key)
 				continue
 		if(entry[STEALTH_ENTRY_NOTICE] > best_notice)
 			best_notice = entry[STEALTH_ENTRY_NOTICE]
@@ -909,6 +913,9 @@
 		return
 	if(point_blank)
 		stealth_spot_point_blank(point_blank)
+		return
+	if(cover_glimpse)
+		stealth_check_cover(cover_glimpse)
 		return
 	// Someone in their colours close enough to stop (decision 40).
 	if(suspect && isnull(stopped) && !calm_until)
@@ -1151,7 +1158,7 @@
 		var/list/entry = notice[key]
 		if(entry[STEALTH_ENTRY_NOTICE] < STEALTH_SUSPICIOUS_AT || entry[STEALTH_ENTRY_NOTICE] <= best_notice)
 			continue
-		if(world.time - entry[STEALTH_ENTRY_SEEN_AT] > STEALTH_NOTICE_FORGET)
+		if(world.time - max(entry[STEALTH_ENTRY_SEEN_AT], LAZYACCESS(heard_at, key)) > STEALTH_NOTICE_FORGET)
 			continue
 		var/mob/living/someone = locate(key)
 		if(!isliving(someone) || QDELETED(someone) || someone.stat == DEAD)

@@ -7,7 +7,8 @@
  * rules (stealth_look()) are never touched by it.
  *
  * - Moving cancels it: someone who stepped (or fired a gun) within STEALTH_COVER_SETTLE is seen as on open ground.
- *   Crawling counts as keeping still, as it is slow and low.
+ *   Crawling counts as keeping still, as it is slow and low; firing doesn't, lying down or not.
+ * - A lit light they carry (a flashlight, a flare, being on fire) shows them as plainly as it does anywhere else.
  * - Pushing through foliage rustles: a quiet sound players hear, and a STEALTH_NOISE_RUSTLE guards hear a little
  *   less far (abuse H2).
  * - A guard that saw someone (at suspicious notice or more) a moment before they went still in cover goes and looks
@@ -42,7 +43,6 @@ GLOBAL_LIST_EMPTY(stealth_test_beam_turfs)
 		// Big potted plants: only where the map put them (stealth_cover_at())
 		/obj/item/kirbyplants,
 	))
-	cover -= typecacheof(/obj/item/kirbyplants/random/dead)
 	return cover
 
 /// The cover on `tile`, or null.
@@ -54,7 +54,8 @@ GLOBAL_LIST_EMPTY(stealth_test_beam_turfs)
 			continue
 		if(istype(thing, /obj/item/kirbyplants))
 			var/obj/item/kirbyplants/plant = thing
-			if(plant.stealth_cover_spot != tile)
+			// Dead ones too, whatever their type: a pot of dry stalks hides nobody.
+			if(plant.dead || plant.stealth_cover_spot != tile)
 				continue
 		return thing
 	return null
@@ -68,6 +69,8 @@ GLOBAL_LIST_EMPTY(stealth_test_beam_turfs)
 		return FALSE
 	var/mob/living/carbon/human/person = who
 	if(person.body_position != LYING_DOWN && world.time - person.stealth_moved_at < STEALTH_COVER_SETTLE)
+		return FALSE
+	if(world.time - person.stealth_shot_at < STEALTH_COVER_SETTLE)
 		return FALSE
 	return !isnull(stealth_cover_at(where))
 
@@ -95,6 +98,8 @@ GLOBAL_LIST_EMPTY(stealth_test_beam_turfs)
 /mob/living/carbon/human
 	/// world.time this person last moved or fired a gun (stealth_in_cover())
 	var/stealth_moved_at = 0
+	/// world.time this person last fired a gun: unlike a move, this counts lying down too (stealth_in_cover())
+	var/stealth_shot_at = 0
 	/// world.time this person may next rustle
 	var/stealth_rustle_at = 0
 
@@ -123,6 +128,7 @@ GLOBAL_LIST_EMPTY(stealth_test_beam_turfs)
 	if(ishuman(user))
 		var/mob/living/carbon/human/shooter = user
 		shooter.stealth_moved_at = world.time
+		shooter.stealth_shot_at = world.time
 
 // ===== Potted plants =====
 
@@ -160,9 +166,12 @@ GLOBAL_LIST_EMPTY(stealth_test_beam_turfs)
 			lum += (strengths[corner] || 0) * channels
 	return lum / 12 >= STEALTH_COVER_BEAM_LUM
 
-/// Whether cover at `where` hides `who` from it now: far enough off, not in its own beam (stealth_look()).
+/// Whether cover at `where` hides `who` from it now: far enough off, not in its own beam, not carrying a lit light
+/// (stealth_look()).
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_covered(mob/living/who, turf/where, dist)
 	if(dist <= max(stealth_skill().point_blank_range, STEALTH_COVER_RANGE))
+		return FALSE
+	if(stealth_carried_light(who) > 0)
 		return FALSE
 	return stealth_in_cover(who, where) && !stealth_beam_on(where)
 
