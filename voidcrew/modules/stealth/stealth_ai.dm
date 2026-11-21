@@ -487,8 +487,8 @@
 	last_seen_turf = get_turf(target)
 	blackboard[BB_STEALTH_LAST_SEEN_AT] = world.time
 	set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, target)
-	// It knows that face from now on: a disguise won't hide it, a mask will (decision 40).
-	stealth_make(ismecha(target) ? bounty_ai_pilot_of(target) : target, FALSE)
+	// It knows that face from now on, if it saw it: a disguise won't hide it, a mask will (decision 40).
+	stealth_make(ismecha(target) ? bounty_ai_pilot_of(target) : target, FALSE, named)
 	// Every alert is first hand: if they are in a locker or a box, it is the one it just saw or felt (decision 33).
 	stealth_closet_alerted(target)
 	// It has seen or felt them itself: it calls for help (decision 8).
@@ -605,6 +605,8 @@
 		target_free_seen_at -= time
 	if(checked_at)
 		checked_at -= time
+	if(challenge_started_at)
+		challenge_started_at -= time
 	greeted -= time
 	for(var/kind in bark_ready_at)
 		bark_ready_at[kind] -= time
@@ -1114,6 +1116,9 @@
 		lost_since = 0
 		last_seen_turf = get_turf(remembered)
 		blackboard[BB_STEALTH_LAST_SEEN_AT] = world.time
+		// A face it fights before its eyes is one it knows from now on (decision 40).
+		if(isliving(remembered) && stealth_sees(remembered))
+			stealth_make(remembered, FALSE)
 		// Still has them in view: it keeps calling.
 		stealth_shout()
 		if(!target)
@@ -1178,7 +1183,8 @@
 	if(best)
 		var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(blackboard[BB_TARGETING_STRATEGY])
 		if(best_notice >= STEALTH_ALERT_AT && isnull(stealth_shell_of(best)) && strategy?.can_attack(guard, best, HUMAN_NPC_SIGHT_RANGE))
-			stealth_go_alert(best)
+			// Someone who hit it from the dark is fought, but has no name or face to it until it sees them.
+			stealth_go_alert(best, stealth_sees(best))
 		else if(best_notice >= STEALTH_ALERT_AT)
 			stealth_go_searching(best_turf)
 		else
@@ -1199,6 +1205,7 @@
 	var/mob/living/guard = pawn
 	var/list/seen = blackboard[BB_STEALTH_BODIES_SEEN]
 	var/eyes = stealth_eyes_open()
+	var/night_vision = HAS_TRAIT(guard, TRAIT_NIGHT_VISION)
 	var/half_angle = stealth_half_angle()
 	var/sight_range = stealth_skill().sight_range
 	for(var/mob/living/member as anything in group.living_members())
@@ -1224,7 +1231,9 @@
 		var/dist = get_dist(guard, where)
 		if(dist > sight_range)
 			continue
-		var/in_sight = dist <= stealth_skill().close_range
+		// At its shoulder only in light that is really there, as for the living (decision 32), and only beside it
+		// without its eyes.
+		var/in_sight = dist <= stealth_skill().close_range && (dist <= STEALTH_ADJACENT_RANGE || eyes) && (night_vision || !stealth_tile_is_dark(where))
 		if(!in_sight && eyes && stealth_in_cone(guard, where, half_angle))
 			in_sight = dist <= stealth_range_onto(where)
 		if(!in_sight || !stealth_can_see(guard, where, sight_range))
@@ -1279,7 +1288,7 @@
 	var/can_fight = strategy?.can_attack(guard, who)
 	// Whoever laid hands on it is no friend, whatever they wear (decision 40).
 	if(can_fight && isliving(source) && stealth_fooled(source))
-		stealth_make(source)
+		stealth_make(source, TRUE, stealth_sees(source))
 	var/atom/target = blackboard[BB_BASIC_MOB_CURRENT_TARGET]
 	if(stealth_state() == STEALTH_ALERT && !QDELETED(target))
 		if(who == target)
@@ -1422,7 +1431,8 @@
 		if(felt)
 			harm_felt = TRUE
 		return
-	if(QDELETED(guard) || guard.stat == DEAD || guard.client)
+	// Out cold, it feels nothing (decision 44): a sleep chem that keeps it under raises nothing tick after tick.
+	if(QDELETED(guard) || guard.stat >= UNCONSCIOUS || guard.client)
 		return
 	// Real harm while it's down from a slip: getting up is no longer just getting up.
 	slip_down_until = 0
@@ -1435,7 +1445,11 @@
 	harm_turf = get_turf(guard)
 	addtimer(CALLBACK(src, PROC_REF(stealth_judge_harm)), 0.2 SECONDS)
 
-/// Harm nobody was named for (a blast, fire, gas, a flashbang): it and the friends near it go looking there.
+/**
+ * Harm nobody was named for (a blast, fire, gas, a flashbang): it and the friends near it that see it or hear it
+ * go looking there. Health slipping away with no blow behind it (`felt` unset: bleeding, gas) concerns it alone.
+ * A guard standing off against a holder takes it as the holder's doing, as it does a blow (stealth_hostage.dm).
+ */
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_judge_harm()
 	harm_pending = FALSE
 	var/felt = harm_felt
@@ -1447,23 +1461,42 @@
 		return
 	if(explained_at && world.time - explained_at <= harm_window + 0.2 SECONDS)
 		return
+	// Standing off, it takes harm it can't put a name to as the holder's doing. A bleed it walked in with is not.
+	if(felt || !guard.get_bleed_rate())
+		stealth_standoff_harmed()
 	if(world.time < next_harm_at)
 		return
 	next_harm_at = world.time + STEALTH_HARM_COOLDOWN
 	stealth_setup()
 	stealth_trouble_at(where)
-	// Health slipping away (bleeding, gas) sends it looking, but gives it nothing to shout or radio about.
-	if(felt && guard.stat == CONSCIOUS)
+	// Health slipping away (bleeding, gas) sends it looking, but gives it nothing to shout or radio about, and nothing
+	// for its friends to notice.
+	if(!felt)
+		return
+	if(guard.stat == CONSCIOUS)
 		stealth_first_hand(where)
 	for(var/mob/living/friend as anything in group?.living_members())
-		if(friend == guard)
+		if(friend == guard || friend.stat != CONSCIOUS)
 			continue
 		var/turf/friend_turf = get_turf(friend)
 		if(friend_turf?.z != where.z || get_dist(friend_turf, where) > STEALTH_HARM_ALERT_RANGE)
 			continue
 		var/datum/ai_controller/basic_controller/human_npc/stealth/friend_ai = friend.ai_controller
-		if(istype(friend_ai))
-			friend_ai.stealth_trouble_at(where)
+		if(!istype(friend_ai) || friend_ai.stealth_driven())
+			continue
+		// seen as stealth_standoff_witness() sees one of its people attacked
+		var/sees = friend_ai.stealth_alert_lit(guard) && can_see(friend, guard, HUMAN_NPC_SIGHT_RANGE)
+		if(!sees && (!friend.can_hear() || stealth_muffled_dist(where, friend_turf) > STEALTH_HARM_ALERT_RANGE))
+			continue
+		if(sees)
+			friend_ai.stealth_standoff_harmed()
+		friend_ai.stealth_trouble_at(where)
+
+/// Standing off against a holder (stealth_hostage.dm), harm it can't name ends it as a blow from him would.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_standoff_harmed()
+	var/mob/living/holder = standoff_holder?.resolve()
+	if(holder)
+		stealth_standoff_broken(holder, "harmed while standing off")
 
 /// Trouble at `where` it can't put a face to: wary, and searching there unless it already has someone to fight.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_trouble_at(turf/where)
@@ -1869,6 +1902,16 @@
 	if(sentry)
 		controller.next_turn = world.time + STEALTH_SENTRY_GLANCE_TIME
 	return AI_BEHAVIOR_DELAY
+
+/**
+ * A stealth guard charges a stun shooter only while it has them in view. Out of view it goes where it last saw them
+ * (stealth_chase_lost, decision 44), never to where they are now.
+ */
+/datum/npc_combat_sense/plan_close_in(mob/living/carbon/human/npc, datum/ai_controller/controller, datum/component/npc_combat_sense/sense)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/brain = controller
+	if(istype(brain) && !brain.stealth_has_in_view(sense.threat()))
+		return
+	return ..()
 
 #undef STEALTH_HANDLED_SIGNALS
 #undef STEALTH_STUN_SIGNALS

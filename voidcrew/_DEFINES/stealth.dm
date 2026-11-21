@@ -246,6 +246,8 @@
 #define STEALTH_CHALLENGE_WARN_TIME (3 SECONDS)
 /// With no pass shown after this long, the disguise is blown
 #define STEALTH_CHALLENGE_FAIL_TIME (6 SECONDS)
+/// Not near enough to read the pass this long after the stop (kept out of reach), the disguise is blown
+#define STEALTH_CHALLENGE_REACH_TIME (STEALTH_CHALLENGE_FAIL_TIME + STEALTH_CHALLENGE_CHECK_TIME)
 /// Further than this from where it stopped them is walking off
 #define STEALTH_CHALLENGE_LEASH 2
 /// How long a guard that read their pass lets them be

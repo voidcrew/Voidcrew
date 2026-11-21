@@ -202,6 +202,8 @@
 	var/turf/start_turf
 	/// world.time it got near enough to look at their pass, or 0
 	var/checked_at = 0
+	/// world.time it stopped them
+	var/challenge_started_at = 0
 	/// Whether it has asked a second time
 	var/warned = FALSE
 	/// world.time it may next greet one of its own
@@ -247,16 +249,16 @@
 	return pieces
 
 /**
- * Remembers `who`, seen with its own eyes: their face for good, if it shows. `blown`: also the wearer, face or no
+ * Remembers `who`: their face for good, if it shows and it `seen` them. `blown`: also the wearer, face or no
  * face, for STEALTH_MADE_TIME (a disguise it saw through; a mask won't fix that). Only it knows, until it tells
  * someone (stealth_tell()).
  */
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_make(mob/living/who, blown = TRUE)
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_make(mob/living/who, blown = TRUE, seen = TRUE)
 	var/datum/component/stealth_disguise/cache = stealth_disguise_cache(who)
 	if(isnull(cache))
 		return
 	var/key = REF(who)
-	if(cache.face)
+	if(cache.face && seen)
 		LAZYSET(made, cache.face, TRUE)
 	if(!blown)
 		return
@@ -335,14 +337,14 @@
 	// The whole set: one of its own at a distance, whatever its skill.
 	return dist > profile.near_range ? 0 : STEALTH_DISGUISE_FILL_FULL * profile.disguise
 
-/// The name on the pass `who` wears, if it is one of its group's own: what its friends called them. An NPC's
-/// name, never player text; null for a pass in nobody's name or a guard with only its type's name.
+/// The name on the pass `who` wears, if it is one of its group's own still alive: what its friends called them. An
+/// NPC's name, never player text; null for a pass in nobody's name, a dead man's, or a guard with only its type's name.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_card_name(mob/living/carbon/human/who)
 	var/obj/item/card/id/card = ishuman(who) ? (stealth_scav_pass(who) || who.wear_id?.GetID()) : null
 	if(!istype(card) || !card.registered_name)
 		return null
 	for(var/mob/living/carbon/human/npc/friend as anything in group?.living_members())
-		if(friend != pawn && friend.real_name == card.registered_name)
+		if(friend != pawn && friend.stat != DEAD && friend.real_name == card.registered_name)
 			return stealth_first_name(friend)
 	return null
 
@@ -397,6 +399,7 @@
 	challenge = WEAKREF(who)
 	start_turf = where
 	checked_at = 0
+	challenge_started_at = world.time
 	warned = FALSE
 	suspicion_heard = FALSE
 	goto_purpose = STEALTH_GOTO_INVESTIGATE
@@ -434,6 +437,8 @@
 	var/late = checked_at && !(pieces & STEALTH_PIECE_ID) && world.time - checked_at >= STEALTH_CHALLENGE_FAIL_TIME
 	// Stopped where it can't get to them (behind a railing or a window): keeping out of reach is no way to show a pass.
 	var/out_of_reach = stealth_walk_gave_up(where)
+	// Or never close enough to read it in all the time it would have taken to read it and give up on it.
+	out_of_reach = out_of_reach || (!checked_at && world.time - challenge_started_at >= STEALTH_CHALLENGE_REACH_TIME)
 	if(!pieces || ran || late || out_of_reach || get_dist(where, start_turf) > STEALTH_CHALLENGE_LEASH || !stealth_sees(who) || stealth_breaker(who, pieces, where))
 		if(!stealth_blow(who) && stealth_state() == STEALTH_SUSPICIOUS)
 			stealth_go_searching(where)
