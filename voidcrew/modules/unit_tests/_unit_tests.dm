@@ -320,6 +320,7 @@
 #include "voidcrew_stealth_d45.dm"
 #include "voidcrew_stealth_den.dm"
 #include "voidcrew_stealth_disguise.dm"
+#include "voidcrew_stealth_fix2_senses.dm"
 #include "voidcrew_stealth_fix_brain.dm"
 #include "voidcrew_stealth_fix_den.dm"
 #include "voidcrew_stealth_fix_radio.dm"

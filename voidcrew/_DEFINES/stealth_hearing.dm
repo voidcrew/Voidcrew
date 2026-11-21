@@ -124,6 +124,8 @@
 #define STEALTH_MUFFLE_LOUD_MULT 0.5
 /// Past this many walls and doors nothing is heard
 #define STEALTH_MUFFLE_MAX_BLOCKERS 3
+/// The tg volume thin air is judged at (stealth_air_carry()): a middling sound, as most of tg's are played
+#define STEALTH_NOISE_NOMINAL_VOLUME 50
 /// Inside this many muffled tiles a guard knows the spot
 #define STEALTH_NOISE_EXACT_RANGE 6
 /// One tile of error per this many tiles past exact

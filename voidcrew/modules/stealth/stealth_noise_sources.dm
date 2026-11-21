@@ -144,13 +144,16 @@
 	/// The noise it makes when a throw ends (STEALTH_NOISE_*), or null for a plain landing by its weight
 	var/stealth_throw_noise
 
-/// The noise this makes landing from a throw.
-/obj/item/proc/stealth_throw_kind()
+/// The noise this makes landing on `hit_atom` from a throw.
+/obj/item/proc/stealth_throw_kind(atom/hit_atom, datum/thrownthing/throwingdatum)
 	return stealth_throw_noise || STEALTH_NOISE_THROWN
 
-// A glass or a bottle smashes; a carton or a plastic bottle only lands.
-/obj/item/reagent_containers/cup/glass/stealth_throw_kind()
-	return isGlass ? STEALTH_NOISE_GLASS : ..()
+// A glass or a bottle smashes; a carton or a plastic bottle only lands, and so does a glass a bartender slides
+// (tg's smash() declines for both).
+/obj/item/reagent_containers/cup/glass/stealth_throw_kind(atom/hit_atom, datum/thrownthing/throwingdatum)
+	if(isGlass && !(throwingdatum && bartender_check(hit_atom, throwingdatum.get_thrower())))
+		return STEALTH_NOISE_GLASS
+	return ..()
 
 // Landing, or hitting something that isn't a person. A throw that lands on a guard is a touch, which the
 // guard's own controller deals with. Heard from where the thing ends up (tg plays it there, on the thrower's side
@@ -158,7 +161,7 @@
 /obj/item/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
 	// Read first: a bottle is gone once it has smashed.
 	var/noisy = length(GLOB.stealth_groups) && !isliving(hit_atom)
-	var/kind = noisy ? stealth_throw_kind() : null
+	var/kind = noisy ? stealth_throw_kind(hit_atom, throwingdatum) : null
 	var/size = w_class
 	var/turf/landed = get_turf(src)
 	var/sounded = throw_drop_sound || drop_sound
@@ -263,6 +266,10 @@
 		return
 	if(faller.pulledby && faller.pulledby.grab_state >= GRAB_AGGRESSIVE)
 		return
+	// A guard going down on its own slip (on_slipped(), the same tick) is no lure: nobody did that to it.
+	var/datum/ai_controller/basic_controller/human_npc/stealth/faller_ai = faller.ai_controller
+	if(istype(faller_ai) && faller_ai.slipped_at == world.time)
+		return
 	stealth_noise(src, STEALTH_NOISE_THUD, null, faller)
 
 // A whistle, a clap, a snap, a cough, a laugh, a scream: any emote whose sound tg plays now, under tg's own
@@ -270,7 +277,7 @@
 // reach only those in view of it (sound_wall_ignore), so they do here.
 /datum/emote/run_emote(mob/user, params, type_override, intentional = FALSE)
 	var/sounded = FALSE
-	if(length(GLOB.stealth_groups) && isliving(user))
+	if(isliving(user) && stealth_guards_about(get_turf(user)))
 		sounded = get_sound(user) && should_play_sound(user, intentional) && TIMER_COOLDOWN_FINISHED(user, "general_emote_audio_cooldown") && TIMER_COOLDOWN_FINISHED(user, type)
 		if(sounded)
 			// tg's own message steps: an empty one ends the emote before its sound.

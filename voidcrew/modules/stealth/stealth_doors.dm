@@ -9,8 +9,10 @@
  * and mineral and wooden doors (their Open() and Close()). Firelocks are left out: they move by themselves on
  * every air alarm, and tg plays no sound for them.
  *
- * Their own doors: a door that moves with one of the group beside it is theirs, and so is its next close within
- * STEALTH_DOOR_GUARD_MEMORY (an airlock a guard walked through shuts itself 6 s later, when it is far off).
+ * Their own doors: a door one of the group opens, shuts or is refused by is theirs: the guard that bumped or worked
+ * it, free and on its feet (stealth_door_user()), not just any guard standing near. So is a machinery door's next
+ * close within STEALTH_DOOR_GUARD_MEMORY that nobody worked (an airlock a guard walked through shuts itself 6 s
+ * later, when it is far off). A wooden door never shuts itself, so whoever shuts it is the one who did.
  *
  * In the dark a guard sees a door move out to its dark sight range, in the light out to its full sight range:
  * a door is no easier to make out in the dark than a person.
@@ -23,10 +25,63 @@
  */
 
 /datum/stealth_group
-	/// REF(door) => world.time one of the group was beside it when it moved
+	/// REF(door) => world.time one of the group opened it
 	var/list/door_guard_used = list()
 	/// REF(door) => list of world.time it sent someone to look
 	var/list/door_cues = list()
+
+/obj/machinery/door
+	/// Weakref to whoever last bumped or worked it, while a stealth group is alive (stealth_door_user())
+	var/datum/weakref/stealth_user_ref
+	/// world.time of that
+	var/stealth_user_at = -1
+
+/obj/structure/mineral_door
+	/// Weakref to whoever last pushed it, while a stealth group is alive (stealth_door_user())
+	var/datum/weakref/stealth_user_ref
+	/// world.time of that
+	var/stealth_user_at = -1
+
+// Who works a door, stamped before tg moves it in the same tick. The windoor's own bumpopen() doesn't call the base one.
+/obj/machinery/door/bumpopen(mob/user)
+	if(length(GLOB.stealth_groups) && isliving(user))
+		stealth_user_ref = WEAKREF(user)
+		stealth_user_at = world.time
+	return ..()
+
+/obj/machinery/door/window/bumpopen(mob/user)
+	if(length(GLOB.stealth_groups) && isliving(user))
+		stealth_user_ref = WEAKREF(user)
+		stealth_user_at = world.time
+	return ..()
+
+/obj/machinery/door/try_to_activate_door(mob/living/user, access_bypass = FALSE)
+	if(length(GLOB.stealth_groups) && isliving(user))
+		stealth_user_ref = WEAKREF(user)
+		stealth_user_at = world.time
+	return ..()
+
+/obj/structure/mineral_door/TryToSwitchState(atom/user)
+	if(length(GLOB.stealth_groups) && isliving(user))
+		stealth_user_ref = WEAKREF(user)
+		stealth_user_at = world.time
+	return ..()
+
+/// Whoever is working `door` this tick (stamped above), or null: a timer, a button, a crowbar.
+/proc/stealth_door_user(atom/door)
+	var/datum/weakref/user_ref
+	var/at = -1
+	if(istype(door, /obj/machinery/door))
+		var/obj/machinery/door/machine = door
+		user_ref = machine.stealth_user_ref
+		at = machine.stealth_user_at
+	else if(istype(door, /obj/structure/mineral_door))
+		var/obj/structure/mineral_door/slab = door
+		user_ref = slab.stealth_user_ref
+		at = slab.stealth_user_at
+	if(at != world.time)
+		return null
+	return user_ref?.resolve()
 
 // Opening and closing, on every machinery door. Firelocks excepted (see above).
 /obj/machinery/door/run_animation(animation, force_type = DEFAULT_DOOR_CHECKS)
@@ -67,24 +122,26 @@
 	for(var/datum/stealth_group/group as anything in GLOB.stealth_groups.Copy())
 		if(QDELETED(group) || group.home?.z != where.z || !group.region_matches(where))
 			continue
-		if(group.door_is_theirs(key, where, opening))
+		if(group.door_is_theirs(door, key, where, opening))
 			continue
 		if(noisy)
 			stealth_noise(door, STEALTH_NOISE_DOOR, null, null, group)
 		. += group.door_seen(key, where)
 
-/// Whether a door moving at `where` is one of their own going through: one of them beside it, or the close
-/// that follows such an opening. Remembers the opening.
-/datum/stealth_group/proc/door_is_theirs(key, turf/where, opening)
+/// Whether a door moving at `where` is one of their own going through: one of them working it, or a machinery
+/// door shutting by itself after one of them opened it. Remembers the opening.
+/datum/stealth_group/proc/door_is_theirs(atom/door, key, turf/where, opening)
 	for(var/stamped in door_guard_used)
 		if(world.time - door_guard_used[stamped] > STEALTH_DOOR_GUARD_MEMORY)
 			door_guard_used -= stamped
-	if(member_beside(where, living_members()))
-		door_guard_used[key] = world.time
+	var/mob/living/user = stealth_door_user(door)
+	if(member_uses_door(user, where, living_members()))
+		if(opening)
+			door_guard_used[key] = world.time
 		return TRUE
 	if(!opening && door_guard_used[key])
 		door_guard_used -= key
-		return TRUE
+		return isnull(user) && istype(door, /obj/machinery/door)
 	return FALSE
 
 /**
