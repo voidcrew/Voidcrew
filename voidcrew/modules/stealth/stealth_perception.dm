@@ -130,8 +130,9 @@ GLOBAL_LIST_EMPTY(stealth_test_dark_turfs)
 
 /**
  * The living mobs a guard might notice within `range`, nearest first: not itself, not its own side, not the
- * dead, not critters (stealth_is_critter()). Uses the spatial grid, never view() or hearers(). The caller caps
- * how many it judges.
+ * dead, not critters (stealth_is_critter()), and not someone's captive (an NPC in cuffs or out cold, as the den
+ * cameras judge it; a player counts whatever state they're in). Uses the spatial grid, never view() or hearers().
+ * The caller caps how many it judges.
  */
 /proc/stealth_candidates(mob/living/guard, range)
 	var/turf/center = get_turf(guard)
@@ -148,6 +149,8 @@ GLOBAL_LIST_EMPTY(stealth_test_dark_turfs)
 		if(dist > range)
 			continue
 		if(guard.faction_check_atom(found) || stealth_is_critter(found))
+			continue
+		if(!found.ckey && (found.stat != CONSCIOUS || HAS_TRAIT(found, TRAIT_RESTRAINED)))
 			continue
 		var/list/bucket = buckets[dist + 1]
 		if(isnull(bucket))
