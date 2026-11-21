@@ -126,6 +126,8 @@
 /// How far its group hears it being blown up, burned, gassed or stunned
 #define STEALTH_HARM_ALERT_RANGE 9
 #define STEALTH_ADMIN_OVERLAY_TIME (5 MINUTES)
+/// How often an admin sight overlay is redrawn for a guard that hasn't moved or turned
+#define STEALTH_ADMIN_SIGHT_REDRAW (5 SECONDS)
 /// Seconds of search between "Come on out." lines
 #define STEALTH_SEARCH_BARK_INTERVAL (12 SECONDS)
 

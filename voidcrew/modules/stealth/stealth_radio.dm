@@ -37,6 +37,14 @@
 	. = ..()
 	set_frequency(net_frequency)
 
+/// The net is wherever the earpiece is. It never binds to a ship or an outpost it has been carried aboard, or its
+/// calls would go to that crew's channel from then on.
+/obj/item/radio/headset/guard_net/get_bound_comms_ship()
+	return null
+
+/obj/item/radio/headset/guard_net/get_comms_net()
+	return get_physical_comms_net()
+
 /obj/item/radio/headset/guard_net/scav
 	name = "scav earpiece"
 	desc = "A battered earpiece, stuck on one channel. Somebody's chewing gum holds the casing together."
@@ -170,7 +178,8 @@
 				check.waiters |= WEAKREF(guard)
 		return
 	// Who it was goes out with the alarm to every receiver that got it, even inside the cooldown (decision 44).
-	var/datum/ai_controller/basic_controller/human_npc/stealth/speaker_ai = speaker.ai_controller
+	// No speaker: an admin's test alarm (stealth_admin.dm).
+	var/datum/ai_controller/basic_controller/human_npc/stealth/speaker_ai = speaker?.ai_controller
 	if(istype(speaker_ai))
 		for(var/mob/living/carbon/human/npc/guard as anything in guards)
 			if(guard != speaker && radio_receiver(guard))
