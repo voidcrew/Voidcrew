@@ -32,6 +32,8 @@
 	return null
 
 // ===== The tip =====
+// Not on sale anywhere yet (owner, 2026-11-20): the den is reached only through the admin verb in
+// stealth_den_planet.dm. Add this SKU back to a shop's chart_pool to sell it.
 
 /datum/shop_sku/ruin_chart/scav_den
 	name = "contested-lane tip: scav chop shop"
