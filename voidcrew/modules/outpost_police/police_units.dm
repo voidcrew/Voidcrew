@@ -283,13 +283,39 @@
 // officer and the marshal add a gas mask, flash-proof eyewear and a ballistic long gun (abuse M5: no gas
 // or flash trick, and no energy weapon for an EMP to take).
 
+/**
+ * The police radio net (stealth_radio.dm): only a guard net earpiece carries an NPC's calls, so every officer and
+ * recovery crew wears one of these, locked to the police frequency.
+ */
+/obj/item/radio/headset/guard_net/outpost_police
+	name = "security radio headset"
+	desc = "A security headset, stuck on one channel."
+	icon_state = "sec_headset"
+	worn_icon_state = "sec_headset"
+	net_frequency = OUTPOST_POLICE_RADIO_FREQ
+
+/// The recovery crews' plain one
+/obj/item/radio/headset/guard_net/outpost_police/crew
+	name = "radio headset"
+	desc = "A plain headset, stuck on one channel."
+	icon_state = "headset"
+	worn_icon_state = "headset"
+
+/// A stealth guard's earpiece comes off him (stealth_light.dm). The police net's stays locked to its wearer with the
+/// rest of the kit (abuse M8).
+/mob/living/carbon/human/npc/ambient_npc/outpost/npc_lock_item(obj/item/item)
+	if(istype(item, /obj/item/radio/headset/guard_net/outpost_police) && npc_gear_locked && !QDELETED(item))
+		item.AddElement(/datum/element/human_npc_gear)
+		return TRUE
+	return ..()
+
 /// Every officer: radio, an ID that opens the police doors, and a belt with baton, cuffs and sidearm (pockets empty)
 /datum/outfit/outpost_police
 	name = "Outpost Police"
 	uniform = /obj/item/clothing/under/rank/security/officer/spacepol
 	shoes = /obj/item/clothing/shoes/jackboots
 	gloves = /obj/item/clothing/gloves/color/black
-	ears = /obj/item/radio/headset/headset_sec
+	ears = /obj/item/radio/headset/guard_net/outpost_police
 	belt = /obj/item/storage/belt/security/outpost_police
 	belt_contents = list(
 		/obj/item/melee/baton/security/loaded = 1,

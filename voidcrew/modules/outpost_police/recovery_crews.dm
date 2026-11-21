@@ -75,7 +75,7 @@
 	gloves = /obj/item/clothing/gloves/latex/coroner
 	shoes = /obj/item/clothing/shoes/sneakers/black
 	head = /obj/item/clothing/head/utility/surgerycap/black
-	ears = /obj/item/radio/headset
+	ears = /obj/item/radio/headset/guard_net/outpost_police/crew
 	id = /obj/item/card/id/advanced
 	id_trim = /datum/id_trim/outpost_morgue
 
@@ -105,7 +105,7 @@
 	gloves = /obj/item/clothing/gloves/color/purple
 	head = /obj/item/clothing/head/soft/purple
 	shoes = /obj/item/clothing/shoes/galoshes
-	ears = /obj/item/radio/headset
+	ears = /obj/item/radio/headset/guard_net/outpost_police/crew
 	id = /obj/item/card/id/advanced
 	id_trim = /datum/id_trim/recovery_crew
 	r_hand = /obj/item/mop

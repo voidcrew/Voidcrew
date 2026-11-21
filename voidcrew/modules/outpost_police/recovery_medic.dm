@@ -70,7 +70,7 @@
 	head = /obj/item/clothing/head/soft/paramedic
 	gloves = /obj/item/clothing/gloves/latex/nitrile
 	shoes = /obj/item/clothing/shoes/workboots/black
-	ears = /obj/item/radio/headset
+	ears = /obj/item/radio/headset/guard_net/outpost_police/crew
 	belt = /obj/item/storage/belt/medical
 	belt_contents = list(
 		/obj/item/stack/medical/suture = 1,

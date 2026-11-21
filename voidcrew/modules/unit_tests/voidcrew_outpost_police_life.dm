@@ -18,7 +18,7 @@
 /datum/unit_test/proc/police_headset_on(mob/living/carbon/human/officer)
 	if(istype(officer.ears, /obj/item/radio/headset))
 		return officer.ears
-	var/obj/item/radio/headset/headset = allocate(/obj/item/radio/headset)
+	var/obj/item/radio/headset/headset = allocate(/obj/item/radio/headset/guard_net/outpost_police)
 	TEST_ASSERT(officer.equip_to_slot_if_possible(headset, ITEM_SLOT_EARS), "A headset would not go on [officer]")
 	return headset
 
