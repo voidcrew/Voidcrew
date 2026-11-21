@@ -35,11 +35,12 @@
 	var/list/datum/weakref/waiters = list()
 
 /datum/stealth_group
-	/// Noise kind => list(world.time, turf) of the last one its guards heard
+	/// Noise kind => list(world.time, turf, reach, made by one of their own) of the last one its guards heard
 	var/list/noise_stamps = list()
 	/// list(turf, world.time) for each small noise it sent someone to
 	var/list/lures = list()
-	/// list(world.time, weight) for each alarm it answered (a lure counts half)
+	/// list(world.time, weight) for each alarm it answered. Small noises aren't alarms: a few pebbles never thin out
+	/// the answer to gunfire.
 	var/list/alarms = list()
 	/// Guards out looking at a noise
 	var/list/datum/stealth_check/checks = list()
@@ -64,7 +65,8 @@
 			STEALTH_NOISE_IMPACT = list(STEALTH_NOISE_RANGE_IMPACT, STEALTH_HEAR_INVESTIGATE, NONE),
 			STEALTH_NOISE_BLAST = list(STEALTH_NOISE_RANGE_BLAST, STEALTH_HEAR_ALARM, STEALTH_NOISE_LOUD),
 			STEALTH_NOISE_GLASS = list(STEALTH_NOISE_RANGE_GLASS, STEALTH_HEAR_INVESTIGATE, NONE),
-			STEALTH_NOISE_THROWN = list(STEALTH_NOISE_RANGE_THROWN_SMALL, STEALTH_HEAR_INVESTIGATE, NONE),
+			// tg plays a landing for those in view of it only (sound_chain(), ignore_walls = FALSE)
+			STEALTH_NOISE_THROWN = list(STEALTH_NOISE_RANGE_THROWN_SMALL, STEALTH_HEAR_INVESTIGATE, STEALTH_NOISE_LOS_ONLY),
 			STEALTH_NOISE_KNOCK = list(STEALTH_NOISE_RANGE_KNOCK, STEALTH_HEAR_INVESTIGATE, NONE),
 			STEALTH_NOISE_BASH = list(STEALTH_NOISE_RANGE_BASH, STEALTH_HEAR_INVESTIGATE, NONE),
 			STEALTH_NOISE_DOOR = list(STEALTH_NOISE_RANGE_DOOR, STEALTH_HEAR_GLANCE, NONE),
@@ -85,10 +87,11 @@
  * Something made a noise guards can hear. Does nothing unless a stealth group has awake members on that level.
  * source: where it happened (any atom; its turf is used). kind: STEALTH_NOISE_*. reach: tiles in open air, or
  * null for the kind's default. actor: the living mob that made it, if known. only: one group to tell, or null
- * for every group in earshot.
+ * for every group in earshot. extra_flags: STEALTH_NOISE_* flags on top of the kind's own, for one sound tg plays
+ * differently from the rest of its kind (an emote only those in view hear).
  * Returns the number of guards that heard it (tests and the admin view).
  */
-/proc/stealth_noise(atom/source, kind, reach = null, mob/living/actor = null, datum/stealth_group/only = null)
+/proc/stealth_noise(atom/source, kind, reach = null, mob/living/actor = null, datum/stealth_group/only = null, extra_flags = NONE)
 	if(!length(GLOB.stealth_groups))
 		return 0
 	var/turf/where = get_turf(source)
@@ -113,7 +116,7 @@
 			aired = TRUE
 			if(!stealth_noise_carries(where, actor))
 				return 0
-		. += group.hear(where, kind, reach, profile[STEALTH_PROFILE_LEVEL], profile[STEALTH_PROFILE_FLAGS], actor, door)
+		. += group.hear(where, kind, reach, profile[STEALTH_PROFILE_LEVEL], profile[STEALTH_PROFILE_FLAGS] | extra_flags, actor, door)
 
 /// Whether there is air at `where` to carry a sound, as for players (playsound_local scales by pressure). A
 /// noise on a wall or a window tile is judged where its maker stands.
@@ -185,21 +188,22 @@
 /// Its guards hear a noise at `where`, those that can. Returns how many did.
 /datum/stealth_group/proc/hear(turf/where, kind, reach, level, flags, mob/living/actor, door = FALSE)
 	var/list/views = length(GLOB.stealth_sight_overlays) ? stealth_noise_views(where.z) : null
-	// The same noise again (full auto, a burst, pellets): one event, not ten.
-	var/list/stamp = noise_stamps[kind]
-	if(stamp && world.time - stamp[1] < STEALTH_NOISE_COALESCE && get_dist(stamp[2], where) <= STEALTH_NOISE_COALESCE_RANGE)
-		for(var/datum/stealth_noise_view/view as anything in views)
-			view.show(where, kind, reach, null, TRUE)
-		return 0
 	var/list/guards = living_members()
 	if(!length(guards))
+		return 0
+	var/mob/living/any_guard = guards[1]
+	var/ally = !isnull(actor) && any_guard.faction_check_atom(actor)
+	// The same noise again (full auto, a burst, pellets): one event, not ten. Not when it carries further than the
+	// last one, or comes from the other side (one of their own, then someone else).
+	var/list/stamp = noise_stamps[kind]
+	if(stamp && world.time - stamp[1] < STEALTH_NOISE_COALESCE && get_dist(stamp[2], where) <= STEALTH_NOISE_COALESCE_RANGE && reach <= stamp[3] && ally == stamp[4])
+		for(var/datum/stealth_noise_view/view as anything in views)
+			view.show(where, kind, reach, null, TRUE)
 		return 0
 	if((flags & STEALTH_NOISE_GROUP_ONLY) && !(actor in guards))
 		return 0
 	if(door && member_beside(where, guards))
 		return 0
-	var/mob/living/any_guard = guards[1]
-	var/ally = !isnull(actor) && any_guard.faction_check_atom(actor)
 	var/gunfire = stealth_noise_is_gunfire(kind)
 	// One of their own making an everyday noise.
 	if(ally && !gunfire && !(flags & (STEALTH_NOISE_ALLIES_COUNT | STEALTH_NOISE_GROUP_ONLY)))
@@ -207,6 +211,9 @@
 	// An ally's gunfire means an ally is in a fight: it is a call for help from where they stand.
 	if(ally && gunfire)
 		level = STEALTH_HEAR_SHOUT
+	// A guard's shout while this one is dealt with runs hear() again: that one keeps its own notes.
+	var/list/outer_notes = noise_notes
+	var/outer_reach = noise_reach
 	noise_notes = views ? list() : null
 	noise_reach = reach
 	// list(guard, muffled distance), nearest first
@@ -247,7 +254,7 @@
 		guard_ai.last_heard = list(kind, world.time)
 		note(guard, "heard [muffled]/[guard_reach]")
 	if(length(hearers))
-		noise_stamps[kind] = list(world.time, where)
+		noise_stamps[kind] = list(world.time, where, reach, ally)
 		// Far off, they misjudge the spot: all of them by the same error, so they end up in one place.
 		var/turf/spot = where
 		var/list/nearest = hearers[1]
@@ -260,7 +267,8 @@
 		dispatch_noise(hearers, where, kind, level, actor, spot)
 	for(var/datum/stealth_noise_view/view as anything in views)
 		view.show(where, kind, reach, noise_notes, FALSE)
-	noise_notes = null
+	noise_notes = outer_notes
+	noise_reach = outer_reach
 	return length(hearers)
 
 /// Admin noise view: what `guard` made of the noise being dealt with.
@@ -269,11 +277,16 @@
 		return
 	noise_notes[guard] = append ? "[noise_notes[guard]] -> [text]" : text
 
-/// Whether a conscious guard of the group stands within a tile of `where`.
+/// Whether a conscious guard of the group, free and its own master, stands within a tile of `where`. A captive one
+/// (cuffed, grabbed, in a locker, buckled, hands up under a gun) or one a player drives opens no door for the rest.
 /datum/stealth_group/proc/member_beside(turf/where, list/guards)
 	for(var/mob/living/guard as anything in guards)
-		if(guard.stat == CONSCIOUS && guard.z == where.z && get_dist(guard, where) <= 1)
-			return TRUE
+		if(guard.stat != CONSCIOUS || guard.client || guard.z != where.z || get_dist(guard, where) > 1)
+			continue
+		var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = guard.ai_controller
+		if(!istype(guard_ai) || guard_ai.stealth_captive() || guard_ai.holdup_aimer)
+			continue
+		return TRUE
 	return FALSE
 
 /// How many small noises it sent someone to within STEALTH_LURE_RADIUS of `where` and STEALTH_LURE_MEMORY.
@@ -286,7 +299,7 @@
 		if(get_dist(lure[1], where) <= STEALTH_LURE_RADIUS)
 			.++
 
-/// How many alarms it answered within STEALTH_ALARM_MEMORY (a lure counts half).
+/// How many alarms it answered within STEALTH_ALARM_MEMORY.
 /datum/stealth_group/proc/alarm_count()
 	. = 0
 	for(var/list/alarm as anything in alarms)
@@ -351,7 +364,6 @@
 /datum/stealth_group/proc/dispatch_investigate(list/hearers, turf/where, turf/spot)
 	var/earlier = lure_count(where)
 	lures += list(list(where, world.time))
-	alarms += list(list(world.time, 0.5))
 	if(earlier >= 2)
 		var/shouted = FALSE
 		for(var/list/hearer as anything in hearers)

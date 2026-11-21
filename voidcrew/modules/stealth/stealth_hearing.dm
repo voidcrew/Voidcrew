@@ -28,6 +28,9 @@
 	var/list/heard_map
 	/// REF(mob) => TRUE for everyone whose steps it heard this scan (their notice doesn't decay)
 	var/list/heard_now
+	/// REF(mob) => world.time it last heard their steps. Kept apart from the notice entry's turf and time, which are
+	/// what it saw: a heard step is never taken for a sighting (stealth_cover_glimpsed(), the still check).
+	var/list/heard_at
 	/// Its radio call on the way out: list(kind, turf, world.time due, name), or null
 	var/list/pending_call
 	/// world.time it may next shout for help
@@ -231,12 +234,13 @@
 			continue
 		var/list/entry = notice[key]
 		if(isnull(entry))
+			// The turf is where it heard them, never seen there: the seen time stays 0.
 			entry = list(0, where, 0)
 			notice[key] = entry
 		if(entry[STEALTH_ENTRY_NOTICE] < STEALTH_SUSPICIOUS_AT)
 			var/gained = get_dist(here, where) <= profile.close_range ? STEALTH_SUSPICIOUS_AT : entry[STEALTH_ENTRY_NOTICE] + STEALTH_FOOTSTEP_NOTICE
 			entry[STEALTH_ENTRY_NOTICE] = min(gained, STEALTH_SUSPICIOUS_AT)
-		entry[STEALTH_ENTRY_SEEN_AT] = world.time
+		LAZYSET(heard_at, key, world.time)
 		if(blackboard[BB_STEALTH_WARY])
 			wary_at = world.time
 		if(entry[STEALTH_ENTRY_NOTICE] >= STEALTH_SUSPICIOUS_AT)
