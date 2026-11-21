@@ -276,8 +276,11 @@
 	return !!strategy?.can_attack(guard, who, stealth_skill().sight_range)
 
 /// Whether `who`, seen on `where` in a disguise of `pieces`, is doing something no guard of the den would: a weapon
-/// in hand, pulling a fallen guard, or standing in an off-limits room the pass doesn't excuse.
+/// in hand, pulling a fallen guard, holding one of its own up in front of them, or standing in an off-limits room the
+/// pass doesn't excuse.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_breaker(mob/living/carbon/human/who, pieces, turf/where)
+	if(stealth_holds_one_of_ours(who))
+		return TRUE
 	for(var/obj/item/held in who.held_items)
 		if(isgun(held) || istype(held, /obj/item/melee) || (held.force >= STEALTH_WEAPON_FORCE && held.get_sharpness()))
 			return TRUE

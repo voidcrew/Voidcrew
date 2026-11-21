@@ -531,3 +531,28 @@
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "alert", "A guard never went for someone who showed no pass")
 	TEST_ASSERT(world.time - start_time >= 5 SECONDS, "The guard gave someone with no pass only [(world.time - start_time) / 10] s")
 	TEST_ASSERT_EQUAL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], person, "The alert guard isn't after them")
+
+/// Someone holding one of its own up in front of them, seen in its cone: an alert on that look, no notice to fill, at
+/// any range it sees and in a disguise or not.
+/datum/unit_test/voidcrew_stealth_hostage_seen
+
+/datum/unit_test/voidcrew_stealth_hostage_seen/Run()
+	var/datum/turf_reservation/block = stealth_block(12, 5)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	for(var/disguised in list(FALSE, TRUE))
+		var/mob/living/carbon/human/npc/guard = stealth_guard(block, 2, 2, EAST)
+		var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
+		var/mob/living/carbon/human/holder = stealth_person(block, 8, 2)
+		if(disguised)
+			stealth_dress(holder)
+		var/mob/living/carbon/human/npc/friend = stealth_guard(block, 8, 2, WEST)
+		TEST_ASSERT(holder.put_in_hands(new /obj/item/gun/ballistic/automatic/pistol(holder)), "Test fixture: no gun in hand")
+		stealth_test_grab(holder, friend, GRAB_NECK)
+		if(friend.loc != holder.loc)
+			friend.forceMove(holder.loc)
+		TEST_ASSERT_EQUAL(stealth_hostage_of(holder), friend, "Test fixture: the friend isn't held at gunpoint")
+		stealth_scans(guard, 1)
+		TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "alert", "A guard took its time over someone holding one of its own six tiles off ([disguised ? "disguised" : "plain"])")
+		qdel(guard)
+		qdel(friend)
+		qdel(holder)

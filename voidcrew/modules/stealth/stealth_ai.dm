@@ -680,6 +680,12 @@
 		if(worn.tint >= TINT_BLIND && guard.dropItemToGround(worn))
 			return
 
+/// Whether `who` holds one of its own people up in front of them: at gunpoint or with a hand over the mouth.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_holds_one_of_ours(mob/living/who)
+	var/mob/living/held = stealth_held_in_front(who)
+	var/mob/living/guard = pawn
+	return !isnull(held) && held != guard && guard.faction_check_atom(held)
+
 /// How far it sees onto `tile` in its cone: shorter in the dark unless it sees in the dark. `who`, if given, is the
 /// person standing there: someone carrying a lit light is lit up by it wherever its beam points, so never in the dark.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_range_onto(turf/tile, mob/living/who)
@@ -794,6 +800,9 @@
 			var/cap = dist <= STEALTH_ADJACENT_RANGE ? sight_range : stealth_range_onto(where, boxed ? null : candidate)
 			if(dist <= cap)
 				in_view = TRUE
+				// One of its own held up in front of them, in plain view: no double take, at any range it sees.
+				if(!boxed && stealth_holds_one_of_ours(candidate))
+					plain_sight = TRUE
 				rate = profile.notice_rate * clamp((cap + 1 - dist) / cap, STEALTH_NOTICE_MIN_FALLOFF, 1)
 				if(cap < sight_range)
 					rate *= STEALTH_DARK_MULT
