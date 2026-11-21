@@ -24,7 +24,7 @@ export type Notice = {
   at: number;
 };
 
-export type TabId = 'crews' | 'shipyard' | 'housing' | 'character';
+export type TabId = 'crews' | 'shipyard' | 'housing' | 'character' | 'settings';
 
 /** bezel.json from the art package (all numbers are 1x pixels). Null: placeholder bezel. */
 export type BezelSpec = {
@@ -44,19 +44,36 @@ export type ShellData = {
   polls: 0 | 1 | 2;
   /** Position in the popcap queue, 0 when not queued. */
   queue: number;
+  /** First in the popcap queue and a place is free: JOIN reads NOW. */
+  queue_go?: BooleanLike;
+  /** The active character's name; "" until prefs_ready. */
+  char_name?: string;
   /** Admins before the round: [players ready, admins ready, admins]. Null otherwise. */
   admin_ready: [number, number, number] | null;
   notice: Notice | null;
   /** The server asks the client to switch tab; act on each new serial. */
   tab_request: { tab: TabId; serial: number } | null;
+  /**
+   * The start-up screen (Boot.tsx): 0 this connection has already seen it, 1 it is still to
+   * play but the terminal is not on screen yet, 2 play it now.
+   */
+  boot?: 0 | 1 | 2;
+  /** 1: ask the first-time WELCOME (Welcome.tsx). */
+  welcome?: 0 | 1;
 };
 
 export type ShellStatic = {
   wiki: BooleanLike;
+  /** The server has a rules address: RULES is live. */
+  rules?: BooleanLike;
   localhost_admin: BooleanLike;
-  /** Port name for the header, or null (header reads "BERTH OFFICE"). */
+  /** Station name, shown at the foot of the side menu. */
   port: string | null;
+  /** Whether a player who observes can come back: not at all, as the same character, or as a new one. */
+  respawn?: 'none' | 'same' | 'new';
   bezel: BezelSpec | null;
+  /** Sounds still played by a stand-in clip: asset name -> [playback rate, volume scale]. */
+  sfx_tune?: Record<string, [number, number]>;
 };
 
 // ---------------------------------------------------------------------------
@@ -93,12 +110,26 @@ export type Crew = {
   /** Seconds left on a wrong-code lockout. */
   code_wait: number;
   jobs: CrewJob[];
-  /** Who is aboard: [name, job title, captain], the captain first. Capped server-side. */
-  aboard?: [string, string, BooleanLike][];
+  /** The player's own crew (the ship's team belongs to their crew record). */
+  mine: BooleanLike;
+};
+
+/** Who is aboard the ship whose record is open. */
+export type CrewRoster = {
+  /** REF(ship) of the open record. */
+  ref: string;
+  /** [name, captain]: captains first, then at most 30 others. */
+  names: [string, BooleanLike][];
+  /** Crew aboard who are not in names. */
+  more: number;
 };
 
 export type CrewsData = {
   crews?: Crew[];
+  /** Only for the record sent with crew_open; null when none is open or that ship left. */
+  roster?: CrewRoster | null;
+  /** A join (any route) is under way: SIGN ON waits. */
+  joining?: BooleanLike;
 };
 
 // ---------------------------------------------------------------------------
@@ -162,30 +193,39 @@ export type Owned = {
   modules: Record<string, string[]>;
 };
 
-/** Saved ship card (2.5). Field names follow the mockup; the ship-saving PR maps to them. */
+/** A saved ship on the home's SAVED SHIPS box (built by the ship-saves hook). */
 export type SaveCard = {
+  /** 1 to 3. */
   slot: number;
+  /** row.ship_name, 46 at most. */
   name: string;
-  /** Class line, e.g. "Goon-class Scout". */
+  /** The hull's short name, 23 at most. */
   class: string;
-  mass?: number;
-  crew?: number;
+  /** Berths. */
+  crew: number;
+  /** What the save holds, in display order, 12 entries at most ("1,850 cr", "4 Laser turret"). */
+  carries: string[];
   /** Why it can't load now, or null. */
   denial: string | null;
-  /** UNDER WAY: the original hull is still in service. */
+  /** A retrieval is under way. */
   locked: BooleanLike;
-  funds?: number;
-  research?: number;
-  /** Encoded floor plan for the line drawing. */
-  plan?: string;
-  /** [label, count, colour class] */
-  fit?: [string, number, string][];
-  lab?: number;
-  cargo?: number;
+  /** Loading it returns the player to the crew they are in now: no LEAVE CREW question. */
+  restores: BooleanLike;
 };
 
+/** wait: not read yet. ok: read. off: no database (or a guest). */
+export type LedgerState = 'wait' | 'ok' | 'off';
+
+export type YardSaves = {
+  state: 'wait' | 'off' | 'ok';
+  /** ok: exactly 3 entries in slot order, null for an empty slot. Otherwise empty. */
+  slots: (SaveCard | null)[];
+};
+
+/** Sent only once the player has opened SHIPYARD (yard_open). */
 export type YardData = {
   account?: Parts | null;
+  ledger?: LedgerState;
   owned?: Owned | null;
   free_ships?: BooleanLike;
   can_requisition?: BooleanLike;
@@ -193,8 +233,12 @@ export type YardData = {
   crew_change?: string | null;
   /** Bumped when a commission put the player aboard: drop the fit. */
   fit_serial?: number;
-  /** Saved ships, null entries for empty slots. Null hides the SAVED SHIPS box. Always sent by the shell. */
-  saves: (SaveCard | null)[] | null;
+  saves?: YardSaves;
+  /**
+   * One-off push (not every tick): each slot's encoded floor plan, or null. The page keeps the
+   * last value pushed.
+   */
+  save_plans?: (string | null)[];
 };
 
 export type YardStatic = {
@@ -203,7 +247,7 @@ export type YardStatic = {
 };
 
 // ---------------------------------------------------------------------------
-// HOUSING (2.4). Owner: P5.
+// HOUSING (design 02, section 4).
 // ---------------------------------------------------------------------------
 
 export type OutpostMode = 'open' | 'password' | 'approved' | 'closed';
@@ -214,8 +258,10 @@ export type Outpost = {
   mode: OutpostMode;
   residents: number;
   cleared: BooleanLike;
-  /** Short in-character reason MOVE IN is refused, or null. */
-  denial: string | null;
+  /** MOVE IN would be refused now (for any reason, said or not). */
+  blocked: BooleanLike;
+  /** The refusal to draw on the block, or null when the word or the round already says it. 45 at most. */
+  why: string | null;
   /** Seconds left on a wrong-code lockout. */
   code_wait?: number;
   /** INVITE outposts: the player may ask to move in. */
@@ -251,6 +297,8 @@ export type CharKitItem = {
   name?: string;
   /** Reskin option key. */
   reskin?: string;
+  /** INFO_LAYER: 1 = an accessory worn over the suit; the lipstick's place. */
+  layer?: 0 | 1 | 'Upper' | 'Middle' | 'Lower';
 };
 
 /** A species change waiting on CHANGE / CANCEL because taken quirks don't fit it. */
@@ -289,12 +337,17 @@ export type CharData = {
   /** Job category the preview wears. */
   dress: string;
   confirm: CharConfirm | null;
+  /** The look the character has now (char_appearance_key()); the preview is pending until it holds this key. */
+  look: string;
 };
 
 export type CharStatic = {
-  /** [category, examples] in GLOB.job_categories order; examples from the roundstart job pool. */
-  roles: [category: string, examples: string][];
-  /** Recolourable loadout item path -> number of GAGS colour slots. */
+  /**
+   * [category, berth titles] in GLOB.job_categories order. Up to 6 titles from the roundstart
+   * job pool, the most common first. A category with no berth on any starting ship is left out.
+   */
+  roles: [category: string, titles: string[]][];
+  /** Recolourable loadout item path -> number of colour slots (GAGS slots; the lipstick has 1). */
   kit_colors: Record<string, number>;
 };
 
@@ -304,24 +357,32 @@ export type CharPreview = { key: string; dir: CharDir; png: string } | null;
 export type CharacterData = {
   /** Sent every tick; tells the client whether its last push is stale. */
   char_rev?: number;
+  /** Counts saves of the character to disk (one-off push); a change shows SAVED. */
+  char_saved?: number;
   /** One-off pushes: these keep their last pushed value between pushes. */
   char?: CharData;
   char_static?: CharStatic;
   char_preview?: CharPreview;
 };
 
-/**
- * BODY rows, top to bottom. A row shows only when its savefile key is in CharData.prefs.
- * Species feature keys not listed here still show, as generic rows after the species ones.
- * underwear, undershirt, socks and hair_gradient(+_color) are the owner's extra rows (Q1).
- */
-export const BODY_KEYS = [
+/** BODY, IDENTITY group, top to bottom. A row shows only when its key is in CharData.prefs. */
+export const IDENTITY_KEYS = [
   'real_name',
   'age',
   'species',
   'body_type',
   'gender',
   'background',
+  'voice_pack',
+  'bark_speech_pitch',
+  'bark_speech_speed',
+] as const;
+
+/**
+ * BODY, LOOKS group, top to bottom. '@features' is where species feature keys not named here
+ * go (by key). underwear, undershirt, socks and the hair gradient are the owner's extra rows.
+ */
+export const LOOKS_KEYS = [
   'skin_tone',
   'hairstyle_name',
   'hair_color',
@@ -329,15 +390,26 @@ export const BODY_KEYS = [
   'hair_gradient_color',
   'facial_style_name',
   'facial_hair_color',
+  'feature_human_ears',
+  'feature_human_tail',
   'feature_mcolor',
+  'feature_lizard_snout',
+  'feature_lizard_horns',
+  'feature_lizard_frills',
+  'feature_lizard_spines',
+  'feature_lizard_body_markings',
+  'feature_lizard_legs',
+  'feature_lizard_tail',
+  'feature_moth_wings',
+  'feature_moth_antennae',
+  'feature_moth_markings',
   'feature_ethcolor',
+  '@features',
   'eye_color',
-  'voice_pack',
-  'bark_speech_pitch',
-  'bark_speech_speed',
   'backpack',
   'jumpsuit_style',
   'underwear',
+  'underwear_color',
   'undershirt',
   'socks',
 ] as const;
@@ -366,13 +438,58 @@ export type CellBox = { x: number; y: number; w: number; h: number };
 
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// SETTINGS (lobby_settings.dm). One-off pushes on settings_open and after every change.
+
+/** How a game preference is edited, from its DM type. */
+export type SettingKind =
+  | 'toggle'
+  | 'choice'
+  | 'number'
+  | 'color'
+  | 'text'
+  | 'other';
+
+/** One game preference the player can see, as tg's game preferences page would list it. */
+export type SettingRow = {
+  /** savefile_key; also the key of tg's TSX feature registry (name, category, description). */
+  key: string;
+  kind: SettingKind;
+  /** compile_ui_data(): 0/1 for a toggle, the serialized choice, a number, '#rrggbb'. */
+  value: string | number;
+  /** number: the preference's limits. */
+  min?: number;
+  max?: number;
+  step?: number;
+  /** choice: the values, when preferences.json has no choices for the key. */
+  choices?: string[];
+  /** text: the longest value the server keeps. */
+  max_length?: number;
+  /** TRUE: shown but not editable here (tg's window disables it too, e.g. BYOND members only). */
+  locked?: BooleanLike;
+};
+
+export type SettingsBlock = {
+  /** Bumped on every push. */
+  rev: number;
+  rows: SettingRow[];
+};
+
+export type SettingsData = {
+  /** One-off push: every accessible game preference. Kept between pushes. */
+  settings?: SettingsBlock;
+  /** Counts saves of the game preferences to disk (one-off push); a change shows SAVED. */
+  settings_saved?: number;
+};
+
 export type LobbyData = ShellData &
   ShellStatic &
   CrewsData &
   YardData &
   YardStatic &
   HousingData &
-  CharacterData;
+  CharacterData &
+  SettingsData;
 
 /**
  * Every action and its params. Shell actions are handled in lobby_bezel.dm; prefixed ones
@@ -381,7 +498,10 @@ export type LobbyData = ShellData &
 export type LobbyActions = {
   join: Record<string, never>;
   ready: Record<string, never>;
+  /** Kept for the classic path; the page sends observe_confirm. */
   observe: Record<string, never>;
+  /** OBSERVE after the in-terminal confirm. */
+  observe_confirm: Record<string, never>;
   character: Record<string, never>;
   settings: Record<string, never>;
   wiki: Record<string, never>;
@@ -389,7 +509,8 @@ export type LobbyActions = {
   manifest: Record<string, never>;
   changelog: Record<string, never>;
   start_now: Record<string, never>;
-  dismiss: Record<string, never>;
+  /** Clears the notice; with at, only the notice set at that world.time. */
+  dismiss: { at?: number };
   /** Client display metrics, logged once per load. */
   metrics: {
     dpr: number;
@@ -398,7 +519,10 @@ export type LobbyActions = {
     s: number;
     cols: number;
     rows: number;
+    mode: 'side' | 'bar';
   };
+  crew_open: { ship: string };
+  crew_close: Record<string, never>;
   crew_sign_on: { ship: string; job: string };
   crew_code: { ship: string; code: string };
   crew_apply: { ship: string; note: string };
@@ -409,14 +533,17 @@ export type LobbyActions = {
     hull: string;
     finish: string;
     modules: Record<string, string>;
+    /** The total the page showed; the server refuses a higher bill, never charges this. */
+    total: Parts;
     leave_crew: 0 | 1;
   };
   yard_requisition: { leave_crew: 0 | 1 };
   yard_load: { slot: number; leave_crew: 0 | 1 };
   home_move_in: { outpost: string; code?: string };
   home_request: { outpost: string };
-  /** Sends char, char_static and preferences.json; queues the preview. */
-  char_open: Record<string, never>;
+  /** Sends char, char_static and preferences.json; queues the preview. auto 1: the shell's
+   * pre-round open, which renders the south facing only until the player does something. */
+  char_open: { auto?: 0 | 1 };
   /** Saves, then switches to that slot (1-based). There is no delete (Q5). */
   char_slot: { slot: number };
   /** One PREFERENCE_CHARACTER preference. confirm is only set by the server's own re-run. */
@@ -435,6 +562,10 @@ export type LobbyActions = {
   /** Renaming is on (Q2). An empty name clears it. */
   char_kit_name: { path: string; name: string };
   char_kit_skin: { path: string; skin: string };
+  /** A packed accessory: flips over or under the suit. */
+  char_kit_layer: { path: string };
+  /** The packed lipstick: where it sits. */
+  char_kit_lip: { path: string; style: 'Upper' | 'Middle' | 'Lower' };
   /** Preview only: which category's uniform the mannequin wears. */
   char_dress: { category: string };
   /** Asks for that facing when it isn't cached for the current look. */
@@ -443,3 +574,22 @@ export type LobbyActions = {
   /** Answers CharData.confirm. */
   char_confirm: { ok: 0 | 1 };
 };
+
+// ---------------------------------------------------------------------------
+// SETTINGS, KEYS group (lobby_settings_keys.dm). One-off pushes on settings_keys_open, after
+// every settings_keys_* action and when tg's own window changes a keybinding.
+
+export type SettingsKeysBlock = {
+  /** Bumped on every push. */
+  rev: number;
+  /** keybind_name -> its keys in slot order (at most three). Unbound keybindings are left out;
+   * DM sends [] when none is bound. */
+  binds: Record<string, string[]> | [];
+};
+
+export type SettingsKeysData = {
+  /** One-off push: the player's keybindings. Kept between pushes. */
+  settings_keys?: SettingsKeysBlock;
+};
+
+export type LobbyKeysData = LobbyData & SettingsKeysData;

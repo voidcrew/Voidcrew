@@ -1,9 +1,40 @@
 /**
- * SHIPYARD tab: home (new ship, requisition, saved ships), then HULLS -> hull record ->
- * FIT -> BILL. Where the player is and what they picked stays in React (a module-level
- * store, so it survives a tab switch); only yard_* actions reach DM.
+ * SHIPYARD tab: the store, the screen router, the tab row's right zone (BACK, crumbs, the hull
+ * stepper) and the helpers every shipyard screen shares. One file a screen: YardHome.tsx
+ * (home), Hulls.tsx (list) and HullRecord.tsx (record), Fit.tsx, Bill.tsx, and LeaveCrew.tsx
+ * (the LEAVE CREW dialog, drawn by the router over any screen).
  *
- * The catalog arrives in static data only after `yard_open`. Keys: see types.ts.
+ * Screens get everything through `ctx: YardCtx`, worked out once a render here:
+ *
+ *   ctx.view              the store (YardView). Module level: a tab switch or the CONFIRMED
+ *                         box keeps it. Taken values live here (finish, picks); the option
+ *                         shown on the fit's open step may live here (`shown`) or in the Fit.
+ *   ctx.set(patch)        patch the store; `patch` may be a function of the current view.
+ *   ctx.go.home()         the home.
+ *   ctx.go.hulls()        the hull list; it focuses `view.lastHull` and turns to its page.
+ *   ctx.go.record(id)     a hull's record.
+ *   ctx.go.fitOut(hull)   FIT OUT: keeps the fit when it belongs to this hull, else starts from
+ *                         stock. A hull with nothing to fit goes straight to the bill.
+ *   ctx.go.fit(step?)     the fit, at `step` or where it was.
+ *   ctx.go.bill()         the bill.
+ *   ctx.go.back()         [ BACK ] and Escape (spec 02, 2.3). The router mounts the useBack.
+ *   ctx.catalog           the shelf ([] until it arrives; ctx.loaded says whether it has).
+ *   ctx.hull              the hull open in the record, fit or bill, or null.
+ *   ctx.fit, ctx.bill     that hull's fit as taken (fitOf) and its bill (billOf), or null.
+ *   ctx.own, ctx.account, ctx.ledger ('wait' | 'ok' | 'off')
+ *   ctx.open              the port is open (2.5). Keys that put the player in the round are
+ *                         dead while it is not; YARD_OPENS is the one line that says why.
+ *   ctx.sent              a founding key was just sent (2.6): draw those keys dead.
+ *   ctx.crewChange        the crew the player would leave, or null.
+ *   ctx.found(ask)        press COMMISSION, REQUISITION or LOAD: in a crew it opens LEAVE
+ *                         CREW (not for a load that `restores`), otherwise it sends with
+ *                         leave_crew 0. Only the dialog's own key ever sends leave_crew 1.
+ *
+ * Helpers: PART_ORDER, costOf, partsOf, priceText, thousands, hullOwned, finishOwned,
+ * moduleOwned, slotLabel, defaultFinish, slotOptions, fitOf, stockFit, fittable, stepsOf,
+ * crewOf, crewCount, crewText, billOf (the one place the page works a bill out; its `total` is
+ * what yard_commission sends), usePreview. Drawing: ClassHeads, ClassFigures, Well, Slab `on`
+ * and fig() are in term.tsx.
  */
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { useBackend } from 'tgui/backend';
@@ -11,25 +42,43 @@ import { useBackend } from 'tgui/backend';
 import { Bill } from './Bill';
 import { Fit } from './Fit';
 import { Hulls } from './Hulls';
+import { LeaveCrew } from './LeaveCrew';
+import { noteFounding, quietDialogClose, useScreen } from './motion';
 import { useBack } from './nav';
-import { SaveSlots } from './SaveSlots';
-import { Frame, type NavProps, Put, RPut, TOP, useGrid } from './term';
+import {
+  BODY_Y,
+  Box,
+  BOX_Y,
+  Btn,
+  NameLine,
+  PART_CLASSES,
+  Pager,
+  Put,
+  Slab,
+  useGrid,
+} from './term';
 import type {
   CrewLine,
   Finish,
   Hull,
+  LedgerState,
+  LobbyActions,
   LobbyData,
   Module,
   Owned,
   PartClass,
   Parts,
 } from './types';
+import { YardHome } from './YardHome';
 
 // ---------------------------------------------------------------------------
-// Catalog helpers (shared by Hulls, HullRecord, Fit and Bill).
+// Numbers and words (spec 02, 2.1)
 // ---------------------------------------------------------------------------
 
-export const PART_ORDER: PartClass[] = ['combat', 'science', 'trade', 'misc'];
+export const PART_ORDER: PartClass[] = PART_CLASSES;
+
+/** The line shown before the round, once a tab (2.5). */
+export const YARD_OPENS = 'THE YARD OPENS AT DEPARTURE.';
 
 /** "4 COMBAT  2 TRADE", or '' when nothing is due. */
 export function costOf(cost?: Parts | null): string {
@@ -40,6 +89,12 @@ export function costOf(cost?: Parts | null): string {
 
 export function partsOf(cost?: Parts | null): number {
   return PART_ORDER.reduce((a, k) => a + (cost?.[k] || 0), 0);
+}
+
+/** A price in `room` cells: by class when it fits, else the sum as `9 PARTS`. */
+export function priceText(cost: Parts | null | undefined, room: number): string {
+  const byClass = costOf(cost);
+  return byClass.length <= room ? byClass : `${partsOf(cost)} PARTS`;
 }
 
 /** 1,850 */
@@ -147,6 +202,16 @@ export function stockFit(hull: Hull): ShipFit {
   return fitOf(hull, null, {});
 }
 
+/** A hull with finishes or rooms has a fit; one with neither goes from the record to the bill. */
+export function fittable(hull: Hull): boolean {
+  return !!hull.finishes.length || !!hull.slots.length;
+}
+
+/** Steps of a fit: FINISH when the hull has finishes, then one a room. */
+export function stepsOf(fit: ShipFit): number {
+  return (fit.hull.finishes.length ? 1 : 0) + fit.slots.length;
+}
+
 /** Crew manifest of a fit, same titles summed. */
 export function crewOf(fit: ShipFit): CrewLine[] {
   const out: CrewLine[] = [];
@@ -174,14 +239,58 @@ export function crewCount(fit: ShipFit): number {
   return crewOf(fit).reduce((a, l) => a + l[1], 0);
 }
 
-/** [label, name, cost or null when owned] */
-export type BillLine = [string, string, Parts | null];
+/** The jobs as `Title` or `Title x3`, joined by `, `. */
+export function crewText(fit: ShipFit): string {
+  return crewOf(fit)
+    .filter((l) => l[1] > 0)
+    .map(([title, n]) => (n > 1 ? `${title} x${n}` : title))
+    .join(', ');
+}
+
+/** What a line costs nothing for: a hull that costs nothing, a stock item, one bought earlier. */
+export type BillWord = 'FREE' | 'STOCK' | 'OWNED';
+
+export type BillLine = {
+  kind: 'hull' | 'finish' | 'module';
+  id: string;
+  /** HULL, FINISH or the room's label. */
+  label: string;
+  /** The name of what is built. */
+  name: string;
+  /** What this line costs now, or null when it costs nothing. */
+  cost: Parts | null;
+  /** Why it costs nothing (when cost is null). */
+  word: BillWord | null;
+};
 
 export type ShipBill = {
   lines: BillLine[];
+  /** Only the classes due. */
   total: Parts;
+  /** Only the classes the account can't cover. Empty when the account isn't known. */
   short: Parts;
 };
+
+function lineOf(
+  kind: BillLine['kind'],
+  id: string,
+  label: string,
+  name: string,
+  cost: Parts,
+  stock: boolean,
+  owned: boolean,
+  free: boolean,
+): BillLine {
+  let word: BillWord | null = null;
+  if (kind === 'hull') {
+    word = free || !partsOf(cost) ? 'FREE' : owned ? 'OWNED' : null;
+  } else if (stock || !partsOf(cost)) {
+    word = 'STOCK';
+  } else if (free || owned) {
+    word = 'OWNED';
+  }
+  return { kind, id, label, name, cost: word ? null : cost, word };
+}
 
 export function billOf(
   o: Ownership,
@@ -190,86 +299,156 @@ export function billOf(
 ): ShipBill {
   const { hull, finish } = fit;
   const lines: BillLine[] = [
-    ['HULL', hull.short, hullOwned(o, hull) ? null : hull.cost],
+    lineOf(
+      'hull',
+      hull.id,
+      'HULL',
+      hull.short,
+      hull.cost,
+      false,
+      !!o.owned?.hulls?.includes(hull.id),
+      o.free || !!hull.free,
+    ),
   ];
   if (finish) {
-    lines.push([
-      'FINISH',
-      finish.name,
-      finishOwned(o, hull, finish) ? null : finish.cost,
-    ]);
+    lines.push(
+      lineOf(
+        'finish',
+        finish.id,
+        'FINISH',
+        finish.name,
+        finish.cost,
+        !!finish.def,
+        finishOwned(o, hull, finish),
+        o.free,
+      ),
+    );
   }
   for (const s of fit.slots) {
     if (s.pick) {
-      lines.push([
-        s.label,
-        s.pick.name,
-        moduleOwned(o, hull, s.pick) ? null : s.pick.cost,
-      ]);
+      lines.push(
+        lineOf(
+          'module',
+          s.pick.id,
+          s.label,
+          s.pick.name,
+          s.pick.cost,
+          !!s.pick.def,
+          moduleOwned(o, hull, s.pick),
+          o.free,
+        ),
+      );
     }
   }
   const total: Parts = {};
   for (const l of lines) {
     for (const k of PART_ORDER) {
-      const n = l[2]?.[k] || 0;
-      if (n) {
+      const n = l.cost?.[k] || 0;
+      if (n > 0) {
         total[k] = (total[k] || 0) + n;
       }
     }
   }
   const short: Parts = {};
-  for (const k of PART_ORDER) {
-    const due = total[k] || 0;
-    const have = account?.[k] || 0;
-    if (due > have) {
-      short[k] = due - have;
+  if (account) {
+    for (const k of PART_ORDER) {
+      const due = total[k] || 0;
+      const have = account[k] || 0;
+      if (due > have) {
+        short[k] = due - have;
+      }
     }
   }
   return { lines, total, short };
 }
 
 // ---------------------------------------------------------------------------
-// UI-local state.
+// The store
 // ---------------------------------------------------------------------------
 
 export type YardScreen = 'home' | 'hulls' | 'fit' | 'bill';
 
+/** A founding key pressed: commission, requisition or load. */
+export type FoundAsk =
+  | {
+      action: 'yard_commission';
+      params: Omit<LobbyActions['yard_commission'], 'leave_crew'>;
+      label: 'COMMISSION';
+    }
+  | {
+      action: 'yard_requisition';
+      params: Record<string, never>;
+      label: 'REQUISITION';
+    }
+  | {
+      action: 'yard_load';
+      params: { slot: number };
+      label: 'LOAD';
+      /** The save returns the player to the crew they are in: no question. */
+      restores?: boolean;
+    };
+
 export type YardView = {
   screen: YardScreen;
-  /** Selected hull id (HULLS record, FIT, BILL). */
+  /** On 'hulls': the record open, or null for the list. On 'fit' and 'bill': the hull. */
   hull: string | null;
+  /** The hull last opened from the list: the list focuses it and turns to its page. */
+  lastHull: string | null;
+  /** The hull the fit below belongs to; FIT OUT on any other hull starts from stock. */
+  fitHull: string | null;
+  /** Taken: the finish id. */
   finish: string | null;
-  /** slot key -> module id */
+  /** Taken: slot key -> module id. */
   picks: Record<string, string>;
+  /** The fit's open step (0 = FINISH when the hull has finishes). */
   step: number;
-  /** The key that has been pressed once and now reads CONFIRM. */
-  confirm: string | null;
+  /** Shown: the option tried on the open step, or null for the one taken. */
+  shown: string | null;
+  /** The founding action waiting on the LEAVE CREW dialog, or null. */
+  leave: FoundAsk | null;
 };
 
 const HOME: YardView = {
   screen: 'home',
   hull: null,
+  lastHull: null,
+  fitHull: null,
   finish: null,
   picks: {},
   step: 0,
-  confirm: null,
+  shown: null,
+  leave: null,
 };
 
 /** Survives the tab unmounting (tab switch, the CONFIRMED box). */
-const store: { view: YardView; fitSerial: number | null } = {
+const store: {
+  view: YardView;
+  fitSerial: number | null;
+  /** The sent-key rule (2.6): the notice it was sent under, and when. */
+  sent: { at: number | null; t: number } | null;
+} = {
   view: HOME,
   fitSerial: null,
+  sent: null,
 };
 /** Hulls whose preview pictures have been asked for this session. */
 const previewed = new Set<string>();
 
-export type SetView = (patch: Partial<YardView>) => void;
+/** How long a sent founding key stays dead when the notice doesn't change. */
+const SENT_MS = 4000;
+
+export type SetView = (
+  patch: Partial<YardView> | ((view: YardView) => Partial<YardView>),
+) => void;
 
 function useYardView(): [YardView, SetView] {
   const [view, setView] = useState<YardView>(store.view);
   const set: SetView = (patch) =>
     setView((prev) => {
-      const next = { ...prev, confirm: null, ...patch };
+      const next = {
+        ...prev,
+        ...(typeof patch === 'function' ? patch(prev) : patch),
+      };
       store.view = next;
       return next;
     });
@@ -287,146 +466,164 @@ export function usePreview(hullId: string | null) {
   }, [hullId]);
 }
 
+export type YardGo = {
+  home: () => void;
+  hulls: () => void;
+  record: (hullId: string) => void;
+  fitOut: (hull: Hull) => void;
+  fit: (step?: number) => void;
+  bill: () => void;
+  back: () => void;
+};
+
 /** Everything the screens need, worked out once per render. */
 export type YardCtx = {
   view: YardView;
   set: SetView;
+  go: YardGo;
   catalog: Hull[];
+  /** The catalog has arrived (it comes in static data after yard_open). */
+  loaded: boolean;
   hull: Hull | null;
+  fit: ShipFit | null;
+  bill: ShipBill | null;
   own: Ownership;
   account: Parts | null | undefined;
-  /** Commissioning, requisition and loading are open (round running). */
+  ledger: LedgerState;
+  /** The port is open: commissioning, requisition and loading can run. */
   open: boolean;
+  /** A founding key was just sent: draw those keys dead (a courtesy; the server holds the lock). */
+  sent: boolean;
   crewChange: string | null;
+  found: (ask: FoundAsk) => void;
 };
 
-// ---------------------------------------------------------------------------
-// Shared bits of drawing.
-// ---------------------------------------------------------------------------
-
-/** A `[ LABEL ]` key in any colour class; faint and dead when disabled. */
-export function Key(
-  props: NavProps & {
-    x: number;
-    y: number;
-    label: string;
-    cls?: string;
-    right?: boolean;
-    disabled?: boolean;
-    bg?: boolean;
-    onClick?: () => void;
-  },
-) {
-  const {
-    x,
-    y,
-    label,
-    cls = '',
-    right,
-    disabled,
-    bg,
-    onClick,
-    auto,
-    edge,
-  } = props;
-  const text = `[ ${label} ]`;
-  const at = right ? x - text.length : x;
-  if (disabled) {
-    return (
-      <Put x={at} y={y} cls="faint" bg={bg}>
-        {text}
-      </Put>
-    );
-  }
-  const amber = cls === 'amb' || cls === 'inva';
-  return (
-    <Put
-      x={at}
-      y={y}
-      cls={cls}
-      hoverCls={amber ? 'inva' : 'inv'}
-      bg={bg}
-      onClick={onClick}
-      auto={auto}
-      edge={edge}
-    >
-      {text}
-    </Put>
-  );
+function makeGo(
+  view: YardView,
+  set: SetView,
+  hull: Hull | null,
+  fit: ShipFit | null,
+): YardGo {
+  const go: YardGo = {
+    home: () => set({ screen: 'home', hull: null, shown: null }),
+    hulls: () =>
+      set((v) => ({
+        screen: 'hulls',
+        hull: null,
+        lastHull: v.hull || v.lastHull,
+        shown: null,
+      })),
+    record: (hullId) =>
+      set({ screen: 'hulls', hull: hullId, lastHull: hullId, shown: null }),
+    fitOut: (hull) =>
+      set((v) => {
+        const keep = v.fitHull === hull.id;
+        const fresh = keep
+          ? {}
+          : { fitHull: hull.id, finish: null, picks: {}, step: 0 };
+        return {
+          ...fresh,
+          screen: fittable(hull) ? 'fit' : 'bill',
+          hull: hull.id,
+          lastHull: hull.id,
+          step: 0,
+          shown: null,
+        };
+      }),
+    fit: (step) =>
+      set((v) => ({ screen: 'fit', step: step ?? v.step, shown: null })),
+    bill: () => set({ screen: 'bill', shown: null }),
+    back: () => {
+      const v = view;
+      if (v.screen === 'hulls') {
+        if (v.hull) {
+          set({ hull: null, lastHull: v.hull });
+        } else {
+          go.home();
+        }
+      } else if (v.screen === 'fit') {
+        set({ screen: 'hulls', shown: null });
+      } else if (v.screen === 'bill') {
+        // The fit at its last step, or the record for a hull with nothing to fit.
+        if (hull && fit && fittable(hull)) {
+          go.fit(Math.max(0, stepsOf(fit) - 1));
+        } else {
+          set({ screen: 'hulls', shown: null });
+        }
+      }
+    },
+  };
+  return go;
 }
 
-/** Breadcrumb and [ BACK ] on the tab row, right-aligned. */
-function Crumbs(props: { ctx: YardCtx; screen: YardScreen }) {
+// ---------------------------------------------------------------------------
+// The tab row's right zone (2.3)
+// ---------------------------------------------------------------------------
+
+/** Right edge of the right zone: the box's right edge, column 62. */
+const RIGHT_END = 63;
+const ZONE_Y = 0.25;
+
+function RightZone(props: { ctx: YardCtx; screen: YardScreen }) {
   const { ctx, screen } = props;
-  const { view, set, hull } = ctx;
-  const { cols } = useGrid();
-  const seg: [string, (() => void) | null][] = [
-    ['SHIPYARD', () => set({ screen: 'home', hull: null })],
-    [
-      'HULLS',
-      () =>
-        set({
-          screen: 'hulls',
-          hull: screen === 'hulls' ? null : view.hull,
-        }),
-    ],
-  ];
-  if (hull && screen !== 'hulls') {
-    seg.push([hull.short.toUpperCase(), () => set({ screen: 'hulls' })]);
+  const { go, hull, catalog } = ctx;
+  useBack(screen === 'home' ? null : go.back);
+  if (screen === 'home') {
+    return null;
   }
-  // A hull with no finishes and no rooms skips FIT entirely.
-  const fittable = !hull || !!hull.finishes.length || !!hull.slots.length;
-  if ((screen === 'fit' || screen === 'bill') && fittable) {
-    seg.push(['FIT', () => set({ screen: 'fit' })]);
-  }
-  if (screen === 'bill') {
-    seg.push(['BILL', null]);
-  }
-  // The tab names end near column 41; drop leading crumbs until the rest fits.
-  const room = cols - 1 - 42 - 12;
-  const width = () => seg.map((s) => s[0]).join(' / ').length;
-  while (seg.length > 1 && width() > room) {
-    seg.shift();
-  }
-  const showCrumbs = width() <= room;
-  const back: Record<YardScreen, Partial<YardView>> = {
-    home: {},
-    hulls: view.hull ? { hull: null } : { screen: 'home', hull: null },
-    fit: { screen: 'hulls' },
-    bill: { screen: fittable ? 'fit' : 'hulls' },
-  };
-  useBack(() => set(back[screen]));
   const out: ReactNode[] = [];
-  let x = cols - 1 - (showCrumbs ? width() : 0);
-  out.push(
-    <Key
-      key="back"
-      x={x - 12}
-      y={2}
-      label="BACK"
-      cls="dim"
-      onClick={() => set(back[screen])}
-    />,
-  );
-  if (showCrumbs) {
-    seg.forEach(([label, go], i) => {
-      const last = i === seg.length - 1;
+  let backEnd = RIGHT_END;
+  if (screen === 'hulls' && hull) {
+    // The record: [ BACK ], three spaces, the stepper through the catalog in list order.
+    const at = catalog.findIndex((h) => h.id === hull.id);
+    const n = catalog.length;
+    if (n > 1 && at >= 0) {
+      const text = `< ${Math.min(99, at + 1)}/${Math.min(99, n)} >`;
+      out.push(
+        <Pager
+          key="step"
+          x={RIGHT_END}
+          y={ZONE_Y}
+          right
+          page={at + 1}
+          pages={n}
+          onPage={(p) => go.record(catalog[p - 1].id)}
+        />,
+      );
+      backEnd = RIGHT_END - text.length - 3;
+    }
+  } else {
+    const crumbs: [string, (() => void) | null][] = [];
+    if (screen === 'hulls') {
+      crumbs.push(['HULLS', null]);
+    } else {
+      crumbs.push(['HULLS', go.hulls]);
+      const fitting = !!hull && fittable(hull);
+      if (fitting) {
+        crumbs.push(['FIT', screen === 'fit' ? null : () => go.fit()]);
+      }
+      crumbs.push(['BILL', screen === 'bill' ? null : go.bill]);
+    }
+    const width = crumbs.map((c) => c[0]).join(' / ').length;
+    let x = RIGHT_END - width;
+    backEnd = x - 2;
+    crumbs.forEach(([word, onGo], i) => {
       out.push(
         <Put
           key={`c${i}`}
           x={x}
-          y={2}
-          cls={last ? '' : 'dim'}
-          hoverCls={last ? undefined : ''}
-          onClick={last || !go ? undefined : go}
+          y={ZONE_Y}
+          cls={onGo ? 'dim' : ''}
+          hoverCls={onGo ? 'inv' : undefined}
+          onClick={onGo || undefined}
         >
-          {label}
+          {word}
         </Put>,
       );
-      x += label.length;
-      if (!last) {
+      x += word.length;
+      if (i < crumbs.length - 1) {
         out.push(
-          <Put key={`s${i}`} x={x} y={2} cls="faint">
+          <Put key={`s${i}`} x={x} y={ZONE_Y} cls="faint">
             {' / '}
           </Put>,
         );
@@ -434,183 +631,73 @@ function Crumbs(props: { ctx: YardCtx; screen: YardScreen }) {
       }
     });
   }
+  out.push(
+    // Keyed by screen: it remounts on each screen, so its first-focus claim on the bill
+    // registers (the purchase guard: with something due, focus never starts on COMMISSION).
+    <Btn
+      key={`back-${screen}`}
+      x={backEnd}
+      y={ZONE_Y}
+      right
+      label="BACK"
+      onClick={go.back}
+      auto={screen === 'bill' ? 1 : undefined}
+    />,
+  );
   return <>{out}</>;
 }
 
 // ---------------------------------------------------------------------------
-// Home: NEW SHIP, REQUISITION, SAVED SHIPS.
+// The catalog not here yet (3.1)
 // ---------------------------------------------------------------------------
 
-function Home(props: { ctx: YardCtx }) {
-  const { ctx } = props;
-  const { data, act } = useBackend<LobbyData>();
-  const { cols, rows, narrow } = useGrid();
-  const bottom = rows - 1;
-  const req = !!data.can_requisition;
-  const account = data.account || {};
-  const confirmReq = ctx.view.confirm === 'req';
-  const reqLine = ctx.crewChange
-    ? `LEAVES ${ctx.crewChange.toUpperCase()}`
-    : 'SURPLUS HULL';
-
-  const requisition = () => {
-    if (ctx.crewChange && !confirmReq) {
-      ctx.set({ confirm: 'req' });
+function Waiting(props: { empty: boolean }) {
+  const { rows } = useGrid();
+  const [on, setOn] = useState(true);
+  useEffect(() => {
+    if (props.empty) {
       return;
     }
-    ctx.set({ confirm: null });
-    act('yard_requisition', { leave_crew: ctx.crewChange ? 1 : 0 });
-  };
-  const newShip = () => ctx.set({ screen: 'hulls', hull: null });
-
-  const out: ReactNode[] = [];
-  let th = 5;
-  const y = TOP + 2;
-  if (narrow) {
-    // One box: NEW SHIP and the parts on account, the surplus hull below.
-    th = req ? 6 : 5;
-    out.push(
-      <Frame key="ns" x={0} y={TOP} w={cols} h={th} title="NEW SHIP" />,
-      <Key
-        key="nsk"
-        x={3}
-        y={y}
-        label="NEW SHIP"
-        cls="inv"
-        onClick={newShip}
-        auto={1}
-      />,
-    );
-    const short = PART_ORDER.map(
-      (k) => `${k.slice(0, 3).toUpperCase()} ${account[k] || 0}`,
-    ).join('  ');
-    if (cols - 20 >= short.length) {
-      out.push(
-        <RPut key="nsp" x={cols - 3} y={y} cls="dim">
-          {short}
-        </RPut>,
-      );
-    }
-    if (req) {
-      out.push(
-        <Put key="rl" x={3} y={y + 1} cls="amb">
-          {reqLine.slice(0, cols - 24)}
-        </Put>,
-        <Key
-          key="rk"
-          x={cols - 3}
-          y={y + 1}
-          right
-          label={confirmReq ? 'CONFIRM' : 'REQUISITION'}
-          cls="inva"
-          disabled={!ctx.open}
-          onClick={requisition}
-        />,
-      );
-    }
-  } else {
-    const lw = req ? Math.floor(cols * 0.62) : cols;
-    out.push(
-      <Frame key="ns" x={0} y={TOP} w={lw} h={th} title="NEW SHIP" />,
-      <Key
-        key="nsk"
-        x={3}
-        y={y}
-        label="NEW SHIP"
-        cls="inv"
-        onClick={newShip}
-        auto={1}
-      />,
-    );
-    const segs = PART_ORDER.map((k) => [
-      k.toUpperCase(),
-      String(account[k] || 0),
-    ]);
-    const partsW =
-      7 +
-      segs.reduce((a, [k, n]) => a + k.length + 1 + n.length, 0) +
-      3 * (segs.length - 1);
-    let x = lw - 3 - partsW;
-    out.push(
-      <Put key="pl" x={x} y={y} cls="dim">
-        PARTS
-      </Put>,
-    );
-    x += 7;
-    for (const [k, n] of segs) {
-      out.push(
-        <Put key={`pk${k}`} x={x} y={y} cls="dim">
-          {k}
-        </Put>,
-        <Put key={`pn${k}`} x={x + k.length + 1} y={y}>
-          {n}
-        </Put>,
-      );
-      x += k.length + 1 + n.length + 3;
-    }
-    if (req) {
-      const rx = lw + 1;
-      const rw = cols - lw - 1;
-      out.push(
-        <Frame key="rq" x={rx} y={TOP} w={rw} h={th} title="REQUISITION" />,
-        <Put key="rl" x={rx + 3} y={y} cls="amb">
-          {reqLine.slice(0, Math.max(0, rw - 23))}
-        </Put>,
-        <Key
-          key="rk"
-          x={rx + rw - 3}
-          y={y}
-          right
-          label={confirmReq ? 'CONFIRM' : 'REQUISITION'}
-          cls="inva"
-          disabled={!ctx.open}
-          onClick={requisition}
-        />,
-      );
-    }
-  }
-
-  if (data.saves) {
-    out.push(
-      <SaveSlots
-        key="saves"
-        saves={data.saves}
-        x={0}
-        y={TOP + th}
-        w={cols}
-        h={bottom - TOP - th}
-        ctx={ctx}
-      />,
-    );
-  }
-  return <>{out}</>;
+    const id = setInterval(() => setOn((v) => !v), 530);
+    return () => clearInterval(id);
+  }, [props.empty]);
+  const line = props.empty ? 'NO HULLS ON THE SHELF.' : 'CONTACTING THE YARD.';
+  return (
+    <>
+      <Box x={0} y={BOX_Y} w={63} h={rows - 3.5} caption="HULLS" />
+      <Slab x={1} y={BODY_Y} w={61} h={4.75} variant="block" dead>
+        <NameLine x={3} y={BODY_Y + 0.25} w={57} text={line} cls="dim" />
+        {!props.empty && !!on && (
+          <Put x={28} y={BODY_Y + 2.25} cls="inv">
+            {' '}
+          </Put>
+        )}
+      </Slab>
+    </>
+  );
 }
 
 // ---------------------------------------------------------------------------
-
-function Waiting() {
-  const { cols, rows } = useGrid();
-  return (
-    <Frame x={0} y={TOP} w={cols} h={rows - 1 - TOP} title="HULLS">
-      <Put x={3} y={TOP + 2} cls="dim">
-        CONTACTING THE YARD...
-      </Put>
-    </Frame>
-  );
-}
+// The router
+// ---------------------------------------------------------------------------
 
 export function YardTab(props: { home: number }) {
   const { data, act } = useBackend<LobbyData>();
   const [view, set] = useYardView();
+  const [, rerender] = useState(0);
   useEffect(() => {
     act('yard_open');
+    // A dialog left open when the tab closed does not come back with it.
+    if (store.view.leave) {
+      set({ leave: null });
+    }
   }, []);
   // SHIPYARD pressed again while on it: back to the yard's front page.
   const [home, setHome] = useState(props.home);
   if (home !== props.home) {
     setHome(props.home);
-    if (view.screen !== 'home') {
-      set(HOME);
+    if (view.screen !== 'home' || view.leave) {
+      set({ screen: 'home', hull: null, shown: null, leave: null });
     }
   }
   // A commission put the player aboard: the fit was built, so forget it. A refusal keeps it.
@@ -625,49 +712,113 @@ export function YardTab(props: { home: number }) {
     store.fitSerial = fitSerial;
   }, [fitSerial]);
 
+  // The sent-key rule (2.6): dead until the notice changes or SENT_MS pass.
+  const noticeAt = data.notice ? data.notice.at : null;
+  const sentLeft = store.sent ? store.sent.t + SENT_MS - Date.now() : 0;
+  const sent = !!store.sent && store.sent.at === noticeAt && sentLeft > 0;
+  useEffect(() => {
+    if (!sent) {
+      return;
+    }
+    const id = setTimeout(() => rerender((n) => n + 1), sentLeft + 20);
+    return () => clearTimeout(id);
+  }, [sent, noticeAt]);
+
+  const send = (ask: FoundAsk, leave: boolean) => {
+    // The CONFIRMED box that answers this starts a long job (motion.ts).
+    noteFounding();
+    store.sent = { at: noticeAt, t: Date.now() };
+    rerender((n) => n + 1);
+    act(ask.action, { ...ask.params, leave_crew: leave ? 1 : 0 });
+  };
+  const crewChange = data.crew_change || null;
+  const found = (ask: FoundAsk) => {
+    if (sent) {
+      return;
+    }
+    const restores = ask.action === 'yard_load' && !!ask.restores;
+    if (crewChange && !restores) {
+      set({ leave: ask });
+      return;
+    }
+    send(ask, false);
+  };
+
+  const loaded = !!data.catalog;
   const catalog = useMemo(() => data.catalog || [], [data.catalog]);
   const hull = useMemo(
     () => catalog.find((h) => h.id === view.hull) || null,
     [catalog, view.hull],
   );
+  const own: Ownership = { owned: data.owned, free: !!data.free_ships };
+  const fit = hull
+    ? view.fitHull === hull.id
+      ? fitOf(hull, view.finish, view.picks)
+      : stockFit(hull)
+    : null;
+  const bill = fit ? billOf(own, fit, data.account) : null;
   const ctx: YardCtx = {
     view,
     set,
+    go: makeGo(view, set, hull, fit),
     catalog,
+    loaded,
     hull,
-    own: { owned: data.owned, free: !!data.free_ships },
+    fit,
+    bill,
+    own,
     account: data.account,
+    ledger: data.ledger || 'wait',
     open: data.phase === 'playing',
-    crewChange: data.crew_change || null,
+    sent,
+    crewChange,
+    found,
   };
-
   let screen = view.screen;
-  if ((screen === 'fit' || screen === 'bill') && !hull && !!data.catalog) {
+  if (screen !== 'home' && loaded && view.hull && !hull) {
+    // The hull left the shelf.
     screen = 'hulls';
   }
+  // Each screen is a step further in: going on wipes forward, BACK and an earlier crumb wipe
+  // back, and the hull stepper turns a page.
+  const onRecord = screen === 'hulls' && !!hull;
+  useScreen(
+    `shipyard/${onRecord ? 'record' : screen}`,
+    onRecord ? 2 : { home: 0, hulls: 1, fit: 3, bill: 4 }[screen],
+    onRecord && hull ? hull.id : '',
+    onRecord && hull ? catalog.indexOf(hull) : 0,
+  );
   let body: ReactNode;
   if (screen === 'home') {
-    body = <Home ctx={ctx} />;
-  } else if (!data.catalog) {
-    body = <Waiting />;
+    body = <YardHome ctx={ctx} />;
+  } else if (!loaded || !catalog.length) {
+    body = <Waiting empty={loaded} />;
   } else if (screen === 'hulls') {
     body = <Hulls ctx={ctx} />;
   } else if (screen === 'fit' && hull) {
     body = <Fit ctx={ctx} hull={hull} />;
   } else if (hull) {
-    body = (
-      <Bill
-        ctx={ctx}
-        hull={hull}
-        onCommission={(params) => act('yard_commission', params)}
-      />
-    );
+    body = <Bill ctx={ctx} />;
   }
 
+  const leave = view.leave;
   return (
     <>
-      {screen !== 'home' && <Crumbs ctx={ctx} screen={screen} />}
+      <RightZone ctx={ctx} screen={screen} />
       {body}
+      {!!leave && !!crewChange && (
+        <LeaveCrew
+          crew={crewChange}
+          label={leave.label}
+          onStay={() => set({ leave: null })}
+          onGo={() => {
+            // Answered, not backed out of: the box goes without the back sound.
+            quietDialogClose();
+            set({ leave: null });
+            send(leave, true);
+          }}
+        />
+      )}
     </>
   );
 }

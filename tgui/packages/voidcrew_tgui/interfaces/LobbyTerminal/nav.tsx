@@ -10,7 +10,9 @@
  * (lobby_terminal show code). tgui-core keeps arrows, Enter, Space, Escape and Tab in the page;
  * a key handled here is preventDefault()ed so tgui-core never passes it on to BYOND either.
  *
- * Sounds play in the page from the terminal's assets, so a key press never costs a round trip.
+ * Sounds play in the page from the terminal's assets (motion.ts), so a key press never costs a
+ * round trip: a click when the focus moves, the key-press sound and an 80 ms white flash when
+ * an item is pressed, by Enter or by the mouse.
  */
 import {
   createContext,
@@ -24,7 +26,15 @@ import {
   useRef,
   useState,
 } from 'react';
-import { resolveAsset } from 'tgui/assets';
+
+import {
+  muteSfx,
+  noteAction,
+  preloadSfx,
+  pressFlash,
+  pressFx,
+  sfx,
+} from './motion';
 
 export type Dir = 'up' | 'down' | 'left' | 'right';
 
@@ -40,16 +50,29 @@ export type FocusOpts = {
   edge?: Partial<Record<Dir, () => boolean>>;
   /** A tab: keeps the focus while the screen under it changes, and switches on arrow focus. */
   tab?: boolean;
+  /**
+   * The open tab: an arrow move into the tab row from outside it lands here, not on the nearest
+   * tab. In a FocusGroup: the item a sideways move into the group lands on (the open category).
+   */
+  entry?: boolean;
   /** Lit by the mouse only; the arrow keys pass it by (a cycler's < and >, which Left/Right drive). */
   mouseOnly?: boolean;
   /** A text field: Enter starts typing in it. */
   input?: RefObject<HTMLInputElement | null>;
+  /**
+   * Layout zone: 'menu' for the side menu and key bar, 'main' (the default) for the rest. An
+   * arrow move from the menu back into the main area returns to the main item that last had
+   * the focus, if it is still there.
+   */
+  zone?: string;
 };
 
 type Item = {
   el: () => HTMLElement | null;
   /** The FocusScope it sits in; only the newest open scope's items take the focus. */
   scope: string;
+  /** The FocusGroup it sits in, if any. */
+  group?: string;
   opts: RefObject<FocusOpts>;
 };
 
@@ -63,59 +86,30 @@ type Nav = {
   focus: (id: string, how: How) => void;
   register: (id: string, item: Item) => void;
   unregister: (id: string) => void;
-  pushBack: (id: string, fn: RefObject<() => void>) => void;
+  pushBack: (id: string, fn: RefObject<() => void>, scope: string) => void;
   popBack: (id: string) => void;
+  pushPager: (id: string, fn: RefObject<(step: number) => void>) => void;
+  popPager: (id: string) => void;
 };
 
 const NavContext = createContext<Nav | null>(null);
 const ScopeContext = createContext('root');
+const GroupContext = createContext<string | undefined>(undefined);
 
 // ---------------------------------------------------------------------------
-// Sound
+// Input lock
 // ---------------------------------------------------------------------------
 
-/** Keypress clicks, rotated so a held arrow sounds like typing. */
-const MOVE_SOUNDS = ['lt_key1.ogg', 'lt_key2.ogg', 'lt_key3.ogg'];
-const PRESS_SOUND = 'lt_press.ogg';
-const MOVE_VOLUME = 0.22;
-const PRESS_VOLUME = 0.3;
-/** At most one click per this many ms; a held arrow repeats faster than that. */
-const SOUND_GAP = 55;
+let inputLocked = false;
 
-const audioCache: Record<string, HTMLAudioElement | null> = {};
-let lastSound = 0;
-let soundTurn = 0;
-
-function playSound(kind: 'move' | 'press') {
-  const now = Date.now();
-  if (kind === 'move' && now - lastSound < SOUND_GAP) {
-    return;
-  }
-  lastSound = now;
-  const name =
-    kind === 'press'
-      ? PRESS_SOUND
-      : MOVE_SOUNDS[soundTurn++ % MOVE_SOUNDS.length];
-  try {
-    let audio = audioCache[name];
-    if (audio === undefined) {
-      audio = new Audio(resolveAsset(name));
-      audio.preload = 'auto';
-      audioCache[name] = audio;
-    }
-    if (!audio) {
-      return;
-    }
-    audio.volume = kind === 'press' ? PRESS_VOLUME : MOVE_VOLUME;
-    audio.currentTime = 0;
-    const played = audio.play();
-    if (played?.catch) {
-      // Before the first key or click the browser may refuse; the next one plays.
-      played.catch(() => undefined);
-    }
-  } catch {
-    audioCache[name] = null;
-  }
+/**
+ * While locked, the keyboard does nothing here and the focus makes no sound: something drawn
+ * over the terminal (the start-up screen) owns the keys. The owner must also keep the mouse off
+ * what is underneath, and handle or swallow the keys itself.
+ */
+export function lockNav(locked: boolean) {
+  inputLocked = locked;
+  muteSfx(locked);
 }
 
 // ---------------------------------------------------------------------------
@@ -207,8 +201,27 @@ export function NavProvider(props: ProviderProps) {
   const { children } = props;
   const items = useRef(new Map<string, Item>()).current;
   const order = useRef<string[]>([]).current;
-  const backs = useRef<[string, RefObject<() => void>][]>([]).current;
+  /** Escape handlers, oldest first, each with the FocusScope it was mounted in. */
+  const backs = useRef<[string, RefObject<() => void>, string][]>([]).current;
+  const pagers = useRef<[string, RefObject<(step: number) => void>][]>(
+    [],
+  ).current;
+  /** The last item focused in each zone. */
+  const lastInZone = useRef(new Map<string, string>()).current;
   const scopes = useRef<string[]>(['root']).current;
+  /**
+   * Per scope, the best first-focus claim made in it. A claim made while a dialog covers its
+   * scope waits here, and runs when the dialog closes if the player had not focused anything
+   * under it yet (the WELCOME box over a screen that just opened).
+   */
+  const waiting = useRef(new Map<string, { id: string; prio: number }>())
+    .current;
+  /** Per open scope: the scope under it had no focus of the player's when it opened. */
+  const coveredBare = useRef(new Map<string, boolean>()).current;
+  /** Per open scope: the item the player had focused under it when it opened (its opener). */
+  const openers = useRef(new Map<string, string>()).current;
+  /** An opener to give the focus back to once its dialog has closed. */
+  const restore = useRef<string | null>(null);
   /** Items in the newest open scope, in mount order. */
   const live = () => {
     const top = scopes[scopes.length - 1];
@@ -238,9 +251,12 @@ export function NavProvider(props: ProviderProps) {
       focusHow.current = how;
       setFocused(id);
       const item = id ? items.get(id) : undefined;
+      if (id && item) {
+        lastInZone.set(item.opts.current.zone || 'main', id);
+      }
       lastBox.current = boxOf(item) || lastBox.current;
-      if ((how === 'key' || how === 'mouse') && id) {
-        playSound('move');
+      if ((how === 'key' || how === 'mouse') && id && !inputLocked) {
+        sfx('move');
       }
       if (how === 'key' && item?.opts.current.tab) {
         item.opts.current.activate();
@@ -256,6 +272,23 @@ export function NavProvider(props: ProviderProps) {
       const currentItem = found?.scope === top ? found : undefined;
       const pending = claim.current;
       claim.current = null;
+      // The open scope's claims are settled now; only covered scopes keep theirs waiting.
+      waiting.delete(top);
+      // A dialog just closed: the focus goes back to the item that opened it, if it is still
+      // there and can take the focus. Otherwise the rules below pick as usual.
+      const back = restore.current;
+      restore.current = null;
+      if (back) {
+        const opener = items.get(back);
+        if (
+          opener?.scope === top &&
+          !opener.opts.current.mouseOnly &&
+          boxOf(opener)
+        ) {
+          setFocus(back, 'claim');
+          return;
+        }
+      }
       // A claim wins after a key or click (a record or screen the player opened), never because
       // a server update added a row under the focus.
       const untouched = focusHow.current === 'auto';
@@ -317,6 +350,12 @@ export function NavProvider(props: ProviderProps) {
         ) {
           claim.current = { id, prio };
         }
+        if (prio !== undefined) {
+          const best = waiting.get(item.scope);
+          if (!best || prio > best.prio || !items.has(best.id)) {
+            waiting.set(item.scope, { id, prio });
+          }
+        }
         schedule();
       },
       unregister: (id) => {
@@ -330,6 +369,16 @@ export function NavProvider(props: ProviderProps) {
         }
       },
       pushScope: (id) => {
+        const under = scopes[scopes.length - 1];
+        const current = focusRef.current;
+        const held =
+          !!current &&
+          items.get(current)?.scope === under &&
+          focusHow.current !== 'auto';
+        coveredBare.set(id, !held);
+        if (held && current) {
+          openers.set(id, current);
+        }
         scopes.push(id);
         schedule();
       },
@@ -338,10 +387,32 @@ export function NavProvider(props: ProviderProps) {
         if (at > 0) {
           scopes.splice(at, 1);
         }
+        const bare = coveredBare.get(id);
+        coveredBare.delete(id);
+        waiting.delete(id);
+        const opener = openers.get(id);
+        openers.delete(id);
+        const top = scopes[scopes.length - 1];
+        // The opener wins when there was one; a waiting first-focus claim is for a dialog that
+        // opened before the player had focused anything (WELCOME over a screen that just opened).
+        if (opener && at === scopes.length) {
+          restore.current = opener;
+        }
+        const wait = waiting.get(top);
+        if (
+          !opener &&
+          bare &&
+          at === scopes.length &&
+          wait &&
+          items.get(wait.id)?.scope === top &&
+          (!claim.current || wait.prio > claim.current.prio)
+        ) {
+          claim.current = wait;
+        }
         schedule();
       },
-      pushBack: (id, fn) => {
-        backs.push([id, fn]);
+      pushBack: (id, fn, scope) => {
+        backs.push([id, fn, scope]);
       },
       popBack: (id) => {
         const at = backs.findIndex((b) => b[0] === id);
@@ -349,7 +420,23 @@ export function NavProvider(props: ProviderProps) {
           backs.splice(at, 1);
         }
       },
+      pushPager: (id, fn) => {
+        pagers.push([id, fn]);
+      },
+      popPager: (id) => {
+        const at = pagers.findIndex((b) => b[0] === id);
+        if (at >= 0) {
+          pagers.splice(at, 1);
+        }
+      },
     };
+  }, []);
+
+  // The start-up screen loads its own sounds first and asks for these when it starts.
+  useEffect(() => {
+    if (!inputLocked) {
+      preloadSfx();
+    }
   }, []);
 
   useEffect(() => {
@@ -366,7 +453,7 @@ export function NavProvider(props: ProviderProps) {
       }
       const edge = item.opts.current.edge?.[dir];
       if (edge?.()) {
-        playSound('move');
+        sfx('move');
         return;
       }
       let best: string | null = null;
@@ -386,14 +473,91 @@ export function NavProvider(props: ProviderProps) {
         }
       }
       if (best) {
+        // Back from the menu into the main area: the main item that last had the focus.
+        const fromZone = item.opts.current.zone || 'main';
+        const toZone = items.get(best)?.opts.current.zone || 'main';
+        if (fromZone !== toZone && toZone === 'main') {
+          const last = lastInZone.get('main');
+          if (last && last !== best && live().includes(last)) {
+            if (boxOf(items.get(last))) {
+              best = last;
+            }
+          }
+        }
+        // Into the tab row from outside it: the open tab, so a move up never switches screens.
+        const into = items.get(best)?.opts.current;
+        if (into?.tab && !item.opts.current.tab && !into.entry) {
+          const open = live().find(
+            (id) =>
+              items.get(id)?.opts.current.tab &&
+              items.get(id)?.opts.current.entry &&
+              boxOf(items.get(id)),
+          );
+          if (open) {
+            best = open;
+          }
+        }
+        // Sideways into a FocusGroup from outside it (a list into its rows, or back): the group's
+        // entry item, else its first item in reading order, not the nearest one.
+        const group = items.get(best)?.group;
+        const sideways = dir === 'left' || dir === 'right';
+        if (
+          sideways &&
+          group &&
+          item.group !== group &&
+          !(fromZone !== toZone && toZone === 'main')
+        ) {
+          let pick: string | null = null;
+          let pickAt = Infinity;
+          for (const id of live()) {
+            const it = items.get(id);
+            const box = it?.group === group ? boxOf(it) : null;
+            if (!box) {
+              continue;
+            }
+            const at = it?.opts.current.entry ? -Infinity : box.t * 10000 + box.l;
+            if (at < pickAt) {
+              pickAt = at;
+              pick = id;
+            }
+          }
+          if (pick) {
+            best = pick;
+          }
+        }
         nav.focus(best, 'key');
       }
     };
 
     const onAction = () => {
       lastAction.current = Date.now();
+      noteAction();
+    };
+    // A click on anything focusable is a press: the sound, and the shape flashes white.
+    const onClick = (e: MouseEvent) => {
+      onAction();
+      if (inputLocked) {
+        return;
+      }
+      const target = e.target as Node | null;
+      if (!target) {
+        return;
+      }
+      for (const item of items.values()) {
+        const el = item.el();
+        if (el?.contains(target)) {
+          if (!item.opts.current.input) {
+            pressFlash(el);
+          }
+          pressFx();
+          return;
+        }
+      }
     };
     const onKey = (e: KeyboardEvent) => {
+      if (inputLocked) {
+        return;
+      }
       onAction();
       if (e.ctrlKey || e.altKey || e.metaKey) {
         return;
@@ -423,12 +587,13 @@ export function NavProvider(props: ProviderProps) {
         if (e.repeat || !item) {
           return;
         }
-        playSound('press');
+        pressFx();
         const input = item.opts.current.input?.current;
         if (input && !input.disabled) {
           input.focus();
           return;
         }
+        pressFlash(item.el());
         item.opts.current.activate();
         return;
       }
@@ -437,10 +602,28 @@ export function NavProvider(props: ProviderProps) {
         if (e.repeat) {
           return;
         }
-        const top = backs[backs.length - 1];
+        // No key-press sound: going back has its own (the wipe played slower).
+        // An open dialog that set its handler inside its own scope (Back) owns Escape, even when
+        // a screen under it registered one later; otherwise the newest handler wins.
+        const scope = scopes[scopes.length - 1];
+        let top = backs[backs.length - 1];
+        for (let i = backs.length - 1; i >= 0; i--) {
+          if (backs[i][2] === scope) {
+            top = backs[i];
+            break;
+          }
+        }
         if (top) {
-          playSound('press');
           top[1].current();
+        }
+        return;
+      }
+      if (e.key === 'PageUp' || e.key === 'PageDown') {
+        e.preventDefault();
+        // No click of its own: a page that turns sounds its tick.
+        const top = pagers[pagers.length - 1];
+        if (top) {
+          top[1].current(e.key === 'PageUp' ? -1 : 1);
         }
         return;
       }
@@ -455,10 +638,10 @@ export function NavProvider(props: ProviderProps) {
       }
     };
     window.addEventListener('keydown', onKey, true);
-    window.addEventListener('click', onAction, true);
+    window.addEventListener('click', onClick, true);
     return () => {
       window.removeEventListener('keydown', onKey, true);
-      window.removeEventListener('click', onAction, true);
+      window.removeEventListener('click', onClick, true);
     };
   }, []);
 
@@ -480,6 +663,7 @@ export function useFocusable<T extends HTMLElement>(
 ) {
   const nav = useContext(NavContext);
   const scope = useContext(ScopeContext);
+  const group = useContext(GroupContext);
   const id = useId();
   const ref = useRef<T | null>(null);
   const optsRef = useRef(opts);
@@ -490,9 +674,9 @@ export function useFocusable<T extends HTMLElement>(
     if (!enabled || !register || !unregister) {
       return;
     }
-    register(id, { el: () => ref.current, opts: optsRef, scope });
+    register(id, { el: () => ref.current, opts: optsRef, scope, group });
     return () => unregister(id);
-  }, [enabled, register, unregister, scope]);
+  }, [enabled, register, unregister, scope, group]);
   const focused = enabled && !!nav && nav.focused === id;
   return {
     ref,
@@ -501,6 +685,18 @@ export function useFocusable<T extends HTMLElement>(
     /** Moves the focus here, for things that want it after a click. */
     take: () => nav?.focus(id, 'claim'),
   };
+}
+
+/**
+ * A block of items that is entered as one (a category list, the rows beside it): an arrow move
+ * sideways into it from outside lands on its `entry` item, else on its first item, instead of
+ * the nearest one. Moves inside it, and up or down into it, are unchanged.
+ */
+export function FocusGroup(props: { children: ReactNode }) {
+  const id = useId();
+  return (
+    <GroupContext.Provider value={id}>{props.children}</GroupContext.Provider>
+  );
 }
 
 /**
@@ -530,6 +726,7 @@ export function FocusScope(props: { children: ReactNode }) {
  */
 export function useBack(fn: (() => void) | null) {
   const nav = useContext(NavContext);
+  const scope = useContext(ScopeContext);
   const id = useId();
   const fnRef = useRef<() => void>(() => undefined);
   fnRef.current = fn || (() => undefined);
@@ -538,19 +735,48 @@ export function useBack(fn: (() => void) | null) {
     if (!active || !nav) {
       return;
     }
-    nav.pushBack(id, fnRef);
+    nav.pushBack(id, fnRef, scope);
     return () => nav.popBack(id);
-  }, [active, nav?.pushBack]);
+  }, [active, nav?.pushBack, scope]);
+}
+
+/**
+ * useBack as an element, for a dialog to place inside its own FocusScope (a Dialog's children):
+ * while the dialog is the open scope, its Escape comes before any handler of the screen under it,
+ * however late that one mounted.
+ */
+export function Back(props: { fn: (() => void) | null }) {
+  useBack(props.fn);
+  return null;
+}
+
+/**
+ * What PageUp (-1) and PageDown (+1) do while this is mounted (the newest mounted one wins):
+ * page a list, step to the previous or next record.
+ */
+export function usePager(fn: ((step: number) => void) | null) {
+  const nav = useContext(NavContext);
+  const id = useId();
+  const fnRef = useRef<(step: number) => void>(() => undefined);
+  fnRef.current = fn || (() => undefined);
+  const active = !!fn;
+  useLayoutEffect(() => {
+    if (!active || !nav) {
+      return;
+    }
+    nav.pushPager(id, fnRef);
+    return () => nav.popPager(id);
+  }, [active, nav?.pushPager]);
 }
 
 /** The lit-focus look added to whatever is focused (an outline glow in the item's colour). */
 export const NAV_CSS = `
 .lt-tui .lt-foc { outline: 2px solid currentColor; outline-offset: 1px;
-  box-shadow: 0 0 10px rgba(126,255,191,.55); }
-.lt-tui .lt-foc.inv, .lt-tui .lt-foc.inva { outline-color: var(--lt-ph); }
+  box-shadow: 0 0 10px rgba(190,140,255,.55); }
+.lt-tui .lt-foc.inv, .lt-tui .lt-foc.invx, .lt-tui .lt-foc.inva { outline-color: var(--lt-fg); }
 .lt-tui .lt-foc.inva { outline-color: var(--lt-amb); }
-.lt-tui .lt-hitfoc { outline: 2px solid var(--lt-ph); outline-offset: -1px;
-  box-shadow: 0 0 10px rgba(126,255,191,.45), inset 0 0 8px rgba(126,255,191,.25); }
-.lt-tui .lt-fieldfoc { outline: 2px solid var(--lt-amb); outline-offset: 1px;
-  box-shadow: 0 0 10px rgba(255,196,31,.45); }
+.lt-tui .lt-hitfoc { outline: 2px solid var(--lt-fg); outline-offset: -1px;
+  box-shadow: 0 0 10px rgba(190,140,255,.45), inset 0 0 8px rgba(190,140,255,.25); }
+.lt-tui .lt-fieldfoc { outline: 2px solid var(--lt-fg); outline-offset: 1px;
+  box-shadow: 0 0 10px rgba(190,140,255,.55); }
 `;

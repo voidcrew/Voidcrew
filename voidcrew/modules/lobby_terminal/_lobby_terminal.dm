@@ -15,8 +15,8 @@
  * Sections: the shell (this file, lobby_tgui.dm, lobby_bezel.dm) declares every section
  * proc below. Section owners override them in their own file without the `proc/` keyword:
  * lobby_crews.dm (crew_* actions), lobby_yard.dm (yard_* actions), lobby_housing.dm
- * (home_* actions) and lobby_character*.dm (char_* actions). Those files sort after this
- * one, so their overrides win.
+ * (home_* actions), lobby_character*.dm (char_* actions) and lobby_settings*.dm (settings_*
+ * actions). Those files sort after this one, so their overrides win.
  */
 
 /// How long to wait for the browser to report itself visible before offering a reload link.
@@ -65,6 +65,8 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	var/had_focus = FALSE
 	/// The skin.dmf BROWSER control the terminal renders into.
 	var/control_id = "lobby_browser"
+	/// TRUE once the player has pressed LOGIN on the start-up screen. The terminal lives as long as the client, so the screen plays once per connection and not again on a return to the lobby mid-round.
+	var/boot_done = FALSE
 
 	// CHARACTER section (lobby_character*.dm). Declared here so every owner shares them.
 	/// Job category the preview wears (preview only, never saved). Null: the top role.
@@ -78,6 +80,10 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	/// Preview renders: appearance key -> list("[dir]" = base64 png). Owned by lobby_character_preview.dm.
 	var/list/char_preview_cache
 
+	// SETTINGS section (lobby_settings*.dm).
+	/// TRUE while the SETTINGS screen is open in this window: tg's window changes are pushed to it.
+	var/settings_open = FALSE
+
 /datum/lobby_terminal/New(client/owner)
 	. = ..()
 	src.owner = owner
@@ -87,6 +93,7 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 
 /datum/lobby_terminal/Destroy()
 	char_save()
+	settings_save()
 	if(owner)
 		UnregisterSignal(owner, COMSIG_CLIENT_MOB_LOGIN)
 		if(owner.lobby_terminal == src)
@@ -115,6 +122,7 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 		yard_previews_sent = list()
 		// Nor the character catalog or its first push.
 		char_open = FALSE
+		settings_open = FALSE
 	set_classic_lobby(FALSE)
 	refresh_polls(user)
 	ui_interact(user)
@@ -133,6 +141,9 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 /// Takes the terminal off the map and closes its UI. The classic HUD (or the game) shows again.
 /datum/lobby_terminal/proc/hide()
 	char_save()
+	settings_save()
+	settings_open = FALSE
+	crew_open_ref = null
 	visible = FALSE
 	if(load_timer)
 		deltimer(load_timer)
@@ -172,6 +183,9 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 		"mapwindow.status_bar.is-visible" = "false",
 		"[control_id].focus" = "true",
 	))
+	// The start-up screen waits for this: it must not begin before the player can see it.
+	if(!boot_done)
+		INVOKE_ASYNC(SStgui, TYPE_PROC_REF(/datum/controller/subsystem/tgui, update_uis), src)
 
 /**
  * Puts the classic HUD lobby's buttons on or off the owner's screen. The starfield backdrop
@@ -205,7 +219,12 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 		return
 	log_tgui(owner, "Lobby terminal did not report visible in time", window = window)
 	set_classic_lobby(TRUE)
+	// No LOGIN to wait for: the classic lobby gets its title music now (lobby_music.dm).
+	owner.lobby_music_release()
 	to_chat(owner, span_warning("The dock terminal didn't load. <a href='byond://?src=[REF(src)];lobby_reload=1'>Try again</a>."))
+	// Nor its WELCOME box: a first-timer gets the native popup instead (first_time_notice.dm).
+	if(!welcome_later)
+		show_first_time_notice(owner.ckey)
 
 /datum/lobby_terminal/Topic(href, list/href_list)
 	. = ..()
@@ -245,7 +264,7 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	if(ui && !QDELETED(ui))
 		SStgui.update_uis(src)
 
-/// Asks the client to switch tabs ("crews", "shipyard", "housing", "character").
+/// Asks the client to switch tabs ("crews", "shipyard", "housing", "character", "settings").
 /datum/lobby_terminal/proc/goto_tab(tab)
 	tab_request = tab
 	tab_request_serial++
@@ -421,11 +440,34 @@ GLOBAL_LIST_EMPTY(lobby_join_locks)
 	SHOULD_NOT_SLEEP(TRUE)
 	return
 
-/// Saved ships hook (feature/ship-saving overrides it): list of save cards (null entries for empty slots), or null to hide the box.
+/**
+ * SETTINGS actions (lobby_settings.dm): settings_open, settings_set, settings_close. The shell has
+ * already checked that the player's prefs exist and the preference assets are built.
+ */
+/datum/lobby_terminal/proc/settings_act(action, list/params, mob/user)
+	return FALSE
+
+/// SETTINGS, KEYS group (lobby_settings_keys.dm): every settings_keys_* action, routed by settings_act().
+/datum/lobby_terminal/proc/settings_keys_act(action, list/params, mob/user)
+	return FALSE
+
+/// SETTINGS: writes the game preferences to disk after edits. Runs from hide() and Destroy() too: must not sleep.
+/datum/lobby_terminal/proc/settings_save()
+	SHOULD_NOT_SLEEP(TRUE)
+	return
+
+/**
+ * Saved ships hook (ship_saves/ship_save_lobby_terminal.dm overrides it): one save card a slot in slot
+ * order (null for an empty slot), or null while the player's saves aren't read yet. Runs in ui_data.
+ */
 /datum/lobby_terminal/proc/saved_ships_data()
 	return null
 
-/// Saved ships hook: loads the save in that slot. form_new is the crew-leave answer.
+/// Saved ships hook: the save card for one slot, or null when the slot is empty. Only reads caches.
+/datum/lobby_terminal/proc/saved_ship_card(slot)
+	return null
+
+/// Saved ships hook: loads the save in that slot. form_new is the crew-leave answer. Runs under the join lock and may sleep.
 /datum/lobby_terminal/proc/load_saved_ship(slot, form_new)
 	set_notice("Shipyard records are offline.", "warn")
 	return FALSE
