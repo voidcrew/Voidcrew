@@ -133,6 +133,7 @@
 	camera.emp_act(EMP_LIGHT)
 	TEST_ASSERT_EQUAL(camera.cam_state, 4, "An EMP didn't shut the camera off")
 	TEST_ASSERT_EQUAL(camera.cone.alpha, 0, "An EMP'd camera still shows its cone")
+	TEST_ASSERT_EQUAL(camera.glow.alpha, 0, "An EMP'd camera still shows the light at its lens")
 
 /// The den's harvester gang: every outfit keeps the disguise set reachable (scav fatigues showing, the mask slot free for
 /// the balaclava, its suit read as a guard's own), and no den guard carries Syndicate kit. Their fatigues are loot, the
@@ -205,6 +206,10 @@
 	TEST_ASSERT_EQUAL(north.scav_cam_walls(), NORTH, "A north wall camera doesn't mask its cone off the north wall")
 	TEST_ASSERT(north.cone in north.cone_holder.vis_contents, "The cone isn't drawn in its masking holder")
 	TEST_ASSERT(north.cone_holder.get_filter("scav_cam_walls"), "The cone's holder has no wall mask")
+	TEST_ASSERT(north.glow in north.vis_contents, "The camera has no ball of light at its cone's source")
+	TEST_ASSERT(!(north.glow in north.cone_holder.vis_contents), "The source's ball of light is masked with the cone")
+	TEST_ASSERT_EQUAL(north.glow.transform.c, GLOB.scav_cam_frames["[north.frame_dir]"][north.frame][4], "The ball of light isn't on the head")
+	TEST_ASSERT_EQUAL(north.glow.color, north.cone.color, "The ball of light isn't the cone's colour")
 	TEST_ASSERT(north.cone.plane == north.cone_holder.plane, "The cone left its holder's plane, so the mask misses it")
 	var/list/mask_states = icon_states('voidcrew/icons/effects/scav_camera_mask.dmi')
 	for(var/walls in list(NORTH, SOUTH, EAST, WEST, NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWEST))

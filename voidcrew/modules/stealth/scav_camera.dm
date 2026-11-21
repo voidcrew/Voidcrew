@@ -137,6 +137,8 @@ GLOBAL_LIST_INIT(scav_cam_corner_sprites, list(
 	var/obj/effect/abstract/scav_camera_cone/cone
 	/// What the cone is drawn in: it cuts the cone off its mounting wall(s)
 	var/obj/effect/abstract/scav_camera_cone_holder/cone_holder
+	/// The round light at the cone's source, in the camera's head (not masked)
+	var/obj/effect/abstract/scav_camera_glow/glow
 	/// Weakref to its den's guards, once found
 	var/datum/weakref/group_ref
 	/// The guards' skill for its zone, once worked out
@@ -158,6 +160,10 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 	cone_holder.vis_contents += cone
 	// The same plane as its holder, or it would leave the holder's group and its mask.
 	SET_PLANE_EXPLICIT(cone, O_LIGHTING_VISUAL_PLANE, src)
+	// The ball of light at the source sits outside the mask, so the mask can't cut it in half.
+	glow = new(src)
+	vis_contents += glow
+	SET_PLANE_EXPLICIT(glow, O_LIGHTING_VISUAL_PLANE, src)
 	alarm_loop = new(src)
 	scav_cam_draw(TRUE)
 
@@ -169,6 +175,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 	if(cone_holder)
 		vis_contents -= cone_holder
 		QDEL_NULL(cone_holder)
+	if(glow)
+		vis_contents -= glow
+		QDEL_NULL(glow)
 	watched = null
 	group_ref = null
 	profile = null
@@ -262,6 +271,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 	alarm_loop?.stop()
 	if(cone)
 		cone.alpha = 0
+	if(glow)
+		glow.alpha = 0
 	update_appearance(UPDATE_ICON_STATE)
 
 /// Its den's guards, or null when there are none in reach.
@@ -419,12 +430,18 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 		return
 	if(cam_state == SCAV_CAM_OFF)
 		cone.alpha = 0
+		if(glow)
+			glow.alpha = 0
 		return
 	var/wanted_color = cam_state == SCAV_CAM_SCAN ? SCAV_CAM_COLOR_SCAN : (cam_state == SCAV_CAM_TRACK ? SCAV_CAM_COLOR_TRACK : SCAV_CAM_COLOR_ALARM)
 	if(cone.color != wanted_color)
 		cone.color = wanted_color
 	var/wanted_alpha = cam_state == SCAV_CAM_ALARM ? (round(world.time / (3 DECISECONDS)) % 2 ? 255 : 120) : 220
 	cone.alpha = wanted_alpha
+	if(glow)
+		if(glow.color != wanted_color)
+			glow.color = wanted_color
+		glow.alpha = wanted_alpha
 	if(scav_cam_pick_frame())
 		update_appearance(UPDATE_ICON_STATE)
 	var/list/shown = GLOB.scav_cam_frames["[frame_dir]"][frame]
@@ -437,11 +454,17 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 	pointing.Translate(0, STEALTH_BEAM_PIVOT)
 	pointing.Turn(aim)
 	pointing.Translate(shown[4], shown[5] - STEALTH_BEAM_PIVOT)
+	var/matrix/source = matrix()
+	source.Translate(shown[4], shown[5])
 	if(instant)
 		animate(cone, transform = pointing, time = 0)
+		if(glow)
+			animate(glow, transform = source, time = 0)
 	else
 		// Linear: a turned and stretched matrix tweened by angle can flip and swing the cone the long way round.
 		animate(cone, transform = pointing, time = 2 DECISECONDS, flags = ANIMATION_LINEAR_TRANSFORM)
+		if(glow && !(glow.transform ~= source))
+			animate(glow, transform = source, time = 2 DECISECONDS, flags = ANIMATION_LINEAR_TRANSFORM)
 
 /// How long the drawn cone is along its aim from the head of `shown` (a GLOB.scav_cam_frames entry), in quarter tiles: to the first
 /// wall or solid door, at most the beam's full length.
@@ -509,6 +532,19 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 	vis_flags = NONE
 	pixel_x = -224
 	pixel_y = -224
+
+/// The ball of light at a den camera's cone's source, centred on the head of the frame it shows: the cone's own base glow,
+/// shrunk to stay mostly off the wall the camera hangs on. Same plane, colour, alpha and flash as the cone.
+/obj/effect/abstract/scav_camera_glow
+	name = "camera sweep"
+	icon = 'voidcrew/icons/effects/scav_camera_glow.dmi'
+	icon_state = "glow"
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	anchored = TRUE
+	blocks_emissive = EMISSIVE_BLOCK_NONE
+	blend_mode = BLEND_ADD
+	appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM | KEEP_APART | PIXEL_SCALE
+	vis_flags = NONE
 
 #undef SCAV_CAM_SCAN
 #undef SCAV_CAM_TRACK
