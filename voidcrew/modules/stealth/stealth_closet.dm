@@ -323,3 +323,18 @@
 	if(istype(controller))
 		controller.stealth_try_closet()
 	return AI_BEHAVIOR_DELAY
+
+// ===== The door's sound =====
+// tg plays a locker's or a crate's door to everyone near it (open_sound, close_sound). Guards hear one someone works
+// as they hear a door: a glance, from closer than players hear it. Their own go unremarked (stealth_noise()), as does
+// one nobody worked (it burst), and one tg plays no sound for (an open with no effects).
+
+/obj/structure/closet/open(mob/living/user, force = FALSE, special_effects = TRUE)
+	. = ..()
+	if(. == TRUE && special_effects && length(GLOB.stealth_groups) && isliving(user))
+		stealth_noise(src, STEALTH_NOISE_DOOR, null, user)
+
+/obj/structure/closet/close(mob/living/user)
+	. = ..()
+	if(. == TRUE && length(GLOB.stealth_groups) && isliving(user))
+		stealth_noise(src, STEALTH_NOISE_DOOR, null, user)

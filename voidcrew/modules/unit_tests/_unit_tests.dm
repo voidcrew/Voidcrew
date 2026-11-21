@@ -321,6 +321,7 @@
 #include "voidcrew_stealth_den.dm"
 #include "voidcrew_stealth_disguise.dm"
 #include "voidcrew_stealth_fix_radio.dm"
+#include "voidcrew_stealth_fix_senses.dm"
 #include "voidcrew_stealth_grip.dm"
 #include "voidcrew_stealth_hearing.dm"
 #include "voidcrew_stealth_hostage.dm"

@@ -537,14 +537,15 @@
 	var/mob/living/carbon/human/npc/guard = sentry(9, 5, EAST)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = guard.ai_controller
 	var/mob/living/carbon/human/thrower = person_at(0, 2, FALSE)
-	var/obj/item/coin/iron/coin = allocate(/obj/item/coin/iron, get_turf(thrower))
+	// Handcuffs: small, and tg plays a landing for them (a coin lands in silence).
+	var/obj/item/restraints/handcuffs/coin = allocate(/obj/item/restraints/handcuffs, get_turf(thrower))
 	var/turf/landing = at(9, 2)
 	coin.throw_at(landing, 12, 2, thrower)
 	var/deadline = world.time + 10 SECONDS
 	while((coin.throwing || guard_ai.stealth_state() == "unaware") && world.time < deadline)
 		sleep(1)
-	TEST_ASSERT_EQUAL(guard_ai.stealth_state(), "suspicious", "A guard 3 tiles from a thrown coin's landing didn't look (it landed [get_dist(coin, guard)] tiles off)")
-	TEST_ASSERT(get_dist(guard_ai.investigate_turf, get_turf(coin)) <= 1, "It isn't looking where the coin landed")
+	TEST_ASSERT_EQUAL(guard_ai.stealth_state(), "suspicious", "A guard 3 tiles from thrown handcuffs' landing didn't look (they landed [get_dist(coin, guard)] tiles off)")
+	TEST_ASSERT(get_dist(guard_ai.investigate_turf, get_turf(coin)) <= 1, "It isn't looking where the handcuffs landed")
 	TEST_ASSERT_EQUAL(guard_ai.last_heard[1], "thrown", "It heard something other than a landing")
 	// A bottle, 7 tiles from the guard: only breaking glass carries that far.
 	settle(guard)
