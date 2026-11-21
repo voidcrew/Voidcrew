@@ -7912,7 +7912,6 @@
 #include "voidcrew\modules\stealth\stealth_holdup.dm"
 #include "voidcrew\modules\stealth\stealth_hostage.dm"
 #include "voidcrew\modules\stealth\stealth_hostage_pose.dm"
-#include "voidcrew\modules\stealth\stealth_knife.dm"
 #include "voidcrew\modules\stealth\stealth_light.dm"
 #include "voidcrew\modules\stealth\stealth_meter.dm"
 #include "voidcrew\modules\stealth\stealth_noise.dm"

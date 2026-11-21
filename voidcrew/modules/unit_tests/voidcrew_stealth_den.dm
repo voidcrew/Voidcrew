@@ -20,7 +20,7 @@
 	TEST_ASSERT_EQUAL(boss_card.registered_name, boss.real_name, "The boss's pass is in someone else's name")
 	TEST_ASSERT(boss.stealth_radio, "The den boss has no radio")
 
-/// The vault rolls cyberware by zone, never the same piece twice, plus one piece of stealth gear from its hook.
+/// The vault rolls cyberware by zone, never the same piece twice, plus one piece of stealth gear if its hook has any.
 /datum/unit_test/voidcrew_stealth_den_vault
 
 /datum/unit_test/voidcrew_stealth_den_vault/Run()
@@ -28,7 +28,8 @@
 	for(var/zone in 1 to 3)
 		var/obj/structure/closet/crate/secure/scav_vault/crate = allocate(/obj/structure/closet/crate/secure/scav_vault, run_loc_floor_bottom_left)
 		var/list/made = crate.scav_vault_roll(zone)
-		TEST_ASSERT_EQUAL(length(made), expected[zone] + 1, "A zone [zone] vault paid the wrong number of pieces")
+		var/stealth_wanted = length(crate.scav_vault_stealth_loot()) ? 1 : 0
+		TEST_ASSERT_EQUAL(length(made), expected[zone] + stealth_wanted, "A zone [zone] vault paid the wrong number of pieces")
 		var/list/seen = list()
 		var/stealth_pieces = 0
 		for(var/obj/item/piece as anything in made)
@@ -39,7 +40,7 @@
 			TEST_ASSERT(!seen[piece.type], "A vault paid [piece.type] twice")
 			seen[piece.type] = TRUE
 			TEST_ASSERT_EQUAL(piece.loc, crate, "A vault piece landed outside the crate")
-		TEST_ASSERT_EQUAL(stealth_pieces, 1, "A vault didn't pay one piece of stealth gear")
+		TEST_ASSERT_EQUAL(stealth_pieces, stealth_wanted, "A vault paid [stealth_pieces] pieces of stealth gear, not [stealth_wanted]")
 	var/obj/structure/closet/crate/secure/scav_vault/locked = allocate(/obj/structure/closet/crate/secure/scav_vault, run_loc_floor_bottom_left)
 	TEST_ASSERT(locked.locked, "The vault crate isn't locked")
 	TEST_ASSERT("scav_vault" in locked.req_access, "The vault crate doesn't want the vault pass")

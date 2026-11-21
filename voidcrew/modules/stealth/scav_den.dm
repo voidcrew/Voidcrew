@@ -11,7 +11,7 @@
  * The den's guards are the stealth guards of scav_guards.dm with names of their own, so their friends can call them
  * by name on the radio and over a body. Their skill comes from the den's zone (decision 38): a den revealed in the
  * contested lanes is yellow. The boss, a lookout, carries the only vault pass. The vault's crate rolls cyberware by
- * the den's zone, plus one piece of stealth gear from scav_vault_stealth_loot() (the matte knife here; other modules add theirs).
+ * the den's zone, plus one piece of stealth gear from scav_vault_stealth_loot() if any module adds one (none does yet).
  *
  * Cameras: scav_camera.dm.
  */
@@ -335,12 +335,12 @@
 	scav_vault_roll(zone)
 
 /**
- * The stealth-gear hook: typepath => weight of stealth gear a vault may pay, one piece per vault. Here only the matte
- * knife. Other modules (the garrotte, the gun-fu chip) add theirs by overriding this proc on this type with `. = ..()`
- * and adding entries to the list.
+ * The stealth-gear hook: typepath => weight of stealth gear a vault may pay, one piece per vault. Empty here. Other
+ * modules (the garrotte, the gun-fu chip) add theirs by overriding this proc on this type with `. = ..()` and adding
+ * entries to the list.
  */
 /obj/structure/closet/crate/secure/scav_vault/proc/scav_vault_stealth_loot()
-	return list(/obj/item/knife/combat/matte = 1)
+	return list()
 
 /**
  * Fills it with a den vault's take for `zone`: cyberware drawn without repeats (2 in green, 3 in yellow, 4 in red),

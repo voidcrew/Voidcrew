@@ -303,7 +303,7 @@ ADMIN_VERB(stealth_den_planet, R_ADMIN|R_DEBUG, "Stealth: Scav Den Planet", "TEM
 		/obj/item/weldingtool = 1,
 		/obj/item/crowbar = 1,
 	)
-	l_pocket = /obj/item/knife/combat/matte
+	l_pocket = /obj/item/knife/combat
 	r_pocket = /obj/item/flashlight
 
 /datum/outfit/stealth_playtest/post_equip(mob/living/carbon/human/user, visuals_only = FALSE)

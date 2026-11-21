@@ -273,7 +273,7 @@
 /// It has seen through a disguise
 #define STEALTH_BARK_BLOWN "stealth_blown"
 
-// ===== Stealth crits, the head shot and the backstab knife (step 3a, decision 45; stealth_crits.dm, stealth_knife.dm) =====
+// ===== Stealth crits, the head shot and the backstab (step 3a, decision 45; stealth_crits.dm, knife_executions.dm) =====
 // Roll bonuses for hyperviolence's aimed crit roll (crit_roll.dm), on a stealth guard only. They go in before wound armour,
 // so armour scales them like the rest of the roll. Numbers argued in data/stealth/STATUS.md, "Step 3a".
 /// Added when the guard was unaware of everyone as the blow began
