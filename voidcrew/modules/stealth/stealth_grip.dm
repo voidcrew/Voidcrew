@@ -111,10 +111,8 @@
 			if(target.check_block(src, 0, "[src]'s grab", UNARMED_ATTACK))
 				return FALSE
 			var/datum/stealth_grip/new_grip = new(src, target)
-			if(new_grip.close_hand())
-				return TRUE
-			if(pulling == target)
-				return TRUE
+			// Taken or not, this was the grab: tg's grab() below would send the signal and roll the block again.
+			return new_grip.close_hand() || pulling == target
 	return ..()
 
 // ---------------------------------------------------------------------------------------------
