@@ -497,7 +497,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 /// The drawn cone of a den camera: light on the lighting visual plane, lighting nothing.
 /obj/effect/abstract/scav_camera_cone
 	name = "camera sweep"
-	// The guards' flashlight cone (stealth_beam.dmi) made white and about 4x as opaque, so a tint shows it.
+	// The guards' flashlight cone (stealth_beam.dmi) made white and about 4x as opaque, so a tint shows it. Its base fades
+	// out past 40 to 75 degrees off its axis, so nothing runs out sideways from the source in a straight line.
 	icon = 'voidcrew/icons/effects/scav_camera_cone.dmi'
 	icon_state = "beam_22"
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
@@ -516,7 +517,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 /**
  * Holds a den camera's cone, unturned, on the cone's plane. KEEP_TOGETHER draws the cone into one group, then applies
  * this holder's filters to the whole group: an alpha mask (scav_camera_mask.dmi) that keeps only the floor side of the
- * camera's mounting wall(s), so the cone never draws on them. Its "bounds" icon is 480x480 (all but invisible) and
+ * camera's mounting wall(s), so the cone never draws on them. The mask fades in over 12 px from the wall edge, so the
+ * cone softens into the wall instead of stopping on a hard line. Its "bounds" icon is 480x480 (all but invisible) and
  * centred on the camera's tile, the same size as the masks, so the mask sits on the tile whether BYOND centres it on
  * this icon or on the whole group (the cone, at most about 223 px from the tile's centre, always stays inside it).
  */
