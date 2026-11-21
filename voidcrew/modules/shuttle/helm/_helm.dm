@@ -374,6 +374,9 @@
 		data["repairTotal"] = 0
 
 	data["calibrating"] = calibrating
+	// Only the captain can order a jump, and the crew votes on it (captain_management/jump_vote.dm).
+	data["isCaptain"] = current_ship.is_ship_captain(user)
+	data["jumpVote"] = current_ship.jump_vote_in_progress
 	data["canThrust"] = current_ship.can_thrust()
 	data["otherInfo"] = list()
 	for (var/obj/structure/overmap/object as anything in current_ship.close_overmap_objects)
@@ -793,7 +796,7 @@
 	. = ..()
 	attempt_ship_connection()
 
-/obj/machinery/computer/helm/proc/calibrate_jump(inline = FALSE)
+/obj/machinery/computer/helm/proc/calibrate_jump(inline = FALSE, mob/user)
 	if(jump_allowed < 0)
 		say("Bluespace Jump Calibration offline. Please contact your system administrator.")
 		return
@@ -810,7 +813,7 @@
 		// bricked the console for the rest of the round with no way to tell.
 		say("Bluespace Jump sequence already underway.")
 		return
-	message_admins("[ADMIN_LOOKUPFLW(usr)] has initiated a bluespace jump in [ADMIN_VERBOSEJMP(src)]")
+	message_admins("[ADMIN_LOOKUPFLW(user || usr)] has initiated a bluespace jump in [ADMIN_VERBOSEJMP(src)]")
 	jump_timer = addtimer(CALLBACK(src, PROC_REF(jump_sequence), TRUE), JUMP_CHARGEUP_TIME, TIMER_STOPPABLE)
 	current_ship?.ship_notify("Bluespace jump calibration initialized. Calibration completion in [JUMP_CHARGEUP_TIME/600] minutes.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	calibrating = TRUE
@@ -1280,14 +1283,23 @@
 						current_ship.command_course(BURN_STOP)
 					return
 				if("bluespace_jump")
+					// Captain only, both to order a jump and to call one off.
+					if(!current_ship.is_ship_captain(usr))
+						say("ERROR: Bluespace jump requires the captain's authorisation.")
+						playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
+						return
 					if(calibrating)
 						cancel_jump()
 						return
-					else
-						if(tgui_alert(usr, "Do you want to bluespace jump? Your ship and everything on it will be removed from the round.", "Jump Confirmation", list("Yes", "No")) != "Yes")
-							return
-						calibrate_jump()
+					if(current_ship.jump_vote_in_progress)
 						return
+					if(tgui_alert(usr, "Do you want to bluespace jump? Your ship and everything on it will be removed from the round. The crew will vote on it.", "Jump Confirmation", list("Yes", "No")) != "Yes")
+						return
+					// Re-checked after the prompt: the captain may have lost command while it was open.
+					if(QDELETED(src) || !current_ship?.is_ship_captain(usr) || calibrating)
+						return
+					current_ship.call_jump_vote(usr, src)
+					return
 				if("dock")
 					// Dock into whatever is actually here. Previously this refused
 					// outright whenever a ruin or planet shared the tile, so the only

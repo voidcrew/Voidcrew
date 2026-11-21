@@ -101,7 +101,7 @@ Below 50% hull integrity the helm refuses every command. Rebuilding hull mass (r
 
 ## Bluespace jump
 
-The **Bluespace** button calibrates a jump out of the system. Calibration takes three minutes, then the pylon fires.
+The **Bluespace** button calibrates a jump out of the system. Only the captain can press it. The rest of the crew who are online and alive then get 45 seconds to agree or refuse, and the jump needs a majority of the whole crew, captain included as a yes. Anyone who does not answer counts as a refusal. The captain must wait two minutes between votes. Once the vote carries, calibration takes three minutes, then the pylon fires.
 
 !!! danger "A bluespace jump ends your round"
-    Your ship and everyone on it are removed from the round permanently. This is the "we are done, cash out" button, not a fast-travel option. The console asks you to confirm; press Bluespace again during calibration to cancel.
+    Your ship and everyone on it are removed from the round permanently. This is the "we are done, cash out" button, not a fast-travel option. The console asks you to confirm; the captain can press Bluespace again during calibration to cancel.
