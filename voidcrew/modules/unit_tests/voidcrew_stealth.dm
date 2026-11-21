@@ -8,16 +8,58 @@
 
 #define STEALTH_TEST_GUARD /mob/living/carbon/human/npc/ruin/trooper/scav
 
-/// A floored block of `width` x `height` tiles for one test. Released by the caller.
+/datum/unit_test
+	/// What the stealth test helpers set up for this test, undone when the test ends (see /datum/stealth_test_tidy)
+	var/datum/stealth_test_tidy/stealth_test_tidy
+
+/// This test's tidy-up, made on first use. It is allocated, so it runs when the test ends even after a failed assertion.
+/datum/unit_test/proc/stealth_tidy()
+	if(isnull(stealth_test_tidy))
+		stealth_test_tidy = allocate(/datum/stealth_test_tidy)
+	return stealth_test_tidy
+
+/**
+ * Undoes a stealth test's setup when the test is torn down, whether it finished or an assertion returned early:
+ * takes its turfs off the test light list (GLOB.stealth_test_dark_turfs), takes forced gravity off the turfs it was
+ * put on, and releases its blocks. A test may still release a block itself; a second release does nothing.
+ */
+/datum/stealth_test_tidy
+	/// Turfs whose entries in GLOB.stealth_test_dark_turfs go when the test ends
+	var/list/turf/lit_turfs = list()
+	/// Turfs given forced gravity by the test
+	var/list/turf/gravity_turfs = list()
+	/// Blocks released when the test ends
+	var/list/datum/turf_reservation/blocks = list()
+
+/datum/stealth_test_tidy/Destroy(force)
+	GLOB.stealth_test_dark_turfs -= lit_turfs
+	for(var/turf/spot as anything in gravity_turfs)
+		spot.RemoveElement(/datum/element/forced_gravity, 1)
+	QDEL_LIST(blocks)
+	lit_turfs = null
+	gravity_turfs = null
+	return ..()
+
+/// A floored block of `width` x `height` tiles for one test. Released when the test ends (or earlier by the caller).
 /datum/unit_test/proc/stealth_block(width, height)
 	var/datum/turf_reservation/block = SSmapping.request_turf_block_reservation(width, height, 1)
 	if(isnull(block))
 		return null
+	var/datum/stealth_test_tidy/tidy = stealth_tidy()
+	tidy.blocks += block
 	var/turf/corner = block.bottom_left_turfs[1]
 	for(var/turf/spot as anything in block(corner.x, corner.y, corner.z, corner.x + width - 1, corner.y + height - 1, corner.z))
 		spot.ChangeTurf(/turf/open/floor/iron)
 		GLOB.stealth_test_dark_turfs[spot] = FALSE
+		tidy.lit_turfs += spot
 	return block
+
+/// Gives `spot` gravity (reserved space has none) until the test ends. A turf that already has it is left alone.
+/datum/unit_test/proc/stealth_ground(turf/spot)
+	if(spot.has_gravity())
+		return
+	spot.AddElement(/datum/element/forced_gravity, 1)
+	stealth_tidy().gravity_turfs |= spot
 
 /datum/unit_test/proc/stealth_at(datum/turf_reservation/block, dx, dy)
 	var/turf/corner = block.bottom_left_turfs[1]
@@ -586,10 +628,12 @@
 	if(isnull(room))
 		return FALSE
 	var/turf/corner = room.bottom_left_turfs[1]
+	var/datum/stealth_test_tidy/tidy = stealth_tidy()
 	for(var/turf/spot as anything in block(corner.x, corner.y, corner.z, corner.x + width + 1, corner.y + height + 1, corner.z))
 		var/edge = spot.x == corner.x || spot.y == corner.y || spot.x == corner.x + width + 1 || spot.y == corner.y + height + 1
 		spot.ChangeTurf(edge ? /turf/closed/wall : /turf/open/floor/iron)
 		GLOB.stealth_test_dark_turfs[spot] = FALSE
+		tidy.lit_turfs += spot
 	return TRUE
 
 /// The floor (dx, dy) from the room's inside corner.
@@ -880,8 +924,7 @@
 /datum/unit_test/voidcrew_stealth_slip/Run()
 	var/datum/turf_reservation/block = stealth_block(20, 5)
 	TEST_ASSERT_NOTNULL(block, "No room for the test")
-	var/turf/slip_turf = stealth_at(block, 2, 2)
-	slip_turf.AddElement(/datum/element/forced_gravity, 1)
+	stealth_ground(stealth_at(block, 2, 2))
 	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 2, 2)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = stealth_ai(guard)
 	TEST_ASSERT(guard.slip(4 SECONDS, null), "The guard didn't slip (no-slip shoes, or no gravity?)")

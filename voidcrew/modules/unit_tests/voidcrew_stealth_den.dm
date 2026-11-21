@@ -85,6 +85,8 @@
 	allocate(/obj/effect/landmark/stealth_group, at(0, 0))
 	// Hung on the north wall, looking south.
 	var/obj/machinery/scav_camera/camera = allocate(/obj/machinery/scav_camera/directional/north, at(5, 8))
+	// Driven only by hand below: the listed person would otherwise wake its own sweep on SSfastprocess as well.
+	camera.end_processing()
 	var/turf/eye = get_turf(camera)
 	TEST_ASSERT_EQUAL(camera.aim, 180, "A camera hung on the north wall doesn't look south")
 	var/mob/living/carbon/human/person = person_at(5, 4)

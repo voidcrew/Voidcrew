@@ -1,10 +1,18 @@
 /**
- * TEMPORARY PLAYTEST TOOL for the stealth branch (feature/stealth). Remove before merge.
+ * Admin test tool for the stealth layer, kept in the game on purpose (owner decision): for now it is the only way to
+ * the scav den, whose tip is on no shop (scav_den.dm).
  *
  * "Stealth: Scav Den Planet" (Debug) builds a fresh jungle planet through the normal overmap path and worldgen
  * queue, loads the scav chop shop (scav_den.dm) on it at a cleared spot, then dresses the admin in a mortal body
- * with the stealth playtest kit and drops them in the jungle south of the den's front airlock.
+ * with the stealth playtest kit and drops them in the jungle south of the den's front airlock. One such planet is up
+ * at a time: while it is, running the verb again offers to drop you at the same den instead of building another planet
+ * level (each one costs memory for the rest of the round).
  */
+
+/// The planet the verb built, while it is up (a weakref, so an admin unloading it isn't held up)
+GLOBAL_DATUM(stealth_test_den_planet, /datum/weakref)
+/// Where the verb drops a tester at that planet's den, once it is built
+GLOBAL_VAR(stealth_test_den_arrival)
 
 /// Cleared ground around the den, so both airlocks and the arrival spot are open jungle
 #define STEALTH_TEST_MARGIN 8
@@ -22,7 +30,19 @@
 #define STEALTH_TEST_DOOR_X 29
 #define STEALTH_TEST_DOOR_Y 2
 
-ADMIN_VERB(stealth_den_planet, R_ADMIN|R_DEBUG, "Stealth: Scav Den Planet", "TEMPORARY: build a jungle planet with the scav chop shop and drop you outside it in the stealth playtest kit.", ADMIN_CATEGORY_DEBUG)
+ADMIN_VERB(stealth_den_planet, R_ADMIN|R_DEBUG, "Stealth: Scav Den Planet", "Build a jungle planet with the scav chop shop (or reuse the one already up) and drop you outside it in the stealth playtest kit.", ADMIN_CATEGORY_DEBUG)
+	var/obj/structure/overmap/planet/existing = stealth_test_den_planet_live()
+	if(existing)
+		var/turf/arrival = GLOB.stealth_test_den_arrival
+		if(isnull(arrival))
+			to_chat(user, span_warning("Stealth test: [existing.name] is still being built."))
+			return
+		if(tgui_alert(user, "A scav den test planet ([existing.name]) is already up. Go there?", "Stealth: Scav Den Planet", list("Go there", "Cancel")) != "Go there")
+			return
+		message_admins("[key_name_admin(user)] is going to the scav den test planet [existing.name].")
+		log_admin("[key_name(user)] is going to the scav den test planet [existing.name].")
+		INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(stealth_test_planet_arrive), user, arrival)
+		return
 	// The planet's overmap zone sets how sharp the guards are (green, yellow or red skill profile).
 	var/static/list/zone_choices = list("Green" = ZONE_GREEN, "Yellow" = ZONE_YELLOW, "Red" = ZONE_RED)
 	var/zone_name = tgui_input_list(user, "Which zone should the planet be in? Guards are sharper in harder zones.", "Stealth: Scav Den Planet", zone_choices, "Yellow")
@@ -33,10 +53,38 @@ ADMIN_VERB(stealth_den_planet, R_ADMIN|R_DEBUG, "Stealth: Scav Den Planet", "TEM
 	BLACKBOX_LOG_ADMIN_VERB("Stealth Scav Den Planet")
 	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(stealth_test_planet_for_client), user, zone_choices[zone_name])
 
+/// The test den planet the verb built, if it is still up (loading or loaded), or null.
+/proc/stealth_test_den_planet_live()
+	var/obj/structure/overmap/planet/planet = GLOB.stealth_test_den_planet?.resolve()
+	if(QDELETED(planet) || !(planet.loaded || planet.loading))
+		GLOB.stealth_test_den_planet = null
+		GLOB.stealth_test_den_arrival = null
+		return null
+	// A built planet whose level was unloaded and reused for something else.
+	var/turf/arrival = GLOB.stealth_test_den_arrival
+	if(arrival && planet.loaded && arrival.z != planet.footprint?.z_value)
+		GLOB.stealth_test_den_planet = null
+		GLOB.stealth_test_den_arrival = null
+		return null
+	return planet
+
 /// Builds the site in `zone`, then gives `user` a mortal body there.
 /proc/stealth_test_planet_for_client(client/user, zone = ZONE_YELLOW)
 	var/turf/arrival = stealth_test_planet_build(user, zone)
-	if(isnull(arrival) || QDELETED(user))
+	if(isnull(arrival))
+		// A planet that came up without its den is no test site: let it unload like any other, and free the slot.
+		var/obj/structure/overmap/planet/failed = GLOB.stealth_test_den_planet?.resolve()
+		if(failed)
+			failed.preserve_level = FALSE
+		GLOB.stealth_test_den_planet = null
+		GLOB.stealth_test_den_arrival = null
+		return
+	GLOB.stealth_test_den_arrival = arrival
+	stealth_test_planet_arrive(user, arrival)
+
+/// Gives `user` a mortal body at the test den's `arrival` spot.
+/proc/stealth_test_planet_arrive(client/user, turf/arrival)
+	if(QDELETED(user))
 		return
 	var/mob/living/carbon/human/body = stealth_test_planet_body(user, arrival)
 	if(isnull(body))
@@ -69,6 +117,7 @@ ADMIN_VERB(stealth_den_planet, R_ADMIN|R_DEBUG, "Stealth: Scav Den Planet", "TEM
 		return null
 	// Kept until an admin unloads it, so a test run is not torn down while the tester walks around.
 	planet.preserve_level = TRUE
+	GLOB.stealth_test_den_planet = WEAKREF(planet)
 	var/started = world.time
 	stealth_test_say(feedback, "building [planet.name] at overmap ([planet.x], [planet.y]), [list("green", "yellow", "red")[clamp(SSovermap_zones.get_zone_type_anywhere(get_turf(planet)) || ZONE_GREEN, ZONE_GREEN, ZONE_RED)]] zone. This takes about a minute.")
 	INVOKE_ASYNC(planet, TYPE_PROC_REF(/obj/structure/overmap/planet, load_level), feedback_mob, 5 MINUTES)

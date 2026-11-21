@@ -6,16 +6,18 @@
  * amber. Full, it sounds the compound's siren and the den's guards answer as they answer any alarm (stealth_noise() at
  * the spot, so the nearest few run there and search, the rest hold wary and the lookouts call it in on the radio).
  *
- * It sees by the guards' rules: dark tiles hide you past one tile, lockers and boxes hide you, cloaks hide you, and a
- * scav disguise of fatigues and mask passes, except in a room marked off limits (stealth_restricted). It never sees
- * through walls (stealth_can_see()). The cone is drawn on the lighting visual plane and lights nothing: what it shows is where
- * it looks, nothing more.
+ * It sees by the guards' rules: dark tiles hide you past one tile, lockers and boxes hide you (a mech or a car doesn't),
+ * cloaks hide you, and a scav disguise of fatigues and mask passes, except in a room marked off limits
+ * (stealth_restricted). Right under it or beside it, it sees you whichever way it points. It never sees through walls
+ * (stealth_can_see()). It watches people who are up and free: a cuffed or downed NPC (a crew's captive) is nothing to
+ * it. The cone is drawn on the lighting visual plane and lights nothing: what it shows is where it looks, nothing more.
  *
  * Players can EMP it (off for a while), break it (it has an integrity like any machine) or cut its feed with
- * wirecutters (from beside it: the tile under it is in its cone). The guards' skill profile for the den's zone sets
+ * wirecutters (from beside it, where it sees you). The guards' skill profile for the den's zone sets
  * how fast its notice fills (decision 38).
  *
- * It runs on SSfastprocess, and only while a player is on its level; otherwise it stands still and costs nothing.
+ * It runs on SSfastprocess, and only while a player is on its level; otherwise it stands still and costs nothing. A cut
+ * or broken camera stops processing (a repaired one starts again).
  */
 
 /// Sweeping its arc
@@ -133,6 +135,10 @@ GLOBAL_LIST_INIT(scav_cam_corner_sprites, list(
 	var/frame_dir
 	/// The swivel frame it shows now, 1 to 7
 	var/frame = 4
+	/// The aim, sprite dir and frame the cone was last turned to, so a still camera doesn't redraw it every tick
+	var/drawn_aim
+	var/drawn_frame_dir
+	var/drawn_frame
 	/// The drawn cone
 	var/obj/effect/abstract/scav_camera_cone/cone
 	/// What the cone is drawn in: it cuts the cone off its mounting wall(s)
@@ -242,6 +248,13 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 	. = ..()
 	scav_cam_off()
 
+/obj/machinery/scav_camera/atom_fix()
+	. = ..()
+	set_machine_stat(machine_stat & ~BROKEN)
+	update_appearance(UPDATE_ICON_STATE)
+	if(!feed_cut)
+		begin_processing()
+
 /obj/machinery/scav_camera/emp_act(severity)
 	. = ..()
 	if(. & EMP_PROTECT_SELF)
@@ -285,6 +298,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 	return group
 
 /obj/machinery/scav_camera/process(seconds_per_tick)
+	// Cut for good, or broken until someone repairs it (atom_fix() starts it again).
+	if(feed_cut || (machine_stat & BROKEN))
+		return PROCESS_KILL
 	var/turf/eye = get_turf(src)
 	if(isnull(eye))
 		return
@@ -292,7 +308,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 	if(eye.z > length(SSmobs.clients_by_zlevel) || !length(SSmobs.clients_by_zlevel[eye.z]))
 		return
 	if(cam_state == SCAV_CAM_OFF)
-		if(feed_cut || (machine_stat & BROKEN) || emp_until > world.time)
+		if(emp_until > world.time)
 			return
 		cam_state = SCAV_CAM_SCAN
 		aim = scav_cam_facing()
@@ -354,6 +370,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 /// Turns its aim toward `target`, no further round than a little past its sweep.
 /obj/machinery/scav_camera/proc/scav_cam_follow(mob/living/target, turf/eye, seconds_per_tick)
 	var/turf/spot = get_turf(target)
+	// Right under it there is no way to turn.
+	if(spot == eye)
+		return
 	var/wanted = delta_to_angle(spot.x - eye.x, spot.y - eye.y)
 	var/turn = closer_angle_difference(aim, wanted)
 	var/step = SCAV_CAM_TRACK_SPEED * seconds_per_tick
@@ -382,15 +401,21 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 /obj/machinery/scav_camera/proc/scav_cam_sees(mob/living/who, turf/eye)
 	if(!istype(who) || who.stat == DEAD || (FACTION_SCAV in who.faction))
 		return FALSE
+	// Someone's captive: an NPC in cuffs or out cold is no intruder. A player is watched whatever state they're in.
+	if(!who.ckey && (who.stat != CONSCIOUS || HAS_TRAIT(who, TRAIT_RESTRAINED)))
+		return FALSE
 	var/turf/spot = get_turf(who)
-	if(isnull(spot) || spot.z != eye.z || spot == eye)
+	if(isnull(spot) || spot.z != eye.z)
 		return FALSE
 	var/dist = get_dist(eye, spot)
 	if(dist > view_range)
 		return FALSE
-	if(abs(closer_angle_difference(aim, delta_to_angle(spot.x - eye.x, spot.y - eye.y))) > view_half)
+	// Under it or beside it (its own wall row too), it sees you whichever way it points, as a guard sees someone at its elbow.
+	if(dist > 1 && abs(closer_angle_difference(aim, delta_to_angle(spot.x - eye.x, spot.y - eye.y))) > view_half)
 		return FALSE
-	if(stealth_shell_of(who) || stealth_is_cloaked(who))
+	// A box, a locker or a bag hides them; any vehicle is as plain as its driver (the guards' rule).
+	var/atom/movable/shell = stealth_shell_of(who)
+	if((shell && !isvehicle(shell)) || stealth_is_cloaked(who))
 		return FALSE
 	if(dist > 1 && stealth_tile_is_dark(spot))
 		return FALSE
@@ -448,6 +473,11 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/scav_camera, 0)
 	var/state = "beam_[scav_cam_reach(shown)]"
 	if(cone.icon_state != state)
 		cone.icon_state = state
+	if(!instant && aim == drawn_aim && frame_dir == drawn_frame_dir && frame == drawn_frame)
+		return
+	drawn_aim = aim
+	drawn_frame_dir = frame_dir
+	drawn_frame = frame
 	var/matrix/pointing = matrix()
 	pointing.Scale(SCAV_CAM_CONE_SCALE, 1)
 	// The beam's bottom middle (its apex) onto the turning point, turned, then into the head of the frame it shows.
