@@ -15,8 +15,9 @@
  * stealth_grip.dm), a grab or a hand on him doesn't set him off, and his AI holds still (stealth_holdup subtree). So the
  * aimer can walk up and take him hostage or cuff him. His surrender's Paralyze running out under the gun, he gives up
  * again. He keeps still while anyone holds him up, holds him in a grab, or the one he gave up to stands next to him gun in hand.
- * Once none of that is true for STEALTH_HOLDUP_BEAT, he makes his move: he drops his surrender (only that Paralyze,
- * never a stun on top of it), goes alert on the aimer, shouts, calls it in and reaches for his weapon. Cuffed, hit or
+ * Once none of that is true for STEALTH_HOLDUP_BEAT, he makes his move: he goes alert on the aimer, shouts, calls it
+ * in and reaches for his weapon once tg's surrender Paralyze lets him up (it runs its full time, as it does for a
+ * player who surrenders). Cuffed, hit or
  * out cold, the deal is over and the usual rules take over.
  */
 
@@ -147,11 +148,7 @@
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_holdup_break()
 	var/mob/living/carbon/human/npc/guard = pawn
 	var/mob/living/aimer = holdup_aimer?.resolve()
-	var/surrender_left = max(holdup_surrender_ends - world.time, 0)
 	stealth_holdup_clear()
-	// It drops its own surrender (tg's *surrender Paralyze). A stun put on top of it is longer, and left alone.
-	if(guard.npc_surrendering && guard.AmountParalyzed() <= surrender_left + 1)
-		guard.SetParalyzed(0)
 	guard.npc_surrender_redecide = FALSE
 	if(QDELETED(aimer))
 		stealth_first_hand(get_turf(guard))

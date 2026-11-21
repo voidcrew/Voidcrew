@@ -8,6 +8,9 @@
 #define STEALTH_SQUEEZE_OXY_RATE 4
 /// The squeeze lets go once he is out and this deep (tg's breathing takes it off again; he stays out about 10 s more).
 #define STEALTH_SQUEEZE_RELEASE_OXY 75
+/// A hurt guard is let go sooner, this far above tg's full crit (HEALTH_THRESHOLD_FULLCRIT), where tg's crit breathing
+/// would go on choking him. A healthy guard never gets this low before STEALTH_SQUEEZE_RELEASE_OXY.
+#define STEALTH_SQUEEZE_CRIT_MARGIN 10
 /// Neck cover (hv_crit_cover_rating(), melee, worn and physiology armour stacked) at which the squeeze can't close.
 #define STEALTH_SQUEEZE_MAX_COVER 60
 

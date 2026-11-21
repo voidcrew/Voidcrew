@@ -291,3 +291,94 @@
 	holder.put_in_active_hand(pistol, forced = TRUE)
 	stealth_test_regrab_held(holder, guard)
 	qdel(block)
+
+/// A standoff with `guard` against `holder` holding `hostage` at gunpoint (pistol in the active hand), started.
+/datum/unit_test/proc/stealth_test_standoff(mob/living/carbon/human/npc/guard, mob/living/carbon/human/holder, mob/living/carbon/human/hostage)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = stealth_ai(guard)
+	var/obj/item/gun/ballistic/automatic/pistol/pistol = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	pistol.can_misfire = FALSE
+	holder.put_in_active_hand(pistol, forced = TRUE)
+	holder.setDir(EAST)
+	stealth_test_grab(holder, hostage, GRAB_NECK)
+	TEST_ASSERT_EQUAL(stealth_hostage_of(holder), hostage, "Test fixture: a neck grab with a gun isn't a hostage")
+	guard_ai.stealth_go_alert(holder)
+	var/datum/ai_planning_subtree/stealth_hostage/subtree = GLOB.ai_subtrees[/datum/ai_planning_subtree/stealth_hostage]
+	TEST_ASSERT_EQUAL(subtree.SelectBehaviors(guard_ai, 1), SUBTREE_RETURN_FINISH_PLANNING, "Test fixture: the guard didn't stand off")
+	return guard_ai
+
+/// `holder` swings a punch at `victim` with his empty other hand, in combat mode (tg's unarmed attack; it may miss,
+/// and a swing is an attack either way).
+/datum/unit_test/proc/stealth_test_punch(mob/living/carbon/human/holder, mob/living/victim)
+	holder.swap_hand()
+	holder.set_combat_mode(TRUE)
+	holder.UnarmedAttack(victim, TRUE, list())
+	holder.set_combat_mode(FALSE)
+	holder.swap_hand()
+
+/// A standoff ends for good, and the guard fights, when the holder attacks: one of the guard's people he can see,
+/// the guard himself, the hostage with a bare fist, or strangles the hostage. Loose words aren't a demand to back off.
+/datum/unit_test/voidcrew_stealth_hostage_fight_back
+
+/datum/unit_test/voidcrew_stealth_hostage_fight_back/Run()
+	var/datum/turf_reservation/block = stealth_block(10, 9)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	// A friend of his, hit in front of him.
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 8, 1, WEST)
+	var/mob/living/carbon/human/npc/hostage = stealth_guard(block, 3, 1, WEST)
+	var/mob/living/carbon/human/npc/friend = stealth_guard(block, 2, 2, WEST)
+	var/mob/living/carbon/human/holder = stealth_person(block, 2, 1)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = stealth_test_standoff(guard, holder, hostage)
+	if(!guard_ai)
+		return
+	holder.say("Don't move! Let's go!")
+	TEST_ASSERT(!guard_ai.standoff_backed_off, "Loose words made the guard back off")
+	stealth_test_punch(holder, friend)
+	TEST_ASSERT_NULL(guard_ai.standoff_holder, "The standoff outlived the holder hitting a friend in view")
+	TEST_ASSERT(LAZYFIND(guard_ai.no_deals, REF(holder)), "No grudge after the holder hit a friend")
+	// The guard himself.
+	var/mob/living/carbon/human/npc/guard2 = stealth_guard(block, 3, 4, WEST)
+	var/mob/living/carbon/human/npc/hostage2 = stealth_guard(block, 3, 3, WEST)
+	var/mob/living/carbon/human/holder2 = stealth_person(block, 2, 3)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/guard2_ai = stealth_test_standoff(guard2, holder2, hostage2)
+	if(!guard2_ai)
+		return
+	stealth_test_punch(holder2, guard2)
+	TEST_ASSERT_NULL(guard2_ai.standoff_holder, "The standoff outlived the holder hitting the guard")
+	// The hostage, a bare fist.
+	var/mob/living/carbon/human/npc/guard3 = stealth_guard(block, 8, 5, WEST)
+	var/mob/living/carbon/human/npc/hostage3 = stealth_guard(block, 3, 5, WEST)
+	var/mob/living/carbon/human/holder3 = stealth_person(block, 2, 5)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/guard3_ai = stealth_test_standoff(guard3, holder3, hostage3)
+	if(!guard3_ai)
+		return
+	stealth_test_punch(holder3, hostage3)
+	TEST_ASSERT_NULL(guard3_ai.standoff_holder, "The standoff outlived the holder punching the hostage")
+	// The hostage strangled (tg's GRAB_KILL).
+	var/mob/living/carbon/human/npc/guard4 = stealth_guard(block, 8, 7, WEST)
+	var/mob/living/carbon/human/npc/hostage4 = stealth_guard(block, 3, 7, WEST)
+	var/mob/living/carbon/human/holder4 = stealth_person(block, 2, 7)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/guard4_ai = stealth_test_standoff(guard4, holder4, hostage4)
+	if(!guard4_ai)
+		return
+	hostage4.grippedby(holder4, instant = TRUE)
+	TEST_ASSERT_EQUAL(holder4.grab_state, GRAB_KILL, "Test fixture: no strangle")
+	TEST_ASSERT_NULL(guard4_ai.standoff_holder, "The standoff outlived the holder strangling the hostage")
+	TEST_ASSERT(LAZYFIND(guard4_ai.no_deals, REF(holder4)), "No grudge after the hostage was strangled")
+	qdel(block)
+
+/// A hostage deleted while held up on his feet isn't left a let-go spot that holds on to him.
+/datum/unit_test/voidcrew_stealth_hostage_deleted
+
+/datum/unit_test/voidcrew_stealth_hostage_deleted/Run()
+	var/datum/turf_reservation/block = stealth_block(6, 3)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	var/mob/living/carbon/human/holder = stealth_person(block, 2, 1)
+	var/mob/living/carbon/human/hostage = stealth_person(block, 3, 1)
+	var/obj/item/gun/ballistic/automatic/pistol/pistol = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	holder.put_in_active_hand(pistol, forced = TRUE)
+	stealth_test_grab(holder, hostage, GRAB_NECK)
+	TEST_ASSERT_EQUAL(stealth_hostage_of(holder), hostage, "Test fixture: no hostage")
+	TEST_ASSERT_EQUAL(hostage.body_position, STANDING_UP, "Test fixture: the hostage isn't held on his feet")
+	qdel(hostage)
+	TEST_ASSERT_NULL(hostage.hostage_pose_freed, "A deleted hostage got a let-go spot that keeps him")
+	qdel(block)

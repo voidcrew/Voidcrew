@@ -41,6 +41,7 @@
 	TEST_ASSERT(HAS_TRAIT(guard, TRAIT_IMMOBILIZED) && HAS_TRAIT(guard, TRAIT_HANDS_BLOCKED), "The held guard can move or use his hands")
 	TEST_ASSERT_EQUAL(guard.body_position, STANDING_UP, "The held guard isn't held on his feet")
 	TEST_ASSERT(guard.hostage_pose_dir, "The held guard isn't drawn held in front")
+	TEST_ASSERT(guard.incapacitated & INCAPABLE_GRAB, "The held guard isn't incapacitated by the grab, as tg's grab leaves him")
 	TEST_ASSERT_EQUAL(stealth_held_in_front(person), guard, "The held guard isn't held in front")
 	var/datum/ai_planning_subtree/escape = GLOB.ai_subtrees[/datum/ai_planning_subtree/escape_captivity/stealth]
 	TEST_ASSERT(guard_ai.planning_subtrees.Find(escape), "The guard doesn't plan with the stealth escape subtree")
@@ -143,6 +144,19 @@
 	TEST_ASSERT(slow.squeezing, "The squeeze didn't close on a sec helmet")
 	TEST_ASSERT(slow.oxy_rate < 4 && slow.oxy_rate > 0, "A sec helmet left the squeeze at [slow.oxy_rate] a second")
 	strangler.stop_pulling()
+	// A badly hurt guard is let go before tg's full crit would go on choking him.
+	var/mob/living/carbon/human/npc/hurt = d45_bare_guard(block, 6, 3)
+	hurt.apply_damage(60, BRUTE, BODY_ZONE_CHEST)
+	var/mob/living/carbon/human/choker = stealth_person(block, 5, 3)
+	var/datum/stealth_grip/deep = grip_clamp(choker, hurt)
+	choker.grab(hurt)
+	TEST_ASSERT(deep.squeezing, "The squeeze didn't close on a hurt guard")
+	for(var/i in 1 to 30)
+		if(QDELETED(deep))
+			break
+		deep.squeeze_tick(1)
+	TEST_ASSERT(QDELETED(deep), "The squeeze never let a hurt guard go")
+	TEST_ASSERT(hurt.health > HEALTH_THRESHOLD_FULLCRIT, "The squeeze let a hurt guard go in full crit ([hurt.health] health)")
 	qdel(block)
 
 /// A gun on a guard (tg's hold-up): hands up, holds still for a grab, makes his move once nobody covers him. A boss and
@@ -181,7 +195,7 @@
 	person.forceMove(stealth_at(block, 0, 1))
 	guard_ai.stealth_holdup_check()
 	TEST_ASSERT_NULL(guard_ai.holdup_aimer, "Nobody covering him, the guard kept his hands up")
-	TEST_ASSERT(!guard.IsParalyzed(), "Nobody covering him, the guard stayed down")
+	TEST_ASSERT(guard.IsParalyzed(), "Nobody covering him, the guard's surrender was cut short (tg's Paralyze runs its time)")
 	TEST_ASSERT_EQUAL(guard_ai.stealth_state(), "alert", "Nobody covering him, the guard isn't alert")
 	TEST_ASSERT_EQUAL(guard_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], person, "Nobody covering him, the guard isn't after the aimer")
 	// A boss doesn't give up.

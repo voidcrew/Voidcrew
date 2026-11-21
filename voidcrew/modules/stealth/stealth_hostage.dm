@@ -12,14 +12,18 @@
  * - told to drop it, he drops what he holds, once; told to back off, he backs off to STEALTH_HOSTAGE_BACK_OFF_RANGE,
  *   once. Plain words the holder says out loud within STEALTH_HOSTAGE_DEMAND_RANGE;
  * - the hostage let go alive, or slipping free: the fight picks up where it was;
- * - the holder hurting or killing the hostage, or the hostage dying in his hands: no more deals with that holder,
- *   ever, for that guard. He fights.
+ * - the holder hurting or killing the hostage (a shot, a blow, a strangle), or the hostage dying in his hands, or
+ *   the holder attacking the guard himself or one of his people he can see: no more deals with that holder, ever,
+ *   for that guard. He fights.
  * - out of sight of the holder, he chases as usual and stands off again when he sees them.
  *
  * Only for their own people. Someone they don't count as one of theirs (a player, a stranger) held up in front is
  * no reason to hold fire: they shoot. Never a fake state on anyone: the hostage is only held, and the guards only
  * choose not to shoot.
  */
+
+/// Stealth AIs in a standoff now, so an attack by a holder reaches every guard standing off against him.
+GLOBAL_LIST_EMPTY(stealth_standoffs)
 
 /datum/ai_controller/basic_controller/human_npc/stealth
 	/// The holder it is standing off against, and the friend they hold.
@@ -75,7 +79,9 @@
 	next_standoff_bark = 0
 	stealth_drop_walk()
 	RegisterSignal(holder, COMSIG_MOB_SAY, PROC_REF(on_standoff_demand))
+	RegisterSignal(holder, COMSIG_MOVABLE_SET_GRAB_STATE, PROC_REF(on_holder_grab_state))
 	RegisterSignal(hostage, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(on_hostage_hurt))
+	GLOB.stealth_standoffs |= src
 	RegisterSignal(hostage, COMSIG_LIVING_DEATH, PROC_REF(on_hostage_died))
 	var/mob/living/guard = pawn
 	log_combat(guard, holder, "held fire on a hostage holder", null, "(hostage [key_name(hostage)], [get_area_name(guard, TRUE)])")
@@ -84,8 +90,9 @@
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_standoff_end(line)
 	var/mob/living/holder = standoff_holder?.resolve()
 	var/mob/living/hostage = standoff_hostage?.resolve()
+	GLOB.stealth_standoffs -= src
 	if(holder)
-		UnregisterSignal(holder, COMSIG_MOB_SAY)
+		UnregisterSignal(holder, list(COMSIG_MOB_SAY, COMSIG_MOVABLE_SET_GRAB_STATE))
 	if(hostage)
 		UnregisterSignal(hostage, list(COMSIG_MOB_AFTER_APPLY_DAMAGE, COMSIG_LIVING_DEATH))
 	var/was_on = !isnull(standoff_holder)
@@ -96,12 +103,12 @@
 		if(line)
 			stealth_bark(line, always = TRUE)
 
-/// The holder hurt or killed the hostage: no more deals with them.
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_standoff_broken(mob/living/holder)
+/// The holder hurt or killed the hostage, or attacked one of them: no more deals with them. `why` goes in the log.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_standoff_broken(mob/living/holder, why = "the hostage was hurt")
 	if(holder)
 		LAZYOR(no_deals, REF(holder))
 		var/mob/living/guard = pawn
-		log_combat(guard, holder, "stopped holding fire: the hostage was hurt", null, "([get_area_name(guard, TRUE)])")
+		log_combat(guard, holder, "stopped holding fire: [why]", null, "([get_area_name(guard, TRUE)])")
 	stealth_set_wary()
 	stealth_standoff_end(STEALTH_BARK_HOSTAGE_EXECUTED)
 
@@ -112,6 +119,43 @@
 	var/mob/living/holder = standoff_holder?.resolve()
 	if(holder && hv_vis_attacker_of(attacking_item) == holder)
 		stealth_standoff_broken(holder)
+
+/// The holder tightens his grip on the hostage into tg's strangle (GRAB_KILL, the squeeze among them): hurting him.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/on_holder_grab_state(mob/living/source, new_state)
+	SIGNAL_HANDLER
+	if(new_state >= GRAB_KILL && source.pulling == standoff_hostage?.resolve())
+		stealth_standoff_broken(source, "the hostage was strangled")
+
+/**
+ * `attacker` attacked `victim` (tg's relay_attackers: a blow in combat mode, a shot, a throw; not a shove). Every
+ * guard standing off against him as a holder stops: if `victim` is the hostage, the guard himself, or one of his
+ * people he can see.
+ */
+/proc/stealth_standoff_witness(mob/living/victim, mob/living/attacker, attack_flags)
+	if(!isliving(attacker) || !(attack_flags & (ATTACKER_DAMAGING_ATTACK|ATTACKER_STAMINA_ATTACK)))
+		return
+	for(var/datum/ai_controller/basic_controller/human_npc/stealth/brain as anything in GLOB.stealth_standoffs.Copy())
+		if(brain.standoff_holder?.resolve() != attacker)
+			continue
+		var/mob/living/guard = brain.pawn
+		if(QDELETED(guard))
+			continue
+		if(victim == brain.standoff_hostage?.resolve())
+			brain.stealth_standoff_broken(attacker, "the hostage was hurt")
+		else if(victim == guard)
+			brain.stealth_standoff_broken(attacker, "the holder attacked them")
+		// seen as stealth_has_in_view() sees, without its targeting check (which skips his own people)
+		else if(guard.faction_check_atom(victim) && brain.stealth_alert_lit(victim) && can_see(guard, victim, HUMAN_NPC_SIGHT_RANGE))
+			brain.stealth_standoff_broken(attacker, "the holder attacked one of theirs")
+
+/datum/ai_controller/basic_controller/human_npc/stealth/Destroy()
+	GLOB.stealth_standoffs -= src
+	return ..()
+
+// Every attack on a stealth guard (human_npc_ai.dm hooks tg's COMSIG_ATOM_WAS_ATTACKED), standing off or not.
+/datum/ai_controller/basic_controller/human_npc/stealth/on_pawn_attacked(mob/living/source, atom/attacker, attack_flags)
+	stealth_standoff_witness(source, attacker, attack_flags)
+	return ..()
 
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/on_hostage_died(mob/living/source, gibbed)
 	SIGNAL_HANDLER
@@ -133,7 +177,7 @@
 	if(!istext(message))
 		return
 	var/static/regex/drop_words = regex(@"\b(drop|guns?|weapons?|piece|disarm)\b", "i")
-	var/static/regex/back_words = regex(@"\b(back|away|off|step|move|leave|go)\b", "i")
+	var/static/regex/back_words = regex(@"\b(back\s+(off|up|away)|(step|get|stand|move)\s+back|move\s+away)\b", "i")
 	if(!standoff_dropped && drop_words.Find(message))
 		INVOKE_ASYNC(src, PROC_REF(stealth_standoff_drop))
 	else if(!standoff_backed_off && back_words.Find(message))
@@ -276,7 +320,7 @@
 		return FALSE
 	if(held.z != z || get_dist(held, src) > 1)
 		return FALSE
-	if(stealth_hostage_of(src, held.loc) != held && !stealth_grip_holds(src, held))
+	if(stealth_hostage_of(src, held.loc) != held && !stealth_grip_holds(src, held, held.loc))
 		return FALSE
 	held.moving_from_pull = src
 	held.Move(loc, get_dir(held, loc), glide_size, FALSE)
@@ -287,7 +331,7 @@
 /// round with him; it never pushes the body off his tile.
 /mob/living/carbon/human/Move_Pulled(atom/moving_atom)
 	var/mob/living/held = pulling
-	if(!isliving(held) || !isturf(held.loc) || (stealth_hostage_of(src, held.loc) != held && !stealth_grip_holds(src, held)))
+	if(!isliving(held) || !isturf(held.loc) || (stealth_hostage_of(src, held.loc) != held && !stealth_grip_holds(src, held, held.loc)))
 		return ..()
 	stealth_hold_close()
 	face_atom(moving_atom)

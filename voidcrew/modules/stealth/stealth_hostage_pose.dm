@@ -225,6 +225,9 @@
 // tg's grab offsets, taken over while the body is held at gunpoint
 
 /mob/living/set_pull_offsets(mob/living/mob_to_set, grab_state = GRAB_PASSIVE, animate = TRUE)
+	// tg leaves a buckled body as it is, and so do we
+	if(mob_to_set.buckled)
+		return ..()
 	stealth_hold_upright(mob_to_set)
 	var/mob/living/carbon/human/holder = ishuman(src) ? src : null
 	if(holder && stealth_held_in_front(holder) == mob_to_set)
@@ -422,7 +425,8 @@
 	hostage_pose_hand = null
 	hostage_pose_serial++
 	hostage_pose_path = null
-	if(!QDELETED(freed_by) && loc == freed_by.loc && isturf(loc) && body_position == STANDING_UP)
+	// a body being deleted is let go in its Destroy(): nothing to stand it anywhere (and nothing may hold on to it)
+	if(!QDELETED(src) && !QDELETED(freed_by) && loc == freed_by.loc && isturf(loc) && body_position == STANDING_UP)
 		// both in this tick, so nothing jumps: tg's grab offsets off, the spot it is drawn at back on under our name
 		// (a swing still playing stops there). Then the shove: a few pixels further out from him, tg's own eased slide.
 		held_at = list(round(held_at[1], 1), round(held_at[2], 1), round(held_at[3], 1))

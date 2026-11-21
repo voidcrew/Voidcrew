@@ -16,8 +16,8 @@
  * - a knife: the throat cut on the click (knife_executions.dm);
  * - another grab click with the hand still empty: the squeeze. tg's strangle (GRAB_KILL) plus the arm's pressure as
  *   oxygen damage, slowed by the neck's cover (the cut chokehold's numbers). Non-lethal: he is out in about 9 s and
- *   let go once out and STEALTH_SQUEEZE_RELEASE_OXY deep. Placeholder visuals (the pose); a real animation comes
- *   through the storyboard gate later.
+ *   let go once out and STEALTH_SQUEEZE_RELEASE_OXY deep, or sooner if he is hurt enough to be near tg's full crit.
+ *   Placeholder visuals (the pose); a real animation comes through the storyboard gate later.
  * It ends with tg's grab: let go, moved apart, the holder stunned, anything tg drops a grab for, or the grab going
  * below a neck grab. Let go awake, he knows who held him: alert on them, and he shouts and calls it in now he can.
  */
@@ -62,16 +62,17 @@
 		return "guard on guard ([guard_ai.stealth_state()])"
 	return null
 
-/// The body `holder` has in the hand-over-the-mouth hold, or null.
-/proc/stealth_grip_victim_of(mob/living/holder)
+/// The body `holder` has in the hand-over-the-mouth hold on his tile, or null. `at` asks about the body on another
+/// tile instead (one it has been pushed or dragged onto).
+/proc/stealth_grip_victim_of(mob/living/holder, atom/at)
 	var/datum/stealth_grip/grip = holder?.stealth_grip_holding
-	if(isnull(grip) || grip.ended || holder.pulling != grip.held || holder.grab_state < GRAB_NECK)
+	if(isnull(grip) || grip.ended || holder.pulling != grip.held || holder.grab_state < GRAB_NECK || grip.held.loc != (at || holder.loc))
 		return null
 	return grip.held
 
-/// Whether `holder` has `victim` in the hand-over-the-mouth hold.
-/proc/stealth_grip_holds(mob/living/holder, mob/living/victim)
-	return !isnull(victim) && stealth_grip_victim_of(holder) == victim
+/// Whether `holder` has `victim` in the hand-over-the-mouth hold, on his tile (or on `at`).
+/proc/stealth_grip_holds(mob/living/holder, mob/living/victim, atom/at)
+	return !isnull(victim) && stealth_grip_victim_of(holder, at) == victim
 
 /// The body `holder` holds up in front of him: at gunpoint (stealth_hostage_of()) or with a hand over its mouth.
 /proc/stealth_held_in_front(mob/living/holder)
@@ -97,13 +98,16 @@
 			return TRUE
 		// A body held up in front with something in the grabbing hand (the gun): the click does nothing. tg's grab would
 		// tighten it to a strangle, and the squeeze is only for an empty hand.
-		if(pulling == target && grab_state >= GRAB_NECK && get_active_held_item() && isturf(target.loc) && (stealth_hostage_of(src, target.loc) == target || stealth_grip_holds(src, target)))
+		if(pulling == target && grab_state >= GRAB_NECK && get_active_held_item() && isturf(target.loc) && (stealth_hostage_of(src, target.loc) == target || stealth_grip_holds(src, target, target.loc)))
 			return TRUE
 		var/refusal = stealth_grip_refusal(src, target)
 		// Aimed at a guard's mouth and it didn't take: say why in the attack log (playtest diagnosis).
 		if(refusal && refusal != "not a guard" && zone_selected == BODY_ZONE_PRECISE_MOUTH)
 			log_combat(src, target, "tried a hand over the mouth on", addition = "refused: [refusal]")
 		if(isnull(refusal))
+			// tg's grab signal first, as tg's grab() sends it: a martial art or anything else hooked there may take it
+			if(SEND_SIGNAL(src, COMSIG_LIVING_GRAB, target) & (COMPONENT_CANCEL_ATTACK_CHAIN|COMPONENT_SKIP_ATTACK))
+				return FALSE
 			if(target.check_block(src, 0, "[src]'s grab", UNARMED_ATTACK))
 				return FALSE
 			var/datum/stealth_grip/new_grip = new(src, target)
@@ -181,6 +185,8 @@
 	RegisterSignal(holder, COMSIG_ATOM_NO_LONGER_PULLING, PROC_REF(on_let_go))
 	RegisterSignal(holder, COMSIG_MOVABLE_SET_GRAB_STATE, PROC_REF(on_grab_state))
 	holder.set_pull_offsets(held, holder.grab_state)
+	// as tg's grabbedby() after its grippedby()
+	held.update_incapacitated()
 	holder.changeNext_move(CLICK_CD_GRABBING)
 	playsound(held, 'sound/items/weapons/thudswoosh.ogg', 50, TRUE, -1)
 	held.visible_message(
@@ -212,6 +218,7 @@
 		return TRUE
 	squeezing = TRUE
 	holder.set_pull_offsets(held, holder.grab_state)
+	held.update_incapacitated()
 	holder.changeNext_move(CLICK_CD_GRABBING)
 	playsound(held, 'sound/items/weapons/thudswoosh.ogg', 50, TRUE, -1)
 	held.visible_message(
@@ -247,7 +254,7 @@
 		return FALSE
 	if(!HAS_TRAIT(held, TRAIT_NOBREATH) && !held.get_organ_slot(ORGAN_SLOT_BREATHING_TUBE))
 		held.adjustOxyLoss(oxy_rate * seconds_per_tick)
-	if(held.getOxyLoss() >= STEALTH_SQUEEZE_RELEASE_OXY && HAS_TRAIT(held, TRAIT_KNOCKEDOUT))
+	if((held.getOxyLoss() >= STEALTH_SQUEEZE_RELEASE_OXY && HAS_TRAIT(held, TRAIT_KNOCKEDOUT)) || held.health <= HEALTH_THRESHOLD_FULLCRIT + STEALTH_SQUEEZE_CRIT_MARGIN)
 		held.visible_message(span_danger("[holder] lets [held] slump to the floor."), null, null, COMBAT_MESSAGE_RANGE, holder)
 		to_chat(holder, span_notice("You let [held] slump."))
 		end(TRUE)
