@@ -169,14 +169,14 @@
 	REMOVE_TRAIT(bystander, TRAIT_FLOORED, TRAIT_SOURCE_UNIT_TESTS)
 	// A wooden door a guard opened and walked away from, shut by someone else: theirs no longer.
 	var/obj/structure/mineral_door/wood/wood = allocate(/obj/structure/mineral_door/wood, at(5, 3))
-	wood.stealth_user_ref = WEAKREF(bystander)
+	var/mob/living/carbon/human/npc/opener = sentry(5, 4, SOUTH)
+	wood.stealth_user_ref = WEAKREF(opener)
 	wood.stealth_user_at = world.time
-	bystander.forceMove(at(5, 4))
 	TEST_ASSERT_EQUAL(stealth_door_moved(wood, TRUE), 0, "A wooden door one of them opened drew a look")
-	bystander.forceMove(at(15, 4))
+	opener.forceMove(at(15, 4))
 	wood.stealth_user_at = -1
 	TEST_ASSERT_EQUAL(stealth_door_moved(wood, FALSE), 1, "A wooden door shut by someone after a guard left it open drew no look")
-	no_targets(list(watcher, bystander))
+	no_targets(list(watcher, bystander, opener))
 
 /// A guard going down on its own slip makes no thud for its friends; knocked down by something else, it does.
 /datum/unit_test/voidcrew_stealth_live/hear/fix2_slip_thud
