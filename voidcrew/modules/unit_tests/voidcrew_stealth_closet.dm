@@ -129,6 +129,14 @@
 
 /// Real AI: two guards saw it; only one opens the locker, the other covers it.
 /datum/unit_test/voidcrew_stealth_live/closet_two_guards
+	/// Everyone who tried to open the locker (tg's pre-open signal names them). A guard's open lands within one tick
+	/// of its behaviour starting, so polling its behaviours could miss it.
+	var/list/openers = list()
+
+/datum/unit_test/voidcrew_stealth_live/closet_two_guards/proc/on_pre_open(datum/source, mob/living/user, force)
+	SIGNAL_HANDLER
+	if(user)
+		openers |= user
 
 /datum/unit_test/voidcrew_stealth_live/closet_two_guards/Run()
 	TEST_ASSERT(make_room(12, 5), "No room for the test")
@@ -148,17 +156,16 @@
 	second_ai.stealth_go_alert(person)
 	step(person, EAST)
 	TEST_ASSERT(locker.close(person), "The person couldn't shut the locker on themselves")
-	var/datum/ai_behavior/opening = GET_AI_BEHAVIOR(/datum/ai_behavior/stealth_open_closet)
-	var/list/openers = list()
+	RegisterSignal(locker, COMSIG_CLOSET_PRE_OPEN, PROC_REF(on_pre_open))
 	var/both_claimed = FALSE
 	var/deadline = world.time + 30 SECONDS
 	while(!locker.opened && world.time < deadline)
 		if(first_ai.shut_in == locker && second_ai.shut_in == locker)
 			both_claimed = TRUE
-		for(var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai as anything in list(first_ai, second_ai))
-			if(opening in guard_ai.current_behaviors)
-				openers |= guard_ai
 		sleep(1)
+	// A moment more, in case the other guard was a tick behind.
+	sleep(1 SECONDS)
+	UnregisterSignal(locker, COMSIG_CLOSET_PRE_OPEN)
 	TEST_ASSERT(locker.opened, "Two guards that saw someone shut in a locker never opened it")
 	TEST_ASSERT(both_claimed, "The two guards never both went after the locker (the test can't tell one opener from one watcher)")
 	TEST_ASSERT_EQUAL(length(openers), 1, "[length(openers)] guards tried to open one locker")
