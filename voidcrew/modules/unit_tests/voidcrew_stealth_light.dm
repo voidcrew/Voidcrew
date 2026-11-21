@@ -577,3 +577,31 @@
 			count++
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "The sentry was disturbed during the test")
 	TEST_ASSERT(count >= total * 0.7, "A sentry faced its post only [count] of [total] looks over 12 s")
+
+/// Someone carrying a lit light is lit up by it: a guard sees them at its full range in the dark, wherever the beam points.
+/datum/unit_test/voidcrew_stealth_light_carried_seen
+
+/datum/unit_test/voidcrew_stealth_light_carried_seen/Run()
+	var/datum/turf_reservation/block = stealth_block(16, 5)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	for(var/dx in 0 to 15)
+		for(var/dy in 0 to 4)
+			GLOB.stealth_test_dark_turfs[stealth_at(block, dx, dy)] = TRUE
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 2, 2, EAST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
+	var/datum/stealth_skill/profile = stealth_ai.stealth_skill()
+	// In its cone in the dark, past how far it sees in the dark but within its full sight.
+	var/mob/living/carbon/human/person = stealth_person(block, 2 + profile.dark_sight_range + 2, 2)
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_range_onto(get_turf(person), person), profile.dark_sight_range, "Someone in the dark with no light is seen at full range")
+	stealth_scans(guard, 2)
+	var/list/entry = stealth_ai.notice_map[REF(person)]
+	TEST_ASSERT(isnull(entry) || entry[1] == 0, "A guard built notice on someone past its dark sight with no light ([entry?[1]])")
+	var/obj/item/flashlight/held = allocate(/obj/item/flashlight, get_turf(person))
+	TEST_ASSERT(person.put_in_hands(held), "Test fixture: the flashlight can't be held")
+	person.setDir(WEST)
+	held.attack_self(person)
+	TEST_ASSERT(held.light_on, "Test fixture: the flashlight didn't switch on")
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_range_onto(get_turf(person), person), profile.sight_range, "Someone carrying a lit light isn't seen at full range in the dark")
+	stealth_scans(guard, 2)
+	entry = stealth_ai.notice_map[REF(person)]
+	TEST_ASSERT(entry && entry[1] > 0, "A guard didn't notice someone carrying a lit light in the dark")

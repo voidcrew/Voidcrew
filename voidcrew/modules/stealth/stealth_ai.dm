@@ -680,10 +680,11 @@
 		if(worn.tint >= TINT_BLIND && guard.dropItemToGround(worn))
 			return
 
-/// How far it sees onto `tile` in its cone: shorter in the dark unless it sees in the dark.
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_range_onto(turf/tile)
+/// How far it sees onto `tile` in its cone: shorter in the dark unless it sees in the dark. `who`, if given, is the
+/// person standing there: someone carrying a lit light is lit up by it wherever its beam points, so never in the dark.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_range_onto(turf/tile, mob/living/who)
 	var/datum/stealth_skill/profile = stealth_skill()
-	if(!HAS_TRAIT(pawn, TRAIT_NIGHT_VISION) && stealth_tile_is_dark(tile))
+	if(!HAS_TRAIT(pawn, TRAIT_NIGHT_VISION) && stealth_tile_is_dark(tile) && !(who && stealth_carried_light(who) > 0))
 		return profile.dark_sight_range
 	return profile.sight_range
 
@@ -790,7 +791,7 @@
 		else if(eyes && !covered && !stealth_is_cloaked(candidate) && stealth_in_cone(guard, where, half_angle))
 			// Elbow to elbow in front of it: seen whatever the light (decision 31). Behind or side-on, the
 			// close radius below still applies.
-			var/cap = dist <= STEALTH_ADJACENT_RANGE ? sight_range : stealth_range_onto(where)
+			var/cap = dist <= STEALTH_ADJACENT_RANGE ? sight_range : stealth_range_onto(where, boxed ? null : candidate)
 			if(dist <= cap)
 				in_view = TRUE
 				rate = profile.notice_rate * clamp((cap + 1 - dist) / cap, STEALTH_NOTICE_MIN_FALLOFF, 1)
@@ -990,7 +991,7 @@
 		if(stealth_fooled(candidate))
 			continue
 		var/dist = get_dist(guard, where)
-		if(dist > STEALTH_ADJACENT_RANGE && stealth_range_onto(where) < profile.sight_range)
+		if(dist > STEALTH_ADJACENT_RANGE && stealth_range_onto(where, candidate) < profile.sight_range)
 			continue
 		if(!strategy.can_attack(guard, candidate, profile.sight_range))
 			continue
@@ -1057,7 +1058,8 @@
 	if(ismecha(thing) || dist <= STEALTH_ADJACENT_RANGE)
 		return TRUE
 	var/datum/stealth_skill/profile = stealth_skill()
-	var/lit = HAS_TRAIT(guard, TRAIT_NIGHT_VISION) || !stealth_tile_is_dark(where)
+	// Someone carrying a lit light is lit up by it, wherever its beam points.
+	var/lit = HAS_TRAIT(guard, TRAIT_NIGHT_VISION) || !stealth_tile_is_dark(where) || (isliving(thing) && stealth_carried_light(thing) > 0)
 	if(guard.is_blind())
 		return lit && dist <= profile.close_range
 	return lit || dist <= profile.dark_sight_range

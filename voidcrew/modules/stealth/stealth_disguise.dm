@@ -268,7 +268,7 @@
 	if(!isturf(where) || !isturf(guard.loc) || guard.stat != CONSCIOUS || !stealth_eyes_open() || stealth_is_cloaked(who))
 		return FALSE
 	var/dist = get_dist(guard, where)
-	if(dist > STEALTH_ADJACENT_RANGE && dist > stealth_range_onto(where))
+	if(dist > STEALTH_ADJACENT_RANGE && dist > stealth_range_onto(where, who))
 		return FALSE
 	if(!stealth_in_cone(guard, where, stealth_half_angle()))
 		return FALSE
