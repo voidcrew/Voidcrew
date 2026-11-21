@@ -535,9 +535,17 @@
 /// Someone holding one of its own up in front of them, seen in its cone: an alert on that look, no notice to fill, at
 /// any range it sees and in a disguise or not.
 /datum/unit_test/voidcrew_stealth_hostage_seen
+	/// The test's lit block, given back in Destroy() even when an assert ends Run() early
+	var/datum/turf_reservation/block
+
+/datum/unit_test/voidcrew_stealth_hostage_seen/Destroy()
+	if(block)
+		stealth_unlist(block, 12, 5)
+		QDEL_NULL(block)
+	return ..()
 
 /datum/unit_test/voidcrew_stealth_hostage_seen/Run()
-	var/datum/turf_reservation/block = stealth_block(12, 5)
+	block = stealth_block(12, 5)
 	TEST_ASSERT_NOTNULL(block, "No room for the test")
 	for(var/disguised in list(FALSE, TRUE))
 		var/mob/living/carbon/human/npc/guard = stealth_guard(block, 2, 2, EAST)

@@ -810,7 +810,7 @@
 				// in the moment after it turns (decision 39).
 				else
 					clear = !turning
-					plain_sight = clear && dist <= profile.point_blank_range
+					plain_sight = plain_sight || (clear && dist <= profile.point_blank_range)
 					if(dist <= profile.near_range)
 						rate *= profile.near_mult
 		if(!rate && dist <= close_range && (night_vision || !stealth_tile_is_dark(where)))
