@@ -28,13 +28,18 @@
 		TEST_ASSERT_EQUAL(person.move_intent, MOVE_INTENT_RUN, "Test fixture: [how]: not on run")
 		var/mob/living/carbon/human/puller
 		if(how == "dragged away")
-			puller = stealth_person(block, 9, 3)
+			// A friend in the whole set steps off east and drags them along, through tg's own pull.
+			for(var/dx in 8 to 10)
+				stealth_ground(stealth_at(block, dx, 2))
+			puller = stealth_person(block, 9, 2)
 			stealth_dress(puller)
 			puller.start_pulling(person, supress_message = TRUE)
 			TEST_ASSERT_EQUAL(person.pulledby, puller, "Test fixture: not being pulled")
-		person.forceMove(stealth_at(block, spec[1], spec[2]))
-		if(puller)
-			TEST_ASSERT_EQUAL(person.pulledby, puller, "Test fixture: the pull broke on the move")
+			puller.Move(stealth_at(block, 10, 2), EAST)
+			TEST_ASSERT_EQUAL(person.pulledby, puller, "Test fixture: the pull broke on the drag")
+			TEST_ASSERT_EQUAL(get_turf(person), stealth_at(block, spec[1], spec[2]), "Test fixture: the drag didn't move them")
+		else
+			person.forceMove(stealth_at(block, spec[1], spec[2]))
 		stealth_scans(guard, 1)
 		if(spec[3])
 			TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "alert", "[how]: a run step away from the guard didn't blow it")
