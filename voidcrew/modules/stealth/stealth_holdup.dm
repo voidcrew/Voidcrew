@@ -28,6 +28,8 @@
 	var/holdup_surrender_ends = 0
 	/// Timer for its next look at whether it is still covered.
 	var/holdup_timer
+	/// It made its move while its surrender's Paralyze still ran: when that runs out it fights, it doesn't decide again.
+	var/holdup_moved = FALSE
 
 // ---------------------------------------------------------------------------------------------
 // tg's hold-up starting and ending
@@ -71,6 +73,7 @@
 		stealth_touched(shooter)
 		return
 	holdup_aimer = WEAKREF(shooter)
+	holdup_moved = FALSE
 	stealth_set_wary()
 	// It has had a good look at them (decision 40): a disguise won't fool it again, a mask will.
 	stealth_make(shooter, FALSE)
@@ -150,6 +153,8 @@
 	var/mob/living/aimer = holdup_aimer?.resolve()
 	stealth_holdup_clear()
 	guard.npc_surrender_redecide = FALSE
+	// tg's surrender Paralyze may still be running; its end would have it decide again (npc_surrender_ended()).
+	holdup_moved = guard.IsParalyzed()
 	if(QDELETED(aimer))
 		stealth_first_hand(get_turf(guard))
 		return
@@ -173,7 +178,11 @@
 		if(npc_surrender())
 			brain.holdup_surrender_ends = world.time + STEALTH_HOLDUP_SURRENDER_TIME
 			return
-	return ..()
+	. = ..()
+	// It made its move under the gun: up again, it fights.
+	if(istype(brain) && brain.holdup_moved && !IsParalyzed())
+		brain.holdup_moved = FALSE
+		npc_surrender_redecide = FALSE
 
 // ---------------------------------------------------------------------------------------------
 // Holding still

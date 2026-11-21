@@ -21,7 +21,8 @@
  * - stopped short of the skull: the hit as normal, and tg's Unconscious() for STEALTH_HEAD_SHOT_HELMET_TIME;
  * - stopped: the hit as normal.
  * Protection (helmets, and physiology armour such as dermal cyberware, by tg's own armour numbers) steps it down.
- * Players on players, and everyone else's head shots, are exactly as before. Numbers: data/stealth/STATUS.md.
+ * Players on players, and everyone else's head shots, are exactly as before. The bonuses and the armour steps are
+ * the STEALTH_CRIT_* and STEALTH_HEAD_SHOT_* defines (voidcrew/_DEFINES/stealth.dm).
  */
 
 /// TRUE if this guard was caught off guard by `attacker`'s blow: unaware or only suspicious as it began, conscious,
