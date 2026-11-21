@@ -89,7 +89,7 @@
 	stealth_scans(guard, 5)
 	TEST_ASSERT(stealth_ai.stealth_state() != "unaware", "Cover hid someone 3 tiles in front of a guard")
 	qdel(guard)
-	// 2 tiles in front: an alert on the first look, cover or not (decision 32).
+	// 2 tiles in front: an alert on the first look, cover or not.
 	guard = stealth_guard(block, 2, 1)
 	stealth_ai = stealth_ai(guard)
 	person.forceMove(point_blank)

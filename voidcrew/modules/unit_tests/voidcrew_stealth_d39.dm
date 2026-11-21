@@ -1,4 +1,4 @@
-// Stealth guards, decision 39 and the 2026-11-11 playtest fixes (voidcrew/modules/stealth/stealth_turns.dm,
+// Stealth guards and the 2026-11-11 playtest fixes (voidcrew/modules/stealth/stealth_turns.dm,
 // stealth_patrol.dm): readable turns, the grace after a turn, stop look-rounds and arrival facing. Values from
 // voidcrew/_DEFINES are written out: STEALTH_TURN_TELL 0.6 s, STEALTH_LOOK_TURN_ARC 90; yellow turn_grace 1 s.
 // States are written as text.

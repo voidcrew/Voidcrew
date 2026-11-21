@@ -1,4 +1,4 @@
-// Stealth guards, decision 40: disguises (voidcrew/modules/stealth/stealth_disguise.dm). Values from voidcrew/_DEFINES are
+// Stealth guards: disguises (voidcrew/modules/stealth/stealth_disguise.dm). Values from voidcrew/_DEFINES are
 // written out: pieces mask 1, clothing 2, pass 4; fill x0.5 clothing, x0.25 with a mask, x0.05 the whole set inside near
 // range (4) and 0 beyond; challenge range 5 / 3 / 2; the pass is read for 2 s, asked for again at 3 s, blown at 6 s;
 // more than 2 tiles from where they were stopped is walking off. States and bark kinds are written as text.
@@ -387,7 +387,7 @@
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "alert", "A guard watched one of its own being grabbed and did nothing")
 	TEST_ASSERT_EQUAL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], person, "The watching guard isn't after the one it saw")
 	TEST_ASSERT_EQUAL(friend_ai.stealth_state(), "unaware", "A guard with its back to it all reacted")
-	// Word reaches the third guard only through a shout or a call that reaches it (decision 44, voidcrew_stealth_d44.dm):
+	// Word reaches the third guard only through a shout or a call that reaches it (voidcrew_stealth_d44.dm):
 	// being wary is not word.
 	TEST_ASSERT(friend_ai.stealth_fooled(person), "A guard nobody has told sees through them")
 	friend_ai.stealth_set_wary()
@@ -396,7 +396,7 @@
 	TEST_ASSERT(!friend_ai.stealth_fooled(person), "A guard that was told is still fooled")
 	qdel(block)
 
-/// Running in a guard's earshot is only footsteps (decision 44); a face it went alert on is known unless a mask hides it.
+/// Running in a guard's earshot is only footsteps; a face it went alert on is known unless a mask hides it.
 /datum/unit_test/voidcrew_stealth_disguise_known
 
 /datum/unit_test/voidcrew_stealth_disguise_known/Run()

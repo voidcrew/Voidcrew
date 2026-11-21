@@ -59,7 +59,7 @@
 	spork.sharpness = NONE
 	TEST_ASSERT(!spork.hv_knife_execution_possible(attacker, victim), "A blunt knife started an execution")
 
-/// A held wind-up from behind ends in tg's real throat slit (decision 45's maths). A player victim keeps the 1.5 s hold;
+/// A held wind-up from behind ends in tg's real throat slit. A player victim keeps the 1.5 s hold;
 /// only an unaware stealth guard is cut on the click (voidcrew_stealth_d45_backstab).
 /datum/unit_test/hv_knife_execution_kill
 
@@ -113,7 +113,7 @@
 	sleep(2 SECONDS)
 	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/neck_slice), "Stepping away did not break the wind-up")
 
-/// Head protection works as tg's slit maths says (decision 45): melee armour weakens the stab, wound armour (worn, or
+/// Head protection works as tg's slit maths says: melee armour weakens the stab, wound armour (worn, or
 /// physiology armour such as dermal cyberware) keeps the throat from being cut.
 /datum/unit_test/hv_knife_execution_armour
 

@@ -1,11 +1,11 @@
 /**
- * # Stealth guards: radios (owner decision 8)
+ * # Stealth guards: radios
  *
  * Some guard types carry an earpiece (`stealth_radio` on the type, and its faction's guard net headset in its ears).
  * A carrier that learns of trouble raises a hand to its earpiece (a radio shows beside its head mark,
- * stealth_meter.dm), and STEALTH_RADIO_CALL_TIME later says it into the radio; every other carrier in its group then
- * knows, wherever it stands, and passes it on by voice to whoever stands next to it. An alarm from a guard that saw
- * someone names them by the name tg shows for them (get_visible_name()).
+ * stealth_meter.dm), and STEALTH_RADIO_CALL_TIME later says it into the radio; every other carrier in its group on the
+ * same net (the same site, as tg carries the radio speech) then knows, and passes it on by voice to whoever stands next
+ * to it. An alarm from a guard that saw someone names them by the name tg shows for them (get_visible_name()).
  *
  * The net is a real tg radio frequency (/obj/item/radio/headset/guard_net, one subtype per faction): the calls and
  * the answers are tg radio speech, so anyone with a radio on it hears them where the comms module carries it (the
@@ -44,6 +44,11 @@
 
 /obj/item/radio/headset/guard_net/get_comms_net()
 	return get_physical_comms_net()
+
+/// Stuck on one channel: a multitool can't tune it to a ship or an outpost.
+/obj/item/radio/headset/guard_net/multitool_act(mob/living/user, obj/item/tool)
+	balloon_alert(user, "stuck on one channel!")
+	return ITEM_INTERACT_BLOCKING
 
 /obj/item/radio/headset/guard_net/scav
 	name = "scav earpiece"
@@ -84,7 +89,7 @@
 		return FALSE
 	if(guard.stat != CONSCIOUS || stealth_driven() || isnull(where))
 		return FALSE
-	// A guard that can't speak (a cut throat, a gag) doesn't reach for the earpiece (decision 45).
+	// A guard that can't speak (a cut throat, a gag) doesn't reach for the earpiece.
 	if(!human_npc_can_talk(guard))
 		return FALSE
 	if(pending_call)
@@ -146,12 +151,24 @@
 	pending_call = null
 	stealth_meter_update()
 
-/// Whether `guard` can take a radio call now.
-/datum/stealth_group/proc/radio_receiver(mob/living/carbon/human/npc/guard)
+/// Whether `guard` can take a radio call on `net` (a comms net key) now: tg carries the call's radio speech only to
+/// earpieces on the same net, so a guard carried off to a ship or another site doesn't get it either.
+/datum/stealth_group/proc/radio_receiver(mob/living/carbon/human/npc/guard, net)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = guard.ai_controller
 	if(!istype(guard_ai) || guard.stat != CONSCIOUS || guard.client || guard_ai.ai_status == AI_STATUS_OFF)
 		return FALSE
-	return guard.stealth_radio_ready() && guard.can_hear() && !guard_ai.stealth_captive()
+	var/obj/item/radio/headset/guard_net/earpiece = guard.stealth_radio_ready()
+	if(isnull(earpiece) || earpiece.get_physical_comms_net() != net)
+		return FALSE
+	return guard.can_hear() && !guard_ai.stealth_captive()
+
+/// The comms net a call from `speaker` about `where` goes out on: the speaker's earpiece's, or, with no speaker (an
+/// admin's test alarm), the net of the spot it is about.
+/proc/stealth_radio_call_net(mob/living/carbon/human/npc/speaker, turf/where)
+	var/obj/item/radio/headset/guard_net/earpiece = speaker?.ears
+	if(istype(earpiece))
+		return earpiece.get_physical_comms_net()
+	return voidcrew_physical_comms_net(where)
 
 /**
  * `speaker` has made its call. Every other member with a working radio that can hear gets it.
@@ -165,24 +182,25 @@
 /datum/stealth_group/proc/radio_call(mob/living/carbon/human/npc/speaker, kind, turf/where)
 	. = 0
 	var/list/guards = living_members()
+	var/net = stealth_radio_call_net(speaker, where)
 	if(kind == STEALTH_CALL_REPORT)
 		var/list/speaker_checks = list()
 		for(var/datum/stealth_check/check as anything in checks)
 			if(check.who?.resolve() == speaker)
 				speaker_checks += check
 		for(var/mob/living/carbon/human/npc/guard as anything in guards)
-			if(guard == speaker || !radio_receiver(guard))
+			if(guard == speaker || !radio_receiver(guard, net))
 				continue
 			.++
 			for(var/datum/stealth_check/check as anything in speaker_checks)
 				check.waiters |= WEAKREF(guard)
 		return
-	// Who it was goes out with the alarm to every receiver that got it, even inside the cooldown (decision 44).
+	// Who it was goes out with the alarm to every receiver that got it, even inside the cooldown.
 	// No speaker: an admin's test alarm (stealth_admin.dm).
 	var/datum/ai_controller/basic_controller/human_npc/stealth/speaker_ai = speaker?.ai_controller
 	if(istype(speaker_ai))
 		for(var/mob/living/carbon/human/npc/guard as anything in guards)
-			if(guard != speaker && radio_receiver(guard))
+			if(guard != speaker && radio_receiver(guard, net))
 				speaker_ai.stealth_tell(guard.ai_controller)
 	if(world.time < next_radio_alarm)
 		return 0
@@ -190,7 +208,7 @@
 	// Receivers, nearest to the spot first.
 	var/list/receivers = list()
 	for(var/mob/living/carbon/human/npc/guard as anything in guards)
-		if(guard == speaker || !radio_receiver(guard))
+		if(guard == speaker || !radio_receiver(guard, net))
 			continue
 		var/dist = get_dist(guard, where)
 		var/index = 1

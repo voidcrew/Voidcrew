@@ -27,14 +27,13 @@
 	person_at(width - 1, 0)
 	return TRUE
 
-/// Gives the room's floor gravity, for tests where something is thrown or falls (reserved space has none).
+/// Gives the room's floor gravity until the test ends, for tests where something is thrown or falls (reserved space
+/// has none).
 /datum/unit_test/voidcrew_stealth_live/hear/proc/ground()
 	var/turf/corner = room.bottom_left_turfs[1]
 	var/turf/far_corner = room.top_right_turfs[1]
-	// A floor kept from an earlier test's room may still have it.
 	for(var/turf/open/spot in block(corner.x, corner.y, corner.z, far_corner.x, far_corner.y, corner.z))
-		if(!spot.has_gravity())
-			spot.AddElement(/datum/element/forced_gravity, 1)
+		stealth_ground(spot)
 
 /// A sentry at (dx, dy): awake and in the group.
 /datum/unit_test/voidcrew_stealth_live/hear/proc/sentry(dx, dy, facing = EAST, guard_type = STEALTH_HEAR_GUARD)

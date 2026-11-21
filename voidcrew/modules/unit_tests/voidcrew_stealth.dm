@@ -138,7 +138,7 @@
 	stealth_scans(guard, 10)
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "A guard noticed someone standing 3 tiles behind it")
 	qdel(guard)
-	// In front, 2 tiles, lit: an alert on the first look (decision 32).
+	// In front, 2 tiles, lit: an alert on the first look.
 	guard = stealth_guard(block, 6, 2)
 	stealth_ai = stealth_ai(guard)
 	person.forceMove(stealth_at(block, 8, 2))

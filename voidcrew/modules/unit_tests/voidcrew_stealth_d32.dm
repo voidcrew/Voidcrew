@@ -1,4 +1,4 @@
-// Stealth guards, owner decision 32 (voidcrew/modules/stealth/): point-blank sight, behind in the dark, the overdue
+// Stealth guards (voidcrew/modules/stealth/): point-blank sight, behind in the dark, the overdue
 // line over a body already reported, guards' lights ignoring each other, and a running guard's pace. Values from
 // voidcrew/_DEFINES are written out: STEALTH_POINT_BLANK_RANGE 2, STEALTH_NEAR_RANGE 4, STEALTH_NEAR_MULT 3,
 // STEALTH_ALERT_AT 2.5, STEALTH_LIGHT_HOLD 5 s. States are written as text: "unaware", "suspicious", "alert".
@@ -74,7 +74,7 @@
 	stealth_ai.stealth_update_light()
 	TEST_ASSERT(stealth_ai.stealth_light_shows(), "A guard in the dark didn't switch its light on")
 	stealth_settle_light(stealth_ai.torch)
-	// Its pool lands ahead of it (decision 39): the tile behind it stays dark.
+	// Its pool lands ahead of it: the tile behind it stays dark.
 	TEST_ASSERT(stealth_tile_is_dark(behind), "The guard's pool lights the tile behind it")
 	stealth_scans(guard, 10)
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "A guard saw someone standing still right behind it in the dark")
@@ -88,7 +88,7 @@
 	qdel(guard)
 	qdel(block)
 
-/// Decision 39: someone walking about behind a guard in the dark, never touching it, gains no notice at all.
+/// Someone walking about behind a guard in the dark, never touching it, gains no notice at all.
 /datum/unit_test/voidcrew_stealth_behind_walking
 
 /datum/unit_test/voidcrew_stealth_behind_walking/Run()
@@ -213,8 +213,8 @@
 	mover.stop_moving_towards(stealth_ai)
 	return get_turf(guard) == goal ? took : -1
 
-/// Decision 39: a fresh guard walks its route from its first plan (tg starts every mob at a run), and a diagonal
-/// step at a walk still costs what a player's does (decision 32).
+/// A fresh guard walks its route from its first plan (tg starts every mob at a run), and a diagonal
+/// step at a walk still costs what a player's does.
 /datum/unit_test/voidcrew_stealth_live/walk_pace
 
 /datum/unit_test/voidcrew_stealth_live/walk_pace/Run()

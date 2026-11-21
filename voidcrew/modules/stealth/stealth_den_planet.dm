@@ -13,6 +13,10 @@
 GLOBAL_DATUM(stealth_test_den_planet, /datum/weakref)
 /// Where the verb drops a tester at that planet's den, once it is built
 GLOBAL_VAR(stealth_test_den_arrival)
+/// The run of the verb that holds the one test planet's slot, from its zone prompt until its build ends (0: free)
+GLOBAL_VAR_INIT(stealth_test_den_claim, 0)
+/// world.time that run took the slot
+GLOBAL_VAR_INIT(stealth_test_den_claim_time, 0)
 
 /// Cleared ground around the den, so both airlocks and the arrival spot are open jungle
 #define STEALTH_TEST_MARGIN 8
@@ -24,6 +28,8 @@ GLOBAL_VAR(stealth_test_den_arrival)
 #define STEALTH_TEST_SPAWNER_CLEARANCE 20
 /// How long the planet may take to come up, queue wait included
 #define STEALTH_TEST_PLANET_TIMEOUT (8 MINUTES)
+/// How long a run of the verb may hold the slot (a prompt left open, a build that died) before another may take it
+#define STEALTH_TEST_CLAIM_LIFETIME (STEALTH_TEST_PLANET_TIMEOUT + 5 MINUTES)
 /// How long to wait for the guards to spawn before choosing the arrival spot
 #define STEALTH_TEST_GUARD_WAIT (20 SECONDS)
 /// The den's outer front airlock in map-local coordinates (1-based, from the bottom left)
@@ -31,6 +37,9 @@ GLOBAL_VAR(stealth_test_den_arrival)
 #define STEALTH_TEST_DOOR_Y 2
 
 ADMIN_VERB(stealth_den_planet, R_ADMIN|R_DEBUG, "Stealth: Scav Den Planet", "Build a jungle planet with the scav chop shop (or reuse the one already up) and drop you outside it in the stealth playtest kit.", ADMIN_CATEGORY_DEBUG)
+	if(stealth_test_den_claimed())
+		to_chat(user, span_warning("Stealth test: a scav den test planet is already being set up."))
+		return
 	var/obj/structure/overmap/planet/existing = stealth_test_den_planet_live()
 	if(existing)
 		var/turf/arrival = GLOB.stealth_test_den_arrival
@@ -45,13 +54,35 @@ ADMIN_VERB(stealth_den_planet, R_ADMIN|R_DEBUG, "Stealth: Scav Den Planet", "Bui
 		return
 	// The planet's overmap zone sets how sharp the guards are (green, yellow or red skill profile).
 	var/static/list/zone_choices = list("Green" = ZONE_GREEN, "Yellow" = ZONE_YELLOW, "Red" = ZONE_RED)
+	// The slot is taken before the prompt, so a second run (or a second admin) can't build another planet meanwhile.
+	var/claim = stealth_test_den_take_slot()
 	var/zone_name = tgui_input_list(user, "Which zone should the planet be in? Guards are sharper in harder zones.", "Stealth: Scav Den Planet", zone_choices, "Yellow")
+	if(GLOB.stealth_test_den_claim != claim)
+		to_chat(user, span_warning("Stealth test: someone else is setting up a scav den test planet."))
+		return
 	if(isnull(zone_name) || isnull(zone_choices[zone_name]))
+		stealth_test_den_release(claim)
 		return
 	message_admins("[key_name_admin(user)] is building a scav den test planet in the [zone_name] zone.")
 	log_admin("[key_name(user)] is building a scav den test planet in the [zone_name] zone.")
 	BLACKBOX_LOG_ADMIN_VERB("Stealth Scav Den Planet")
-	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(stealth_test_planet_for_client), user, zone_choices[zone_name])
+	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(stealth_test_planet_for_client), user, zone_choices[zone_name], claim)
+
+/// Whether a run of the verb holds the test planet's slot now.
+/proc/stealth_test_den_claimed()
+	return GLOB.stealth_test_den_claim && world.time < GLOB.stealth_test_den_claim_time + STEALTH_TEST_CLAIM_LIFETIME
+
+/// Takes the test planet's slot for a new run of the verb. Returns that run's claim.
+/proc/stealth_test_den_take_slot()
+	var/static/claims = 0
+	GLOB.stealth_test_den_claim = ++claims
+	GLOB.stealth_test_den_claim_time = world.time
+	return claims
+
+/// Frees the slot, if `claim` still holds it.
+/proc/stealth_test_den_release(claim)
+	if(claim && GLOB.stealth_test_den_claim == claim)
+		GLOB.stealth_test_den_claim = 0
 
 /// The test den planet the verb built, if it is still up (loading or loaded), or null.
 /proc/stealth_test_den_planet_live()
@@ -68,9 +99,11 @@ ADMIN_VERB(stealth_den_planet, R_ADMIN|R_DEBUG, "Stealth: Scav Den Planet", "Bui
 		return null
 	return planet
 
-/// Builds the site in `zone`, then gives `user` a mortal body there.
-/proc/stealth_test_planet_for_client(client/user, zone = ZONE_YELLOW)
+/// Builds the site in `zone`, then gives `user` a mortal body there. `claim` (the verb's hold on the slot) is let go
+/// once the build has ended either way.
+/proc/stealth_test_planet_for_client(client/user, zone = ZONE_YELLOW, claim)
 	var/turf/arrival = stealth_test_planet_build(user, zone)
+	stealth_test_den_release(claim)
 	if(isnull(arrival))
 		// A planet that came up without its den is no test site: let it unload like any other, and free the slot.
 		var/obj/structure/overmap/planet/failed = GLOB.stealth_test_den_planet?.resolve()
@@ -372,6 +405,7 @@ ADMIN_VERB(stealth_den_planet, R_ADMIN|R_DEBUG, "Stealth: Scav Den Planet", "Bui
 #undef STEALTH_TEST_SPAWNER_CLEARANCE
 #undef STEALTH_TEST_EDGE
 #undef STEALTH_TEST_PLANET_TIMEOUT
+#undef STEALTH_TEST_CLAIM_LIFETIME
 #undef STEALTH_TEST_GUARD_WAIT
 #undef STEALTH_TEST_DOOR_X
 #undef STEALTH_TEST_DOOR_Y

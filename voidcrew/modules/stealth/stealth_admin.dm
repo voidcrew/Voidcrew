@@ -35,7 +35,7 @@
 	var/wary_text = "calm"
 	if(stealth_ai.blackboard[BB_STEALTH_WARY])
 		wary_text = "wary [max(0, round((stealth_ai.stealth_skill().wary_time - (world.time - stealth_ai.wary_at)) / (1 SECONDS)))]s"
-	// Decision 40: what the one it has stopped, its focus, or else the nearest player wears, and whether it works on this guard.
+	// The disguise: what the one it has stopped, its focus, or else the nearest player wears, and whether it works on this guard.
 	var/mob/living/stopped = stealth_ai.challenge?.resolve()
 	var/mob/living/subject = stopped || focus
 	var/turf/here = get_turf(guard)
