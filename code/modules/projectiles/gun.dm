@@ -374,9 +374,12 @@
 		if(!can_trigger_gun(L))
 			return
 
-	if(flag && doafter_self_shoot && user.zone_selected == BODY_ZONE_PRECISE_MOUTH)
+	// VOIDCREW EDIT CHANGE START - hyperviolence executions (voidcrew/modules/hyperviolence/overlays_exec/executions.dm): tg's slow mouth shot is only for shooting yourself; at anyone else the mouth click is an execution or an ordinary shot
+	// ORIGINAL: if(flag && doafter_self_shoot && user.zone_selected == BODY_ZONE_PRECISE_MOUTH)
+	if(flag && doafter_self_shoot && user.zone_selected == BODY_ZONE_PRECISE_MOUTH && (target == user || hv_execution_possible(user, target)))
 		handle_suicide(user, target, params)
 		return
+	// VOIDCREW EDIT CHANGE END
 
 	// VOIDCREW EDIT ADDITION START: a point-blank head shot at someone helpless is an execution (voidcrew/modules/hyperviolence/overlays_exec/executions.dm)
 	if(flag && hv_try_head_execution(user, target, params))

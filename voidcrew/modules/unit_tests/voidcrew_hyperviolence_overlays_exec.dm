@@ -340,3 +340,37 @@
 			masked_states += child:icon_state
 		for(var/zone in missing)
 			TEST_ASSERT("missing_[zone]" in masked_states, "The [zone] sleeve is not cut at layer [layer] ([english_list(masked_states)])")
+
+/// A mouth-aimed point-blank click on someone else is never tg's slow mouth shot: an ordinary shot at someone who can't
+/// be executed (no wait, tg's normal damage), and an empty click from an empty gun.
+/datum/unit_test/hv_mouth_click_on_others
+
+/datum/unit_test/hv_mouth_click_on_others/Run()
+	var/mob/living/carbon/human/consistent/gunner = allocate(/mob/living/carbon/human/consistent)
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent)
+	ADD_TRAIT(victim, TRAIT_PIERCEIMMUNE, INNATE_TRAIT) // no stray shrapnel
+	var/obj/item/gun/ballistic/automatic/pistol/gun = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	gun.can_misfire = FALSE
+	gunner.put_in_active_hand(gun, forced = TRUE)
+	gunner.zone_selected = BODY_ZONE_PRECISE_MOUTH
+	gun.chambered.loaded_projectile.damage = 20
+	var/round_damage = gun.chambered.loaded_projectile.damage * gun.projectile_damage_multiplier
+	TEST_ASSERT(!gun.hv_execution_possible(gunner, victim), "Test fixture: a standing, free target could be executed")
+
+	// Standing and free: an ordinary shot, at once, at tg's own damage (tg's mouth shot waited 12 s and dealt five times it).
+	var/started = world.time
+	gun.fire_gun(victim, gunner, TRUE, null)
+	TEST_ASSERT_EQUAL(world.time, started, "A mouth click on someone standing waited (tg's slow mouth shot)")
+	TEST_ASSERT(victim.getBruteLoss() > 0, "A mouth click on someone standing didn't shoot")
+	TEST_ASSERT(victim.getBruteLoss() < round_damage * 3, "A mouth click on someone standing was boosted ([victim.getBruteLoss()] from a [round_damage] round)")
+
+	// An empty gun just clicks, at once.
+	victim.fully_heal(HEAL_ALL)
+	gun.fire_cd = FALSE
+	gun.magazine.stored_ammo.Cut()
+	QDEL_NULL(gun.chambered)
+	started = world.time
+	gun.fire_gun(victim, gunner, TRUE, null)
+	TEST_ASSERT_EQUAL(world.time, started, "A mouth click with an empty gun waited (tg's slow mouth shot)")
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "An empty gun hurt someone")
+	TEST_ASSERT(!gun.fire_cd, "An empty gun's mouth click left the gun busy")

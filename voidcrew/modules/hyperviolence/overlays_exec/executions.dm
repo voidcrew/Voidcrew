@@ -17,8 +17,8 @@
 //
 // The mouth click reaches us through tg's handle_suicide(); the head click through
 // hv_try_head_execution(), called from a marked line in tg's fire_gun(). Anyone the execution does
-// not apply to keeps tg's behaviour: a normal point-blank shot to the head, or tg's slow mouth
-// version (which is also how you shoot yourself). Holding someone up (right click) and gun bashes are
+// not apply to gets a normal point-blank shot at the aimed zone, mouth or head: tg's slow mouth version
+// is kept only for shooting yourself (a marked line in fire_gun()). Holding someone up (right click) and gun bashes are
 // unchanged. Human NPCs execute only if they are bosses (owner rulings D4 and OC-9, hv_can_execute()).
 // Every human-looking NPC is a real body, so what the round does shows on that body; a basic mob shows
 // nothing more than the shot.
