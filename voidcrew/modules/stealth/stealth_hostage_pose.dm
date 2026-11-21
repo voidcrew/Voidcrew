@@ -216,12 +216,12 @@
 /proc/hostage_pose_ease_out(u)
 	return 1 - (1 - u) ** 3
 
-/// Which hand holds the gun the hostage is held with ("L"/"R"): the active hand's gun first.
+/// Which hand holds the gun the hostage is held with ("L"/"R"): the active hand's real gun (stealth_threat_gun()) first.
 /mob/living/carbon/human/proc/hostage_pose_hand()
 	var/obj/item/gun = get_active_held_item()
-	if(!isgun(gun))
+	if(!stealth_threat_gun(gun))
 		gun = get_inactive_held_item()
-	return (isgun(gun) && IS_RIGHT_INDEX(get_held_index_of_item(gun))) ? "R" : "L"
+	return (stealth_threat_gun(gun) && IS_RIGHT_INDEX(get_held_index_of_item(gun))) ? "R" : "L"
 
 // ---------------------------------------------------------------------------------------------
 // tg's grab offsets, taken over while the body is held at gunpoint

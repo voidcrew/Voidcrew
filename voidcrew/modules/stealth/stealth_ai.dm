@@ -47,8 +47,9 @@
  * (abuse review P4). It fades after its skill's wary_time with nothing new: every notice gain, hit, touch and
  * scan spent alert or searching starts that clock again (owner decision 23).
  *
- * Putting its target down (dead or in crit) with nobody else noticed ends the alarm: a short line, a look
- * round where it stands for STEALTH_CALM_LOOK_TIME, then back to its route (decision 23).
+ * Putting its target down (it fights on through crit, so in practice dead) with nobody else noticed ends the
+ * alarm: a short line, a look round where it stands for STEALTH_CALM_LOOK_TIME, then back to its route
+ * (decision 23).
  *
  * Every attack or touch gets a reaction, even from out of sight (P3): alert on the attacker if it can see
  * them, otherwise a search at their turf. Harm that names nobody (a blast, fire, gas, a flashbang) sends
