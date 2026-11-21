@@ -1,12 +1,15 @@
 /**
  * # The scav den (stealth step 4, owner decisions 3, 6, 10, 11, 21, 38)
  *
- * A compound of organ and cyberware harvesters dug into an asteroid on the contested lanes. It is a rare space ruin:
- * it never seeds by itself, and the only road to it is a rumor chart bought from an outpost trader and revealed from
- * the helm (rumor_charts.dm), like every other named tip. One den is on the overmap at a time: while one is out there
- * the tip is off the shelf and a sealed chart can't be revealed (it stays sealed and can be revealed once that den is
- * cleaned out). A den nobody docks at within an hour of its reveal leaves the overmap, so an unvisited one can't hold
- * the slot all round.
+ * A compound of organ and cyberware harvesters dug into an asteroid. It is a rare space ruin and never seeds by itself.
+ * For now the only way to it is the admin verb "Stealth: Scav Den Planet" (stealth_den_planet.dm), which loads it on a
+ * jungle planet; the verb and the den stay in the game as an admin test tool.
+ *
+ * The tip below (a rumor chart bought from an outpost trader and revealed from the helm, rumor_charts.dm) is on no
+ * shop. If it goes back on sale: one den is on the overmap at a time, so while one is out there the tip is off the
+ * shelf and a sealed chart can't be revealed (it stays sealed until that den is gone), and a den nobody docks at within
+ * an hour of its reveal leaves the overmap. scav_den_on_map() only counts dens on the overmap, not one the admin verb
+ * built on a planet; decide then whether that one should hold the slot.
  *
  * The den's guards are the stealth guards of scav_guards.dm with names of their own, so their friends can call them
  * by name on the radio and over a body. Their skill comes from the den's zone (decision 38): a den revealed in the
@@ -136,7 +139,8 @@
 
 /**
  * Gives a den guard chrome eyes that glow red. tg's own robotic eyes (they flash and EMP like anyone's), recoloured;
- * the glow is only drawn, it lights nothing. Behind glasses or a mask that hides the eyes it doesn't show.
+ * the glow is only drawn, it lights nothing. Behind glasses or a mask that hides the eyes it doesn't show. Like the rest
+ * of an NPC's chrome they burn out when it dies (scav_den_eyes_burn_out()), so a den is no eye farm.
  */
 /mob/living/carbon/human/npc/proc/scav_den_chrome_eyes()
 	var/obj/item/organ/eyes/robotic/chrome = new()
@@ -146,10 +150,27 @@
 	if(!chrome.Insert(src, special = TRUE, movement_flags = DELETE_IF_REPLACED))
 		qdel(chrome)
 		return
+	// npc_burn_out_chrome() only knows cyberware; these are plain tg eyes, so they listen for the death themselves.
+	chrome.RegisterSignal(src, COMSIG_LIVING_DEATH, TYPE_PROC_REF(/obj/item/organ/eyes/robotic, scav_den_eyes_burn_out))
 	update_body()
 	// A balaclava's eye holes don't line up with bare eyes: a masked guard without lenses gets the gang's red ones.
 	if(istype(wear_mask, /obj/item/clothing/mask/balaclava) && isnull(glasses))
 		equip_to_slot_or_del(new /obj/item/clothing/glasses/red(src), ITEM_SLOT_EYES)
+
+/// A den guard died with its red chrome eyes in: they go dead and come out as scrap, like the rest of an NPC's chrome.
+/obj/item/organ/eyes/robotic/proc/scav_den_eyes_burn_out(mob/living/carbon/source, gibbed)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_LIVING_DEATH)
+	if(owner != source)
+		return
+	var/atom/drop_spot = source.drop_location()
+	Remove(source, special = TRUE)
+	if(isnull(drop_spot))
+		qdel(src)
+		return
+	forceMove(drop_spot)
+	human_npc_burn_out_chrome(src)
+	do_sparks(1, TRUE, source)
 
 // ===== The den guards' look =====
 // A chrome-mad harvester gang. The scavs' fatigues go under everything (scav_guards.dm), and every outfit leaves the
