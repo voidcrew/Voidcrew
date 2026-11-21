@@ -167,10 +167,13 @@
 
 /obj/item/knife/combat/dropped(mob/living/user, slot)
 	. = ..()
-	if(user.get_item_by_slot(ITEM_SLOT_MASK) == src && !user.has_status_effect(/datum/status_effect/choke) && prob(20))
+	// VOIDCREW EDIT CHANGE START - a body being deleted (an NPC's gear dropping in its Destroy) has no physiology left to cut; seen in the stealth tests (voidcrew/modules/stealth)
+	// ORIGINAL: if(user.get_item_by_slot(ITEM_SLOT_MASK) == src && !user.has_status_effect(/datum/status_effect/choke) && prob(20))
+	if(!QDELETED(user) && user.get_item_by_slot(ITEM_SLOT_MASK) == src && !user.has_status_effect(/datum/status_effect/choke) && prob(20))
 		user.apply_damage(5, BRUTE, BODY_ZONE_HEAD)
 		playsound(user, 'sound/items/weapons/slice.ogg', 50, TRUE)
 		user.visible_message(span_danger("[user] accidentally cuts [user.p_them()]self while pulling [src] out of [user.p_them()] teeth! What a doofus!"), span_userdanger("You accidentally cut your mouth with [src]!"))
+	// VOIDCREW EDIT CHANGE END
 
 /obj/item/knife/combat/equipped(mob/living/user, slot, initial = FALSE)
 	. = ..()
