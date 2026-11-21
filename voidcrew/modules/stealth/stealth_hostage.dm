@@ -12,9 +12,10 @@
  * - told to drop it, he drops what he holds, once; told to back off, he backs off to STEALTH_HOSTAGE_BACK_OFF_RANGE,
  *   once. Plain words the holder says out loud within STEALTH_HOSTAGE_DEMAND_RANGE;
  * - the hostage let go alive, or slipping free: the fight picks up where it was;
- * - the holder hurting or killing the hostage (a shot, a blow, a strangle), or the hostage dying in his hands, or
- *   the holder attacking the guard himself or one of his people he can see: no more deals with that holder, ever,
- *   for that guard. He fights.
+ * - the holder hurting or killing the hostage (a shot, a blow, a strangle, a slam, setting him alight), or the
+ *   hostage dying in his hands, or the holder attacking the guard himself or one of his people he can see: no more
+ *   deals with that holder, ever, for that guard. He fights.
+ * - anyone else attacking the guard or one of his people he can see: he turns on them.
  * - out of sight of the holder, he chases as usual and stands off again when he sees them.
  *
  * Only for their own people. Someone they don't count as one of theirs (a player, a stranger) held up in front is
@@ -81,6 +82,7 @@ GLOBAL_LIST_EMPTY(stealth_standoffs)
 	RegisterSignal(holder, COMSIG_MOB_SAY, PROC_REF(on_standoff_demand))
 	RegisterSignal(holder, COMSIG_MOVABLE_SET_GRAB_STATE, PROC_REF(on_holder_grab_state))
 	RegisterSignal(hostage, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(on_hostage_hurt))
+	RegisterSignal(hostage, COMSIG_LIVING_IGNITED, PROC_REF(on_hostage_ignited))
 	GLOB.stealth_standoffs |= src
 	RegisterSignal(hostage, COMSIG_LIVING_DEATH, PROC_REF(on_hostage_died))
 	var/mob/living/guard = pawn
@@ -94,7 +96,7 @@ GLOBAL_LIST_EMPTY(stealth_standoffs)
 	if(holder)
 		UnregisterSignal(holder, list(COMSIG_MOB_SAY, COMSIG_MOVABLE_SET_GRAB_STATE))
 	if(hostage)
-		UnregisterSignal(hostage, list(COMSIG_MOB_AFTER_APPLY_DAMAGE, COMSIG_LIVING_DEATH))
+		UnregisterSignal(hostage, list(COMSIG_MOB_AFTER_APPLY_DAMAGE, COMSIG_LIVING_IGNITED, COMSIG_LIVING_DEATH))
 	var/was_on = !isnull(standoff_holder)
 	standoff_holder = null
 	standoff_hostage = null
@@ -117,8 +119,18 @@ GLOBAL_LIST_EMPTY(stealth_standoffs)
 	if(damage_dealt <= 0)
 		return
 	var/mob/living/holder = standoff_holder?.resolve()
-	if(holder && hv_vis_attacker_of(attacking_item) == holder)
+	if(isnull(holder))
+		return
+	// A blow with no hand or item behind it (slammed on a table) while he holds him: his doing.
+	if(hv_vis_attacker_of(attacking_item) == holder || (isnull(attacking_item) && damagetype == BRUTE && source.pulledby == holder))
 		stealth_standoff_broken(holder)
+
+/// The hostage catches fire in the holder's hands.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/on_hostage_ignited(mob/living/source)
+	SIGNAL_HANDLER
+	var/mob/living/holder = standoff_holder?.resolve()
+	if(holder && source.pulledby == holder)
+		stealth_standoff_broken(holder, "the hostage was set alight")
 
 /// The holder tightens his grip on the hostage into tg's strangle (GRAB_KILL, the squeeze among them): hurting him.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/on_holder_grab_state(mob/living/source, new_state)
@@ -128,25 +140,46 @@ GLOBAL_LIST_EMPTY(stealth_standoffs)
 
 /**
  * `attacker` attacked `victim` (tg's relay_attackers: a blow in combat mode, a shot, a throw; not a shove). Every
- * guard standing off against him as a holder stops: if `victim` is the hostage, the guard himself, or one of his
- * people he can see.
+ * guard standing off stops if `victim` is the hostage, the guard himself, or one of his people he can see: against
+ * the holder for good; against anyone else, he leaves the holder be for now and turns on them.
  */
 /proc/stealth_standoff_witness(mob/living/victim, mob/living/attacker, attack_flags)
 	if(!isliving(attacker) || !(attack_flags & (ATTACKER_DAMAGING_ATTACK|ATTACKER_STAMINA_ATTACK)))
 		return
 	for(var/datum/ai_controller/basic_controller/human_npc/stealth/brain as anything in GLOB.stealth_standoffs.Copy())
-		if(brain.standoff_holder?.resolve() != attacker)
-			continue
 		var/mob/living/guard = brain.pawn
 		if(QDELETED(guard))
+			continue
+		if(brain.standoff_holder?.resolve() != attacker)
+			if(victim == guard || brain.stealth_standoff_sees_friend(victim))
+				brain.stealth_standoff_interrupted(victim, attacker)
 			continue
 		if(victim == brain.standoff_hostage?.resolve())
 			brain.stealth_standoff_broken(attacker, "the hostage was hurt")
 		else if(victim == guard)
 			brain.stealth_standoff_broken(attacker, "the holder attacked them")
-		// seen as stealth_has_in_view() sees, without its targeting check (which skips his own people)
-		else if(guard.faction_check_atom(victim) && brain.stealth_alert_lit(victim) && can_see(guard, victim, HUMAN_NPC_SIGHT_RANGE))
+		else if(brain.stealth_standoff_sees_friend(victim))
 			brain.stealth_standoff_broken(attacker, "the holder attacked one of theirs")
+
+/// Whether `victim` is one of its own people it can see now: as stealth_has_in_view() sees, without its targeting
+/// check (which skips its own people).
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_standoff_sees_friend(mob/living/victim)
+	var/mob/living/guard = pawn
+	return guard.faction_check_atom(victim) && stealth_alert_lit(victim) && can_see(guard, victim, HUMAN_NPC_SIGHT_RANGE)
+
+/// Someone other than the holder attacked it or one of its people in view: the standoff is off (the holder isn't to
+/// blame) and it turns on them. Not for one of its own hitting a friend by mistake.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_standoff_interrupted(mob/living/victim, mob/living/attacker)
+	var/mob/living/guard = pawn
+	if(guard.stat != CONSCIOUS || guard.faction_check_atom(attacker))
+		return
+	var/atom/who = bounty_ai_target_for(attacker)
+	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(blackboard[BB_TARGETING_STRATEGY])
+	if(!strategy?.can_attack(guard, who))
+		return
+	log_combat(guard, attacker, "stopped standing off to fight", null, "(attacked [victim == guard ? "them" : key_name(victim)], [get_area_name(guard, TRUE)])")
+	stealth_standoff_end()
+	stealth_switch_target(who)
 
 /datum/ai_controller/basic_controller/human_npc/stealth/Destroy()
 	GLOB.stealth_standoffs -= src
@@ -176,7 +209,8 @@ GLOBAL_LIST_EMPTY(stealth_standoffs)
 	var/message = speech_args[SPEECH_MESSAGE]
 	if(!istext(message))
 		return
-	var/static/regex/drop_words = regex(@"\b(drop|guns?|weapons?|piece|disarm)\b", "i")
+	// An order to drop it, not any sentence with a gun in it ("You piece of junk" isn't one).
+	var/static/regex/drop_words = regex(@"\b(drop\s+(it|that|them|(the|your|ur|that|those)\s+(guns?|weapons?|piece|rifles?|pistols?|knife|knives))|put\s+(it|that|them|(the|your|ur|that|those)\s+(guns?|weapons?|piece|rifles?|pistols?|knife|knives))\s+down|put\s+down\s+(the|your|ur|that|those)\s+(guns?|weapons?|piece|rifles?|pistols?|knife|knives)|(lose|ditch)\s+(the|your|ur|that)\s+(guns?|weapons?|piece)|(guns?|weapons?)\s+down)\b", "i")
 	var/static/regex/back_words = regex(@"\b(back\s+(off|up|away)|(step|get|stand|move)\s+back|move\s+away)\b", "i")
 	if(!standoff_dropped && drop_words.Find(message))
 		INVOKE_ASYNC(src, PROC_REF(stealth_standoff_drop))
@@ -284,13 +318,30 @@ GLOBAL_LIST_EMPTY(stealth_standoffs)
 	// Held up in front: at gunpoint, or with a hand over the mouth (stealth_grip.dm).
 	if(stealth_held_in_front(src) == held)
 		held.stealth_hostage_voice_start()
+		stealth_hold_no_swap(held, TRUE)
 		if(HAS_TRAIT_FROM(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT))
 			REMOVE_TRAIT(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT)
 			// tg's own stand-up after the floor goes is a 1 s do_after; held up, they're on their feet at once.
 			// get_up() still refuses a body that is resting or floored by anything else (a stun, crit).
 			held.get_up(instant = TRUE)
-	else if(grab_state >= GRAB_NECK && !HAS_TRAIT_FROM(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT))
-		ADD_TRAIT(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT)
+	else
+		stealth_hold_no_swap(held, FALSE)
+		if(grab_state >= GRAB_NECK && !HAS_TRAIT_FROM(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT))
+			ADD_TRAIT(held, TRAIT_FLOORED, CHOKEHOLD_TRAIT)
+
+/**
+ * Held in front, neither he nor the body he holds can be swapped past (tg's mob swap, can_mobswap_with()): the swap
+ * moves one of them only and leaves the body behind. Bumped, he is pushed as anyone is, and the body comes along.
+ * On from stealth_hold_upright(), off there and when tg lets the body go (reset_pull_offsets()) or loosens the grab.
+ */
+/mob/living/proc/stealth_hold_no_swap(mob/living/held, on)
+	if(on)
+		ADD_TRAIT(src, TRAIT_NOMOBSWAP, STEALTH_HOLDING_IN_FRONT_TRAIT)
+		ADD_TRAIT(held, TRAIT_NOMOBSWAP, STEALTH_HELD_IN_FRONT_TRAIT)
+		return
+	REMOVE_TRAIT(src, TRAIT_NOMOBSWAP, STEALTH_HOLDING_IN_FRONT_TRAIT)
+	if(held)
+		REMOVE_TRAIT(held, TRAIT_NOMOBSWAP, STEALTH_HELD_IN_FRONT_TRAIT)
 
 /**
  * Walking with a body held in front. tg's pull only drags a pulled thing after its puller once it is a tile apart or
@@ -308,6 +359,22 @@ GLOBAL_LIST_EMPTY(stealth_standoffs)
 /mob/living/carbon/human/Move(atom/newloc, direct, glide_size_override)
 	. = ..()
 	stealth_hold_close()
+	// Held in front, pushed off and brought straight back (Moved() below): tg turned him to face the push.
+	var/mob/living/carbon/human/holder = pulledby
+	if(hostage_pose_dir && !moving_from_pull && ishuman(holder) && dir != holder.dir && stealth_held_in_front(holder) == src)
+		holder.hostage_pose_face(src, hostage_pose_serial, holder.dir)
+
+/**
+ * The body held in front moved off its holder's tile by someone else (a shove, a push, wind): back onto his tile at
+ * once, as when he steps (stealth_hold_close()). Not a move his own hold makes (moving_from_pull), nor a forced one.
+ */
+/mob/living/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
+	. = ..()
+	if(forced || moving_from_pull || !ishuman(pulledby))
+		return
+	var/mob/living/carbon/human/holder = pulledby
+	if(old_loc == holder.loc && loc != holder.loc)
+		holder.stealth_hold_close()
 
 /**
  * Brings the body this holder neck-grabs, at gunpoint or with a hand over its mouth, onto his tile from the tile next
@@ -385,6 +452,9 @@ GLOBAL_LIST_EMPTY(stealth_standoffs)
 	if(stat != CONSCIOUS || isnull(holder))
 		return null
 	if(stealth_grip_holds(holder, src))
+		// Mute from anything but the hand (a cut throat): not even a mumble.
+		if(HAS_TRAIT_NOT_FROM(src, TRAIT_MUTE, STEALTH_GRIP_TRAIT))
+			return null
 		var/muffled = stealth_muffle_words(pick(stealth_hostage_lines(STEALTH_BARK_HOSTAGE_MUFFLED) || list("Help!")))
 		audible_message(
 			span_emote("<b>[src]</b> mumbles against [holder]'s hand, \"[muffled]\""),

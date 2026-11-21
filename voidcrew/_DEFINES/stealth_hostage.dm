@@ -28,3 +28,7 @@
 /// What a hostage says at gunpoint, and what he tries to say under the hand (garbled).
 #define STEALTH_BARK_HOSTAGE_PLEA "stealth_hostage_plea"
 #define STEALTH_BARK_HOSTAGE_MUFFLED "stealth_hostage_muffled"
+
+/// Trait sources for TRAIT_NOMOBSWAP on a holder and on the body he holds in front (stealth_hold_no_swap()).
+#define STEALTH_HOLDING_IN_FRONT_TRAIT "stealth_holding_in_front"
+#define STEALTH_HELD_IN_FRONT_TRAIT "stealth_held_in_front"

@@ -216,8 +216,8 @@
 	return TRUE
 
 /// Where the walk ended, the crates gone: a click on each tile round the holder (tg's Move_Pulled(), as a click on a
-/// turf calls it), then the body pushed onto the next tile (its own Move(), as a shove moves it) and the holder stepping
-/// on, sideways and then away from it. After each, `held` is still held up in front (stealth_test_check_held()).
+/// turf calls it), then the body pushed onto the next tile (its own Move(), as a shove moves it), which brings it
+/// straight back, and the holder stepping on. After each, `held` is still held up in front (stealth_test_check_held()).
 /datum/unit_test/proc/stealth_test_shove_held(mob/living/carbon/human/holder, mob/living/held, datum/ai_controller/basic_controller/human_npc/stealth/guard_ai)
 	// the test block has no gravity, and tg's Move_Pulled() only pushes with a foothold (Process_Spacemove())
 	ADD_TRAIT(holder, TRAIT_SPACEWALK, TRAIT_SOURCE_UNIT_TESTS)
@@ -228,18 +228,16 @@
 			REMOVE_TRAIT(holder, TRAIT_SPACEWALK, TRAIT_SOURCE_UNIT_TESTS)
 			return FALSE
 	REMOVE_TRAIT(holder, TRAIT_SPACEWALK, TRAIT_SOURCE_UNIT_TESTS)
-	// pushed one tile west, the holder steps north: back onto his tile from the diagonal
-	held.Move(get_step(holder, WEST), WEST)
-	TEST_ASSERT(held.loc != holder.loc, "Test fixture: the push west didn't move the body")
-	holder.Move(get_step(holder, NORTH), NORTH)
-	if(!stealth_test_check_held(holder, held, guard_ai, "pushed west, then a step north"))
-		return FALSE
-	// pushed one tile south, the holder steps north, away: tg drags it a tile, then back onto his
-	held.Move(get_step(holder, SOUTH), SOUTH)
-	TEST_ASSERT(held.loc != holder.loc, "Test fixture: the push south didn't move the body")
-	holder.Move(get_step(holder, NORTH), NORTH)
-	if(!stealth_test_check_held(holder, held, guard_ai, "pushed south, then a step north"))
-		return FALSE
+	// pushed one tile west, then south: straight back onto his tile each time, and still held after he steps on
+	for(var/push_dir in list(WEST, SOUTH))
+		var/turf/from = held.loc
+		held.Move(get_step(holder, push_dir), push_dir)
+		if(!stealth_test_check_held(holder, held, guard_ai, "pushed [dir2text(push_dir)] from [from.x],[from.y]"))
+			return FALSE
+		TEST_ASSERT_EQUAL(held.dir, holder.dir, "Pushed [dir2text(push_dir)]: the body no longer faces the holder's way")
+		holder.Move(get_step(holder, NORTH), NORTH)
+		if(!stealth_test_check_held(holder, held, guard_ai, "pushed [dir2text(push_dir)], then a step north"))
+			return FALSE
 	return TRUE
 
 /// A grab click (ctrl-click) on the body held up in front, a gun in the grabbing hand: nothing changes.

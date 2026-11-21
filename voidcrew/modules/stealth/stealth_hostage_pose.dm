@@ -181,6 +181,8 @@
 	. = ..()
 	if(newstate == GRAB_NECK)
 		hostage_neck_grab_tick = world.time
+	else if(newstate < GRAB_NECK && isliving(pulling))
+		stealth_hold_no_swap(pulling, FALSE)
 
 // ---------------------------------------------------------------------------------------------
 // The poses
@@ -239,6 +241,7 @@
 	return ..()
 
 /mob/living/reset_pull_offsets(mob/living/M, override)
+	stealth_hold_no_swap(M, FALSE)
 	if(M.hostage_pose_dir && (override || !M.buckled))
 		M.hostage_pose_end(src)
 	return ..()
