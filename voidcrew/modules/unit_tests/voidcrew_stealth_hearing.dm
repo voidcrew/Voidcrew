@@ -27,14 +27,13 @@
 	person_at(width - 1, 0)
 	return TRUE
 
-/// Gives the room's floor gravity, for tests where something is thrown or falls (reserved space has none).
+/// Gives the room's floor gravity until the test ends, for tests where something is thrown or falls (reserved space
+/// has none).
 /datum/unit_test/voidcrew_stealth_live/hear/proc/ground()
 	var/turf/corner = room.bottom_left_turfs[1]
 	var/turf/far_corner = room.top_right_turfs[1]
-	// A floor kept from an earlier test's room may still have it.
 	for(var/turf/open/spot in block(corner.x, corner.y, corner.z, far_corner.x, far_corner.y, corner.z))
-		if(!spot.has_gravity())
-			spot.AddElement(/datum/element/forced_gravity, 1)
+		stealth_ground(spot)
 
 /// A sentry at (dx, dy): awake and in the group.
 /datum/unit_test/voidcrew_stealth_live/hear/proc/sentry(dx, dy, facing = EAST, guard_type = STEALTH_HEAR_GUARD)
@@ -296,9 +295,11 @@
 	TEST_ASSERT_EQUAL(friend_ai.search_center, get_turf(shooter), "It isn't looking where its friend fired from")
 	settle(friend)
 	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, at(9, 1))
-	TEST_ASSERT_EQUAL(stealth_noise(door, "door"), 0, "A door with one of their own beside it was heard")
-	door.forceMove(at(11, 1))
-	TEST_ASSERT_EQUAL(stealth_noise(door, "door"), 1, "A door with nobody beside it wasn't heard")
+	door.stealth_user_ref = WEAKREF(friend)
+	door.stealth_user_at = world.time
+	TEST_ASSERT_EQUAL(stealth_noise(door, "door"), 0, "A door one of their own worked was heard")
+	door.stealth_user_at = -1
+	TEST_ASSERT_EQUAL(stealth_noise(door, "door"), 1, "A door nobody of theirs worked wasn't heard")
 	TEST_ASSERT(friend_ai.glance_until > world.time, "A guard didn't glance at a door")
 	friend_ai.group.forget_noises()
 	TEST_ASSERT_EQUAL(stealth_noise(at(6, 1), "thud", null, shooter), 1, "A friend's fall wasn't heard")
@@ -537,14 +538,15 @@
 	var/mob/living/carbon/human/npc/guard = sentry(9, 5, EAST)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = guard.ai_controller
 	var/mob/living/carbon/human/thrower = person_at(0, 2, FALSE)
-	var/obj/item/coin/iron/coin = allocate(/obj/item/coin/iron, get_turf(thrower))
+	// Handcuffs: small, and tg plays a landing for them (a coin lands in silence).
+	var/obj/item/restraints/handcuffs/coin = allocate(/obj/item/restraints/handcuffs, get_turf(thrower))
 	var/turf/landing = at(9, 2)
 	coin.throw_at(landing, 12, 2, thrower)
 	var/deadline = world.time + 10 SECONDS
 	while((coin.throwing || guard_ai.stealth_state() == "unaware") && world.time < deadline)
 		sleep(1)
-	TEST_ASSERT_EQUAL(guard_ai.stealth_state(), "suspicious", "A guard 3 tiles from a thrown coin's landing didn't look (it landed [get_dist(coin, guard)] tiles off)")
-	TEST_ASSERT(get_dist(guard_ai.investigate_turf, get_turf(coin)) <= 1, "It isn't looking where the coin landed")
+	TEST_ASSERT_EQUAL(guard_ai.stealth_state(), "suspicious", "A guard 3 tiles from thrown handcuffs' landing didn't look (they landed [get_dist(coin, guard)] tiles off)")
+	TEST_ASSERT(get_dist(guard_ai.investigate_turf, get_turf(coin)) <= 1, "It isn't looking where the handcuffs landed")
 	TEST_ASSERT_EQUAL(guard_ai.last_heard[1], "thrown", "It heard something other than a landing")
 	// A bottle, 7 tiles from the guard: only breaking glass carries that far.
 	settle(guard)
@@ -634,7 +636,7 @@
 	TEST_ASSERT_EQUAL(guard_ai.stealth_state(), "suspicious", "A whistle 4 tiles off wasn't heard")
 	TEST_ASSERT_EQUAL(guard_ai.last_heard[1], "voice", "It heard something other than a voice")
 
-/// A real explosion 12 tiles off, the other side of a wall: the guard runs to it.
+/// A real explosion 12 tiles off, the other side of a wall, big enough that tg plays it there: the guard runs to it.
 /datum/unit_test/voidcrew_stealth_live/hear/real_blast
 
 /datum/unit_test/voidcrew_stealth_live/hear/real_blast/Run()
@@ -644,7 +646,7 @@
 		wall_spot.ChangeTurf(/turf/closed/wall)
 	var/mob/living/carbon/human/npc/guard = walker(16, 2, EAST)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = guard.ai_controller
-	explosion(at(4, 2), devastation_range = 0, heavy_impact_range = 0, light_impact_range = 1)
+	explosion(at(4, 2), devastation_range = 0, heavy_impact_range = 1, light_impact_range = 2)
 	var/deadline = world.time + 10 SECONDS
 	while(guard_ai.stealth_state() != "searching" && world.time < deadline)
 		sleep(1)

@@ -43,6 +43,8 @@
 #define STEALTH_BARK_CLOSET_OPEN "stealth_closet_open"
 /// It gives up on a locker or crate it can't get open (decision 33)
 #define STEALTH_BARK_CLOSET_GIVE_UP "stealth_closet_give_up"
+/// It slipped on something
+#define STEALTH_BARK_SLIP "stealth_slip"
 
 // ===== What a stealth goto is for =====
 #define STEALTH_GOTO_PATROL "patrol"
@@ -96,6 +98,8 @@
 #define STEALTH_SEARCH_RADIUS 5
 #define STEALTH_BODY_SCAN_INTERVAL (2 SECONDS)
 #define STEALTH_BARK_KIND_COOLDOWN (8 SECONDS)
+/// Past the end of a slip's knockdown, how long getting up still counts as getting up from the slip
+#define STEALTH_SLIP_GRACE (1 SECONDS)
 #define STEALTH_GROUP_RADIUS 48
 #define STEALTH_ROUTE_CLAIM_RANGE 2
 #define STEALTH_PATROL_DEFAULT_WAIT (6 SECONDS)
@@ -126,6 +130,8 @@
 /// How far its group hears it being blown up, burned, gassed or stunned
 #define STEALTH_HARM_ALERT_RANGE 9
 #define STEALTH_ADMIN_OVERLAY_TIME (5 MINUTES)
+/// How often an admin sight overlay is redrawn for a guard that hasn't moved or turned
+#define STEALTH_ADMIN_SIGHT_REDRAW (5 SECONDS)
 /// Seconds of search between "Come on out." lines
 #define STEALTH_SEARCH_BARK_INTERVAL (12 SECONDS)
 
@@ -166,7 +172,7 @@
 #define STEALTH_LIGHT_EMP_LIGHT (20 SECONDS)
 
 // ===== Flashlight beams (decisions 39 and 41, stealth_light.dm) =====
-/// The beam's light range in tiles, from where it starts (lit floor ends 4 tiles ahead: data/stealth/STATUS.md, decision 41)
+/// The beam's light range in tiles, from where it starts (the lit floor ends 4 tiles ahead of the guard)
 #define STEALTH_TORCH_RANGE 5
 /// The beam's light power (its seclite blue takes it to about 1.5 white)
 #define STEALTH_TORCH_POWER 1.9
@@ -208,8 +214,8 @@
 #define STEALTH_TURN_TELL (0.6 SECONDS)
 /// Pixels of that lean
 #define STEALTH_TURN_LEAN 3
-/// How long the lean takes to show and to go
-#define STEALTH_TURN_LEAN_TIME (0.2 SECONDS)
+/// The lean's key in tg's mob offsets (add_offsets()); it shows and goes over tg's own offset animation
+#define STEALTH_TURN_LEAN_SOURCE "stealth_lean"
 
 #define FACTION_SCAV "scav"
 
@@ -244,6 +250,8 @@
 #define STEALTH_CHALLENGE_WARN_TIME (3 SECONDS)
 /// With no pass shown after this long, the disguise is blown
 #define STEALTH_CHALLENGE_FAIL_TIME (6 SECONDS)
+/// Not near enough to read the pass this long after the stop (kept out of reach), the disguise is blown
+#define STEALTH_CHALLENGE_REACH_TIME (STEALTH_CHALLENGE_FAIL_TIME + STEALTH_CHALLENGE_CHECK_TIME)
 /// Further than this from where it stopped them is walking off
 #define STEALTH_CHALLENGE_LEASH 2
 /// How long a guard that read their pass lets them be
@@ -273,9 +281,9 @@
 /// It has seen through a disguise
 #define STEALTH_BARK_BLOWN "stealth_blown"
 
-// ===== Stealth crits, the head shot and the backstab knife (step 3a, decision 45; stealth_crits.dm, stealth_knife.dm) =====
+// ===== Stealth crits, the head shot and the backstab (step 3a, decision 45; stealth_crits.dm, knife_executions.dm) =====
 // Roll bonuses for hyperviolence's aimed crit roll (crit_roll.dm), on a stealth guard only. They go in before wound armour,
-// so armour scales them like the rest of the roll. Numbers argued in data/stealth/STATUS.md, "Step 3a".
+// so armour scales them like the rest of the roll.
 /// Added when the guard was unaware of everyone as the blow began
 #define STEALTH_CRIT_UNAWARE_BONUS 30
 /// Added when it was only suspicious
@@ -283,7 +291,7 @@
 /// Added on top of either when the attacker aimed at the head (head, eyes or mouth)
 #define STEALTH_CRIT_HEAD_BONUS 35
 // The head shot (decision 45): a bullet aimed at the head of a guard caught off guard. Graded by what the round can do
-// against what is on the head. Numbers and the gun table: data/stealth/STATUS.md, "Decision 45".
+// against what is on the head.
 // The round's power gives burst, down or nothing; each protection step on the head moves it one down the ladder.
 /// Nothing happens beyond the hit itself
 #define STEALTH_HEAD_SHOT_NONE 0

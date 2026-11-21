@@ -47,8 +47,8 @@
 	name = initial(name)
 
 /// The suit types the guards' own outfits wear over their fatigues: type => TRUE. Read from the scav types' outfit
-/// tables, so a new dress is picked up. Not kept in a static: the unit test build has no room for one more
-/// (data/stealth/STATUS.md, "Decision 40"), and it is only asked for someone wearing a suit over the fatigues.
+/// tables, so a new dress is picked up. Not kept in a static: the unit test build has no room for one more,
+/// and it is only asked for someone wearing a suit over the fatigues.
 /proc/stealth_guard_suits()
 	var/list/suits = list()
 	for(var/mob/living/carbon/human/npc/guard_type as anything in typesof(/mob/living/carbon/human/npc/ruin/trooper/scav))
@@ -202,6 +202,8 @@
 	var/turf/start_turf
 	/// world.time it got near enough to look at their pass, or 0
 	var/checked_at = 0
+	/// world.time it stopped them
+	var/challenge_started_at = 0
 	/// Whether it has asked a second time
 	var/warned = FALSE
 	/// world.time it may next greet one of its own
@@ -236,24 +238,27 @@
 			listener.passes -= key
 
 /// `who`'s STEALTH_PIECE_* flags if their disguise holds for this guard: the clothing is on and it hasn't seen
-/// through them. 0 otherwise.
+/// through them. 0 otherwise, and always 0 for its own side: a friend in the den's colours is no disguise.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_fooled(mob/living/who)
+	var/mob/living/guard = pawn
+	if(guard?.faction_check_atom(who))
+		return NONE
 	var/pieces = stealth_disguise_of(who)
 	if(!(pieces & STEALTH_PIECE_CLOTHES) || stealth_knows(who))
 		return NONE
 	return pieces
 
 /**
- * Remembers `who`, seen with its own eyes: their face for good, if it shows. `blown`: also the wearer, face or no
+ * Remembers `who`: their face for good, if it shows and it `seen` them. `blown`: also the wearer, face or no
  * face, for STEALTH_MADE_TIME (a disguise it saw through; a mask won't fix that). Only it knows, until it tells
  * someone (stealth_tell()).
  */
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_make(mob/living/who, blown = TRUE)
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_make(mob/living/who, blown = TRUE, seen = TRUE)
 	var/datum/component/stealth_disguise/cache = stealth_disguise_cache(who)
 	if(isnull(cache))
 		return
 	var/key = REF(who)
-	if(cache.face)
+	if(cache.face && seen)
 		LAZYSET(made, cache.face, TRUE)
 	if(!blown)
 		return
@@ -268,7 +273,7 @@
 	if(!isturf(where) || !isturf(guard.loc) || guard.stat != CONSCIOUS || !stealth_eyes_open() || stealth_is_cloaked(who))
 		return FALSE
 	var/dist = get_dist(guard, where)
-	if(dist > STEALTH_ADJACENT_RANGE && dist > stealth_range_onto(where))
+	if(dist > STEALTH_ADJACENT_RANGE && dist > stealth_range_onto(where, who))
 		return FALSE
 	if(!stealth_in_cone(guard, where, stealth_half_angle()))
 		return FALSE
@@ -276,15 +281,22 @@
 	return !!strategy?.can_attack(guard, who, stealth_skill().sight_range)
 
 /// Whether `who`, seen on `where` in a disguise of `pieces`, is doing something no guard of the den would: a weapon
-/// in hand, pulling a fallen guard, or standing in an off-limits room the pass doesn't excuse.
+/// in hand, pulling or carrying a fallen guard, holding one of its own up in front of them, or standing in an off-limits room the
+/// pass doesn't excuse.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_breaker(mob/living/carbon/human/who, pieces, turf/where)
+	if(stealth_holds_one_of_ours(who))
+		return TRUE
 	for(var/obj/item/held in who.held_items)
 		if(isgun(held) || istype(held, /obj/item/melee) || (held.force >= STEALTH_WEAPON_FORCE && held.get_sharpness()))
 			return TRUE
-	var/mob/living/pulled = who.pulling
 	var/mob/living/guard = pawn
-	if(isliving(pulled) && guard.faction_check_atom(pulled) && (pulled.stat != CONSCIOUS || pulled.body_position == LYING_DOWN || HAS_TRAIT(pulled, TRAIT_RESTRAINED)))
-		return TRUE
+	// Dragged, or over the shoulder: tg's fireman carry buckles the body to the carrier and ends the pull.
+	var/list/hauled = who.buckled_mobs ? who.buckled_mobs.Copy() : list()
+	if(who.pulling)
+		hauled += who.pulling
+	for(var/mob/living/body in hauled)
+		if(guard.faction_check_atom(body) && (body.stat != CONSCIOUS || body.body_position == LYING_DOWN || HAS_TRAIT(body, TRAIT_RESTRAINED)))
+			return TRUE
 	var/list/rooms = group?.off_limits()
 	var/excused = rooms?[where]
 	return !isnull(excused) && !(excused && (pieces & STEALTH_PIECE_ID))
@@ -325,14 +337,14 @@
 	// The whole set: one of its own at a distance, whatever its skill.
 	return dist > profile.near_range ? 0 : STEALTH_DISGUISE_FILL_FULL * profile.disguise
 
-/// The name on the pass `who` wears, if it is one of its group's own: what its friends called them. An NPC's
-/// name, never player text; null for a pass in nobody's name or a guard with only its type's name.
+/// The name on the pass `who` wears, if it is one of its group's own still alive: what its friends called them. An
+/// NPC's name, never player text; null for a pass in nobody's name, a dead man's, or a guard with only its type's name.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_card_name(mob/living/carbon/human/who)
 	var/obj/item/card/id/card = ishuman(who) ? (stealth_scav_pass(who) || who.wear_id?.GetID()) : null
 	if(!istype(card) || !card.registered_name)
 		return null
 	for(var/mob/living/carbon/human/npc/friend as anything in group?.living_members())
-		if(friend != pawn && friend.real_name == card.registered_name)
+		if(friend != pawn && friend.stat != DEAD && friend.real_name == card.registered_name)
 			return stealth_first_name(friend)
 	return null
 
@@ -387,6 +399,7 @@
 	challenge = WEAKREF(who)
 	start_turf = where
 	checked_at = 0
+	challenge_started_at = world.time
 	warned = FALSE
 	suspicion_heard = FALSE
 	goto_purpose = STEALTH_GOTO_INVESTIGATE
@@ -398,8 +411,8 @@
 
 /**
  * The scan, while it has someone stopped. Blown: the clothing is off, it knows them now, they run, they are more
- * than STEALTH_CHALLENGE_LEASH from where it stopped them, it can't see them, they do what no guard would, or
- * they still show no pass STEALTH_CHALLENGE_FAIL_TIME after it got to them. Passed: the pass is on them and it has
+ * than STEALTH_CHALLENGE_LEASH from where it stopped them, it can't see them or get to them, they do what no
+ * guard would, or they still show no pass STEALTH_CHALLENGE_FAIL_TIME after it got to them. Passed: the pass is on them and it has
  * looked at it for STEALTH_CHALLENGE_CHECK_TIME from within STEALTH_CHALLENGE_CHECK_RANGE.
  */
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_check_challenge()
@@ -422,7 +435,11 @@
 		guard.setDir(stand_dir)
 	var/ran = who.move_intent == MOVE_INTENT_RUN && entry && entry[STEALTH_ENTRY_TURF] != where
 	var/late = checked_at && !(pieces & STEALTH_PIECE_ID) && world.time - checked_at >= STEALTH_CHALLENGE_FAIL_TIME
-	if(!pieces || ran || late || get_dist(where, start_turf) > STEALTH_CHALLENGE_LEASH || !stealth_sees(who) || stealth_breaker(who, pieces, where))
+	// Stopped where it can't get to them (behind a railing or a window): keeping out of reach is no way to show a pass.
+	var/out_of_reach = stealth_walk_gave_up(where)
+	// Or never close enough to read it in all the time it would have taken to read it and give up on it.
+	out_of_reach = out_of_reach || (!checked_at && world.time - challenge_started_at >= STEALTH_CHALLENGE_REACH_TIME)
+	if(!pieces || ran || late || out_of_reach || get_dist(where, start_turf) > STEALTH_CHALLENGE_LEASH || !stealth_sees(who) || stealth_breaker(who, pieces, where))
 		if(!stealth_blow(who) && stealth_state() == STEALTH_SUSPICIOUS)
 			stealth_go_searching(where)
 			stealth_first_hand(where)

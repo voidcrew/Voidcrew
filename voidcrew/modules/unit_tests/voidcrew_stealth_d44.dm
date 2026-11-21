@@ -1,4 +1,4 @@
-// Stealth guards, owner decision 44 (playtest 2: disguises and tracking). voidcrew/modules/stealth/stealth_disguise.dm,
+// Stealth guards (playtest 2: disguises and tracking). voidcrew/modules/stealth/stealth_disguise.dm,
 // stealth_hearing.dm, stealth_noise.dm, stealth_radio.dm, stealth_ai.dm and stealth_closet.dm. Values from voidcrew/_DEFINES
 // are written out: STEALTH_LOSE_TARGET_TIME 4 s, STEALTH_RADIO_CALL_TIME 3 s; a yellow guard's dark sight is 4 tiles, its
 // close range 2, its challenge range for the whole set 2. Pieces: clothing 2, pass 4. States and the blackboard key

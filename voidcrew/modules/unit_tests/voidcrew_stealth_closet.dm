@@ -1,4 +1,4 @@
-// Stealth guards, owner decision 33 (voidcrew/modules/stealth/stealth_closet.dm): a guard that saw its target get into
+// Stealth guards (voidcrew/modules/stealth/stealth_closet.dm): a guard that saw its target get into
 // a locker opens it; one that didn't leaves it shut. Values from voidcrew/_DEFINES are written out:
 // STEALTH_LOSE_TARGET_TIME 4 s, STEALTH_CLOSET_SEEN_WINDOW 1.5 s. States are written as text.
 
@@ -129,6 +129,14 @@
 
 /// Real AI: two guards saw it; only one opens the locker, the other covers it.
 /datum/unit_test/voidcrew_stealth_live/closet_two_guards
+	/// Everyone who tried to open the locker (tg's pre-open signal names them). A guard's open lands within one tick
+	/// of its behaviour starting, so polling its behaviours could miss it.
+	var/list/openers = list()
+
+/datum/unit_test/voidcrew_stealth_live/closet_two_guards/proc/on_pre_open(datum/source, mob/living/user, force)
+	SIGNAL_HANDLER
+	if(user)
+		openers |= user
 
 /datum/unit_test/voidcrew_stealth_live/closet_two_guards/Run()
 	TEST_ASSERT(make_room(12, 5), "No room for the test")
@@ -148,17 +156,45 @@
 	second_ai.stealth_go_alert(person)
 	step(person, EAST)
 	TEST_ASSERT(locker.close(person), "The person couldn't shut the locker on themselves")
-	var/datum/ai_behavior/opening = GET_AI_BEHAVIOR(/datum/ai_behavior/stealth_open_closet)
-	var/list/openers = list()
+	RegisterSignal(locker, COMSIG_CLOSET_PRE_OPEN, PROC_REF(on_pre_open))
 	var/both_claimed = FALSE
 	var/deadline = world.time + 30 SECONDS
 	while(!locker.opened && world.time < deadline)
 		if(first_ai.shut_in == locker && second_ai.shut_in == locker)
 			both_claimed = TRUE
-		for(var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai as anything in list(first_ai, second_ai))
-			if(opening in guard_ai.current_behaviors)
-				openers |= guard_ai
 		sleep(1)
+	// A moment more, in case the other guard was a tick behind.
+	sleep(1 SECONDS)
+	UnregisterSignal(locker, COMSIG_CLOSET_PRE_OPEN)
 	TEST_ASSERT(locker.opened, "Two guards that saw someone shut in a locker never opened it")
 	TEST_ASSERT(both_claimed, "The two guards never both went after the locker (the test can't tell one opener from one watcher)")
 	TEST_ASSERT_EQUAL(length(openers), 1, "[length(openers)] guards tried to open one locker")
+
+/// Line of sight past wall corners (stealth_can_see()): a line that grazes a wall's corner is blocked, a crack
+/// where two walls touch is blocked, an open diagonal is clear, and it is the same both ways.
+/datum/unit_test/voidcrew_stealth_live/corner_sight
+
+/datum/unit_test/voidcrew_stealth_live/corner_sight/Run()
+	TEST_ASSERT(make_room(6, 6), "No room for the test")
+	// n o o / w o w / o o p, rows from the top: the guard top left, the player bottom right.
+	var/turf/guard_spot = at(0, 4)
+	var/turf/player_spot = at(2, 2)
+	TEST_ASSERT(stealth_can_see(guard_spot, player_spot, 7), "An open diagonal is out of sight")
+	var/turf/left_wall = at(0, 3)
+	var/turf/right_wall = at(2, 3)
+	left_wall.ChangeTurf(/turf/closed/wall)
+	right_wall.ChangeTurf(/turf/closed/wall)
+	TEST_ASSERT(!stealth_can_see(guard_spot, player_spot, 7), "A guard sees round a wall corner")
+	TEST_ASSERT(!stealth_can_see(player_spot, guard_spot, 7), "Sight round a wall corner isn't the same both ways")
+	// n w / w p: a crack where two walls touch at the corner.
+	var/turf/crack_guard = at(4, 4)
+	var/turf/crack_player = at(5, 3)
+	var/turf/crack_a = at(5, 4)
+	var/turf/crack_b = at(4, 3)
+	crack_a.ChangeTurf(/turf/closed/wall)
+	crack_b.ChangeTurf(/turf/closed/wall)
+	TEST_ASSERT(!stealth_can_see(crack_guard, crack_player, 7), "Elbow to elbow, a guard sees through a crack where two walls touch")
+	var/turf/far_guard = at(3, 5)
+	TEST_ASSERT(!stealth_can_see(far_guard, crack_player, 7), "A guard sees through a crack where two walls touch")
+	// A straight line down an open row is clear.
+	TEST_ASSERT(stealth_can_see(at(0, 0), at(5, 0), 7), "A guard can't see down an open row")

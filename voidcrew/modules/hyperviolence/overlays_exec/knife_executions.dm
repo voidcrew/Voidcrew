@@ -4,14 +4,19 @@
 // - the target is a stealth guard caught off guard (stealth_caught_off_guard()) and the attacker is behind it
 //   (check_behind()), whatever zone is aimed at (decision 45);
 // - or anyone else is taken from behind, or anyone is helpless (hv_can_be_executed()), with the head or mouth aimed at.
-// Never on a body the attacker holds in an aggressive grab or tighter (that is tg's own slow throat slit), never on a
-// throat already cut. Only players and boss-rank human NPCs do it (hv_can_execute()), never pacifists.
+// - or a stealth guard the attacker holds with a hand over his mouth (voidcrew/modules/stealth/stealth_grip.dm),
+//   whatever zone is aimed at.
+// Never on any other body the attacker holds in an aggressive grab or tighter (that is tg's own slow throat slit), never
+// on a throat already cut. Only players and boss-rank human NPCs do it (hv_can_execute()), never pacifists.
 //
-// A stealth guard caught off guard from behind is cut on the click (hv_knife_execution_instant()). Anyone else: both
+// A stealth guard caught off guard from behind, or held with a hand over his mouth, is cut on the click
+// (hv_knife_execution_instant()). Anyone else: both
 // hold still for HV_KNIFE_EXECUTION_WINDUP; moving, losing the blade or turning to face the attacker breaks the
 // wind-up cleanly. If it holds, the cut is decision 45's: tg's throat slit maths (hv_finish_knife_execution()). The
-// throat blood follows the wound that landed (hv_knife_exec_spray). Nothing extra kills, stuns or roots the victim;
-// death comes only from tg's real damage and bleeding. A cut throat is mute (voidcrew/edits/datums/neck_slice_mute.dm).
+// throat blood follows the wound that landed (hv_knife_exec_spray). A cut throat drops the victim for
+// HV_KNIFE_THROAT_KNOCKDOWN, clutching it (tg's Knockdown, players and NPCs alike; owner decision 2026-11-20), and is
+// mute (voidcrew/edits/datums/neck_slice_mute.dm). Nothing else extra kills, stuns or roots the victim; death comes
+// only from tg's real damage and bleeding.
 
 /obj/item/knife
 	/// Brute and burn damage this knife dealt to the victim's head during an execution stab.
@@ -39,10 +44,13 @@
 	var/mob/living/carbon/victim = target
 	if(isnull(victim.get_bodypart(BODY_ZONE_HEAD)) || !user.Adjacent(victim))
 		return FALSE
+	if(victim.has_status_effect(/datum/status_effect/neck_slice))
+		return FALSE
+	// Held with a hand over his mouth: the cut, whatever is aimed at (stealth_grip.dm).
+	if(stealth_grip_holds(user, victim))
+		return TRUE
 	// Held in an aggressive grab or tighter: tg's own slow throat slit (butchering.dm), not this.
 	if(user.pulling == victim && user.grab_state >= GRAB_AGGRESSIVE)
-		return FALSE
-	if(victim.has_status_effect(/datum/status_effect/neck_slice))
 		return FALSE
 	var/behind = check_behind(user, victim)
 	// A stealth guard caught off guard from behind: the throat whatever is aimed at (decision 45). On guard, only helpless.
@@ -70,6 +78,9 @@
  * could only land on a guard standing at a stop. Players, other NPCs and helpless targets keep the hold.
  */
 /obj/item/knife/proc/hv_knife_execution_instant(mob/living/user, mob/living/carbon/victim)
+	// Held with a hand over his mouth: he isn't going anywhere.
+	if(stealth_grip_holds(user, victim))
+		return TRUE
 	if(!hv_knife_is_stealth_guard(victim) || !check_behind(user, victim))
 		return FALSE
 	// tg's check_behind() counts anyone lying down as "behind"; a helpless guard keeps the hold.
@@ -121,6 +132,8 @@
 		return FALSE
 	if(isnull(victim.get_bodypart(BODY_ZONE_HEAD)) || !user.Adjacent(victim))
 		return FALSE
+	if(stealth_grip_holds(user, victim))
+		return TRUE
 	if(user.pulling == victim && user.grab_state >= GRAB_AGGRESSIVE)
 		return FALSE
 	// A stealth guard taken from behind goes for the throat whatever is aimed at; anyone else needs the head or mouth.
@@ -170,6 +183,13 @@
 			hv_knife_exec_spray = 1
 		if(victim.has_status_effect(/datum/status_effect/neck_slice))
 			victim.hv_add_hit_line("[user] cuts [victim]'s throat!", HV_LINE_HUGE, "[user] cuts your throat!", COMBAT_MESSAGE_RANGE)
+			// The cut drops him for a moment, clutching his throat: tg's Knockdown, for anyone.
+			victim.Knockdown(HV_KNIFE_THROAT_KNOCKDOWN)
+			victim.visible_message(
+				span_danger("[victim] clutches [victim.p_their()] throat!"),
+				span_userdanger("You clutch at your throat!"),
+				vision_distance = COMBAT_MESSAGE_RANGE,
+			)
 		else
 			victim.hv_add_hit_line("[user] stabs at [victim]'s throat, but the blade turns!", HV_LINE_BOLD, "[user] stabs at your throat!", COMBAT_MESSAGE_RANGE)
 		// The victim felt that: the same signal a normal blow sends (tg's relay_attackers), after the cut.

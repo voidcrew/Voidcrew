@@ -128,12 +128,15 @@
 	stealth_noise(src, noise[1], noise[2], isliving(user) ? user : null)
 
 // A round striking a wall, a window, a crate. A suppressed round's strike is nearly silent in tg (volume 5),
-// so it is no lure; what it breaks is.
+// so it is no lure; what it breaks is. tg plays the strike from the round, on the shooter's side of a wall it hits,
+// and only when the round has a sound for it.
 /obj/projectile/on_hit(atom/target, blocked = 0, pierce_hit)
 	. = ..()
 	if(!length(GLOB.stealth_groups) || isliving(target) || isnull(target))
 		return
-	stealth_noise(target, STEALTH_NOISE_IMPACT, suppressed ? STEALTH_NOISE_RANGE_IMPACT_QUIET : STEALTH_NOISE_RANGE_IMPACT, isliving(firer) ? firer : null)
+	if(!hitsound && !(isturf(target) && hitsound_wall))
+		return
+	stealth_noise(get_turf(src), STEALTH_NOISE_IMPACT, suppressed ? STEALTH_NOISE_RANGE_IMPACT_QUIET : STEALTH_NOISE_RANGE_IMPACT, isliving(firer) ? firer : null)
 
 // ===== Thrown things =====
 
@@ -141,23 +144,31 @@
 	/// The noise it makes when a throw ends (STEALTH_NOISE_*), or null for a plain landing by its weight
 	var/stealth_throw_noise
 
-/// The noise this makes landing from a throw.
-/obj/item/proc/stealth_throw_kind()
+/// The noise this makes landing on `hit_atom` from a throw.
+/obj/item/proc/stealth_throw_kind(atom/hit_atom, datum/thrownthing/throwingdatum)
 	return stealth_throw_noise || STEALTH_NOISE_THROWN
 
-// A glass or a bottle smashes; a carton or a plastic bottle only lands.
-/obj/item/reagent_containers/cup/glass/stealth_throw_kind()
-	return isGlass ? STEALTH_NOISE_GLASS : ..()
+// A glass or a bottle smashes; a carton or a plastic bottle only lands, and so does a glass a bartender slides
+// (tg's smash() declines for both).
+/obj/item/reagent_containers/cup/glass/stealth_throw_kind(atom/hit_atom, datum/thrownthing/throwingdatum)
+	if(isGlass && !(throwingdatum && bartender_check(hit_atom, throwingdatum.get_thrower())))
+		return STEALTH_NOISE_GLASS
+	return ..()
 
 // Landing, or hitting something that isn't a person. A throw that lands on a guard is a touch, which the
-// guard's own controller deals with.
+// guard's own controller deals with. Heard from where the thing ends up (tg plays it there, on the thrower's side
+// of a wall it hits), and only when tg plays a sound for it: a landing needs a drop sound, a glass has to smash.
 /obj/item/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
 	// Read first: a bottle is gone once it has smashed.
 	var/noisy = length(GLOB.stealth_groups) && !isliving(hit_atom)
-	var/kind = noisy ? stealth_throw_kind() : null
+	var/kind = noisy ? stealth_throw_kind(hit_atom, throwingdatum) : null
 	var/size = w_class
+	var/turf/landed = get_turf(src)
+	var/sounded = throw_drop_sound || drop_sound
 	. = ..()
 	if(!noisy)
+		return
+	if(kind == STEALTH_NOISE_THROWN && !sounded)
 		return
 	var/reach
 	if(kind == STEALTH_NOISE_THROWN)
@@ -168,7 +179,7 @@
 		else
 			reach = STEALTH_NOISE_RANGE_THROWN_HEAVY
 	var/mob/living/thrower = throwingdatum?.get_thrower()
-	stealth_noise(hit_atom, kind, reach, isliving(thrower) ? thrower : null)
+	stealth_noise(landed, kind, reach, isliving(thrower) ? thrower : null)
 
 // ===== Glass =====
 
@@ -255,14 +266,25 @@
 		return
 	if(faller.pulledby && faller.pulledby.grab_state >= GRAB_AGGRESSIVE)
 		return
+	// A guard going down on its own slip (on_slipped(), the same tick) is no lure: nobody did that to it.
+	var/datum/ai_controller/basic_controller/human_npc/stealth/faller_ai = faller.ai_controller
+	if(istype(faller_ai) && faller_ai.slipped_at == world.time)
+		return
 	stealth_noise(src, STEALTH_NOISE_THUD, null, faller)
 
 // A whistle, a clap, a snap, a cough, a laugh, a scream: any emote whose sound tg plays now, under tg's own
-// rules for when it plays (its cooldowns included).
+// rules for when it plays (its cooldowns included, and no sound for an emote with no message). Most emote sounds
+// reach only those in view of it (sound_wall_ignore), so they do here.
 /datum/emote/run_emote(mob/user, params, type_override, intentional = FALSE)
 	var/sounded = FALSE
-	if(length(GLOB.stealth_groups) && isliving(user))
+	if(isliving(user) && stealth_guards_about(get_turf(user)))
 		sounded = get_sound(user) && should_play_sound(user, intentional) && TIMER_COOLDOWN_FINISHED(user, "general_emote_audio_cooldown") && TIMER_COOLDOWN_FINISHED(user, type)
+		if(sounded)
+			// tg's own message steps: an empty one ends the emote before its sound.
+			var/msg = select_message_type(user, message, intentional)
+			if(params && message_param)
+				msg = select_param(user, params)
+			sounded = !!replace_pronoun(user, msg)
 	. = ..()
 	if(!sounded || QDELETED(user))
 		return
@@ -272,7 +294,7 @@
 			kind = STEALTH_NOISE_SCREAM
 		if("deathgasp")
 			kind = STEALTH_NOISE_THUD
-	stealth_noise(user, kind, null, user)
+	stealth_noise(user, kind, null, user, null, sound_wall_ignore ? NONE : STEALTH_NOISE_LOS_ONLY)
 
 // ===== Blasts =====
 // Explosions: each group listens for COMSIG_GLOB_EXPLOSION (stealth_noise.dm).

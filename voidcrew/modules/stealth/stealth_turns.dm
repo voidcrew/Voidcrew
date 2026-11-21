@@ -78,7 +78,8 @@
 	var/lean_w = (new_dir & EAST) ? STEALTH_TURN_LEAN : ((new_dir & WEST) ? -STEALTH_TURN_LEAN : 0)
 	var/lean_z = (new_dir & NORTH) ? STEALTH_TURN_LEAN : ((new_dir & SOUTH) ? -STEALTH_TURN_LEAN : 0)
 	turn_lean = list(lean_w, lean_z)
-	animate(guard, pixel_w = lean_w, pixel_z = lean_z, time = STEALTH_TURN_LEAN_TIME, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
+	// Through tg's offsets, so a grab or lying down during the tell can't leave the body off its spot.
+	guard.add_offsets(STEALTH_TURN_LEAN_SOURCE, w_add = lean_w, z_add = lean_z)
 	stealth_torch_lead(new_dir)
 	addtimer(CALLBACK(src, PROC_REF(stealth_finish_turn), new_dir, turn_planned_at), STEALTH_TURN_TELL)
 
@@ -104,5 +105,5 @@
 		return
 	var/mob/living/guard = pawn
 	if(!QDELETED(guard))
-		animate(guard, pixel_w = -turn_lean[1], pixel_z = -turn_lean[2], time = STEALTH_TURN_LEAN_TIME, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
+		guard.remove_offsets(STEALTH_TURN_LEAN_SOURCE)
 	turn_lean = null

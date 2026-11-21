@@ -272,6 +272,7 @@ ADMIN_VERB(force_z_level_active, R_DEBUG, "Force Z-Level Active", "Keep a z-leve
 
 	GLOB.z_level_activator_dummies["[z_level]"] = dummy
 	SSmobs.clients_by_zlevel[z_level] += dummy
+	z_level_activator_watch(dummy)
 
 	// Wake up all AI on that z-level
 	for(var/datum/ai_controller/controller as anything in GLOB.ai_controllers_by_zlevel[z_level])
@@ -285,9 +286,31 @@ ADMIN_VERB(force_z_level_active, R_DEBUG, "Force Z-Level Active", "Keep a z-leve
 // activator dummy has no client, so on a forced-active level the AI would sit idle and never plan.
 /datum/ai_controller/should_idle()
 	var/turf/pawn_turf = get_turf(pawn)
-	if(pawn_turf && GLOB.z_level_activator_dummies["[pawn_turf.z]"])
-		return FALSE
+	if(pawn_turf)
+		var/mob/living/dummy = GLOB.z_level_activator_dummies["[pawn_turf.z]"]
+		if(!QDELETED(dummy))
+			return FALSE
 	return ..()
+
+/// Has a level activator `dummy` drop its level when it is deleted, however that happens (the verb, a ruin unloading
+/// its turfs, an admin deleting it): it has no client, so tg's own update_z() never takes it off the level.
+/proc/z_level_activator_watch(mob/living/dummy)
+	dummy.RegisterSignal(dummy, COMSIG_QDELETING, TYPE_PROC_REF(/mob/living, z_level_activator_deleted))
+
+/// A level activator is being deleted: off its level's list and the activator list, and that level's AI back to what
+/// its real players call for.
+/mob/living/proc/z_level_activator_deleted(datum/source)
+	SIGNAL_HANDLER
+	for(var/key in GLOB.z_level_activator_dummies)
+		if(GLOB.z_level_activator_dummies[key] != src)
+			continue
+		GLOB.z_level_activator_dummies -= key
+		var/z_level = text2num(key)
+		if(length(SSmobs.clients_by_zlevel) >= z_level)
+			SSmobs.clients_by_zlevel[z_level] -= src
+		for(var/datum/ai_controller/controller as anything in GLOB.ai_controllers_by_zlevel[z_level])
+			controller.set_ai_status(controller.get_expected_ai_status())
+		return
 
 /// Global list of room visualization overlays (ship_ref -> list of overlay images)
 GLOBAL_LIST_EMPTY(room_visualization_overlays)

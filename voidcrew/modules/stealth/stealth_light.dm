@@ -11,7 +11,7 @@
  * The beam (decision 41): a wedge that starts at the guard's hand, half a tile ahead of it, widens to three tiles
  * and lights the floor up to four tiles ahead, brightest two and three tiles out. Its own tile, its sides and its
  * back stay dark. tg's lighting stops it at walls and closed solid doors and lets it through glass, like any lamp
- * (numbers in data/stealth/STATUS.md, decision 41).
+ * (the numbers are STEALTH_TORCH_RANGE, _POWER and _ANGLE on /obj/effect/abstract/stealth_torch, decision 41).
  *
  * What the eye sees on top (decision 42): a cone in the air from the guard's lamp and a small glow there
  * (/obj/effect/abstract/stealth_beam), so the beam visibly starts at the guard. Only the eye sees it.
@@ -73,8 +73,11 @@ GLOBAL_LIST_EMPTY(stealth_guard_torches)
 
 /// Decision 34: a guard's seclite is loot like anyone's, so it is never locked to the body (D3 holds for the rest).
 /// Decision 40: so are the scavs' fatigues, balaclava and pass (stealth_disguise.dm).
+/// And a guard's net earpiece, so tg's strip menu takes it off him (stealth_radio.dm).
 /mob/living/carbon/human/npc/npc_lock_item(obj/item/item)
 	if(istype(item, /obj/item/flashlight/seclite/scav) || istype(item, /obj/item/clothing/under/syndicate/scav))
+		return FALSE
+	if(istype(item, /obj/item/radio/headset/guard_net))
 		return FALSE
 	if(istype(item, /obj/item/clothing/mask/balaclava/scav) || istype(item, /obj/item/card/id/advanced/black/scav))
 		return FALSE

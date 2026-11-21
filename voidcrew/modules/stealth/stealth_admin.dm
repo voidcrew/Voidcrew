@@ -35,7 +35,7 @@
 	var/wary_text = "calm"
 	if(stealth_ai.blackboard[BB_STEALTH_WARY])
 		wary_text = "wary [max(0, round((stealth_ai.stealth_skill().wary_time - (world.time - stealth_ai.wary_at)) / (1 SECONDS)))]s"
-	// Decision 40: what the one it has stopped, its focus, or else the nearest player wears, and whether it works on this guard.
+	// The disguise: what the one it has stopped, its focus, or else the nearest player wears, and whether it works on this guard.
 	var/mob/living/stopped = stealth_ai.challenge?.resolve()
 	var/mob/living/subject = stopped || focus
 	var/turf/here = get_turf(guard)
@@ -271,7 +271,7 @@ GLOBAL_LIST_EMPTY(stealth_sight_overlays)
 
 /**
  * The tiles one guard sees, shown to one admin: green for its lit cone, blue for how far it sees into
- * the dark, yellow for the close radius it feels all round. Rebuilt each scan while watched; ends when
+ * the dark, brown for cover too far off to see into, yellow for the close radius it feels all round. Rebuilt each scan while watched; ends when
  * the guard dies, on a second toggle, or after STEALTH_ADMIN_OVERLAY_TIME.
  */
 /datum/stealth_sight_overlay
@@ -281,6 +281,10 @@ GLOBAL_LIST_EMPTY(stealth_sight_overlays)
 	var/list/image/images = list()
 	/// The whole-level view this belongs to, or null for a single guard's
 	var/datum/stealth_level_overlay/parent
+	/// What the last rebuild was drawn from (tile, facing, eyes, cone, night vision, skill): an unchanged guard isn't redrawn
+	/// every scan, only every STEALTH_ADMIN_SIGHT_REDRAW for light and cover changes.
+	var/last_drawn
+	var/next_redraw = 0
 
 /datum/stealth_sight_overlay/New(client/user, mob/living/carbon/human/npc/guard, datum/stealth_level_overlay/parent)
 	user_ref = WEAKREF(user)
@@ -321,26 +325,32 @@ GLOBAL_LIST_EMPTY(stealth_sight_overlays)
 	images.Cut()
 
 /datum/stealth_sight_overlay/proc/refresh()
-	clear()
 	var/client/user = user_ref?.resolve()
 	var/mob/living/carbon/human/npc/guard = guard_ref?.resolve()
-	if(isnull(user) || QDELETED(guard))
-		return
-	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = guard.ai_controller
-	if(!istype(stealth_ai))
-		return
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = guard?.ai_controller
 	var/turf/center = get_turf(guard)
-	if(isnull(center))
+	if(isnull(user) || QDELETED(guard) || !istype(stealth_ai) || isnull(center))
+		clear()
+		last_drawn = null
 		return
 	var/eyes = stealth_ai.stealth_eyes_open()
 	var/half_angle = stealth_ai.stealth_half_angle()
 	var/night = HAS_TRAIT(guard, TRAIT_NIGHT_VISION)
 	var/datum/stealth_skill/profile = stealth_ai.stealth_skill()
+	var/drawn = "[REF(center)]|[guard.dir]|[eyes]|[half_angle]|[night]|[REF(profile)]"
+	if(drawn == last_drawn && world.time < next_redraw)
+		return
+	last_drawn = drawn
+	next_redraw = world.time + STEALTH_ADMIN_SIGHT_REDRAW
+	clear()
 	for(var/turf/tile as anything in RANGE_TURFS(profile.sight_range, center))
 		var/dist = get_dist(center, tile)
 		var/colour
-		if(eyes && stealth_in_cone(guard, tile, half_angle) && can_see(center, tile, profile.sight_range))
-			if(dist <= profile.dark_sight_range || night)
+		if(eyes && stealth_in_cone(guard, tile, half_angle) && stealth_can_see(center, tile, profile.sight_range))
+			// Cover it can't see into from here (stealth_cover.dm)
+			if(dist > max(profile.point_blank_range, STEALTH_COVER_RANGE) && stealth_cover_at(tile) && !stealth_ai.stealth_beam_on(tile))
+				colour = "#996633"
+			else if(dist <= profile.dark_sight_range || night)
 				colour = "#3399ff"
 			else
 				colour = "#33cc33"

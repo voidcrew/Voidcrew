@@ -1,7 +1,14 @@
-// Stealth guards, decision 39 and the 2026-11-11 playtest fixes (voidcrew/modules/stealth/stealth_turns.dm,
+// Stealth guards and the 2026-11-11 playtest fixes (voidcrew/modules/stealth/stealth_turns.dm,
 // stealth_patrol.dm): readable turns, the grace after a turn, stop look-rounds and arrival facing. Values from
 // voidcrew/_DEFINES are written out: STEALTH_TURN_TELL 0.6 s, STEALTH_LOOK_TURN_ARC 90; yellow turn_grace 1 s.
 // States are written as text.
+
+/// Waits for a guard's pending turn to land (STEALTH_TURN_TELL after it starts), with a long deadline, so a late timer
+/// only makes the test slower.
+/datum/unit_test/proc/stealth_wait_turn(datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai, limit = 3 SECONDS)
+	var/deadline = world.time + limit
+	while(stealth_ai.turn_pending && world.time < deadline)
+		sleep(world.tick_lag)
 
 /// After a turn where it stands (to a noise, a door or on its own), someone right in front is not an instant alert;
 /// notice still fills, and once the moment has passed they are.
@@ -55,7 +62,7 @@
 	TEST_ASSERT_EQUAL(guard.dir, EAST, "A guard turned on its own with no tell first")
 	TEST_ASSERT_EQUAL(stealth_ai.turn_pending, NORTH, "No turn is pending after the tell started")
 	TEST_ASSERT_NOTNULL(stealth_ai.turn_lean, "The tell shows no lean")
-	sleep(0.8 SECONDS)
+	stealth_wait_turn(stealth_ai)
 	TEST_ASSERT_EQUAL(guard.dir, NORTH, "The turn didn't land after its tell")
 	TEST_ASSERT_NULL(stealth_ai.turn_lean, "The lean stayed on after the turn")
 	// A turn that is overtaken by events is dropped, lean and all.
@@ -63,7 +70,8 @@
 	stealth_ai.stealth_go_suspicious(stealth_at(block, 2, 0))
 	TEST_ASSERT_EQUAL(stealth_ai.turn_pending, 0, "A change of state kept the pending turn")
 	TEST_ASSERT_NULL(stealth_ai.turn_lean, "A dropped turn left its lean on")
-	sleep(0.8 SECONDS)
+	// Well past when it would have landed.
+	sleep(1.5 SECONDS)
 	TEST_ASSERT_EQUAL(guard.dir, SOUTH, "A dropped turn still landed")
 	qdel(block)
 
@@ -83,7 +91,7 @@
 	for(var/i in 1 to 4)
 		stealth_ai.next_turn = 0
 		stand.perform(1, stealth_ai)
-		sleep(0.8 SECONDS)
+		stealth_wait_turn(stealth_ai)
 		seen += dir2text(guard.dir)
 	TEST_ASSERT_EQUAL(jointext(seen, ","), "north,east,south,east", "A guard at a stop looked [jointext(seen, ",")] instead of left, back, right, back")
 	qdel(block)
@@ -110,6 +118,6 @@
 	stealth_ai.stealth_arrive(faced)
 	TEST_ASSERT_EQUAL(stealth_ai.stand_dir, NORTH, "A stop's facing wasn't taken")
 	TEST_ASSERT_EQUAL(stealth_ai.turn_pending, NORTH, "A guard turned to a stop's facing with no tell")
-	sleep(0.8 SECONDS)
+	stealth_wait_turn(stealth_ai)
 	TEST_ASSERT_EQUAL(guard.dir, NORTH, "A guard didn't turn to its stop's facing")
 	qdel(block)

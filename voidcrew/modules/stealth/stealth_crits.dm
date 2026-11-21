@@ -21,7 +21,8 @@
  * - stopped short of the skull: the hit as normal, and tg's Unconscious() for STEALTH_HEAD_SHOT_HELMET_TIME;
  * - stopped: the hit as normal.
  * Protection (helmets, and physiology armour such as dermal cyberware, by tg's own armour numbers) steps it down.
- * Players on players, and everyone else's head shots, are exactly as before. Numbers: data/stealth/STATUS.md.
+ * Players on players, and everyone else's head shots, are exactly as before. The bonuses and the armour steps are
+ * the STEALTH_CRIT_* and STEALTH_HEAD_SHOT_* defines (voidcrew/_DEFINES/stealth.dm).
  */
 
 /// TRUE if this guard was caught off guard by `attacker`'s blow: unaware or only suspicious as it began, conscious,
@@ -80,6 +81,8 @@
 /mob/living/carbon/human/npc
 	/// world.time of the head shot being resolved: every pellet of one shot lands in the same tick
 	var/stealth_head_shot_at = -1
+	/// REF of the gun (or the shooter) the shot being resolved came from: pellets of one shot share it
+	var/stealth_head_shot_from
 	/// Whether the shot being resolved caught it off guard (decided on its first pellet)
 	var/stealth_head_shot_open = FALSE
 	/// Power of the shot being resolved so far, before the caliber bonus and the suppressor
@@ -109,8 +112,10 @@
 	var/mob/living/carbon/shooter = hv_crit_get_aimer(shot)
 	if(isnull(shooter) || shooter == src || check_zone(shooter.zone_selected) != BODY_ZONE_HEAD)
 		return FALSE
-	if(stealth_head_shot_at != world.time)
+	var/shot_from = REF(shot.fired_from || shooter)
+	if(stealth_head_shot_at != world.time || stealth_head_shot_from != shot_from)
 		stealth_head_shot_at = world.time
+		stealth_head_shot_from = shot_from
 		stealth_head_shot_power = 0
 		stealth_head_shot_done = STEALTH_HEAD_SHOT_NONE
 		stealth_head_shot_open = stealth_caught_off_guard(shooter)

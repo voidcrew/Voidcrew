@@ -8,11 +8,11 @@
  * only sight and touch set BB_BASIC_MOB_CURRENT_TARGET.
  *
  * A noise reaches the stealth groups of its own level and map region. Walls and closed doors on the straight
- * line to each guard eat reach (stealth_muffled_dist()). What the hearers do is decided for the group as a
- * whole (dispatch_noise()): a door makes them glance; a small noise sends one guard to look, the next one at
- * the same spot two, the third everyone; gunfire, blasts and screams send the nearest few running while
- * sentries hold their posts. A guard that went to look and isn't back in STEALTH_CHECKIN_TIME is missed by
- * the ones who watched it go.
+ * line to each guard eat reach (stealth_muffled_dist()), and so does thin air (stealth_air_carry()). What the
+ * hearers do is decided for the group as a whole (dispatch_noise()): a door makes them glance; a small noise
+ * sends one guard to look, the next one at the same spot two, the third everyone; gunfire, blasts and screams
+ * send the nearest few running while sentries hold their posts. A guard that went to look and isn't back in
+ * STEALTH_CHECKIN_TIME is missed by the ones who watched it go.
  *
  * Cost: with no group alive, one length() check. With no living player on the level, or in airless space,
  * the noise is dropped before any guard is looked at. The same kind of noise within STEALTH_NOISE_COALESCE
@@ -35,11 +35,12 @@
 	var/list/datum/weakref/waiters = list()
 
 /datum/stealth_group
-	/// Noise kind => list(world.time, turf) of the last one its guards heard
+	/// Noise kind => list(world.time, turf, reach, made by one of their own) of the last one its guards heard
 	var/list/noise_stamps = list()
 	/// list(turf, world.time) for each small noise it sent someone to
 	var/list/lures = list()
-	/// list(world.time, weight) for each alarm it answered (a lure counts half)
+	/// list(world.time, weight) for each alarm it answered. Small noises aren't alarms: a few pebbles never thin out
+	/// the answer to gunfire.
 	var/list/alarms = list()
 	/// Guards out looking at a noise
 	var/list/datum/stealth_check/checks = list()
@@ -64,7 +65,8 @@
 			STEALTH_NOISE_IMPACT = list(STEALTH_NOISE_RANGE_IMPACT, STEALTH_HEAR_INVESTIGATE, NONE),
 			STEALTH_NOISE_BLAST = list(STEALTH_NOISE_RANGE_BLAST, STEALTH_HEAR_ALARM, STEALTH_NOISE_LOUD),
 			STEALTH_NOISE_GLASS = list(STEALTH_NOISE_RANGE_GLASS, STEALTH_HEAR_INVESTIGATE, NONE),
-			STEALTH_NOISE_THROWN = list(STEALTH_NOISE_RANGE_THROWN_SMALL, STEALTH_HEAR_INVESTIGATE, NONE),
+			// tg plays a landing for those in view of it only (sound_chain(), ignore_walls = FALSE)
+			STEALTH_NOISE_THROWN = list(STEALTH_NOISE_RANGE_THROWN_SMALL, STEALTH_HEAR_INVESTIGATE, STEALTH_NOISE_LOS_ONLY),
 			STEALTH_NOISE_KNOCK = list(STEALTH_NOISE_RANGE_KNOCK, STEALTH_HEAR_INVESTIGATE, NONE),
 			STEALTH_NOISE_BASH = list(STEALTH_NOISE_RANGE_BASH, STEALTH_HEAR_INVESTIGATE, NONE),
 			STEALTH_NOISE_DOOR = list(STEALTH_NOISE_RANGE_DOOR, STEALTH_HEAR_GLANCE, NONE),
@@ -73,6 +75,7 @@
 			STEALTH_NOISE_SCREAM = list(STEALTH_NOISE_RANGE_SCREAM, STEALTH_HEAR_ALARM, STEALTH_NOISE_LOUD | STEALTH_NOISE_ALLIES_COUNT),
 			STEALTH_NOISE_SHOUT = list(STEALTH_NOISE_RANGE_SHOUT, STEALTH_HEAR_SHOUT, STEALTH_NOISE_LOUD | STEALTH_NOISE_GROUP_ONLY),
 			STEALTH_NOISE_CRUNCH = list(STEALTH_NOISE_RANGE_CRUNCH, STEALTH_HEAR_INVESTIGATE, NONE),
+			STEALTH_NOISE_RUSTLE = list(STEALTH_NOISE_RANGE_RUSTLE, STEALTH_HEAR_INVESTIGATE, NONE),
 		)
 	return profiles[kind]
 
@@ -84,10 +87,11 @@
  * Something made a noise guards can hear. Does nothing unless a stealth group has awake members on that level.
  * source: where it happened (any atom; its turf is used). kind: STEALTH_NOISE_*. reach: tiles in open air, or
  * null for the kind's default. actor: the living mob that made it, if known. only: one group to tell, or null
- * for every group in earshot.
+ * for every group in earshot. extra_flags: STEALTH_NOISE_* flags on top of the kind's own, for one sound tg plays
+ * differently from the rest of its kind (an emote only those in view hear).
  * Returns the number of guards that heard it (tests and the admin view).
  */
-/proc/stealth_noise(atom/source, kind, reach = null, mob/living/actor = null, datum/stealth_group/only = null)
+/proc/stealth_noise(atom/source, kind, reach = null, mob/living/actor = null, datum/stealth_group/only = null, extra_flags = NONE)
 	if(!length(GLOB.stealth_groups))
 		return 0
 	var/turf/where = get_turf(source)
@@ -101,29 +105,70 @@
 		reach = profile[STEALTH_PROFILE_REACH]
 	if(reach <= 0)
 		return 0
-	// A door nobody is named for may be one of their own going through.
-	var/door = isnull(actor) && istype(source, /obj/machinery/door)
+	// A door nobody is named for may be one of their own going through (stealth_door_user()).
+	var/obj/machinery/door/door = (isnull(actor) && istype(source, /obj/machinery/door)) ? source : null
 	var/aired = FALSE
+	var/turf/air_turf
 	. = 0
 	for(var/datum/stealth_group/group as anything in (only ? list(only) : GLOB.stealth_groups.Copy()))
 		if(QDELETED(group) || group.home?.z != where.z || !group.region_matches(where))
 			continue
 		if(!aired)
 			aired = TRUE
-			if(!stealth_noise_carries(where, actor))
+			air_turf = stealth_noise_air_turf(where, actor)
+			if(!stealth_noise_carries(air_turf))
 				return 0
-		. += group.hear(where, kind, reach, profile[STEALTH_PROFILE_LEVEL], profile[STEALTH_PROFILE_FLAGS], actor, door)
+		. += group.hear(where, kind, reach, profile[STEALTH_PROFILE_LEVEL], profile[STEALTH_PROFILE_FLAGS] | extra_flags, actor, door, air_turf)
 
-/// Whether there is air at `where` to carry a sound, as for players (playsound_local scales by pressure). A
-/// noise on a wall or a window tile is judged where its maker stands.
-/proc/stealth_noise_carries(turf/where, mob/living/actor)
-	var/turf/air_turf = where
-	if(isclosedturf(air_turf))
-		air_turf = get_turf(actor)
-		if(isnull(air_turf) || isclosedturf(air_turf))
+/// Whether a stealth group lives on `tile`'s level and map region: where guards can hear or see anything. Callers
+/// with work to do per step or per emote ask this first.
+/proc/stealth_guards_about(turf/tile)
+	if(!length(GLOB.stealth_groups) || !isturf(tile))
+		return FALSE
+	for(var/datum/stealth_group/group as anything in GLOB.stealth_groups)
+		if(!QDELETED(group) && group.home?.z == tile.z && group.region_matches(tile))
 			return TRUE
-	var/datum/gas_mixture/air = air_turf.return_air()
+	return FALSE
+
+/// The turf whose air carries a noise at `where`: that turf, or for a noise on a wall or a window tile, the one its
+/// maker stands on. Null when neither is open (it carries as if in open air).
+/proc/stealth_noise_air_turf(turf/where, mob/living/actor)
+	if(!isclosedturf(where))
+		return where
+	var/turf/standing = get_turf(actor)
+	if(isnull(standing) || isclosedturf(standing))
+		return null
+	return standing
+
+/// Whether there is air at `air_turf` to carry a sound at all, as for players (playsound_local scales by pressure).
+/// Read only: return_air() would give a planetary turf an air mix of its own for the rest of the round
+/// (voidcrew/edits/planetary_shared_air.dm).
+/proc/stealth_noise_carries(turf/air_turf)
+	if(isnull(air_turf))
+		return TRUE
+	var/datum/gas_mixture/air = air_turf.return_air_readonly()
 	return !isnull(air) && air.return_pressure() >= SOUND_MINIMUM_PRESSURE
+
+/**
+ * How much of its open-air reach a sound from `source` keeps at `ear`, 0 to 1, by tg's own pressure rule
+ * (playsound_local(): volume times (lower pressure of the two - 10 kPa) / (one atmosphere - 10 kPa), nothing
+ * in a vacuum). tg's falloff turns that volume into a distance for a sound of STEALTH_NOISE_NOMINAL_VOLUME, and
+ * the answer is that distance over the full-pressure one. `source` null: only the ear's air counts. The caller
+ * leaves a guard within a tile of the sound alone: tg plays a sound you touch at no less than 15% volume.
+ */
+/proc/stealth_air_carry(turf/source, turf/ear)
+	var/datum/gas_mixture/ear_air = ear?.return_air_readonly()
+	var/datum/gas_mixture/source_air = source ? source.return_air_readonly() : ear_air
+	if(isnull(ear_air) || isnull(source_air))
+		return 0
+	var/pressure = min(ear_air.return_pressure(), source_air.return_pressure())
+	if(pressure >= ONE_ATMOSPHERE)
+		return 1
+	var/factor = (pressure - SOUND_MINIMUM_PRESSURE) / (ONE_ATMOSPHERE - SOUND_MINIMUM_PRESSURE)
+	var/left = 1 - SOUND_AUDIBLE_VOLUME_MIN / (STEALTH_NOISE_NOMINAL_VOLUME * max(factor, 0.001))
+	if(left <= 0)
+		return 0
+	return min(1, (left / (1 - SOUND_AUDIBLE_VOLUME_MIN / STEALTH_NOISE_NOMINAL_VOLUME)) ** SOUND_FALLOFF_EXPONENT)
 
 /**
  * How far off a sound from `origin` seems at `ear`: the distance plus STEALTH_MUFFLE_WALL for each wall and
@@ -182,23 +227,26 @@
 // ===== The group's side =====
 
 /// Its guards hear a noise at `where`, those that can. Returns how many did.
-/datum/stealth_group/proc/hear(turf/where, kind, reach, level, flags, mob/living/actor, door = FALSE)
+/// `air_turf`: whose air carries it (stealth_noise_air_turf()).
+/// `door`: the door that made it, when nobody is named for it.
+/datum/stealth_group/proc/hear(turf/where, kind, reach, level, flags, mob/living/actor, obj/machinery/door/door = null, turf/air_turf = where)
 	var/list/views = length(GLOB.stealth_sight_overlays) ? stealth_noise_views(where.z) : null
-	// The same noise again (full auto, a burst, pellets): one event, not ten.
-	var/list/stamp = noise_stamps[kind]
-	if(stamp && world.time - stamp[1] < STEALTH_NOISE_COALESCE && get_dist(stamp[2], where) <= STEALTH_NOISE_COALESCE_RANGE)
-		for(var/datum/stealth_noise_view/view as anything in views)
-			view.show(where, kind, reach, null, TRUE)
-		return 0
 	var/list/guards = living_members()
 	if(!length(guards))
 		return 0
-	if((flags & STEALTH_NOISE_GROUP_ONLY) && !(actor in guards))
-		return 0
-	if(door && member_beside(where, guards))
-		return 0
 	var/mob/living/any_guard = guards[1]
 	var/ally = !isnull(actor) && any_guard.faction_check_atom(actor)
+	// The same noise again (full auto, a burst, pellets): one event, not ten. Not when it carries further than the
+	// last one, or comes from the other side (one of their own, then someone else).
+	var/list/stamp = noise_stamps[kind]
+	if(stamp && world.time - stamp[1] < STEALTH_NOISE_COALESCE && get_dist(stamp[2], where) <= STEALTH_NOISE_COALESCE_RANGE && reach <= stamp[3] && ally == stamp[4])
+		for(var/datum/stealth_noise_view/view as anything in views)
+			view.show(where, kind, reach, null, TRUE)
+		return 0
+	if((flags & STEALTH_NOISE_GROUP_ONLY) && !(actor in guards))
+		return 0
+	if(door && member_uses_door(stealth_door_user(door), where, guards))
+		return 0
 	var/gunfire = stealth_noise_is_gunfire(kind)
 	// One of their own making an everyday noise.
 	if(ally && !gunfire && !(flags & (STEALTH_NOISE_ALLIES_COUNT | STEALTH_NOISE_GROUP_ONLY)))
@@ -206,6 +254,9 @@
 	// An ally's gunfire means an ally is in a fight: it is a call for help from where they stand.
 	if(ally && gunfire)
 		level = STEALTH_HEAR_SHOUT
+	// A guard's shout while this one is dealt with runs hear() again: that one keeps its own notes.
+	var/list/outer_notes = noise_notes
+	var/outer_reach = noise_reach
 	noise_notes = views ? list() : null
 	noise_reach = reach
 	// list(guard, muffled distance), nearest first
@@ -224,6 +275,12 @@
 		var/dist = get_dist(guard_turf, where)
 		if(dist > guard_reach)
 			continue
+		// Thin air carries it less far, as tg plays it to a player standing here.
+		if(dist > 1)
+			guard_reach = round(guard_reach * stealth_air_carry(air_turf, guard_turf), 1)
+			if(dist > guard_reach)
+				note(guard, "thin air")
+				continue
 		if(guard_ai.ai_status == AI_STATUS_OFF || guard.client || guard.stat != CONSCIOUS || guard_ai.stealth_captive() || guard_ai.blackboard_key_exists(BB_HUMAN_NPC_EXIT))
 			note(guard, "busy")
 			continue
@@ -246,7 +303,7 @@
 		guard_ai.last_heard = list(kind, world.time)
 		note(guard, "heard [muffled]/[guard_reach]")
 	if(length(hearers))
-		noise_stamps[kind] = list(world.time, where)
+		noise_stamps[kind] = list(world.time, where, reach, ally)
 		// Far off, they misjudge the spot: all of them by the same error, so they end up in one place.
 		var/turf/spot = where
 		var/list/nearest = hearers[1]
@@ -259,7 +316,8 @@
 		dispatch_noise(hearers, where, kind, level, actor, spot)
 	for(var/datum/stealth_noise_view/view as anything in views)
 		view.show(where, kind, reach, noise_notes, FALSE)
-	noise_notes = null
+	noise_notes = outer_notes
+	noise_reach = outer_reach
 	return length(hearers)
 
 /// Admin noise view: what `guard` made of the noise being dealt with.
@@ -268,12 +326,18 @@
 		return
 	noise_notes[guard] = append ? "[noise_notes[guard]] -> [text]" : text
 
-/// Whether a conscious guard of the group stands within a tile of `where`.
-/datum/stealth_group/proc/member_beside(turf/where, list/guards)
-	for(var/mob/living/guard as anything in guards)
-		if(guard.stat == CONSCIOUS && guard.z == where.z && get_dist(guard, where) <= 1)
-			return TRUE
-	return FALSE
+/// Whether `user`, working a door at `where`, is a conscious guard of the group (one of `guards`), free, on its feet
+/// and its own master, within a tile of it. A captive one (cuffed, grabbed, in a locker, buckled, hands up under a
+/// gun), one stunned, floored or paralysed, or one a player drives opens no door for the rest.
+/datum/stealth_group/proc/member_uses_door(mob/living/user, turf/where, list/guards)
+	if(!isliving(user) || !(user in guards))
+		return FALSE
+	if(user.stat != CONSCIOUS || user.client || user.z != where.z || get_dist(user, where) > 1)
+		return FALSE
+	if(HAS_TRAIT(user, TRAIT_INCAPACITATED) || HAS_TRAIT(user, TRAIT_FLOORED) || user.body_position == LYING_DOWN)
+		return FALSE
+	var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = user.ai_controller
+	return istype(guard_ai) && !guard_ai.stealth_captive() && !guard_ai.holdup_aimer
 
 /// How many small noises it sent someone to within STEALTH_LURE_RADIUS of `where` and STEALTH_LURE_MEMORY.
 /datum/stealth_group/proc/lure_count(turf/where)
@@ -285,7 +349,7 @@
 		if(get_dist(lure[1], where) <= STEALTH_LURE_RADIUS)
 			.++
 
-/// How many alarms it answered within STEALTH_ALARM_MEMORY (a lure counts half).
+/// How many alarms it answered within STEALTH_ALARM_MEMORY.
 /datum/stealth_group/proc/alarm_count()
 	. = 0
 	for(var/list/alarm as anything in alarms)
@@ -350,7 +414,6 @@
 /datum/stealth_group/proc/dispatch_investigate(list/hearers, turf/where, turf/spot)
 	var/earlier = lure_count(where)
 	lures += list(list(where, world.time))
-	alarms += list(list(world.time, 0.5))
 	if(earlier >= 2)
 		var/shouted = FALSE
 		for(var/list/hearer as anything in hearers)
@@ -502,11 +565,22 @@
 				waiter_ai.stealth_start_call(STEALTH_CALL_MISSING, check.where, check.name)
 
 /// A blast anywhere: its own guards hear it if it is near enough. Registered per group, not per guard.
-/datum/stealth_group/proc/on_explosion(datum/source, turf/epicenter)
+/datum/stealth_group/proc/on_explosion(datum/source, turf/epicenter, devastation_range, heavy_impact_range, light_impact_range, took, orig_dev_range, orig_heavy_range, orig_light_range)
 	SIGNAL_HANDLER
 	if(isnull(epicenter) || epicenter.z != home?.z)
 		return
-	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(stealth_noise), epicenter, STEALTH_NOISE_BLAST, null, null, src)
+	var/reach = stealth_blast_reach(devastation_range, heavy_impact_range, orig_dev_range, orig_heavy_range, orig_light_range)
+	if(reach <= 0)
+		return
+	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(stealth_noise), epicenter, STEALTH_NOISE_BLAST, reach, null, src)
+
+/// How far a blast of these ranges carries to guards: as far as tg plays it to players (shake_the_room(): the near
+/// sound to its largest range plus the view less 2, the far one only for heavy or devastating blasts), never past
+/// STEALTH_NOISE_RANGE_BLAST.
+/proc/stealth_blast_reach(devastation_range, heavy_impact_range, orig_dev_range, orig_heavy_range, orig_light_range)
+	var/near = round(max(orig_dev_range, orig_heavy_range, orig_light_range, 0) + world.view - 2, 1)
+	var/far = heavy_impact_range * 15 + devastation_range * 20 - 1
+	return min(STEALTH_NOISE_RANGE_BLAST, max(near, far, 0))
 
 /// What its friends call `guard`: the first word of its name, or null when it has only its type's name
 /// ("Scav Guard"). An NPC's name, never player text.

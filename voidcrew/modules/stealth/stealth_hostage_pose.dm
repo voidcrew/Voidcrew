@@ -4,7 +4,8 @@
  * Visual only, under hyperviolence's motion rules (voidcrew/modules/hyperviolence/visuals/_motion_core.dm): nothing
  * here moves, stuns, roots or hurts anyone.
  *
- * A body held at gunpoint (stealth_hostage_of()) is drawn tight against the front of its holder, facing his way,
+ * A body held at gunpoint (stealth_hostage_of()), or with a hand over its mouth (stealth_grip.dm, for now: its own
+ * animation comes later), is drawn tight against the front of its holder, facing his way,
  * through tg's own grab offsets (GRABBING_TRAIT), which tg clears when he lets go:
  * - facing south it stands low in front of him, to his free-hand side, so his gun shows beside its head;
  * - facing north it stands beyond him, to the same side, and he is drawn over it;
@@ -180,6 +181,8 @@
 	. = ..()
 	if(newstate == GRAB_NECK)
 		hostage_neck_grab_tick = world.time
+	else if(newstate < GRAB_NECK && isliving(pulling))
+		stealth_hold_no_swap(pulling, FALSE)
 
 // ---------------------------------------------------------------------------------------------
 // The poses
@@ -224,9 +227,12 @@
 // tg's grab offsets, taken over while the body is held at gunpoint
 
 /mob/living/set_pull_offsets(mob/living/mob_to_set, grab_state = GRAB_PASSIVE, animate = TRUE)
+	// tg leaves a buckled body as it is, and so do we
+	if(mob_to_set.buckled)
+		return ..()
 	stealth_hold_upright(mob_to_set)
 	var/mob/living/carbon/human/holder = ishuman(src) ? src : null
-	if(stealth_hostage_of(holder) == mob_to_set)
+	if(holder && stealth_held_in_front(holder) == mob_to_set)
 		holder.hostage_pose_apply(mob_to_set, animate)
 		return
 	if(mob_to_set.hostage_pose_dir)
@@ -235,6 +241,7 @@
 	return ..()
 
 /mob/living/reset_pull_offsets(mob/living/M, override)
+	stealth_hold_no_swap(M, FALSE)
 	if(M.hostage_pose_dir && (override || !M.buckled))
 		M.hostage_pose_end(src)
 	return ..()
@@ -246,7 +253,7 @@
 	if(dir == old_dir || !isliving(pulling))
 		return
 	var/mob/living/held = pulling
-	if(held.hostage_pose_dir || stealth_hostage_of(src) == held)
+	if(held.hostage_pose_dir || stealth_held_in_front(src) == held)
 		set_pull_offsets(held, grab_state)
 
 /// The pose comes and goes with the gun in his hand: posed when one comes out mid-hold, dropped back to tg's grab
@@ -256,7 +263,7 @@
 	var/mob/living/held = pulling
 	if(!isliving(held))
 		return
-	if(stealth_hostage_of(src) == held)
+	if(stealth_held_in_front(src) == held)
 		if(held.hostage_pose_dir == dir && held.hostage_pose_hand == hostage_pose_hand())
 			return
 	else if(!held.hostage_pose_dir)
@@ -421,7 +428,8 @@
 	hostage_pose_hand = null
 	hostage_pose_serial++
 	hostage_pose_path = null
-	if(!QDELETED(freed_by) && loc == freed_by.loc && isturf(loc) && body_position == STANDING_UP)
+	// a body being deleted is let go in its Destroy(): nothing to stand it anywhere (and nothing may hold on to it)
+	if(!QDELETED(src) && !QDELETED(freed_by) && loc == freed_by.loc && isturf(loc) && body_position == STANDING_UP)
 		// both in this tick, so nothing jumps: tg's grab offsets off, the spot it is drawn at back on under our name
 		// (a swing still playing stops there). Then the shove: a few pixels further out from him, tg's own eased slide.
 		held_at = list(round(held_at[1], 1), round(held_at[2], 1), round(held_at[3], 1))

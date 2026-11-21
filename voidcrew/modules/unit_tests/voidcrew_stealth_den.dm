@@ -20,7 +20,7 @@
 	TEST_ASSERT_EQUAL(boss_card.registered_name, boss.real_name, "The boss's pass is in someone else's name")
 	TEST_ASSERT(boss.stealth_radio, "The den boss has no radio")
 
-/// The vault rolls cyberware by zone, never the same piece twice, plus one piece of stealth gear from its hook.
+/// The vault rolls cyberware by zone, never the same piece twice, plus one piece of stealth gear if its hook has any.
 /datum/unit_test/voidcrew_stealth_den_vault
 
 /datum/unit_test/voidcrew_stealth_den_vault/Run()
@@ -28,7 +28,8 @@
 	for(var/zone in 1 to 3)
 		var/obj/structure/closet/crate/secure/scav_vault/crate = allocate(/obj/structure/closet/crate/secure/scav_vault, run_loc_floor_bottom_left)
 		var/list/made = crate.scav_vault_roll(zone)
-		TEST_ASSERT_EQUAL(length(made), expected[zone] + 1, "A zone [zone] vault paid the wrong number of pieces")
+		var/stealth_wanted = length(crate.scav_vault_stealth_loot()) ? 1 : 0
+		TEST_ASSERT_EQUAL(length(made), expected[zone] + stealth_wanted, "A zone [zone] vault paid the wrong number of pieces")
 		var/list/seen = list()
 		var/stealth_pieces = 0
 		for(var/obj/item/piece as anything in made)
@@ -39,7 +40,7 @@
 			TEST_ASSERT(!seen[piece.type], "A vault paid [piece.type] twice")
 			seen[piece.type] = TRUE
 			TEST_ASSERT_EQUAL(piece.loc, crate, "A vault piece landed outside the crate")
-		TEST_ASSERT_EQUAL(stealth_pieces, 1, "A vault didn't pay one piece of stealth gear")
+		TEST_ASSERT_EQUAL(stealth_pieces, stealth_wanted, "A vault paid [stealth_pieces] pieces of stealth gear, not [stealth_wanted]")
 	var/obj/structure/closet/crate/secure/scav_vault/locked = allocate(/obj/structure/closet/crate/secure/scav_vault, run_loc_floor_bottom_left)
 	TEST_ASSERT(locked.locked, "The vault crate isn't locked")
 	TEST_ASSERT("scav_vault" in locked.req_access, "The vault crate doesn't want the vault pass")
@@ -84,6 +85,8 @@
 	allocate(/obj/effect/landmark/stealth_group, at(0, 0))
 	// Hung on the north wall, looking south.
 	var/obj/machinery/scav_camera/camera = allocate(/obj/machinery/scav_camera/directional/north, at(5, 8))
+	// Driven only by hand below: the listed person would otherwise wake its own sweep on SSfastprocess as well.
+	camera.end_processing()
 	var/turf/eye = get_turf(camera)
 	TEST_ASSERT_EQUAL(camera.aim, 180, "A camera hung on the north wall doesn't look south")
 	var/mob/living/carbon/human/person = person_at(5, 4)
@@ -133,6 +136,7 @@
 	camera.emp_act(EMP_LIGHT)
 	TEST_ASSERT_EQUAL(camera.cam_state, 4, "An EMP didn't shut the camera off")
 	TEST_ASSERT_EQUAL(camera.cone.alpha, 0, "An EMP'd camera still shows its cone")
+	TEST_ASSERT_EQUAL(camera.glow.alpha, 0, "An EMP'd camera still shows the light at its lens")
 
 /// The den's harvester gang: every outfit keeps the disguise set reachable (scav fatigues showing, the mask slot free for
 /// the balaclava, its suit read as a guard's own), and no den guard carries Syndicate kit. Their fatigues are loot, the
@@ -169,3 +173,73 @@
 	var/obj/item/circular_saw/cruel/saw = locate() in butcher.held_items
 	TEST_ASSERT_NOTNULL(saw, "The harvester has no saw")
 	TEST_ASSERT(GET_ATOM_BLOOD_DNA_LENGTH(saw), "The harvester's saw is clean")
+
+/// A den camera's head shows the swivel frame nearest its aim, on a wall and in a corner, and every frame's lens sits on
+/// its sprite inside the tile.
+/datum/unit_test/voidcrew_stealth_den_camera_frames
+
+/datum/unit_test/voidcrew_stealth_den_camera_frames/Run()
+	var/list/states = icon_states('voidcrew/icons/obj/machines/scav_camera.dmi')
+	for(var/sprite_dir in GLOB.scav_cam_frames)
+		var/list/frames = GLOB.scav_cam_frames[sprite_dir]
+		TEST_ASSERT_EQUAL(length(frames), 7, "Sprite dir [sprite_dir] hasn't 7 swivel frames")
+		for(var/i in 1 to length(frames))
+			var/list/entry = frames[i]
+			TEST_ASSERT(abs(entry[2]) < 16 && abs(entry[3]) < 16, "Sprite dir [sprite_dir] frame [i]'s lens is off its tile")
+			TEST_ASSERT(abs(entry[2]) >= 4 || abs(entry[3]) >= 4, "Sprite dir [sprite_dir] frame [i]'s lens sits in the tile's middle, not on the mount")
+			TEST_ASSERT(length(entry) == 5, "Sprite dir [sprite_dir] frame [i] has no head centre")
+			TEST_ASSERT(abs(entry[4] - entry[2]) <= 3 && abs(entry[5] - entry[3]) <= 3, "Sprite dir [sprite_dir] frame [i]'s cone starts off its head")
+			if(i > 1)
+				var/step = abs(closer_angle_difference(frames[i - 1][1], entry[1]))
+				TEST_ASSERT(step > 0 && step <= 20, "Sprite dir [sprite_dir] frames [i - 1] and [i] are [step] degrees apart")
+			for(var/prefix in list("scan", "track"))
+				TEST_ASSERT("[prefix]_[sprite_dir]_[i - 1]" in states, "scav_camera.dmi has no [prefix]_[sprite_dir]_[i - 1]")
+
+	// Hung on the north wall: straight out, and each end of its sweep.
+	var/obj/machinery/scav_camera/north = allocate(/obj/machinery/scav_camera/directional/north, run_loc_floor_bottom_left)
+	TEST_ASSERT_EQUAL(north.icon_state, "scan_[NORTH]_3", "A new camera on the north wall doesn't look straight out")
+	for(var/list/check in list(list(180, 4), list(180 - north.sweep, 7), list(180 + north.sweep, 1), list(166, 5), list(200, 3)))
+		north.aim = check[1]
+		north.scav_cam_draw(TRUE)
+		TEST_ASSERT_EQUAL(north.frame_dir, NORTH, "The north wall camera shows another wall's sprite at aim [check[1]]")
+		TEST_ASSERT_EQUAL(north.frame, check[2], "The north wall camera's head is on the wrong frame at aim [check[1]]")
+		TEST_ASSERT_EQUAL(north.icon_state, "scan_[NORTH]_[check[2] - 1]", "The north wall camera's icon didn't follow its frame at aim [check[1]]")
+
+	// Its cone is masked off the wall it hangs on.
+	TEST_ASSERT_EQUAL(north.scav_cam_walls(), NORTH, "A north wall camera doesn't mask its cone off the north wall")
+	TEST_ASSERT(north.cone in north.cone_holder.vis_contents, "The cone isn't drawn in its masking holder")
+	TEST_ASSERT(north.cone_holder.get_filter("scav_cam_walls"), "The cone's holder has no wall mask")
+	TEST_ASSERT(north.glow in north.vis_contents, "The camera has no ball of light at its cone's source")
+	TEST_ASSERT(!(north.glow in north.cone_holder.vis_contents), "The source's ball of light is masked with the cone")
+	TEST_ASSERT_EQUAL(north.glow.transform.c, GLOB.scav_cam_frames["[north.frame_dir]"][north.frame][4], "The ball of light isn't on the head")
+	TEST_ASSERT_EQUAL(north.glow.color, north.cone.color, "The ball of light isn't the cone's colour")
+	TEST_ASSERT(north.cone.plane == north.cone_holder.plane, "The cone left its holder's plane, so the mask misses it")
+	var/list/mask_states = icon_states('voidcrew/icons/effects/scav_camera_mask.dmi')
+	for(var/walls in list(NORTH, SOUTH, EAST, WEST, NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWEST))
+		TEST_ASSERT("wall_[walls]" in mask_states, "scav_camera_mask.dmi has no wall_[walls]")
+
+	// Hung on the south wall.
+	var/obj/machinery/scav_camera/south = allocate(/obj/machinery/scav_camera/directional/south, run_loc_floor_bottom_left)
+	for(var/list/check in list(list(0, 4), list(south.sweep, 1), list(360 - south.sweep, 7), list(14, 3)))
+		south.aim = check[1]
+		south.scav_cam_draw(TRUE)
+		TEST_ASSERT_EQUAL(south.frame_dir, SOUTH, "The south wall camera shows another wall's sprite at aim [check[1]]")
+		TEST_ASSERT_EQUAL(south.frame, check[2], "The south wall camera's head is on the wrong frame at aim [check[1]]")
+	// Following someone it shows the in use frames, the same way.
+	south.cam_state = 2
+	south.aim = 0
+	south.scav_cam_draw(TRUE)
+	south.update_appearance(UPDATE_ICON_STATE)
+	TEST_ASSERT_EQUAL(south.icon_state, "track_[SOUTH]_3", "A camera following someone doesn't show its in use frames")
+
+	// In the den's south west corner: on the south wall, turned to look up the corridor and along the other.
+	var/obj/machinery/scav_camera/corner = allocate(/obj/machinery/scav_camera/directional/south, run_loc_floor_bottom_left)
+	corner.facing_offset = 45
+	corner.sprite_dirs = corner.scav_cam_sprite_dirs()
+	TEST_ASSERT_EQUAL(corner.scav_cam_walls(), SOUTHWEST, "A south west corner camera doesn't mask its cone off both walls")
+	TEST_ASSERT(length(corner.sprite_dirs) == 2 && (SOUTH in corner.sprite_dirs) && (SOUTHWEST in corner.sprite_dirs), "A south west corner camera doesn't use both of that corner's sprites")
+	for(var/list/check in list(list(0, SOUTH, 4), list(27, SOUTH, 2), list(63, SOUTHWEST, 2), list(90, SOUTHWEST, 4)))
+		corner.aim = check[1]
+		corner.scav_cam_draw(TRUE)
+		TEST_ASSERT_EQUAL(corner.frame_dir, check[2], "The corner camera shows the wrong wall's sprite at aim [check[1]]")
+		TEST_ASSERT_EQUAL(corner.frame, check[3], "The corner camera's head is on the wrong frame at aim [check[1]]")

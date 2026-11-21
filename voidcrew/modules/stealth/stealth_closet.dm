@@ -40,7 +40,7 @@
 	var/mob/living/guard = pawn
 	if(QDELETED(box) || !isturf(guard.loc) || get_dist(guard, box) > HUMAN_NPC_SIGHT_RANGE || !stealth_alert_lit(box))
 		return FALSE
-	return can_see(guard, box, HUMAN_NPC_SIGHT_RANGE)
+	return stealth_can_see(guard, box, HUMAN_NPC_SIGHT_RANGE)
 
 /// Remembers that it saw `who` get into `box`.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_claim_closet(obj/structure/closet/box, mob/living/who)
@@ -104,7 +104,7 @@
 	var/turf/was = entry[STEALTH_ENTRY_TURF]
 	if(isnull(was) || get_dist(was, shell) > 2)
 		return FALSE
-	return can_see(pawn, shell, stealth_skill().sight_range)
+	return stealth_can_see(pawn, shell, stealth_skill().sight_range)
 
 /// Just went alert on `target` (always first hand: sight, a touch, a hit). If they are in a container, that's the one.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_closet_alerted(atom/target)
@@ -235,7 +235,7 @@
 /// Whether it stands two tiles from `box` with a clear line to it: where it shoots a container that won't open.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_closet_in_fire_spot(obj/structure/closet/box)
 	var/mob/living/guard = pawn
-	return isturf(guard.loc) && get_dist(guard, box) == 2 && can_see(guard, box, 2)
+	return isturf(guard.loc) && get_dist(guard, box) == 2 && stealth_can_see(guard, box, 2)
 
 /// The nearest open tile two tiles from `box` with a clear line to it, or null.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_closet_fire_spot(obj/structure/closet/box)
@@ -244,7 +244,7 @@
 	var/turf/best
 	var/best_dist = INFINITY
 	for(var/turf/open/spot in RANGE_TURFS(2, center))
-		if(get_dist(spot, center) != 2 || spot.is_blocked_turf(exclude_mobs = TRUE) || !can_see(spot, center, 2))
+		if(get_dist(spot, center) != 2 || spot.is_blocked_turf(exclude_mobs = TRUE) || !stealth_can_see(spot, center, 2))
 			continue
 		var/dist = get_dist(guard, spot)
 		if(dist < best_dist)
@@ -323,3 +323,18 @@
 	if(istype(controller))
 		controller.stealth_try_closet()
 	return AI_BEHAVIOR_DELAY
+
+// ===== The door's sound =====
+// tg plays a locker's or a crate's door to everyone near it (open_sound, close_sound). Guards hear one someone works
+// as they hear a door: a glance, from closer than players hear it. Their own go unremarked (stealth_noise()), as does
+// one nobody worked (it burst), and one tg plays no sound for (an open with no effects).
+
+/obj/structure/closet/open(mob/living/user, force = FALSE, special_effects = TRUE)
+	. = ..()
+	if(. == TRUE && special_effects && length(GLOB.stealth_groups) && isliving(user))
+		stealth_noise(src, STEALTH_NOISE_DOOR, null, user)
+
+/obj/structure/closet/close(mob/living/user)
+	. = ..()
+	if(. == TRUE && length(GLOB.stealth_groups) && isliving(user))
+		stealth_noise(src, STEALTH_NOISE_DOOR, null, user)

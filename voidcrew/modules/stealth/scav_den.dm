@@ -1,17 +1,20 @@
 /**
- * # The scav den (stealth step 4, owner decisions 3, 6, 10, 11, 21, 38)
+ * # The scav den
  *
- * A compound of organ and cyberware harvesters dug into an asteroid on the contested lanes. It is a rare space ruin:
- * it never seeds by itself, and the only road to it is a rumor chart bought from an outpost trader and revealed from
- * the helm (rumor_charts.dm), like every other named tip. One den is on the overmap at a time: while one is out there
- * the tip is off the shelf and a sealed chart can't be revealed (it stays sealed and can be revealed once that den is
- * cleaned out). A den nobody docks at within an hour of its reveal leaves the overmap, so an unvisited one can't hold
- * the slot all round.
+ * A compound of organ and cyberware harvesters dug into an asteroid. It is a rare space ruin and never seeds by itself.
+ * For now the only way to it is the admin verb "Stealth: Scav Den Planet" (stealth_den_planet.dm), which loads it on a
+ * jungle planet; the verb and the den stay in the game as an admin test tool.
+ *
+ * The tip below (a rumor chart bought from an outpost trader and revealed from the helm, rumor_charts.dm) is on no
+ * shop. If it goes back on sale: one den is on the overmap at a time, so while one is out there the tip is off the
+ * shelf and a sealed chart can't be revealed (it stays sealed until that den is gone), and a den nobody docks at within
+ * an hour of its reveal leaves the overmap. scav_den_on_map() only counts dens on the overmap, not one the admin verb
+ * built on a planet; decide then whether that one should hold the slot.
  *
  * The den's guards are the stealth guards of scav_guards.dm with names of their own, so their friends can call them
- * by name on the radio and over a body. Their skill comes from the den's zone (decision 38): a den revealed in the
+ * by name on the radio and over a body. Their skill comes from the den's zone: a den revealed in the
  * contested lanes is yellow. The boss, a lookout, carries the only vault pass. The vault's crate rolls cyberware by
- * the den's zone, plus one piece of stealth gear from scav_vault_stealth_loot() (the matte knife here; other modules add theirs).
+ * the den's zone, plus one piece of stealth gear from scav_vault_stealth_loot() if any module adds one (none does yet).
  *
  * Cameras: scav_camera.dm.
  */
@@ -32,6 +35,8 @@
 	return null
 
 // ===== The tip =====
+// Not on sale anywhere yet (owner, 2026-11-20): the den is reached only through the admin verb in
+// stealth_den_planet.dm. Add this SKU back to a shop's chart_pool to sell it.
 
 /datum/shop_sku/ruin_chart/scav_den
 	name = "contested-lane tip: scav chop shop"
@@ -134,7 +139,9 @@
 
 /**
  * Gives a den guard chrome eyes that glow red. tg's own robotic eyes (they flash and EMP like anyone's), recoloured;
- * the glow is only drawn, it lights nothing. Behind glasses or a mask that hides the eyes it doesn't show.
+ * the glow is only drawn, it lights nothing. Behind glasses or a mask that hides the eyes it doesn't show. Like the rest
+ * of an NPC's chrome they burn out when it dies or they are taken out of it (scav_den_eyes_burn_out()), so a den is no
+ * eye farm.
  */
 /mob/living/carbon/human/npc/proc/scav_den_chrome_eyes()
 	var/obj/item/organ/eyes/robotic/chrome = new()
@@ -144,10 +151,38 @@
 	if(!chrome.Insert(src, special = TRUE, movement_flags = DELETE_IF_REPLACED))
 		qdel(chrome)
 		return
+	// npc_burn_out_chrome() and the NPC body's organ-loss burn-out only know cyberware; these are plain tg eyes, so they
+	// listen for the death and the removal themselves.
+	chrome.RegisterSignal(src, COMSIG_LIVING_DEATH, TYPE_PROC_REF(/obj/item/organ/eyes/robotic, scav_den_eyes_burn_out))
+	chrome.RegisterSignal(chrome, COMSIG_ORGAN_REMOVED, TYPE_PROC_REF(/obj/item/organ/eyes/robotic, scav_den_eyes_taken_out))
 	update_body()
 	// A balaclava's eye holes don't line up with bare eyes: a masked guard without lenses gets the gang's red ones.
 	if(istype(wear_mask, /obj/item/clothing/mask/balaclava) && isnull(glasses))
 		equip_to_slot_or_del(new /obj/item/clothing/glasses/red(src), ITEM_SLOT_EYES)
+
+/// A den guard died with its red chrome eyes in: they go dead and come out as scrap, like the rest of an NPC's chrome.
+/obj/item/organ/eyes/robotic/proc/scav_den_eyes_burn_out(mob/living/carbon/source, gibbed)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_LIVING_DEATH)
+	if(owner != source)
+		return
+	var/atom/drop_spot = source.drop_location()
+	Remove(source, special = TRUE)
+	if(isnull(drop_spot))
+		qdel(src)
+		return
+	forceMove(drop_spot)
+	human_npc_burn_out_chrome(src)
+	do_sparks(1, TRUE, source)
+
+/// A den guard's red chrome eyes taken out of it while it lives (surgery, a lost head): they burn out as NPC chrome
+/// does (human_npc_body's on_lost_organ()), next tick, once whatever moved them has put them down.
+/obj/item/organ/eyes/robotic/proc/scav_den_eyes_taken_out(datum/source, mob/living/carbon/old_owner)
+	SIGNAL_HANDLER
+	UnregisterSignal(src, COMSIG_ORGAN_REMOVED)
+	if(!QDELETED(old_owner))
+		UnregisterSignal(old_owner, COMSIG_LIVING_DEATH)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(human_npc_burn_out_chrome), src), 0)
 
 // ===== The den guards' look =====
 // A chrome-mad harvester gang. The scavs' fatigues go under everything (scav_guards.dm), and every outfit leaves the
@@ -250,6 +285,33 @@
 	yellow = list(/datum/outfit/ruin_npc/scav_den/butcher/boss = 1)
 	red = list(/datum/outfit/ruin_npc/scav_den/butcher/boss/smg = 1)
 
+// ===== The den's trash =====
+
+/**
+ * tg's garbage without anything a guard trips over on its rounds: no banana peels (botanical_waste), no armed
+ * mousetraps, and no glass shards, broken bottles or broken lights (caltrops). Broken glass is a floor decal here.
+ */
+/obj/effect/spawner/random/trash/garbage/scav_den
+	name = "den garbage spawner"
+	loot = list(
+		/obj/effect/spawner/random/trash/food_packaging = 20,
+		/obj/item/trash/can = 15,
+		/obj/effect/decal/cleanable/glass = 15,
+		/obj/effect/spawner/random/trash/cigbutt = 10,
+		/obj/effect/spawner/random/trash/bacteria = 5,
+		/obj/effect/spawner/random/trash/crushed_can = 5,
+		/obj/item/reagent_containers/cup/glass/drinkingglass = 5,
+		/obj/item/stack/cable_coil = 5,
+		/obj/item/grown/corncob = 2,
+		/obj/item/food/deadmouse = 1,
+		/obj/item/trash/candle = 1,
+		/obj/item/rag = 1,
+		/obj/item/trash/flare = 1,
+		/obj/item/popsicle_stick = 1,
+		/obj/item/reagent_containers/syringe = 1,
+		/obj/item/reagent_containers/cup/glass/sillycup = 1,
+	)
+
 /obj/effect/spawner/human_npc/ruin/scav/den
 	name = "den guard spawner"
 	npc_type = /mob/living/carbon/human/npc/ruin/trooper/scav/den
@@ -275,45 +337,70 @@
 	access = list(ACCESS_SCAV, ACCESS_SCAV_VAULT)
 
 /**
- * The boss's crate. Rolls when first opened, by the zone of the den it was mapped in (moving it doesn't change it):
+ * The boss's crate. Rolls when first opened, by the zone of the den it was mapped in, noted as soon as the den is on
+ * the overmap (moving it, or the den's slot being reused later, doesn't change it):
  * cyberware the harvesters pulled or bought, more and better further out, and one piece of stealth gear when
  * scav_vault_stealth_loot() has any. Everything in it can be found or bought elsewhere too.
  */
+/// How many times a vault looks for its den's zone, and how often
+#define SCAV_VAULT_ZONE_TRIES 12
+#define SCAV_VAULT_ZONE_RETRY (5 SECONDS)
+
 /obj/structure/closet/crate/secure/scav_vault
 	name = "chrome crate"
 	desc = "A heavy crate lined with foam. Somebody has scratched a tally of names into the lid."
 	icon_state = "weaponcrate"
 	base_icon_state = "weaponcrate"
 	req_access = list(ACCESS_SCAV_VAULT)
-	/// The turf it was mapped on: its zone is read there
+	/// The turf it was mapped on, until its zone is known
 	var/turf/spawn_turf
+	/// The ZONE_* of the den it was mapped in, once known
+	var/vault_zone
+	/// Times it has looked for its zone so far
+	var/zone_tries = 0
 	/// Set once it has rolled
 	var/vault_rolled = FALSE
 
 /obj/structure/closet/crate/secure/scav_vault/Initialize(mapload)
 	spawn_turf = get_turf(src)
-	return ..()
+	. = ..()
+	scav_vault_note_zone()
 
 /obj/structure/closet/crate/secure/scav_vault/Destroy()
 	spawn_turf = null
 	return ..()
+
+/**
+ * Notes the zone of the site it was mapped in. A ruin is tied to its overmap square only once its map has loaded, after
+ * this crate's Initialize(), so it looks again every SCAV_VAULT_ZONE_RETRY for a while. Never found (a crate spawned
+ * off any site), the zone is read where it was placed when it is opened.
+ */
+/obj/structure/closet/crate/secure/scav_vault/proc/scav_vault_note_zone()
+	if(vault_rolled || !isnull(vault_zone) || isnull(spawn_turf))
+		return
+	vault_zone = SSovermap_zones?.get_zone_type_anywhere(spawn_turf)
+	if(!isnull(vault_zone))
+		spawn_turf = null
+		return
+	if(++zone_tries < SCAV_VAULT_ZONE_TRIES)
+		addtimer(CALLBACK(src, PROC_REF(scav_vault_note_zone)), SCAV_VAULT_ZONE_RETRY)
 
 /obj/structure/closet/crate/secure/scav_vault/PopulateContents()
 	. = ..()
 	if(vault_rolled)
 		return
 	vault_rolled = TRUE
-	var/zone = SSovermap_zones?.get_zone_type_anywhere(spawn_turf) || ZONE_GREEN
+	var/zone = vault_zone || SSovermap_zones?.get_zone_type_anywhere(spawn_turf) || ZONE_GREEN
 	spawn_turf = null
 	scav_vault_roll(zone)
 
 /**
- * The stealth-gear hook: typepath => weight of stealth gear a vault may pay, one piece per vault. Here only the matte
- * knife. Other modules (the garrotte, the gun-fu chip) add theirs by overriding this proc on this type with `. = ..()`
- * and adding entries to the list.
+ * The stealth-gear hook: typepath => weight of stealth gear a vault may pay, one piece per vault. Empty here. Other
+ * modules (the garrotte, the gun-fu chip) add theirs by overriding this proc on this type with `. = ..()` and adding
+ * entries to the list.
  */
 /obj/structure/closet/crate/secure/scav_vault/proc/scav_vault_stealth_loot()
-	return list(/obj/item/knife/combat/matte = 1)
+	return list()
 
 /**
  * Fills it with a den vault's take for `zone`: cyberware drawn without repeats (2 in green, 3 in yellow, 4 in red),
@@ -374,3 +461,6 @@
 		var/stealth_path = pick_weight(stealth)
 		if(ispath(stealth_path, /atom/movable))
 			. += new stealth_path(destination)
+
+#undef SCAV_VAULT_ZONE_TRIES
+#undef SCAV_VAULT_ZONE_RETRY

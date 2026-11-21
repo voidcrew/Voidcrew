@@ -1,10 +1,22 @@
 /**
- * TEMPORARY PLAYTEST TOOL for the stealth branch (feature/stealth). Remove before merge.
+ * Admin test tool for the stealth layer, kept in the game on purpose (owner decision): for now it is the only way to
+ * the scav den, whose tip is on no shop (scav_den.dm).
  *
  * "Stealth: Scav Den Planet" (Debug) builds a fresh jungle planet through the normal overmap path and worldgen
  * queue, loads the scav chop shop (scav_den.dm) on it at a cleared spot, then dresses the admin in a mortal body
- * with the stealth playtest kit and drops them in the jungle south of the den's front airlock.
+ * with the stealth playtest kit and drops them in the jungle south of the den's front airlock. One such planet is up
+ * at a time: while it is, running the verb again offers to drop you at the same den instead of building another planet
+ * level (each one costs memory for the rest of the round).
  */
+
+/// The planet the verb built, while it is up (a weakref, so an admin unloading it isn't held up)
+GLOBAL_DATUM(stealth_test_den_planet, /datum/weakref)
+/// Where the verb drops a tester at that planet's den, once it is built
+GLOBAL_VAR(stealth_test_den_arrival)
+/// The run of the verb that holds the one test planet's slot, from its zone prompt until its build ends (0: free)
+GLOBAL_VAR_INIT(stealth_test_den_claim, 0)
+/// world.time that run took the slot
+GLOBAL_VAR_INIT(stealth_test_den_claim_time, 0)
 
 /// Cleared ground around the den, so both airlocks and the arrival spot are open jungle
 #define STEALTH_TEST_MARGIN 8
@@ -16,27 +28,96 @@
 #define STEALTH_TEST_SPAWNER_CLEARANCE 20
 /// How long the planet may take to come up, queue wait included
 #define STEALTH_TEST_PLANET_TIMEOUT (8 MINUTES)
+/// How long a run of the verb may hold the slot (a prompt left open, a build that died) before another may take it
+#define STEALTH_TEST_CLAIM_LIFETIME (STEALTH_TEST_PLANET_TIMEOUT + 5 MINUTES)
 /// How long to wait for the guards to spawn before choosing the arrival spot
 #define STEALTH_TEST_GUARD_WAIT (20 SECONDS)
 /// The den's outer front airlock in map-local coordinates (1-based, from the bottom left)
 #define STEALTH_TEST_DOOR_X 29
 #define STEALTH_TEST_DOOR_Y 2
 
-ADMIN_VERB(stealth_den_planet, R_ADMIN|R_DEBUG, "Stealth: Scav Den Planet", "TEMPORARY: build a jungle planet with the scav chop shop and drop you outside it in the stealth playtest kit.", ADMIN_CATEGORY_DEBUG)
+ADMIN_VERB(stealth_den_planet, R_ADMIN|R_DEBUG, "Stealth: Scav Den Planet", "Build a jungle planet with the scav chop shop (or reuse the one already up) and drop you outside it in the stealth playtest kit.", ADMIN_CATEGORY_DEBUG)
+	if(stealth_test_den_claimed())
+		to_chat(user, span_warning("Stealth test: a scav den test planet is already being set up."))
+		return
+	var/obj/structure/overmap/planet/existing = stealth_test_den_planet_live()
+	if(existing)
+		var/turf/arrival = GLOB.stealth_test_den_arrival
+		if(isnull(arrival))
+			to_chat(user, span_warning("Stealth test: [existing.name] is still being built."))
+			return
+		if(tgui_alert(user, "A scav den test planet ([existing.name]) is already up. Go there?", "Stealth: Scav Den Planet", list("Go there", "Cancel")) != "Go there")
+			return
+		message_admins("[key_name_admin(user)] is going to the scav den test planet [existing.name].")
+		log_admin("[key_name(user)] is going to the scav den test planet [existing.name].")
+		INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(stealth_test_planet_arrive), user, arrival)
+		return
 	// The planet's overmap zone sets how sharp the guards are (green, yellow or red skill profile).
 	var/static/list/zone_choices = list("Green" = ZONE_GREEN, "Yellow" = ZONE_YELLOW, "Red" = ZONE_RED)
+	// The slot is taken before the prompt, so a second run (or a second admin) can't build another planet meanwhile.
+	var/claim = stealth_test_den_take_slot()
 	var/zone_name = tgui_input_list(user, "Which zone should the planet be in? Guards are sharper in harder zones.", "Stealth: Scav Den Planet", zone_choices, "Yellow")
+	if(GLOB.stealth_test_den_claim != claim)
+		to_chat(user, span_warning("Stealth test: someone else is setting up a scav den test planet."))
+		return
 	if(isnull(zone_name) || isnull(zone_choices[zone_name]))
+		stealth_test_den_release(claim)
 		return
 	message_admins("[key_name_admin(user)] is building a scav den test planet in the [zone_name] zone.")
 	log_admin("[key_name(user)] is building a scav den test planet in the [zone_name] zone.")
 	BLACKBOX_LOG_ADMIN_VERB("Stealth Scav Den Planet")
-	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(stealth_test_planet_for_client), user, zone_choices[zone_name])
+	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(stealth_test_planet_for_client), user, zone_choices[zone_name], claim)
 
-/// Builds the site in `zone`, then gives `user` a mortal body there.
-/proc/stealth_test_planet_for_client(client/user, zone = ZONE_YELLOW)
+/// Whether a run of the verb holds the test planet's slot now.
+/proc/stealth_test_den_claimed()
+	return GLOB.stealth_test_den_claim && world.time < GLOB.stealth_test_den_claim_time + STEALTH_TEST_CLAIM_LIFETIME
+
+/// Takes the test planet's slot for a new run of the verb. Returns that run's claim.
+/proc/stealth_test_den_take_slot()
+	var/static/claims = 0
+	GLOB.stealth_test_den_claim = ++claims
+	GLOB.stealth_test_den_claim_time = world.time
+	return claims
+
+/// Frees the slot, if `claim` still holds it.
+/proc/stealth_test_den_release(claim)
+	if(claim && GLOB.stealth_test_den_claim == claim)
+		GLOB.stealth_test_den_claim = 0
+
+/// The test den planet the verb built, if it is still up (loading or loaded), or null.
+/proc/stealth_test_den_planet_live()
+	var/obj/structure/overmap/planet/planet = GLOB.stealth_test_den_planet?.resolve()
+	if(QDELETED(planet) || !(planet.loaded || planet.loading))
+		GLOB.stealth_test_den_planet = null
+		GLOB.stealth_test_den_arrival = null
+		return null
+	// A built planet whose level was unloaded and reused for something else.
+	var/turf/arrival = GLOB.stealth_test_den_arrival
+	if(arrival && planet.loaded && arrival.z != planet.footprint?.z_value)
+		GLOB.stealth_test_den_planet = null
+		GLOB.stealth_test_den_arrival = null
+		return null
+	return planet
+
+/// Builds the site in `zone`, then gives `user` a mortal body there. `claim` (the verb's hold on the slot) is let go
+/// once the build has ended either way.
+/proc/stealth_test_planet_for_client(client/user, zone = ZONE_YELLOW, claim)
 	var/turf/arrival = stealth_test_planet_build(user, zone)
-	if(isnull(arrival) || QDELETED(user))
+	stealth_test_den_release(claim)
+	if(isnull(arrival))
+		// A planet that came up without its den is no test site: let it unload like any other, and free the slot.
+		var/obj/structure/overmap/planet/failed = GLOB.stealth_test_den_planet?.resolve()
+		if(failed)
+			failed.preserve_level = FALSE
+		GLOB.stealth_test_den_planet = null
+		GLOB.stealth_test_den_arrival = null
+		return
+	GLOB.stealth_test_den_arrival = arrival
+	stealth_test_planet_arrive(user, arrival)
+
+/// Gives `user` a mortal body at the test den's `arrival` spot.
+/proc/stealth_test_planet_arrive(client/user, turf/arrival)
+	if(QDELETED(user))
 		return
 	var/mob/living/carbon/human/body = stealth_test_planet_body(user, arrival)
 	if(isnull(body))
@@ -69,6 +150,7 @@ ADMIN_VERB(stealth_den_planet, R_ADMIN|R_DEBUG, "Stealth: Scav Den Planet", "TEM
 		return null
 	// Kept until an admin unloads it, so a test run is not torn down while the tester walks around.
 	planet.preserve_level = TRUE
+	GLOB.stealth_test_den_planet = WEAKREF(planet)
 	var/started = world.time
 	stealth_test_say(feedback, "building [planet.name] at overmap ([planet.x], [planet.y]), [list("green", "yellow", "red")[clamp(SSovermap_zones.get_zone_type_anywhere(get_turf(planet)) || ZONE_GREEN, ZONE_GREEN, ZONE_RED)]] zone. This takes about a minute.")
 	INVOKE_ASYNC(planet, TYPE_PROC_REF(/obj/structure/overmap/planet, load_level), feedback_mob, 5 MINUTES)
@@ -226,13 +308,17 @@ ADMIN_VERB(stealth_den_planet, R_ADMIN|R_DEBUG, "Stealth: Scav Den Planet", "TEM
 		if(tile.x >= rect[1] - pad && tile.x <= rect[3] + pad && tile.y >= rect[2] - pad && tile.y <= rect[4] + pad)
 			tracker.surface_spawn_turfs -= tile
 
-/// Stealth guards near the front door
+/// Living stealth guards near the front door. Read from the mobs themselves, not the patrol groups: a guard only
+/// joins its group on its first think (stealth_setup()), and dormant AI doesn't think until someone is near.
 /proc/stealth_test_guards_near(turf/door_turf)
 	. = list()
 	if(isnull(door_turf))
 		return
-	for(var/mob/living/guard as anything in stealth_guards_on_level(door_turf.z))
-		if(get_dist(guard, door_turf) <= 30)
+	for(var/mob/living/guard as anything in GLOB.mob_living_list)
+		if(guard.stat == DEAD || !istype(guard.ai_controller, /datum/ai_controller/basic_controller/human_npc/stealth))
+			continue
+		var/turf/where = get_turf(guard)
+		if(where?.z == door_turf.z && get_dist(where, door_turf) <= 30)
 			. += guard
 
 /// Whether any of `guards` has `spot` in its sight cone right now
@@ -245,7 +331,7 @@ ADMIN_VERB(stealth_den_planet, R_ADMIN|R_DEBUG, "Stealth: Scav Den Planet", "TEM
 		var/turf/eye = get_turf(guard)
 		if(get_dist(eye, spot) > profile.sight_range)
 			continue
-		if(stealth_in_cone(guard, spot, stealth_ai.stealth_half_angle()) && can_see(eye, spot, profile.sight_range))
+		if(stealth_in_cone(guard, spot, stealth_ai.stealth_half_angle()) && stealth_can_see(eye, spot, profile.sight_range))
 			return TRUE
 	return FALSE
 
@@ -299,7 +385,7 @@ ADMIN_VERB(stealth_den_planet, R_ADMIN|R_DEBUG, "Stealth: Scav Den Planet", "TEM
 		/obj/item/weldingtool = 1,
 		/obj/item/crowbar = 1,
 	)
-	l_pocket = /obj/item/knife/combat/matte
+	l_pocket = /obj/item/knife/combat
 	r_pocket = /obj/item/flashlight
 
 /datum/outfit/stealth_playtest/post_equip(mob/living/carbon/human/user, visuals_only = FALSE)
@@ -319,6 +405,7 @@ ADMIN_VERB(stealth_den_planet, R_ADMIN|R_DEBUG, "Stealth: Scav Den Planet", "TEM
 #undef STEALTH_TEST_SPAWNER_CLEARANCE
 #undef STEALTH_TEST_EDGE
 #undef STEALTH_TEST_PLANET_TIMEOUT
+#undef STEALTH_TEST_CLAIM_LIFETIME
 #undef STEALTH_TEST_GUARD_WAIT
 #undef STEALTH_TEST_DOOR_X
 #undef STEALTH_TEST_DOOR_Y

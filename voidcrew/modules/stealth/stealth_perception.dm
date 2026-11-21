@@ -122,8 +122,17 @@ GLOBAL_LIST_EMPTY(stealth_test_dark_turfs)
 	return !!who.has_status_effect(/datum/status_effect/shadow_cloak)
 
 /**
+ * Whether `who` is a small animal a guard pays no mind to, by sight or by ear: a mouse, a roach, a lizard, a pet.
+ * Anything smaller than a person that isn't a carbon. Monkeys and every other carbon still count.
+ */
+/proc/stealth_is_critter(mob/living/who)
+	return !iscarbon(who) && who.mob_size < MOB_SIZE_HUMAN
+
+/**
  * The living mobs a guard might notice within `range`, nearest first: not itself, not its own side, not the
- * dead. Uses the spatial grid, never view() or hearers(). The caller caps how many it judges.
+ * dead, not critters (stealth_is_critter()), and not someone's captive (an NPC in cuffs or out cold, as the den
+ * cameras judge it; a player counts whatever state they're in). Uses the spatial grid, never view() or hearers().
+ * The caller caps how many it judges.
  */
 /proc/stealth_candidates(mob/living/guard, range)
 	var/turf/center = get_turf(guard)
@@ -143,7 +152,9 @@ GLOBAL_LIST_EMPTY(stealth_test_dark_turfs)
 		var/dist = (found_turf == center) ? 0 : get_dist(center, found_turf)
 		if(dist < 0 || dist > max_dist)
 			continue
-		if(guard.faction_check_atom(found))
+		if(guard.faction_check_atom(found) || stealth_is_critter(found))
+			continue
+		if(!found.ckey && (found.stat != CONSCIOUS || HAS_TRAIT(found, TRAIT_RESTRAINED)))
 			continue
 		var/list/bucket = buckets[dist + 1]
 		if(isnull(bucket))
@@ -152,3 +163,74 @@ GLOBAL_LIST_EMPTY(stealth_test_dark_turfs)
 	. = list()
 	for(var/list/bucket in buckets)
 		. += bucket
+
+/**
+ * Line of sight for guards and cameras. tg's can_see() steps tile to tile toward the target and never looks at the
+ * two tiles a diagonal step slips between, so a guard saw round a wall corner and through a crack where two walls
+ * only touch. This walks every tile the straight line between the two tile centres crosses (a supercover line), and
+ * where that line passes exactly through a corner it counts both tiles beside it: grazing a wall is blocked. The
+ * same tiles are crossed either way, so a guard sees someone exactly when they could see the guard.
+ * Next to each other (one tile apart) is in sight, as with tg's check, unless they are diagonal across a crack: both
+ * tiles beside the diagonal opaque. Opaque means IS_OPAQUE_TURF, as in can_see().
+ */
+/proc/stealth_can_see(atom/source, atom/target, length = 5)
+	var/turf/from = get_turf(source)
+	var/turf/dest = get_turf(target)
+	if(isnull(from) || isnull(dest) || from.z != dest.z)
+		return FALSE
+	var/dist = get_dist(from, dest)
+	if(dist > length)
+		return FALSE
+	if(!dist)
+		return TRUE
+	if(dist == 1)
+		// Elbow to elbow: always in sight, except across a crack where two walls meet only at their corner.
+		if(from.x == dest.x || from.y == dest.y)
+			return TRUE
+		var/turf/side_a = locate(dest.x, from.y, from.z)
+		var/turf/side_b = locate(from.x, dest.y, from.z)
+		return !(side_a && IS_OPAQUE_TURF(side_a) && side_b && IS_OPAQUE_TURF(side_b))
+	var/dx = abs(dest.x - from.x)
+	var/dy = abs(dest.y - from.y)
+	var/sx = dest.x > from.x ? 1 : -1
+	var/sy = dest.y > from.y ? 1 : -1
+	var/x = from.x
+	var/y = from.y
+	var/z = from.z
+	var/ix = 0
+	var/iy = 0
+	while(ix < dx || iy < dy)
+		// Where the line leaves this tile: through its side (x), its top or bottom (y), or exactly its corner.
+		var/decision = (1 + 2 * ix) * dy - (1 + 2 * iy) * dx
+		if(decision == 0)
+			var/turf/side_x = locate(x + sx, y, z)
+			var/turf/side_y = locate(x, y + sy, z)
+			if((side_x && IS_OPAQUE_TURF(side_x)) || (side_y && IS_OPAQUE_TURF(side_y)))
+				return FALSE
+			x += sx
+			y += sy
+			ix++
+			iy++
+		else if(decision < 0)
+			x += sx
+			ix++
+		else
+			y += sy
+			iy++
+		if(x == dest.x && y == dest.y)
+			return TRUE
+		var/turf/crossed = locate(x, y, z)
+		if(isnull(crossed) || IS_OPAQUE_TURF(crossed))
+			return FALSE
+	return TRUE
+
+/// The human NPC targeting check with stealth_can_see() in place of tg's can_see().
+/datum/targeting_strategy/basic/human_npc/stealth
+	ignore_sight = TRUE
+
+/datum/targeting_strategy/basic/human_npc/stealth/can_attack(mob/living/living_mob, atom/the_target, vision_range)
+	if(isnull(vision_range))
+		vision_range = living_mob.ai_controller?.blackboard[BB_AGGRO_RANGE] || HUMAN_NPC_SIGHT_RANGE
+	if(!..(living_mob, the_target, vision_range))
+		return FALSE
+	return stealth_can_see(living_mob, the_target, vision_range)

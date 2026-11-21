@@ -2,8 +2,7 @@
  * # Stealth guards: skill by zone (owner decision 38)
  *
  * How sharp a guard's eyes and ears are. One profile per skill level; yellow is the tuning the den was built
- * and playtested on, so a yellow guard behaves exactly as before. The numbers are argued in
- * data/stealth/STATUS.md, "Decisions 37-38".
+ * and playtested on, so a yellow guard behaves exactly as before.
  *
  * Skill is perception only. It never touches damage, health, armour, aim or fire rate: a red guard sees and
  * hears better, it doesn't shoot better or take more killing. Armour and weapons stay the zone's job.

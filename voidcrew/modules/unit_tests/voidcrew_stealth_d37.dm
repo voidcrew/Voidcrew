@@ -93,8 +93,8 @@
 	GLOB.stealth_test_dark_turfs[door_spot] = FALSE
 	no_targets(list(guard))
 
-/// Their own doors: a door that moves with one of them beside it draws nobody, and neither does the close that
-/// follows once that guard has walked on. A wooden door a player opens is seen and heard.
+/// Their own doors: a door one of them works draws nobody, and neither does the close that follows by itself once
+/// that guard has walked on. A wooden door a player opens is seen and heard.
 /datum/unit_test/voidcrew_stealth_live/hear/door_own
 
 /datum/unit_test/voidcrew_stealth_live/hear/door_own/Run()
@@ -103,10 +103,13 @@
 	var/datum/ai_controller/basic_controller/human_npc/stealth/watcher_ai = watcher.ai_controller
 	var/obj/machinery/door/poddoor/shutters/shutter = allocate(/obj/machinery/door/poddoor/shutters, at(8, 2))
 	var/mob/living/carbon/human/npc/passer = sentry(9, 2, WEST)
-	TEST_ASSERT_EQUAL(stealth_door_moved(shutter, TRUE), 0, "A door one of them stood beside drew a look")
+	shutter.stealth_user_ref = WEAKREF(passer)
+	shutter.stealth_user_at = world.time
+	TEST_ASSERT_EQUAL(stealth_door_moved(shutter, TRUE), 0, "A door one of them worked drew a look")
 	TEST_ASSERT_EQUAL(watcher_ai.stealth_state(), "unaware", "A guard was suspicious of its friend's door")
 	TEST_ASSERT_EQUAL(watcher_ai.glance_until, 0, "A guard glanced at its friend's door")
 	passer.forceMove(at(15, 2))
+	shutter.stealth_user_at = -1
 	TEST_ASSERT_EQUAL(stealth_door_moved(shutter, FALSE), 0, "The close after a friend's opening drew a look")
 	TEST_ASSERT_EQUAL(watcher_ai.stealth_state(), "unaware", "A guard was suspicious of its friend's door shutting itself")
 	// Long after that, a close with nobody beside it is someone else's.
@@ -143,7 +146,7 @@
 	TEST_ASSERT_EQUAL(yellow.search_time, 40 SECONDS, "Yellow search time changed")
 	TEST_ASSERT_EQUAL(yellow.wary_time, 60 SECONDS, "Yellow wary time changed")
 	TEST_ASSERT_EQUAL(yellow.turn_grace, 1 SECONDS, "Yellow turn grace changed")
-	// Every profile keeps decision 18 (no alert from off screen) and a cone that never takes in what is behind.
+	// Every profile keeps no alert from off screen and a cone that never takes in what is behind.
 	for(var/skill_type in subtypesof(/datum/stealth_skill))
 		var/datum/stealth_skill/profile = stealth_skill_of(skill_type)
 		TEST_ASSERT(profile.alert_max_range <= 7, "[skill_type] goes alert from off screen")

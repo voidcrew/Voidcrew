@@ -1,5 +1,5 @@
 // Stealth crits and lootable seclites (step 3a, voidcrew/modules/stealth/stealth_crits.dm, stealth_light.dm). The head
-// shot and the backstab are decision 45 (voidcrew_stealth_d45.dm). Values from voidcrew/_DEFINES are written out:
+// shot and the backstab are tested in voidcrew_stealth_d45.dm. Values from voidcrew/_DEFINES are written out:
 // STEALTH_CRIT_UNAWARE_BONUS 30, STEALTH_CRIT_SUSPICIOUS_BONUS 15, STEALTH_CRIT_HEAD_BONUS 35.
 
 /// The bonus by state: full when unaware, smaller when suspicious, none when searching or alert, more on the head;
@@ -75,7 +75,7 @@
 	TEST_ASSERT(roll < 5, "An alert guard's roll still has a bonus ([roll])")
 	qdel(block)
 
-/// Decision 34: the seclite strips and drops like anyone's; the rest of the kit stays locked; the guard carries on without it.
+/// The seclite strips and drops like anyone's; the rest of the kit stays locked; the guard carries on without it.
 /datum/unit_test/voidcrew_stealth_seclite_loot
 
 /datum/unit_test/voidcrew_stealth_seclite_loot/Run()

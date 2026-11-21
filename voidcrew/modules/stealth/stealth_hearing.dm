@@ -28,6 +28,9 @@
 	var/list/heard_map
 	/// REF(mob) => TRUE for everyone whose steps it heard this scan (their notice doesn't decay)
 	var/list/heard_now
+	/// REF(mob) => world.time it last heard their steps. Kept apart from the notice entry's turf and time, which are
+	/// what it saw: a heard step is never taken for a sighting (stealth_cover_glimpsed(), the still check).
+	var/list/heard_at
 	/// Its radio call on the way out: list(kind, turf, world.time due, name), or null
 	var/list/pending_call
 	/// world.time it may next shout for help
@@ -119,14 +122,14 @@
 	return TRUE
 
 /// It has just learned something first hand at `where` (a sighting, a touch, a hit from nowhere, a body):
-/// it shouts, and calls it in if it carries a radio.
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_first_hand(turf/where)
+/// it shouts, and calls it in if it carries a radio. `seen`: whoever it saw, whom the call names if it can.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_first_hand(turf/where, atom/seen)
 	var/mob/living/carbon/human/npc/guard = pawn
 	if(QDELETED(guard) || guard.stat != CONSCIOUS || stealth_driven() || !stealth_ready)
 		return
 	stealth_shout()
 	if(ishumannpc(guard) && guard.stealth_radio)
-		stealth_start_call(STEALTH_CALL_ALARM, where || get_turf(guard))
+		stealth_start_call(STEALTH_CALL_ALARM, where || get_turf(guard), stealth_call_name(seen))
 
 // ===== Footsteps =====
 
@@ -139,7 +142,7 @@
  * A running step on plain floor in shoes carries STEALTH_FOOTSTEP_RANGE. Any other floor or footwear scales
  * that by how far tg plays its sound to players compared with the plain one (tg's own tables: plating and
  * wood ring a little further, bare feet on carpet and the Light Step quirk a little less). A living mob that
- * is not a carbon counts as running whenever it moves.
+ * is not a carbon counts as running whenever it moves, if tg plays steps for it at all.
  */
 /proc/stealth_footstep_reach(mob/living/walker)
 	if(SHOULD_DISABLE_FOOTSTEPS(walker))
@@ -148,6 +151,9 @@
 	if(!istype(ground) || isnull(ground.footstep))
 		return 0
 	if(walker.buckled || walker.throwing || (walker.movement_type & (VENTCRAWLING | FLYING)) || HAS_TRAIT(walker, TRAIT_IMMOBILIZED))
+		return 0
+	// A mob tg gives no footsteps (a cyborg, most big fauna without the element) makes none here either.
+	if(!iscarbon(walker) && !stealth_has_footsteps(walker))
 		return 0
 	if(walker.body_position == LYING_DOWN)
 		return STEALTH_FOOTSTEP_CRAWL_RANGE
@@ -186,6 +192,16 @@
 	var/audible = CALCULATE_MAX_SOUND_AUDIBLE_DISTANCE(volume, sound_range, 1, SOUND_FALLOFF_EXPONENT)
 	return clamp(round(STEALTH_FOOTSTEP_RANGE * audible / STEALTH_FOOTSTEP_PLAYER_RANGE, 1), 0, STEALTH_FOOTSTEP_MAX_RANGE)
 
+/// Whether tg's footstep element plays steps for `walker` (it listens for the walker's moves).
+/proc/stealth_has_footsteps(mob/living/walker)
+	var/listeners = walker._listen_lookup?[COMSIG_MOVABLE_MOVED]
+	if(islist(listeners))
+		for(var/datum/listener as anything in listeners)
+			if(istype(listener, /datum/element/footstep))
+				return TRUE
+		return FALSE
+	return istype(listeners, /datum/element/footstep)
+
 /**
  * The scan's ear for footsteps, before it looks. Everyone near whose turf changed since the last scan and
  * whose step carries this far (walls and doors muffle it) is heard: no line of sight needed.
@@ -217,7 +233,13 @@
 			continue
 		// A sharper or duller ear than the yellow tuning (decision 38), never past the furthest step listened for.
 		var/reach = min(round(stealth_footstep_reach(walker) * hearing_mult, 1), STEALTH_FOOTSTEP_MAX_RANGE)
-		if(!reach || get_dist(here, where) > reach || stealth_muffled_dist(where, here) > reach)
+		var/dist = get_dist(here, where)
+		if(!reach || dist > reach)
+			continue
+		// Thin air or none: as tg plays the step to a player standing here (stealth_air_carry()).
+		if(dist > 1)
+			reach = round(reach * stealth_air_carry(where, here), 1)
+		if(dist > reach || stealth_muffled_dist(where, here) > reach)
 			continue
 		LAZYSET(heard_now, key, TRUE)
 		last_heard = list("footsteps", world.time)
@@ -231,12 +253,13 @@
 			continue
 		var/list/entry = notice[key]
 		if(isnull(entry))
+			// The turf is where it heard them, never seen there: the seen time stays 0.
 			entry = list(0, where, 0)
 			notice[key] = entry
 		if(entry[STEALTH_ENTRY_NOTICE] < STEALTH_SUSPICIOUS_AT)
 			var/gained = get_dist(here, where) <= profile.close_range ? STEALTH_SUSPICIOUS_AT : entry[STEALTH_ENTRY_NOTICE] + STEALTH_FOOTSTEP_NOTICE
 			entry[STEALTH_ENTRY_NOTICE] = min(gained, STEALTH_SUSPICIOUS_AT)
-		entry[STEALTH_ENTRY_SEEN_AT] = world.time
+		LAZYSET(heard_at, key, world.time)
 		if(blackboard[BB_STEALTH_WARY])
 			wary_at = world.time
 		if(entry[STEALTH_ENTRY_NOTICE] >= STEALTH_SUSPICIOUS_AT)

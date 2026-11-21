@@ -1,4 +1,4 @@
-// Decision 45: the stealth head shot graded by the round and the head's protection, shields and shots in the back, and
+// The stealth head shot graded by the round and the head's protection, shields and shots in the back, and
 // the throat cut from behind (voidcrew/modules/stealth/stealth_crits.dm, hyperviolence/overlays_exec/knife_executions.dm,
 // voidcrew/edits/objects/items/shield_rear.dm, voidcrew/edits/datums/neck_slice_mute.dm). Unit tests compile before
 // voidcrew/_DEFINES, so values are written out: STEALTH_HEAD_SHOT_BRAIN_DAMAGE 120, STEALTH_CALL_ALARM 3.
@@ -13,9 +13,12 @@
 	shooter.zone_selected = BODY_ZONE_HEAD
 	return gun
 
-/// A bare-headed guard (no helmet, no mask) at (dx, dy), facing east.
+/// A bare-headed guard (no helmet, no mask) at (dx, dy), facing east. tg's own aim roll is off for it
+/// (TRAIT_DESIGNATED_TARGET): even point-blank, a shot at the head lands elsewhere about one time in fourteen, and these
+/// tests are about what a head hit does.
 /datum/unit_test/proc/d45_bare_guard(datum/turf_reservation/block, dx, dy)
 	var/mob/living/carbon/human/npc/guard = stealth_guard(block, dx, dy)
+	ADD_TRAIT(guard, TRAIT_DESIGNATED_TARGET, TRAIT_GENERIC)
 	if(guard.head)
 		qdel(guard.head)
 	if(guard.wear_mask)
@@ -105,15 +108,20 @@
 	gun.fire_gun(alert, third, TRUE, null)
 	TEST_ASSERT(!alert.IsUnconscious(), "An alert guard was knocked out by a head shot")
 	TEST_ASSERT_NULL(alert.get_bodypart(BODY_ZONE_HEAD)?.get_wound_type(/datum/wound/pierce/bleed/critical/hv_head_shot), "An alert guard was shot through the skull")
-	// An ordinary person: just the hit.
+	// An ordinary person, shot in the back of the bare head: just the hit, never the stealth head shot (no guard to catch
+	// off guard). TRAIT_DESIGNATED_TARGET keeps tg's aim roll from sending the round elsewhere.
 	var/mob/living/carbon/human/victim = stealth_person(block, 6, 1)
+	ADD_TRAIT(victim, TRAIT_DESIGNATED_TARGET, TRAIT_GENERIC)
 	victim.setDir(EAST)
 	var/mob/living/carbon/human/fourth = stealth_person(block, 5, 2)
 	fourth.forceMove(stealth_at(block, 5, 1))
 	gun = d45_arm(fourth, /obj/item/gun/ballistic/automatic/pistol)
+	var/obj/item/bodypart/victim_head = victim.get_bodypart(BODY_ZONE_HEAD)
 	gun.fire_gun(victim, fourth, TRUE, null)
-	TEST_ASSERT(!victim.IsUnconscious(), "A person was knocked out by a stealth head shot")
-	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_HEAD)?.get_wound_type(/datum/wound/pierce/bleed/critical/hv_head_shot), "A person was shot through the skull")
+	TEST_ASSERT(victim_head.brute_dam > 0, "Test fixture: the shot at the person's head didn't land on it")
+	TEST_ASSERT_EQUAL(victim.get_bodypart(BODY_ZONE_HEAD), victim_head, "A person's head burst from a 9mm")
+	TEST_ASSERT_NULL(victim_head.get_wound_type(/datum/wound/pierce/bleed/critical/hv_head_shot), "A person was shot through the skull")
+	TEST_ASSERT(victim.get_organ_loss(ORGAN_SLOT_BRAIN) < 120, "A person took the stealth head shot's brain damage")
 	qdel(block)
 
 /// A held shield stops a shot from the front, never one in the back.
@@ -147,7 +155,7 @@
 /// The backstab (one path for every sharp knife, the knife execution): from behind on an unaware guard it goes for the
 /// throat whatever is aimed at, and the cut is tg's critical slash and neck_slice; the guard can't speak. Not from the
 /// front, not a blunt blade, not through a SWAT helmet, not when held in a grab (tg's own slit). The mute goes with the
-/// cut. An unaware guard is cut on the click itself, with no hold (decision 45 amended): a patrolling guard would walk out
+/// cut. An unaware guard is cut on the click itself, with no hold: a patrolling guard would walk out
 /// of a 1.5 s hold. A helpless guard still gets the hold.
 /datum/unit_test/voidcrew_stealth_d45_backstab
 
@@ -199,9 +207,15 @@
 	second.SetKnockdown(0)
 	stabber.forceMove(stealth_at(block, 3, 3))
 	stabber.zone_selected = BODY_ZONE_CHEST
+	TEST_ASSERT(blade.hv_knife_execution_possible(stabber, second), "Back behind it, the combat knife no longer backstabs")
+	// Made to order, so the checks hold whatever tg does to the plastic knife: an edge with no force, then force with no edge.
 	var/obj/item/knife/plastic/spork = allocate(/obj/item/knife/plastic)
-	if(!(spork.get_sharpness() & SHARP_EDGED) || spork.force <= 0)
-		TEST_ASSERT(!spork.hv_knife_execution_possible(stabber, second), "A blunt plastic knife backstabs")
+	spork.force = 0
+	spork.sharpness = SHARP_EDGED
+	TEST_ASSERT(!spork.hv_knife_execution_possible(stabber, second), "A knife with no force backstabs")
+	spork.force = 10
+	spork.sharpness = NONE
+	TEST_ASSERT(!spork.hv_knife_execution_possible(stabber, second), "A blunt knife backstabs")
 	// A SWAT helmet (wound 15): tg's wound maths keeps the critical slash out; an ordinary stab to the head.
 	var/mob/living/carbon/human/npc/helmeted = d45_bare_guard(block, 4, 5)
 	d45_helmet(helmeted, /obj/item/clothing/head/helmet/swat)

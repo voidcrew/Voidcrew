@@ -1,4 +1,4 @@
-// Stealth guards, decision 40: disguises (voidcrew/modules/stealth/stealth_disguise.dm). Values from voidcrew/_DEFINES are
+// Stealth guards: disguises (voidcrew/modules/stealth/stealth_disguise.dm). Values from voidcrew/_DEFINES are
 // written out: pieces mask 1, clothing 2, pass 4; fill x0.5 clothing, x0.25 with a mask, x0.05 the whole set inside near
 // range (4) and 0 beyond; challenge range 5 / 3 / 2; the pass is read for 2 s, asked for again at 3 s, blown at 6 s;
 // more than 2 tiles from where they were stopped is walking off. States and bark kinds are written as text.
@@ -309,6 +309,20 @@
 		qdel(guard)
 		qdel(person)
 		qdel(mark)
+	// At its back, a gun in hand: it senses someone there but hasn't seen the gun, so the disguise holds until it looks.
+	var/mob/living/carbon/human/npc/back_guard = stealth_guard(block, 6, 2, WEST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/back_ai = stealth_ai(back_guard)
+	var/mob/living/carbon/human/armed = stealth_person(block, 8, 2)
+	stealth_dress(armed)
+	armed.put_in_hands(new /obj/item/gun/ballistic/automatic/pistol(armed))
+	stealth_scans(back_guard, 1)
+	TEST_ASSERT(back_ai.stealth_state() != "alert", "A guard saw the gun in the hand of someone at its back")
+	TEST_ASSERT(!back_ai.stealth_knows(armed), "A guard saw through a disguise at its back")
+	back_guard.setDir(EAST)
+	stealth_scans(back_guard, 1)
+	TEST_ASSERT_EQUAL(back_ai.stealth_state(), "alert", "A guard that turned to face someone with a gun in hand let it go")
+	qdel(back_guard)
+	qdel(armed)
 	// Pulling a fallen guard (its look for bodies is held off, so this is the pulling alone).
 	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 6, 2)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
@@ -373,7 +387,7 @@
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "alert", "A guard watched one of its own being grabbed and did nothing")
 	TEST_ASSERT_EQUAL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], person, "The watching guard isn't after the one it saw")
 	TEST_ASSERT_EQUAL(friend_ai.stealth_state(), "unaware", "A guard with its back to it all reacted")
-	// Word reaches the third guard only through a shout or a call that reaches it (decision 44, voidcrew_stealth_d44.dm):
+	// Word reaches the third guard only through a shout or a call that reaches it (voidcrew_stealth_d44.dm):
 	// being wary is not word.
 	TEST_ASSERT(friend_ai.stealth_fooled(person), "A guard nobody has told sees through them")
 	friend_ai.stealth_set_wary()
@@ -382,7 +396,7 @@
 	TEST_ASSERT(!friend_ai.stealth_fooled(person), "A guard that was told is still fooled")
 	qdel(block)
 
-/// Running in a guard's earshot is only footsteps (decision 44); a face it went alert on is known unless a mask hides it.
+/// Running in a guard's earshot is only footsteps; a face it went alert on is known unless a mask hides it.
 /datum/unit_test/voidcrew_stealth_disguise_known
 
 /datum/unit_test/voidcrew_stealth_disguise_known/Run()
@@ -517,3 +531,36 @@
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "alert", "A guard never went for someone who showed no pass")
 	TEST_ASSERT(world.time - start_time >= 5 SECONDS, "The guard gave someone with no pass only [(world.time - start_time) / 10] s")
 	TEST_ASSERT_EQUAL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], person, "The alert guard isn't after them")
+
+/// Someone holding one of its own up in front of them, seen in its cone: an alert on that look, no notice to fill, at
+/// any range it sees and in a disguise or not.
+/datum/unit_test/voidcrew_stealth_hostage_seen
+	/// The test's lit block, given back in Destroy() even when an assert ends Run() early
+	var/datum/turf_reservation/block
+
+/datum/unit_test/voidcrew_stealth_hostage_seen/Destroy()
+	if(block)
+		stealth_unlist(block, 12, 5)
+		QDEL_NULL(block)
+	return ..()
+
+/datum/unit_test/voidcrew_stealth_hostage_seen/Run()
+	block = stealth_block(12, 5)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	for(var/disguised in list(FALSE, TRUE))
+		var/mob/living/carbon/human/npc/guard = stealth_guard(block, 2, 2, EAST)
+		var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
+		var/mob/living/carbon/human/holder = stealth_person(block, 8, 2)
+		if(disguised)
+			stealth_dress(holder)
+		var/mob/living/carbon/human/npc/friend = stealth_guard(block, 8, 2, WEST)
+		TEST_ASSERT(holder.put_in_hands(new /obj/item/gun/ballistic/automatic/pistol(holder)), "Test fixture: no gun in hand")
+		stealth_test_grab(holder, friend, GRAB_NECK)
+		if(friend.loc != holder.loc)
+			friend.forceMove(holder.loc)
+		TEST_ASSERT_EQUAL(stealth_hostage_of(holder), friend, "Test fixture: the friend isn't held at gunpoint")
+		stealth_scans(guard, 1)
+		TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "alert", "A guard took its time over someone holding one of its own six tiles off ([disguised ? "disguised" : "plain"])")
+		qdel(guard)
+		qdel(friend)
+		qdel(holder)
