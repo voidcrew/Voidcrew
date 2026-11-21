@@ -178,3 +178,66 @@
 	holder.stop_pulling()
 	TEST_ASSERT_NULL(hostage.stealth_hostage_sound(holder), "Let go, he still pleads")
 	qdel(block)
+
+/// Walks `holder` (on block tile (sx, sy)) round a square, two steps each way (north, east, south, west, so he turns
+/// every leg), past crates on the tiles diagonal to where each leg starts, then once diagonally past a crate on one
+/// leg of that step. After every step `held` is still on his tile, still held in front, and drawn in front for his
+/// facing. With `guard_ai`, the guard still stands off against him every step.
+/datum/unit_test/proc/stealth_test_walk_held(datum/turf_reservation/block, sx, sy, mob/living/carbon/human/holder, mob/living/held, datum/ai_controller/basic_controller/human_npc/stealth/guard_ai)
+	for(var/list/spot in list(list(1, 1), list(-1, 1), list(1, 3), list(3, 1), list(1, -1), list(0, -1)))
+		allocate(/obj/structure/closet/crate, stealth_at(block, sx + spot[1], sy + spot[2]))
+	var/datum/ai_planning_subtree/stealth_hostage/subtree = GLOB.ai_subtrees[/datum/ai_planning_subtree/stealth_hostage]
+	var/list/steps = list(NORTH, NORTH, EAST, EAST, SOUTH, SOUTH, WEST, WEST, SOUTHWEST)
+	for(var/i in 1 to length(steps))
+		var/step_dir = steps[i]
+		var/turf/from = holder.loc
+		holder.Move(get_step(holder, step_dir), step_dir)
+		var/label = "step [i] ([dir2text(step_dir)]) from [from.x],[from.y] to [holder.x],[holder.y]"
+		TEST_ASSERT(holder.loc != from, "Test fixture: [label]: the holder didn't move")
+		TEST_ASSERT_EQUAL(holder.pulling, held, "[label]: no longer held")
+		TEST_ASSERT_EQUAL(held.loc, holder.loc, "[label]: the held body isn't on the holder's tile (at [held.x],[held.y])")
+		TEST_ASSERT_EQUAL(stealth_held_in_front(holder), held, "[label]: not held in front")
+		TEST_ASSERT_EQUAL(held.hostage_pose_dir, holder.dir, "[label]: not posed for the holder's facing ([dir2text(holder.dir)])")
+		var/list/want = hostage_pose_offset(holder.dir, holder.hostage_pose_hand())
+		var/list/got = held.hostage_pose_real(GRABBING_TRAIT)
+		TEST_ASSERT(got[1] == want[1] && got[2] == want[2] && got[3] == want[3], "[label]: drawn at [got.Join(",")], not in front at [want.Join(",")]")
+		if(guard_ai)
+			TEST_ASSERT_EQUAL(stealth_hostage_of(holder), held, "[label]: no longer a hostage")
+			TEST_ASSERT_EQUAL(subtree.SelectBehaviors(guard_ai, 1), SUBTREE_RETURN_FINISH_PLANNING, "[label]: the guard stopped standing off")
+
+/// Walking with a hostage at gunpoint: he stays on the holder's tile, held in front and drawn there, and the guard
+/// keeps standing off, every step, turning and passing crates on the diagonals.
+/datum/unit_test/voidcrew_stealth_hostage_walk
+
+/datum/unit_test/voidcrew_stealth_hostage_walk/Run()
+	var/datum/turf_reservation/block = stealth_block(11, 11)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 9, 9, WEST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = stealth_ai(guard)
+	var/mob/living/carbon/human/npc/friend = stealth_guard(block, 4, 3, WEST)
+	var/mob/living/carbon/human/holder = stealth_person(block, 3, 3)
+	var/obj/item/gun/ballistic/automatic/pistol/pistol = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	pistol.can_misfire = FALSE
+	holder.put_in_active_hand(pistol, forced = TRUE)
+	holder.setDir(EAST)
+	stealth_test_grab(holder, friend, GRAB_NECK)
+	TEST_ASSERT_EQUAL(stealth_hostage_of(holder), friend, "Test fixture: a neck grab with a gun isn't a hostage")
+	guard_ai.stealth_go_alert(holder)
+	var/datum/ai_planning_subtree/stealth_hostage/subtree = GLOB.ai_subtrees[/datum/ai_planning_subtree/stealth_hostage]
+	TEST_ASSERT_EQUAL(subtree.SelectBehaviors(guard_ai, 1), SUBTREE_RETURN_FINISH_PLANNING, "Test fixture: the guard didn't stand off")
+	stealth_test_walk_held(block, 3, 3, holder, friend, guard_ai)
+	qdel(block)
+
+/// Walking with a hand over a guard's mouth: the same, he stays on the holder's tile and drawn in front.
+/datum/unit_test/voidcrew_stealth_grip_walk
+
+/datum/unit_test/voidcrew_stealth_grip_walk/Run()
+	var/datum/turf_reservation/block = stealth_block(11, 11)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	var/mob/living/carbon/human/npc/guard = d45_bare_guard(block, 4, 3)
+	var/mob/living/carbon/human/holder = stealth_person(block, 3, 3)
+	holder.setDir(EAST)
+	grip_clamp(holder, guard)
+	TEST_ASSERT_EQUAL(guard.loc, holder.loc, "Test fixture: the held guard isn't on the holder's tile")
+	stealth_test_walk_held(block, 3, 3, holder, guard)
+	qdel(block)
