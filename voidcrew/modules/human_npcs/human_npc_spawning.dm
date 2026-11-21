@@ -288,6 +288,10 @@ SUBSYSTEM_DEF(human_npcs)
 	/// family's own root subtype sets this to itself (tests make one of every type).
 	var/abstract_spawner_type = /obj/effect/spawner/human_npc
 
+/// Called with the NPC once it is built, or null. Must not hold a ref to the spawner: it is gone by then.
+/obj/effect/spawner/human_npc/proc/npc_spawned_callback()
+	return null
+
 /obj/effect/spawner/human_npc/Initialize(mapload)
 	. = ..()
 	if(!ispath(npc_type, /mob/living/carbon/human/npc))
@@ -300,4 +304,4 @@ SUBSYSTEM_DEF(human_npcs)
 		return
 #endif
 	// The mapped spawner's dir is the way the NPC faces.
-	spawn_human_npc(npc_type, get_turf(src), name = npc_name, faction = npc_faction, context = get_npc_spawn_context(), dir = dir)
+	spawn_human_npc(npc_type, get_turf(src), npc_spawned_callback(), name = npc_name, faction = npc_faction, context = get_npc_spawn_context(), dir = dir)

@@ -154,5 +154,67 @@
 #define HV_VIS_KILL_SHAKE_TIME 4
 #define HV_VIS_KILL_SHAKE_STRENGTH 0.12
 #define HV_VIS_KILL_SHAKE_RANGE 7
+
+// ---- Knife executions ----
+// The attacker's step-in is a deliberate exception to _motion_core.dm's third-of-a-tile rule: an arm is
+// about 7 px long, so he has to stand chest to back before his hands reach a throat. The step is in the
+// transform, which never changes the SIDE_MAP sort row, so who is drawn over whom stays as it was.
+
+/// The one-pixel icon every arm piece is built from.
+#define HV_VIS_KNIFE_PX 'voidcrew/modules/hyperviolence/overlays_exec/icons/knife_exec_px.dmi'
+/// Deciseconds: the attacker's step in, and how long his hands take to reach the victim after their start.
+#define HV_VIS_KNIFE_STEP_TIME 2.5
+#define HV_VIS_KNIFE_REACH_START 0.5
+#define HV_VIS_KNIFE_REACH_TIME 2.5
+/// Deciseconds: when the grab hauls the victim back, and for how long.
+#define HV_VIS_KNIFE_PULL_START 2.5
+#define HV_VIS_KNIFE_PULL_TIME 1
+/// Deciseconds: when the victim's own hand comes up to fight the knife hand, and for how long.
+#define HV_VIS_KNIFE_GUARD_START 3.5
+#define HV_VIS_KNIFE_GUARD_TIME 1.5
+/// Deciseconds after the cut: the blade's draw across the throat, then the moment it is held.
+#define HV_VIS_KNIFE_CUT_TIME 2.5
+#define HV_VIS_KNIFE_CUT_HOLD 1
+/// Deciseconds: the attacker's hands coming off and his step back to his own tile's centre.
+#define HV_VIS_KNIFE_RELEASE_TIME 3
+/// Deciseconds: the victim's way back to his own tile's centre once he is let go.
+#define HV_VIS_KNIFE_VICTIM_BACK_TIME 2
+/// Deciseconds: a survivor's hand going to his throat, how long he stays bent over it, and straightening up.
+#define HV_VIS_KNIFE_CLUTCH_IN 1.5
+#define HV_VIS_KNIFE_HUNCH_END 8.5
+#define HV_VIS_KNIFE_HUNCH_OUT 3
+/// Deciseconds after the cut: a survivor's hand leaves his throat, and how long it takes to drop.
+#define HV_VIS_KNIFE_CLUTCH_END 20
+#define HV_VIS_KNIFE_CLUTCH_OUT 3
+/// Deciseconds a broken wind-up takes to put everything back.
+#define HV_VIS_KNIFE_ABORT_TIME 2
+/// Pixels the attacker steps in and the victim is hauled back, by the way the victim faces.
+#define HV_VIS_KNIFE_STEP_SOUTH 14
+#define HV_VIS_KNIFE_PULL_SOUTH 8
+#define HV_VIS_KNIFE_STEP_NORTH 18
+#define HV_VIS_KNIFE_PULL_NORTH 8
+#define HV_VIS_KNIFE_STEP_SIDE 14
+#define HV_VIS_KNIFE_PULL_SIDE 5
+/// Degrees, side views: the attacker leans in, the victim is bent back, a survivor hunches forward.
+#define HV_VIS_KNIFE_LEAN_ATTACKER 6
+#define HV_VIS_KNIFE_LEAN_VICTIM 8
+#define HV_VIS_KNIFE_HUNCH_TILT 9
+/// Pixels: upper arm, and elbow to the middle of the fist, as the sprites draw a hanging arm.
+#define HV_VIS_KNIFE_UPPER_ARM 3.5
+#define HV_VIS_KNIFE_FOREARM 3
+/// The most an arm is drawn longer than that.
+#define HV_VIS_KNIFE_ARM_STRETCH 1.3
+/// Pixels the attacker leans toward a victim he can't hold from behind (lying, or from a corner).
+#define HV_VIS_KNIFE_PRESS 6
+/// Layers: pieces in front of a body, pieces behind one, and the blade over the hand that holds it.
+#define HV_VIS_KNIFE_OVER_LAYER 4.05
+#define HV_VIS_KNIFE_UNDER_LAYER 3.95
+#define HV_VIS_KNIFE_BLADE_OFFSET 0.01
+/// The victim's own stand-in arm: over him, under the attacker's hands.
+#define HV_VIS_KNIFE_VICTIM_ARM_LAYER 4.02
+/// Side views: the attacker is drawn a hair under the victim he holds, his far arm a hair under himself.
+#define HV_VIS_KNIFE_ATTACKER_LAYER 3.99
+#define HV_VIS_KNIFE_FAR_LAYER 3.985
+#define HV_VIS_KNIFE_FAR_BLADE_LAYER 3.987
 /// How long each jolt of a mauled body's shudder lasts.
 #define HV_VIS_SHUDDER_BEAT (0.02 SECONDS)
