@@ -86,6 +86,7 @@
 		/datum/ai_planning_subtree/human_npc_walk_out,
 		/datum/ai_planning_subtree/human_npc_surrender,
 		/datum/ai_planning_subtree/stealth_react,
+		/datum/ai_planning_subtree/npc_combat_sense,
 		/datum/ai_planning_subtree/human_npc_arm,
 		/datum/ai_planning_subtree/stealth_closet,
 		/datum/ai_planning_subtree/stealth_chase_lost,
