@@ -210,7 +210,7 @@ GLOBAL_LIST_EMPTY(stealth_standoffs)
 	if(!istext(message))
 		return
 	// An order to drop it, not any sentence with a gun in it ("You piece of junk" isn't one).
-	var/static/regex/drop_words = regex(@"\b(drop\s+(it|that|them|(the|your|ur|that|those)\s+(guns?|weapons?|piece|rifles?|pistols?|knife|knives))|put\s+(it|that|them|(the|your|ur|that|those)\s+(guns?|weapons?|piece|rifles?|pistols?|knife|knives))\s+down|put\s+down\s+(the|your|ur|that|those)\s+(guns?|weapons?|piece|rifles?|pistols?|knife|knives)|(lose|ditch)\s+(the|your|ur|that)\s+(guns?|weapons?|piece)|(guns?|weapons?)\s+down)\b", "i")
+	var/static/regex/drop_words = regex(@"\b(?:drop\s+(?:it|that|them|(?:the|your|ur|that|those)\s+(?:guns?|weapons?|piece|rifles?|pistols?|knife|knives))|put\s+(?:it|that|them|(?:the|your|ur|that|those)\s+(?:guns?|weapons?|piece|rifles?|pistols?|knife|knives))\s+down|put\s+down\s+(?:the|your|ur|that|those)\s+(?:guns?|weapons?|piece|rifles?|pistols?|knife|knives)|(?:lose|ditch)\s+(?:the|your|ur|that)\s+(?:guns?|weapons?|piece)|(?:guns?|weapons?)\s+down)\b", "i")
 	var/static/regex/back_words = regex(@"\b(back\s+(off|up|away)|(step|get|stand|move)\s+back|move\s+away)\b", "i")
 	if(!standoff_dropped && drop_words.Find(message))
 		INVOKE_ASYNC(src, PROC_REF(stealth_standoff_drop))
