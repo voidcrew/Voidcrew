@@ -177,7 +177,7 @@ A dead trader leaves an empty counter and a sign reading CLOSED. Nothing at that
 
 The first trader behind each counter may drop one item from their shelf when they die, and the outpost only has so much to give in a round. Replacement traders drop nothing. A trader who dies, is knocked out or is dragged off the counter does not run the shop; a revived one goes back to work.
 
-Killing a trader or a checkpoint guard that someone sees is at least 4 stars. The outpost bars your whole crew, so it costs far more than the shelf ever pays. A guard who dies leaves the gate working; only the permit desk shuts until a new guard sits down.
+Killing a trader or a checkpoint guard that someone sees is 3 stars, and from there security shoots to kill, so it costs far more than the shelf ever pays. A guard who dies leaves the gate working; only the permit desk shuts until a new guard sits down.
 
 ### Holding up a trader
 
@@ -206,19 +206,22 @@ Crimes pile up against the person who did them, shown as **stars** on a wanted a
 | Crime | Stars |
 |---|---|
 | One punch or shove | None yet, just a warning. Two make 1 star |
-| A combat gun in hand without a permit | 1 |
+| A combat gun in hand without a permit, where anyone can see it | 1 |
 | Vandalism, firing a gun, hitting a trader or guard | Up to 2 |
 | Hitting someone with a weapon or a thrown item | Up to 3 |
 | Shooting someone | 2 from one shot, up to 3 |
 | Hitting a shopper or regular | 1 from one hit, up to 3 |
 | Forcing the checkpoint, emagging the gate scanner, looting a locker | 2 |
 | Armed robbery | At least 2 |
-| Punching or shoving an officer, pulling a suspect away from one | Up to 3 |
+| Punching, shoving or grabbing an officer, pulling a suspect away from one | 1 at once, up to 3 |
+| Aiming a gun at an officer | 2 |
 | Opening a cell with someone in it, walking out of one, or carrying a prisoner out | At least 3 |
-| Attacking an officer with a weapon or a stun, or trying to cuff one | At least 3 |
-| Killing a shopper or regular | Up to 4 |
-| Killing a visitor or an officer | At least 3, and a lot more besides |
-| Killing a trader or a checkpoint guard | At least 4 |
+| Attacking an officer with a weapon or a stun, or trying to cuff one | 3, and a little more for each blow after |
+| Killing a shopper or regular | At least 2, and more for each one after |
+| Killing a visitor or an officer | 3, and more for each one after |
+| Killing a trader or a checkpoint guard | 3, and more for each one after |
+
+No single crime takes you past 3 stars. The fourth and fifth come from keeping it up: roughly three officers dead for 4 stars and five for 5.
 
 Fighting back against someone who attacked you first is not a crime. Hunters going after a bounty fugitive are left alone for it.
 

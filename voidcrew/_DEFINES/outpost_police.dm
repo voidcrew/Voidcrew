@@ -39,6 +39,8 @@
 #define OUTPOST_CRIME_GATE_TAMPER "gate_tamper"
 /// A trader held up at its counter (10)
 #define OUTPOST_CRIME_ARMED_ROBBERY "armed_robbery"
+/// A gun aimed at an officer (tg's hold-up): two stars, and the officer never puts its hands up (owner decision 66)
+#define OUTPOST_CRIME_THREATEN_OFFICER "threaten_officer"
 
 // ===== WITNESSES (police_perception.dm) =====
 

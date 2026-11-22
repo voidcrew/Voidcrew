@@ -384,6 +384,26 @@
 	wake()
 	return report
 
+/// The report of `crime` by `offender` still waiting on its witnesses, or null
+/datum/outpost_police/proc/pending_report_of(mob/living/offender, crime)
+	for(var/datum/outpost_pending_report/report as anything in pending_reports)
+		if(!QDELETED(report) && report.crime == crime && report.offender?.resolve() == offender)
+			return report
+	return null
+
+/// Officers who see `offender` now and are not yet witnesses of `report` join it, and act on it as if they had seen it first
+/datum/outpost_police/proc/join_report(datum/outpost_pending_report/report, mob/living/offender)
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+		if(!perception.is_officer(officer) || !perception.can_report(officer) || !perception.sees(officer, offender))
+			continue
+		var/datum/weakref/officer_ref = WEAKREF(officer)
+		if(officer_ref in report.witnesses)
+			continue
+		report.witnesses += officer_ref
+		report.seen_turf = get_turf(offender)
+		report.seen_at = world.time
+		INVOKE_ASYNC(officer, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc/outpost/police, police_witness_saw), offender)
+
 /// Confirms the reports whose witness has finished their call; drops those nobody can make any more
 /datum/outpost_police/proc/process_pending_reports()
 	for(var/datum/outpost_pending_report/report as anything in pending_reports.Copy())

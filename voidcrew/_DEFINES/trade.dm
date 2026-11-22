@@ -152,6 +152,10 @@
 #define OUTPOST_CHECKPOINT_NPC_PATIENCE (90 SECONDS)
 /// An ambient NPC waiting at a checkpoint asks a door at most once this often
 #define OUTPOST_CHECKPOINT_NPC_ASK_GAP (4 SECONDS)
+/// Someone who came through a checkpoint walks on until they are this many tiles from its inner door
+#define OUTPOST_CHECKPOINT_NPC_CLEAR 3
+/// How many spots they try to get clear of the door before their visit starts where they stand
+#define OUTPOST_CHECKPOINT_NPC_CLEAR_TRIES 3
 /// On an NPC going through a checkpoint (outpost_checkpoint_npcs.dm): pathing lets them through its open doors
 #define TRAIT_CHECKPOINT_CROSSING "checkpoint_crossing"
 /// How long prying (or hacking) the inner door open takes

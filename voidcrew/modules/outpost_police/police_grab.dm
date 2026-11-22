@@ -1,12 +1,14 @@
 /**
  * # Outpost police: grabbing outpost people (owner decision 53)
  *
- * A townsperson, worker, trader or gate guard (never an officer, whose handling is stealth's own) who is grabbed:
+ * A townsperson, worker, trader, gate guard or officer (owner decision 66) who is grabbed:
  * - pulled along by a player, they grumble (on a cooldown) and pull free as ever (ambient_escape). No crime.
  * - grabbed aggressively or worse (a neck grab, a strangle), they shout for help: a line and a scream officers in
  *   earshot come to look at, no more often than OUTPOST_POLICE_GRAB_SHOUT_COOLDOWN. The grab is the same crime as
  *   hitting them unarmed (OUTPOST_CRIME_ASSAULT_CIVILIAN, or OUTPOST_CRIME_ASSAULT_STAFF for a trader or gate guard),
  *   through register_aggression() like a blow, once per grab: witnessed, told and counted like any other crime.
+ *   On an officer it is laying hands on an officer (OUTPOST_CRIME_RESIST, as a pull kept up is: police_dispatch.dm
+ *   dispatch_check_pull()), said in the officer's own words (outpost_police.json "pulled" / "grabbed").
  *
  * tg sends the grab's tightening to the grabber (setGrabState()), so they listen on whoever holds them while they do.
  * A hostage taken by the neck is charged here once, as the grab; the stealth hostage code charges nothing itself, and a
@@ -25,9 +27,9 @@
 	RegisterSignal(src, COMSIG_LIVING_GET_PULLED, PROC_REF(on_outpost_pulled))
 	RegisterSignal(src, COMSIG_ATOM_NO_LONGER_PULLED, PROC_REF(on_outpost_let_go))
 
-/// Whether a grab on them is handled here: alive, no one playing them, and not an officer
+/// Whether a grab on them is handled here: alive, with no one playing them
 /mob/living/carbon/human/npc/ambient_npc/outpost/proc/reacts_to_grabs()
-	return stat != DEAD && !mind && !client && !istype(src, /mob/living/carbon/human/npc/ambient_npc/outpost/police)
+	return stat != DEAD && !mind && !client
 
 /// Someone took hold of them: a word for a player's pull, and an ear on the grip
 /mob/living/carbon/human/npc/ambient_npc/outpost/proc/on_outpost_pulled(datum/source, mob/living/puller)
@@ -66,7 +68,15 @@
 	if(grab_charged)
 		return
 	grab_charged = TRUE
+	charge_grab(grabber)
+
+/// Charges `grabber` for the rough grab on them
+/mob/living/carbon/human/npc/ambient_npc/outpost/proc/charge_grab(mob/living/grabber)
 	grab_outpost()?.register_aggression(grabber, grab_crime(), src)
+
+// An officer's own people count it: no self-defence window or bounty excuse covers taking security by the neck
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/charge_grab(mob/living/grabber)
+	police?.report_crime(grabber, OUTPOST_CRIME_RESIST, src)
 
 /// Whether dragging them off while they can't pull free is charged as a rough grab is (abuse M31: staff only)
 /mob/living/carbon/human/npc/ambient_npc/outpost/proc/charges_helpless_pull()

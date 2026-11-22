@@ -44,8 +44,9 @@
 			// Always counts while an officer of this outpost is alive
 			last_witness = living_officer_near(offender, victim)
 			return last_witness ? POLICE_WITNESS_SAW : POLICE_WITNESS_NONE
-		if(OUTPOST_CRIME_WEAPON_DRAWN, OUTPOST_CRIME_CHECKPOINT_BREACH, OUTPOST_CRIME_JAILBREAK, OUTPOST_CRIME_TRESPASS, OUTPOST_CRIME_ACCOMPLICE)
-			// The scanner, the cell and the officers' own sighting see these
+		if(OUTPOST_CRIME_CHECKPOINT_BREACH, OUTPOST_CRIME_JAILBREAK, OUTPOST_CRIME_TRESPASS, OUTPOST_CRIME_ACCOMPLICE)
+			// The scanner, the cell and the officers' own sighting see these. A drawn gun has to be seen like any
+			// other crime (owner decision 61): counted from nowhere, it told the squad where its holder hid.
 			return POLICE_WITNESS_CAMERA
 
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police.officers)
@@ -213,8 +214,8 @@
 	if(!offender || !police?.outpost)
 		return POLICE_WITNESS_NONE
 	switch(crime)
-		if(OUTPOST_CRIME_WEAPON_DRAWN, OUTPOST_CRIME_CHECKPOINT_BREACH, OUTPOST_CRIME_JAILBREAK, OUTPOST_CRIME_TRESPASS, OUTPOST_CRIME_ACCOMPLICE)
-			// The scanner, the cell and the officers' own sighting see these
+		if(OUTPOST_CRIME_CHECKPOINT_BREACH, OUTPOST_CRIME_JAILBREAK, OUTPOST_CRIME_TRESPASS, OUTPOST_CRIME_ACCOMPLICE)
+			// The scanner, the cell and the officers' own sighting see these (a drawn gun has to be seen: decision 61)
 			return POLICE_WITNESS_CAMERA
 	// At once: traders at their counter and checkpoint guards in their booth, players not on the offender's crew (the victim first), the cameras
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader in police.outpost.traders)

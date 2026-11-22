@@ -28,31 +28,36 @@
 /**
  * Every crime the police know: crime -> list(points, ceiling, floor). Points are heat; ceiling and floor are
  * stars. A crime never takes a warrant past its ceiling, and always takes it to at least its floor.
+ *
+ * Owner decision 63: one to three stars is where trouble starts, and no single crime goes past three. Four and
+ * five come only from keeping it up: each further killing, and each further armed blow on an officer, adds a
+ * little (about three officers dead for four stars, five for five).
  */
 GLOBAL_LIST_INIT(outpost_crimes, list(
 	(OUTPOST_CRIME_ASSAULT_UNARMED) = list(6, 2, 0),
 	(OUTPOST_CRIME_ASSAULT_ARMED) = list(9, 3, 0),
 	(OUTPOST_CRIME_ASSAULT_SHOT) = list(25, 3, 0),
-	(OUTPOST_CRIME_MURDER) = list(60, 5, 3),
+	(OUTPOST_CRIME_MURDER) = list(15, 5, 3),
 	(OUTPOST_CRIME_VANDALISM) = list(5, 2, 0),
 	(OUTPOST_CRIME_ASSAULT_STAFF) = list(8, 2, 0),
 	(OUTPOST_CRIME_ASSAULT_CIVILIAN) = list(12, 3, 0),
-	(OUTPOST_CRIME_KILL_CIVILIAN) = list(40, 4, 0),
+	(OUTPOST_CRIME_KILL_CIVILIAN) = list(10, 5, 2),
 	(OUTPOST_CRIME_WEAPON_DRAWN) = list(0, 1, 1),
 	(OUTPOST_CRIME_GUNFIRE) = list(15, 2, 0),
 	(OUTPOST_CRIME_CHECKPOINT_BREACH) = list(0, 2, 2),
 	(OUTPOST_CRIME_TRESPASS) = list(0, 2, 2),
-	(OUTPOST_CRIME_RESIST) = list(8, 3, 0),
-	(OUTPOST_CRIME_ASSAULT_OFFICER) = list(30, 4, 3),
-	(OUTPOST_CRIME_KILL_OFFICER) = list(45, 5, 3),
+	(OUTPOST_CRIME_RESIST) = list(8, 3, 1),
+	(OUTPOST_CRIME_ASSAULT_OFFICER) = list(3, 5, 3),
+	(OUTPOST_CRIME_KILL_OFFICER) = list(10, 5, 3),
 	(OUTPOST_CRIME_SLIP_CUFFS) = list(10, 3, 0),
 	(OUTPOST_CRIME_ABET) = list(15, 2, 0),
 	(OUTPOST_CRIME_JAILBREAK) = list(0, 3, 3),
 	(OUTPOST_CRIME_ACCOMPLICE) = list(0, 2, 2),
 	(OUTPOST_CRIME_LOCKER_THEFT) = list(0, 2, 2),
-	(OUTPOST_CRIME_KILL_STAFF) = list(60, 5, 4),
+	(OUTPOST_CRIME_KILL_STAFF) = list(15, 5, 3),
 	(OUTPOST_CRIME_GATE_TAMPER) = list(0, 2, 2),
 	(OUTPOST_CRIME_ARMED_ROBBERY) = list(30, 3, 2),
+	(OUTPOST_CRIME_THREATEN_OFFICER) = list(0, 2, 2),
 ))
 
 // =========================================================================

@@ -797,7 +797,14 @@
 	TEST_ASSERT_EQUAL(npc.activity_step(1), 1, "Someone did not go through the open inner door") // AMBIENT_STEP_MOVE
 	TEST_ASSERT_EQUAL(crossing.spot, secured, "Someone was not sent onto the concourse")
 	npc.forceMove(secured)
-	TEST_ASSERT_EQUAL(npc.activity_step(1), 2, "Someone on the concourse kept going through the checkpoint") // AMBIENT_STEP_DONE
+	// On the doorstep they are not done: they walk on, clear of the door, so nobody is held in the gate behind them
+	var/onward_step = npc.activity_step(1)
+	if(onward_step == 1) // AMBIENT_STEP_MOVE
+		TEST_ASSERT(get_dist(crossing.spot, get_turf(inner)) >= 3, "Someone through the checkpoint was sent to stand [get_dist(crossing.spot, get_turf(inner))] tiles from its inner door") // OUTPOST_CHECKPOINT_NPC_CLEAR
+		TEST_ASSERT(host.is_secured_turf(crossing.spot), "Someone through the checkpoint was sent back off the concourse")
+		npc.forceMove(crossing.spot)
+		onward_step = npc.activity_step(1)
+	TEST_ASSERT_EQUAL(onward_step, 2, "Someone on the concourse kept going through the checkpoint") // AMBIENT_STEP_DONE
 	npc.end_activity()
 	TEST_ASSERT(!HAS_TRAIT(npc, "checkpoint_crossing"), "Someone through the checkpoint could still path through its doors")
 	// Already past it, nobody sets off through it

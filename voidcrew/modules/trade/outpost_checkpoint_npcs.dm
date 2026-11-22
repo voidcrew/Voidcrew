@@ -9,7 +9,9 @@
  * The one who has to cross is someone stepping off the lift in the lobby while players are about
  * (/datum/ambient_outpost_role/proc/arrive()). They go through like a player: up to the outer door,
  * in when it is open, a wait through the scan, out through the inner door. They ask each door at
- * most once every OUTPOST_CHECKPOINT_NPC_ASK_GAP and never walk into a shut one.
+ * most once every OUTPOST_CHECKPOINT_NPC_ASK_GAP and never walk into a shut one. Through, they walk on a
+ * few tiles before their visit starts: the one tile in front of the inner door is the only way out of it,
+ * and the gate stays open, and shut to the queue, while anyone stands in its doorway.
  */
 
 /// The checkpoint that leads in from the lift lobby nearest `near` (preferring one not jammed on a refusal): one whose outer door opens onto the outpost, not space. Null if there is none.
@@ -56,6 +58,10 @@
 	var/give_up_at = 0
 	/// world.time they may ask a door again
 	var/next_ask_at = 0
+	/// Where they are walking on to, clear of the inner door
+	var/turf/onward
+	/// How many such spots they have tried
+	var/onward_tries = 0
 
 /datum/ambient_activity/cross_checkpoint/setup()
 	var/datum/ambient_place/outpost/outpost_place = doer.place
@@ -71,6 +77,7 @@
 
 /datum/ambient_activity/cross_checkpoint/Destroy()
 	checkpoint_ref = null
+	onward = null
 	return ..()
 
 /datum/ambient_activity/cross_checkpoint/finish()
@@ -85,9 +92,19 @@
 		// Their next activity (if any) has replaced this one
 		return AMBIENT_STEP_CONTINUE
 	var/turf/here = get_turf(doer)
-	if(post.outpost?.is_secured_turf(here))
-		return AMBIENT_STEP_DONE
 	var/turf/inner_turf = get_turf(post.inner_door)
+	if(post.outpost?.is_secured_turf(here))
+		// Through, but not done on the doorstep: whoever stood there (their routine starts with a stand as often as
+		// not) held everyone behind them in the gate
+		if(get_dist(here, inner_turf) >= OUTPOST_CHECKPOINT_NPC_CLEAR || onward_tries > OUTPOST_CHECKPOINT_NPC_CLEAR_TRIES)
+			return AMBIENT_STEP_DONE
+		if(!onward || onward == here || onward.is_blocked_turf(exclude_mobs = FALSE, source_atom = doer))
+			onward_tries++
+			onward = onward_tries > OUTPOST_CHECKPOINT_NPC_CLEAR_TRIES ? null : outpost_checkpoint_clear_spot(post, doer)
+		if(!onward)
+			return AMBIENT_STEP_DONE
+		go_to(onward)
+		return AMBIENT_STEP_MOVE
 	var/turf/outer_turf = get_turf(post.outer_door)
 	// In the chamber: through the inner door once it opens, asking for a scan if nobody has
 	var/free_pass = post.is_disabled() || post.state == CHECKPOINT_FORCED
@@ -139,6 +156,38 @@
 			return beside
 	return ahead
 
+/**
+ * A free concourse tile a few steps in from the inner door, in a clear line from the tile in front of it, the
+ * nearest to `walker` first: where someone who came through gets out of the way. Null if there is none.
+ */
+/proc/outpost_checkpoint_clear_spot(datum/outpost_checkpoint/post, mob/living/walker)
+	var/turf/door_turf = get_turf(post.inner_door)
+	var/turf/ahead = post.secured_turf
+	var/turf/here = get_turf(walker)
+	if(!door_turf || !ahead || !here)
+		return null
+	var/turf/best
+	var/best_distance = INFINITY
+	for(var/turf/open/tile in RANGE_TURFS(OUTPOST_CHECKPOINT_NPC_CLEAR + 2, door_turf))
+		if(get_dist(tile, door_turf) < OUTPOST_CHECKPOINT_NPC_CLEAR || !post.outpost?.is_secured_turf(tile))
+			continue
+		if(!ambient_ground_ok(tile) || ambient_by_a_door(tile) || tile.is_blocked_turf(exclude_mobs = FALSE, source_atom = walker))
+			continue
+		var/distance = get_dist(tile, here)
+		if(distance >= best_distance)
+			continue
+		// Somewhere they can walk straight to from the door, not a shop's back room through a wall
+		var/blocked = FALSE
+		for(var/turf/between as anything in get_line(ahead, tile))
+			if(between != tile && (isclosedturf(between) || between.is_blocked_turf(exclude_mobs = TRUE)))
+				blocked = TRUE
+				break
+		if(blocked)
+			continue
+		best = tile
+		best_distance = distance
+	return best
+
 /datum/ambient_activity/cross_checkpoint/proc/chamber_entry(datum/outpost_checkpoint/post)
 	return outpost_checkpoint_chamber_entry(post, doer)
 
@@ -160,6 +209,7 @@
 /datum/ambient_activity/cross_checkpoint/spot_unreachable()
 	spot = null
 	arrived = FALSE
+	onward = null
 
 /datum/ambient_activity/cross_checkpoint/shift_times(delay)
 	. = ..()

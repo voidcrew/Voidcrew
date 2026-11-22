@@ -85,18 +85,21 @@
 		list("three stabs", list("armed", "armed", "armed"), 27, 2),
 		list("one shot into a visitor", list("shot"), 25, 2),
 		list("two shots into a visitor", list("shot", "shot"), 50, 3),
-		list("shoot a visitor dead", list("shot", "shot", "murder"), 110, 4),
+		list("shoot a visitor dead", list("shot", "shot", "murder"), 65, 3),
 		list("kick a vending machine 10x", list("vandalism", "vandalism", "vandalism", "vandalism", "vandalism", "vandalism", "vandalism", "vandalism", "vandalism", "vandalism"), 49, 2),
 		list("gun drawn past the checkpoint", list("weapon_drawn"), 10, 1),
 		list("gun drawn, then fired twice", list("weapon_drawn", "gunfire", "gunfire"), 40, 2),
 		list("forced checkpoint", list("breach"), 25, 2),
-		list("punch an officer once", list("resist"), 8, 0),
+		list("punch an officer once", list("resist"), 10, 1),
 		list("2 punches, then shove the officer 3x", list("unarmed", "unarmed", "resist", "resist", "resist"), 36, 2),
 		list("shoot an officer", list("officer"), 50, 3),
-		list("kill one officer", list("officer", "officer_kill"), 95, 4),
-		list("kill two officers", list("officer", "officer_kill", "officer_kill"), 140, 5),
-		list("kill three officers", list("officer", "officer_kill", "officer_kill", "officer_kill"), 180, 5),
-		list("murder, then kill one officer", list("shot", "murder", "officer", "officer_kill"), 160, 5),
+		list("kill one officer", list("officer", "officer_kill"), 60, 3),
+		list("kill two officers", list("officer", "officer_kill", "officer_kill"), 70, 3),
+		list("three officers dead, three armed blows each", list("officer", "officer", "officer", "officer_kill", "officer", "officer", "officer", "officer_kill", "officer", "officer", "officer", "officer_kill"), 104, 4),
+		list("five officers dead, three armed blows each", list("officer", "officer", "officer", "officer_kill", "officer", "officer", "officer", "officer_kill", "officer", "officer", "officer", "officer_kill", "officer", "officer", "officer", "officer_kill", "officer", "officer", "officer", "officer_kill"), 142, 5),
+		list("murder, then kill one officer", list("shot", "murder", "officer", "officer_kill"), 63, 3),
+		list("kill a trader", list("staff_kill"), 50, 3),
+		list("beat a townsperson to death", list("civilian", "civilian", "civilian_kill"), 34, 2),
 		list("break out of the cell", list("unarmed", "unarmed", "jailbreak"), 50, 3),
 		list("crewmate of a 4-star offender", list("accomplice"), 25, 2),
 	)
@@ -118,7 +121,9 @@
 	TEST_ASSERT_EQUAL(police.heat_after(0, "jailbreak"), 50, "A three-star floor did not lift an empty warrant")
 	TEST_ASSERT_EQUAL(police.heat_after(0, "weapon_drawn"), 10, "A drawn gun is not one star")
 	TEST_ASSERT_EQUAL(police.heat_after(175, "officer_kill"), 180, "Heat went past the cap")
-	TEST_ASSERT_EQUAL(police.heat_after(0, "murder"), 60, "A killing is not at least three stars")
+	TEST_ASSERT_EQUAL(police.heat_after(0, "murder"), 50, "A killing is not at least three stars")
+	TEST_ASSERT_EQUAL(police.heat_after(0, "staff_kill"), 50, "Killing staff is not three stars")
+	TEST_ASSERT_EQUAL(police.heat_after(0, "officer_kill"), 50, "One dead officer is not three stars")
 
 // ===== WITNESSES =====
 
@@ -161,9 +166,10 @@
 	TEST_ASSERT_NULL(police.report_crime(knocked, "unarmed", sleeper), "An unconscious victim witnessed the crime")
 	sleeper.stat = CONSCIOUS
 
-	// The scanner and the cell need no one in sight
+	// The scanner and the cell need no one in sight; a drawn gun has to be seen (owner decision 61)
 	var/mob/living/carbon/human/armed = wanted_person(wanted_spot(2, 2))
-	TEST_ASSERT_EQUAL(police.report_crime(armed, "weapon_drawn"), 1, "A drawn gun with nobody about is not one star") // OUTPOST_CRIME_WEAPON_DRAWN
+	TEST_ASSERT_NULL(police.report_crime(armed, "weapon_drawn"), "A drawn gun nobody saw counted") // OUTPOST_CRIME_WEAPON_DRAWN
+	TEST_ASSERT_EQUAL(police.report_crime(armed, "breach"), 2, "A forced checkpoint with nobody about is not two stars") // OUTPOST_CRIME_CHECKPOINT_BREACH
 
 	// A crime on an officer needs a living officer
 	var/mob/living/carbon/human/brawler = wanted_person(wanted_spot(3, 0))

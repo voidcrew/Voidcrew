@@ -103,9 +103,10 @@
 // ===== TRESPASS =====
 
 /**
- * `offender` was seen armed past the checkpoint without a permit. Voids any permit, then reports a drawn
- * weapon to the police once per weapon in hand, each as evidence. Returns TRUE if they have stars here
- * afterwards. Never sleeps: it runs from signal handlers.
+ * `offender` is armed past the checkpoint without a permit. Voids any permit, then reports a drawn weapon to
+ * the police once per weapon in hand, each as evidence. It counts only if someone sees it, as any crime does
+ * (owner decision 61): the sweep that calls this looks at everyone, seen or not. Returns TRUE if they have stars
+ * here afterwards. Never sleeps: it runs from signal handlers.
  */
 /obj/structure/overmap/trader_outpost/proc/flag_trespasser(mob/living/offender)
 	var/datum/mind/offender_mind = offender?.mind
@@ -116,11 +117,21 @@
 	armed_sightings -= offender_mind
 	if(!police)
 		return FALSE
+	var/datum/outpost_warrant/warrant = police.get_warrant(offender_mind)
+	var/wanted = police.get_stars(offender_mind) >= 1
+	// One report a gun, not one a sweep: a report already on its way is only joined by officers who see it now
+	var/datum/outpost_pending_report/waiting = police.pending_report_of(offender, OUTPOST_CRIME_WEAPON_DRAWN)
+	if(waiting)
+		police.join_report(waiting, offender)
+		return wanted
 	var/list/obj/item/drawn = outpost_drawn_weapons(offender)
 	if(!length(drawn)) // a mech's guns: nothing to take off them
-		return police.report_crime(offender, OUTPOST_CRIME_WEAPON_DRAWN) > 0
-	var/wanted = FALSE
+		// Already wanted: nothing new to tell the police
+		return wanted || police.report_crime(offender, OUTPOST_CRIME_WEAPON_DRAWN) > 0
 	for(var/obj/item/weapon as anything in drawn)
+		// Already wanted with this gun on record: nothing new to tell the police
+		if(wanted && (WEAKREF(weapon) in warrant?.evidence))
+			continue
 		if(police.report_crime(offender, OUTPOST_CRIME_WEAPON_DRAWN, null, weapon) > 0)
 			wanted = TRUE
 	return wanted

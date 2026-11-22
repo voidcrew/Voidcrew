@@ -1135,3 +1135,44 @@
 	brain.lost_since = world.time - 10 SECONDS
 	brain.stealth_keep_target()
 	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "An officer did not search for a suspect nobody had eyes on")
+
+// ===== HANDS ON AN OFFICER (owner decision 66) =====
+// Crimes written out: "threaten_officer" (two stars), "resist". GRAB_AGGRESSIVE is tg's.
+
+/// A shove from someone it has nothing on gets a word, not a search; a gun aimed at it is a crime it turns on, never a surrender; a neck grab on it is charged
+/datum/unit_test/voidcrew_stealth_live/police/hands_on_officer
+
+/datum/unit_test/voidcrew_stealth_live/police/hands_on_officer/Run()
+	TEST_ASSERT(police_room(16, 7), "No room for the test")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(6, 3, EAST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	brain.stealth_setup()
+	var/mob/living/carbon/human/visitor = visitor_at(7, 3)
+
+	// A shove from a clean visitor standing in front of it: no search, no call
+	TEST_ASSERT(!brain.stealth_touched(visitor), "An officer took a clean visitor for a target at a shove")
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "An officer went [brain.stealth_state()] at a shove from someone standing in front of it")
+	TEST_ASSERT_NULL(brain.pending_call, "An officer called an alarm over a shove from someone standing in front of it")
+
+	// A gun aimed at it: no hands up, and the aim is two stars as that officer knows it
+	TEST_ASSERT_NOTNULL(brain.stealth_holdup_refusal(visitor), "An officer would put its hands up for a hold-up")
+	brain.stealth_held_up(visitor)
+	TEST_ASSERT_NULL(brain.holdup_aimer, "An officer gave up to a hold-up")
+	TEST_ASSERT(!officer.npc_surrendering, "An officer surrendered to a hold-up")
+	TEST_ASSERT_EQUAL(police.officer_knows(officer, visitor.mind), 2, "A gun aimed at an officer is not two stars to that officer")
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "alert", "An officer with a gun aimed at it is [brain.stealth_state()], not on whoever aims it")
+
+	// A neck grab: charged once, as laying hands on an officer
+	brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+	brain.stealth_go_unaware()
+	visitor.forceMove(at(14, 6))
+	var/mob/living/carbon/human/grabber = visitor_at(7, 3)
+	TEST_ASSERT(officer.reacts_to_grabs(), "An officer does not answer a grab")
+	grabber.start_pulling(officer)
+	TEST_ASSERT_EQUAL(grabber.pulling, officer, "Fixture: the visitor could not take hold of the officer")
+	TEST_ASSERT(!officer.grab_charged, "A plain pull on an officer was charged at once")
+	grabber.setGrabState(GRAB_AGGRESSIVE)
+	TEST_ASSERT(officer.grab_charged, "A neck grab on an officer was not charged")
+	TEST_ASSERT(police.pending_report_of(grabber, "resist") || police.get_stars(grabber.mind) >= 1, "A neck grab on an officer reached nobody")
+	grabber.stop_pulling()
+	TEST_ASSERT(!officer.grab_charged, "Letting go of an officer left the grab charged")

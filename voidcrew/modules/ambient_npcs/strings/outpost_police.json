@@ -64,6 +64,23 @@
 			"I've lost them. Check behind the counters.",
 			"Gone. Look in the corners, please."
 		],
+		"pulled": [
+			"Hands off, please.",
+			"Let go of my arm, please.",
+			"Let go. Now, please.",
+			"That's quite enough of that."
+		],
+		"grabbed": [
+			"Let go of me!",
+			"Get your hands off me!",
+			"Officer needs help!",
+			"Let go! Somebody!"
+		],
+		"stealth_slip": [
+			"Careful. Wet floor.",
+			"Mind the floor.",
+			"Ow. Nobody saw that."
+		],
 		"cuff": [
 			"Hands.",
 			"Turn around.",
@@ -565,6 +582,23 @@
 			"Lost visual. Check the corners.",
 			"They're gone. Sweep it."
 		],
+		"pulled": [
+			"Hands off.",
+			"Let go. Now.",
+			"Take your hand off me.",
+			"Don't."
+		],
+		"grabbed": [
+			"Get off me!",
+			"Let go, damn it!",
+			"Unit needs support!",
+			"Off! Get off!"
+		],
+		"stealth_slip": [
+			"Damn floor.",
+			"Who mopped this?",
+			"Watch the floor."
+		],
 		"cuff": [
 			"Hands.",
 			"Turn around.",
@@ -1065,6 +1099,23 @@
 			"Where'd they go? Stalls. Look.",
 			"Lost them. Tear the place apart.",
 			"Gone. Find them."
+		],
+		"pulled": [
+			"Off.",
+			"Touch me again and lose the hand.",
+			"You want to keep that arm?",
+			"Hands. Off."
+		],
+		"grabbed": [
+			"Get off!",
+			"You're dead for that!",
+			"Over here! Now!",
+			"Let go, you rat!"
+		],
+		"stealth_slip": [
+			"Damn it.",
+			"Slick as a liar's tongue.",
+			"Who spilled that?"
 		],
 		"cuff": [
 			"Hands.",

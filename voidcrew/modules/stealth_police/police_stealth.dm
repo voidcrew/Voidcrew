@@ -440,13 +440,61 @@
 
 // A shove from the cuffs, a kick in the cell: the charge is the arrest's (police_arrest.dm). Nobody searches for, or
 // shouts about, someone they are holding.
+// Someone it has nothing on, right there in front of it (a shove, a fist, a thrown cup): a word to their face. What
+// they did is the police's to count (a blow on an officer is a crime, and counted, it sets the officer on them);
+// stealth's answer to a hand out of the dark was to search for someone it was looking at (owner decision 66).
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_touched(atom/source)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
 	var/mob/living/person = source
-	if(istype(officer) && isliving(person) && person.mind && officer.police?.has_in_hand(person, officer))
+	if(!istype(officer) || !officer.police || !isliving(person) || !(person.mind || person.client))
+		return ..()
+	if(officer.police.has_in_hand(person, officer))
 		explained_at = world.time
 		return FALSE
+	if(!officer.police_will_fight(person) && officer.stat == CONSCIOUS && !officer.client && (get_dist(officer, person) <= 1 || officer.police.perception?.sees(officer, person)))
+		explained_at = world.time
+		if(!officer.buckled && !officer.case && isturf(officer.loc))
+			officer.face_atom(person)
+		officer.police_say(POLICE_LINE_KNOCK)
+		return FALSE
 	return ..()
+
+// A gun aimed at an officer is no hold-up. Stealth's guards put their hands up when caught alone and unaware; an
+// officer never does, and the aim is a crime of its own, so it turns on whoever holds the gun (owner decision 66).
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_holdup_refusal(mob/living/shooter)
+	return "security"
+
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_held_up(mob/living/shooter)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	if(istype(officer) && isliving(shooter) && shooter.mind && officer.stat == CONSCIOUS && !officer.client && !holdup_aimer && !officer.police?.has_in_hand(shooter, officer))
+		var/obj/item/gun/aimed = shooter.get_active_held_item()
+		officer.police?.report_crime(shooter, OUTPOST_CRIME_THREATEN_OFFICER, officer, istype(aimed) ? aimed : null)
+	return ..()
+
+// Scav colours are the dens' disguise, not security's: nobody in them is taken for one of the squad
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_fooled(mob/living/who)
+	return NONE
+
+// On an arrest it walks past the fallen without starting a search of its own
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_check_bodies()
+	if(police_busy())
+		next_body_scan = world.time + STEALTH_BODY_SCAN_INTERVAL
+		return
+	return ..()
+
+/// The fallen of trouble that is over are known to it: it does not find them afresh and search for whoever did it
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/proc/police_know_fallen()
+	var/list/seen = blackboard[BB_STEALTH_BODIES_SEEN]
+	if(isnull(group) || !islist(seen))
+		return
+	var/mob/living/officer = pawn
+	for(var/mob/living/member as anything in group.living_members())
+		if(member == officer)
+			continue
+		if(member.stat == DEAD || HAS_TRAIT(member, TRAIT_CRITICAL_CONDITION) || HAS_TRAIT(member, TRAIT_RESTRAINED) || member.body_position == LYING_DOWN)
+			var/key = REF(member)
+			seen |= key
+			group.reported_bodies |= key
 
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_can_investigate()
 	if(police_busy())
@@ -672,7 +720,8 @@
 	if(!istype(brain) || !mind || stat != CONSCIOUS || client || case || npc_exit)
 		return FALSE
 	var/datum/outpost_warrant/warrant = police?.get_warrant(mind)
-	var/turf/where = warrant?.last_seen_turf || get_turf(mind.current)
+	// Only where the police last saw them, or were told they were: never where they are now (owner decision 52)
+	var/turf/where = warrant?.last_seen_turf
 	if(!where)
 		return FALSE
 	brain.police_hunt = WEAKREF(mind)
@@ -1048,6 +1097,7 @@
 			kept = TRUE
 			continue
 		officer.police_stand_easy(TRUE)
+		brain.police_know_fallen()
 	if(kept)
 		return
 	for(var/datum/stealth_group/group as anything in groups)
