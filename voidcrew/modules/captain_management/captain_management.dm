@@ -76,7 +76,10 @@
 		existing.build_all_button_icons(UPDATE_BUTTON_NAME)
 		return existing
 
-	var/datum/action/innate/captain_management/granted = new(captain, ship)
+	// Linked to the mind, not the body: command is held by the mind (is_ship_captain_mind),
+	// so the button has to follow it into a clone, borg shell or any other new body. A
+	// mind-targeted action re-grants itself on COMSIG_MIND_TRANSFERRED.
+	var/datum/action/innate/captain_management/granted = new(captain.mind || captain, ship)
 	granted.Grant(captain)
 	return granted
 
