@@ -263,7 +263,7 @@ The Undertow is the exception. From 3 stars up every officer there shoots to kil
 
 When an officer gives the order you have a few seconds to stand still with empty hands and your guard down, or to lie down with `*surrender`. Halcyon gives you the longest and the Undertow the shortest. Do it and they cuff you without a fight. At 3 stars and up only a suspect who is down is taken alive.
 
-If you go down before the cuffs are on, you are cuffed where you lie and held there until you come round. Then the officers search you, walk you to the security desk and book you into a cell.
+If you go down before the cuffs are on, you are cuffed and searched where you lie. Then an officer takes you to the security desk and books you into a cell, on your feet or dragged.
 
 - **What they take.** Every weapon or tool you used in a crime goes into the **evidence locker** at the security desk. Implants, cyberware, ship keys and mission items are never taken. Anything you stole from a prisoner's locker goes back to that locker.
 - **The fine** (1-2 stars). 300 credits at 1 star and 800 at 2 at Halcyon, half as much again at Quartermain and double at the Undertow. It is paid from your crew's ship accounts together, in full or not at all.
@@ -275,7 +275,7 @@ In jail your gear comes off and goes into a **property locker** outside the cell
 
 A warden guards the cells, and he can be paid to let you out early. Call him over from your cell. It costs at least 1,500 credits from your crew's ship accounts.
 
-If you go down in a cell, the door opens for a medic and your time stops. Once you can walk again you have 20 seconds to get back in, or it counts as a breakout. Dying ends the term.
+If you are booked in a bad way, or go down in a cell, security sends a medic up to patch you where you lie, and your time stops until you can stand. If no medic can come, the door opens so your crew can get to you; once you can walk again you have 20 seconds to get back in, or it counts as a breakout. Dying ends the term.
 
 ### Your things
 
