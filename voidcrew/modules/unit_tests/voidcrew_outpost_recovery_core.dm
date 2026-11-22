@@ -24,6 +24,8 @@
 /datum/unit_test/proc/recovery_corpse(obj/structure/overmap/trader_outpost/outpost, turf/where)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/body = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, where)
 	body.set_place(SSambient_npcs.outpost_place(outpost))
+	// Killed, not gone from old wounds: an attack just before it (recovery_core.dm death_is_trouble())
+	outpost.recovery?.note_violence()
 	body.death()
 	return body
 
@@ -36,6 +38,32 @@
 	outpost.recovery.crew += worker_ref
 	outpost.recovery.wave_workers += worker_ref
 	return worker
+
+// ===== OLD WOUNDS =====
+
+/// A death starts the crews' wait over only when it is fresh trouble: an attack or a shot just before it, or someone wanted still free
+/datum/unit_test/voidcrew_outpost_recovery_old_wounds
+
+/datum/unit_test/voidcrew_outpost_recovery_old_wounds/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = recovery_outpost()
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	recovery_corpse(outpost, wanted_spot(1, 1))
+	TEST_ASSERT_EQUAL(recovery.last_death_at, world.time, "A killing did not start the wait for the crews")
+	// A minute on, with no attack or shot since and nobody wanted: someone goes from the wounds they had
+	recovery.last_violence_at = world.time - 1 MINUTES
+	recovery.last_death_at = world.time - 1 MINUTES
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/wounded = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, wanted_spot(2, 1))
+	wounded.set_place(SSambient_npcs.outpost_place(outpost))
+	wounded.death()
+	TEST_ASSERT(WEAKREF(wounded) in recovery.npc_dead, "Someone who died of their wounds is not the crews' to collect")
+	TEST_ASSERT_EQUAL(recovery.last_death_at, world.time - 1 MINUTES, "A death from old wounds started the wait for the crews over")
+	// With someone wanted still free at the outpost, any death is trouble
+	var/mob/living/carbon/human/offender = wanted_person(wanted_spot(5, 5))
+	police_pin_warrant(outpost.police, offender.mind, 50)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/third = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, wanted_spot(3, 1))
+	third.set_place(SSambient_npcs.outpost_place(outpost))
+	third.death()
+	TEST_ASSERT_EQUAL(recovery.last_death_at, world.time, "A death with someone wanted still free did not start the wait over")
 
 // ===== THE STATE TABLE =====
 
