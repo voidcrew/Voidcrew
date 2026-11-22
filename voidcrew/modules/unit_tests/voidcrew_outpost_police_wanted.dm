@@ -455,7 +455,7 @@
 	TEST_ASSERT_EQUAL(incident.ends_at, world.time + 35 MINUTES, "A dead officer did not add 5 minutes") // OUTPOST_POLICE_EMBARGO_PER_KILL
 	TEST_ASSERT_EQUAL(outpost.embargoed_ships[ship], incident.ends_at, "The longer embargo did not reach the ship here")
 	TEST_ASSERT(!other.is_ship_embargoed(ship), "A dead officer spread the embargo to another outpost")
-	TEST_ASSERT_EQUAL(warrant.heat, 180, "Killing an officer did not take the warrant to the cap")
+	TEST_ASSERT_EQUAL(warrant.heat, 160, "Killing an officer did not add its heat") // OUTPOST_CRIME_KILL_OFFICER: 10 points
 	TEST_ASSERT_EQUAL(length(down_log), 1, "The officer's death was not announced once")
 	TEST_ASSERT_EQUAL(down_log[1][2], leader, "The announcement did not name the killer")
 
@@ -480,7 +480,7 @@
 	var/datum/outpost_warrant/warrant = police.warrants[killer.mind]
 	TEST_ASSERT_EQUAL(warrant.heat, 6, "The test's first hit is not 6 heat")
 	police.on_wanted_death(null, victim, FALSE)
-	TEST_ASSERT_EQUAL(warrant.heat, 66, "A victim dying right after a hit was not a murder") // OUTPOST_CRIME_MURDER: 60 points
+	TEST_ASSERT_EQUAL(warrant.heat, 50, "A victim dying right after a hit was not a murder") // OUTPOST_CRIME_MURDER: 15 points, a three-star floor
 	TEST_ASSERT_EQUAL(police.get_stars(killer.mind), 3, "A murder is not three stars")
 
 	// Too late, nothing
@@ -508,7 +508,7 @@
 
 	var/mob/living/carbon/human/shover = wanted_person(wanted_spot(0, 1))
 	police.officer_struck(officer, shover, ATTACKER_SHOVING)
-	TEST_ASSERT_EQUAL(police.warrants[shover.mind]?.heat, 8, "A shove on an officer was not resisting") // OUTPOST_CRIME_RESIST
+	TEST_ASSERT_EQUAL(police.warrants[shover.mind]?.heat, 10, "A shove on an officer was not resisting") // OUTPOST_CRIME_RESIST: one star at once
 
 	var/mob/living/carbon/human/fighter = wanted_person(wanted_spot(0, 2))
 	police.officer_struck(officer, fighter, ATTACKER_DAMAGING_ATTACK)
@@ -655,6 +655,8 @@
 		police.recent_reports.Cut()
 		TEST_ASSERT_NULL(police.report_crime(hunter, stray), "An engaged hunter was reported for '[stray]'")
 	TEST_ASSERT_NULL(police.warrants[hunter.mind], "An engaged hunter's stray fire made a warrant")
+	// A drawn gun has to be seen (owner decision 61): an officer beside the idle hunter
+	wanted_officer(outpost, get_turf(idle_hunter))
 	TEST_ASSERT_NOTNULL(police.report_crime(idle_hunter, "weapon_drawn"), "A hunter not in the fight was excused a drawn gun")
 	// A hit on a person still counts
 	outpost.register_pvp_aggression(victim, brawler, "unarmed")
@@ -887,7 +889,7 @@
 	var/datum/outpost_pending_report/report = police.pending_reports[1]
 	report.due = world.time
 	police.tick_warrants()
-	TEST_ASSERT_EQUAL(police.warrants[killer.mind]?.heat, 85, "A murder before the witness finished reporting was lost when warrants was empty") // 25 + 60
+	TEST_ASSERT_EQUAL(police.warrants[killer.mind]?.heat, 50, "A murder before the witness finished reporting was lost when warrants was empty") // 25 + 15, a three-star floor
 	TEST_ASSERT_EQUAL(police.get_stars(killer.mind), 3, "A confirmed pending murder did not reach three stars")
 	police.remove_warrant(police.warrants[killer.mind])
 	police.recent_reports.Cut()
@@ -973,7 +975,7 @@
 	var/mob/living/carbon/human/murderer = wanted_person(wanted_spot(2, 0))
 	TEST_ASSERT_EQUAL(police.report_crime(murderer, "shot", transplanted), 2, "A player in an officer's body did not witness being shot")
 	transplanted.death()
-	TEST_ASSERT_EQUAL(police.warrants[murderer.mind]?.heat, 85, "Killing a player in an officer's body did not count as murder") // 25 + 60
+	TEST_ASSERT_EQUAL(police.warrants[murderer.mind]?.heat, 50, "Killing a player in an officer's body did not count as murder") // 25 + 15, a three-star floor
 	TEST_ASSERT_EQUAL(police.warrants[murderer.mind]?.officers_killed, 0, "Killing a player in an officer's body counted as killing a police officer")
 
 	// A player in an officer's body pulling a cuffed prisoner away from an arrest is charged RESIST

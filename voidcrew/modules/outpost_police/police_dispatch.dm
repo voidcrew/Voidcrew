@@ -1067,9 +1067,11 @@
 /datum/outpost_police/proc/dispatch_is_response_unit(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
 	return officer.unit_kind != POLICE_UNIT_BEAT && officer.unit_kind != POLICE_UNIT_SERGEANT
 
-/// Where the police think `warrant`'s holder is: where they were last seen or reported, or null. Never where they are now (owner decision 52).
+/// Where the police think `warrant`'s holder is: where they were last seen or reported. With no sighting at all (an
+/// accomplice) it is where they are, which only weighs which unit is nearest: nobody is sent to look without a
+/// sighting (police_stealth.dm police_search_for(), owner decision 52).
 /datum/outpost_police/proc/dispatch_suspect_turf(datum/outpost_warrant/warrant)
-	return warrant.last_seen_turf
+	return warrant.last_seen_turf || get_turf(warrant.mind?.current)
 
 /// Of `suspects`, the one nearest `officer` by where they are thought to be (another level counts as far away)
 /datum/outpost_police/proc/dispatch_nearest_suspect(atom/officer, list/datum/outpost_warrant/suspects)
