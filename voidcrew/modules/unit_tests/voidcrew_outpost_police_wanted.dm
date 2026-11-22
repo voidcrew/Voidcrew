@@ -908,7 +908,11 @@
 	var/datum/outpost_warrant/cop_warrant = police.warrants[cop_killer.mind]
 	TEST_ASSERT_EQUAL(cop_warrant?.heat, 60, "A pending officer kill did not come to 60 heat") // 50 + 10
 	TEST_ASSERT_EQUAL(cop_warrant?.officers_killed, 1, "A pending officer kill did not increment officers_killed")
-	TEST_ASSERT_EQUAL(outpost.embargoed_ships[ship], world.time + 20 MINUTES, "A pending officer kill did not add 5 minutes to the 15-minute embargo")
+	// One officer dead is three stars: no ban yet (owner decision 63). When the fourth star comes, the ban counts them.
+	TEST_ASSERT_NULL(outpost.embargoed_ships[ship], "One dead officer banned the crew before four stars")
+	cop_warrant.heat = 90
+	police.tick_warrants()
+	TEST_ASSERT_EQUAL(outpost.embargoed_ships[ship], world.time + 20 MINUTES, "An officer killed before the ban did not add 5 minutes to the 15-minute embargo")
 	wanted_cleanup(list(ship))
 
 /// A new ship acquired by an embargoed crew during an active incident is embargoed on the next tick, and wanted HUD alerts follow mind transfers
