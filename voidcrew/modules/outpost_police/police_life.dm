@@ -221,13 +221,16 @@
 		if(length(text))
 			.[lowertext(replacetext("[key]", "%", ""))] = text
 
-/// Fills %PLACE%, %LOOK% and %NAME% in `line` from `values`, or returns null when a needed token is missing
+/// Fills %PLACE%, %LOOK%, %NAME% and %PRICE% in `line` from `values`, or returns null when a needed token is missing
 /proc/outpost_police_fill_line(line, list/values)
 	if(!istext(line))
 		return null
 	var/place = islist(values) ? values["place"] : null
 	var/look = islist(values) ? values["look"] : null
 	var/name = islist(values) ? values["name"] : null
+	var/price = islist(values) ? values["price"] : null
+	if(findtext(line, "%PRICE%") && !price)
+		return null
 	if(findtext(line, "%PLACE%") && !place)
 		return null
 	if(findtext(line, "%LOOK%") && !look)
@@ -241,6 +244,8 @@
 		text = replacetext(text, "%LOOK%", look)
 	if(name)
 		text = replacetext(text, "%NAME%", name)
+	if(price)
+		text = replacetext(text, "%PRICE%", price)
 	return text
 
 /**
@@ -567,7 +572,7 @@
 			if(witness.police_say(POLICE_LINE_OFFICER_DOWN, null, TRUE))
 				return
 
-// ----- the sergeant overhears a prisoner -----
+// ----- the warden (code name: sergeant) overhears a prisoner -----
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/Initialize(mapload, datum/human_npc_order/order)
 	. = ..()
@@ -593,6 +598,9 @@
 		return
 	var/datum/ai_controller/basic_controller/human_npc/stealth/brain = ai_controller
 	if(istype(brain) && (brain.stealth_state() != STEALTH_UNAWARE || brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET)))
+		return
+	// A prisoner serving a term may be offered a way out (police_bribe.dm, decision 64)
+	if(bribe_heard(prisoner))
 		return
 	if(!buckled)
 		face_atom(prisoner)
@@ -749,7 +757,7 @@
 	return outpost_police_arrive(src, place, where)
 
 /datum/ambient_outpost_role/police_sergeant
-	name = "police sergeant"
+	name = "police warden"
 	npc_type = /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant
 	max_count = 1
 	weight = 2

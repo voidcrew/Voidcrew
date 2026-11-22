@@ -117,8 +117,8 @@
 			"Dispatch, show us clear.",
 			"All quiet. Show us clear.",
 			"Dispatch, we're clear here.",
-			"Desk, it's all over. Show us clear.",
-			"Desk, all handled. We're clear."
+			"Warden, it's all over. Show us clear.",
+			"Warden, all handled. We're clear."
 		],
 		"cell_alarm": [
 			"Cell door! Somebody's at the cell door!",
@@ -135,31 +135,31 @@
 			"Up you get. There are bunks for that."
 		],
 		"radio_call": [
-			"Desk to all units. Suspect in %LOOK%, near %PLACE%.",
+			"Warden to all units. Suspect in %LOOK%, near %PLACE%.",
 			"All units, be advised. Someone in %LOOK% by %PLACE%.",
-			"Desk to beat. Possible trouble by %PLACE%.",
-			"Desk to beat. Complaint from %PLACE%. Please take a look.",
-			"Desk to all units. Trouble on the concourse.",
+			"Warden to beat. Possible trouble by %PLACE%.",
+			"Warden to beat. Complaint from %PLACE%. Please take a look.",
+			"Warden to all units. Trouble on the concourse.",
 			"All units, check in. We have a disturbance.",
-			"Desk to beat. Please check the concourse.",
-			"Desk to all units. Reports of trouble. Please respond."
+			"Warden to beat. Please check the concourse.",
+			"Warden to all units. Reports of trouble. Please respond."
 		],
 		"radio_call_hot": [
 			"All units, weapons are out. Suspect in %LOOK%, last by %PLACE%.",
 			"All units, shots on the concourse. Suspect in %LOOK%.",
-			"Desk to all units. Armed and dangerous. Near %PLACE%.",
-			"Desk to all units. Armed suspect in %LOOK%. Take care.",
+			"Warden to all units. Armed and dangerous. Near %PLACE%.",
+			"Warden to all units. Armed suspect in %LOOK%. Take care.",
 			"All units, all units. Armed suspect on the concourse.",
-			"Desk to all units. Shots reported. Respond.",
+			"Warden to all units. Shots reported. Respond.",
 			"All units respond. Weapons drawn on the concourse.",
 			"All units, there's a gun on the concourse. Be careful."
 		],
 		"radio_ack": [
-			"Copy, desk. On my way.",
+			"Copy, warden. On my way.",
 			"Beat, responding.",
-			"Copy, desk. En route.",
-			"On my way, desk.",
-			"Heard, desk. Moving now.",
+			"Copy, warden. En route.",
+			"On my way, warden.",
+			"Heard, warden. Moving now.",
 			"Received. Heading over."
 		],
 		"search": [
@@ -205,11 +205,11 @@
 			"Leave that alone! It's not yours!"
 		],
 		"body": [
-			"Desk, beat. There's a body on the floor by %PLACE%. Send the morgue, please.",
-			"Desk, I've got someone down and gone by %PLACE%. Morgue, please.",
-			"Desk, beat. Got a body here. Can we get the morgue down?",
-			"Beat to desk. Someone's passed on out here. Morgue, when you can.",
-			"Desk, beat. Body on the concourse. Keep folk back till the morgue's here."
+			"Warden, beat. There's a body on the floor by %PLACE%. Send the morgue, please.",
+			"Warden, I've got someone down and gone by %PLACE%. Morgue, please.",
+			"Warden, beat. Got a body here. Can we get the morgue down?",
+			"Beat to warden. Someone's passed on out here. Morgue, when you can.",
+			"Warden, beat. Body on the concourse. Keep folk back till the morgue's here."
 		],
 		"idle": [
 			"Quiet today.",
@@ -259,18 +259,18 @@
 			"Where did I put the stamp?"
 		],
 		"check_in": [
-			"Beat to desk. Concourse is quiet.",
-			"Desk, beat. All quiet on the concourse.",
+			"Beat to warden. Concourse is quiet.",
+			"Warden, beat. All quiet on the concourse.",
 			"Beat, checking in. Nothing to report.",
-			"Beat to desk. Concourse calm. Carrying on.",
-			"Desk, beat. Nothing doing out here."
+			"Beat to warden. Concourse calm. Carrying on.",
+			"Warden, beat. Nothing doing out here."
 		],
 		"check_in_reply": [
-			"Desk copies.",
+			"Warden copies.",
 			"Copy, beat.",
 			"Received. Carry on.",
 			"Thanks, beat. Carry on.",
-			"Lovely. Desk out."
+			"Lovely. Warden out."
 		],
 		"beat": [
 			"Everything all right here?",
@@ -313,6 +313,42 @@
 			"Nobody's forgotten you.",
 			"Patience, please. We'll get to you.",
 			"Someone will be along soon."
+		],
+		"bribe_coming": [
+			"One moment, please.",
+			"Coming. Hold on.",
+			"I'll be right over.",
+			"Just a moment."
+		],
+		"bribe_offer": [
+			"There's an early release fee. %PRICE% credits.",
+			"For %PRICE% credits I can process you now.",
+			"%PRICE% credits and the paperwork goes away.",
+			"I could let you out early. %PRICE% credits."
+		],
+		"bribe_taken": [
+			"Processed. Off you go.",
+			"Thank you. You're free to go.",
+			"That's settled. Mind the door.",
+			"All done. Quietly now, please."
+		],
+		"bribe_short": [
+			"That didn't go through, I'm afraid.",
+			"Declined. Sorry.",
+			"Your account says otherwise.",
+			"Not enough there. Sit tight."
+		],
+		"bribe_no_card": [
+			"I can't open it. Someone's had my card.",
+			"My card's gone missing. Sorry.",
+			"Can't help you. My card's been taken.",
+			"No card, no door, I'm afraid."
+		],
+		"bribe_door": [
+			"The door won't open. Your money's back.",
+			"Door's stuck. I've put it back.",
+			"Sorry, the lock won't take it. Refunded.",
+			"Can't get it open. You've been refunded."
 		],
 		"conversations": [
 			{
@@ -464,11 +500,11 @@
 		],
 		"stealth_radio_report": [
 			"Checking something by %PLACE%. Stand by.",
-			"Beat to desk, having a look by %PLACE%.",
-			"Beat to desk, checking a noise. Stand by.",
-			"Desk, having a quick look round. Stand by.",
-			"Beat to desk, something odd here. Checking.",
-			"Beat to desk. Probably nothing. Checking."
+			"Beat to warden, having a look by %PLACE%.",
+			"Beat to warden, checking a noise. Stand by.",
+			"Warden, having a quick look round. Stand by.",
+			"Beat to warden, something odd here. Checking.",
+			"Beat to warden. Probably nothing. Checking."
 		],
 		"stealth_radio_alarm": [
 			"Beat to all units, trouble by %PLACE%!",
@@ -479,12 +515,12 @@
 			"Beat to all units, I need help here!"
 		],
 		"stealth_radio_missing": [
-			"Desk, %NAME% isn't answering. Checking.",
+			"Warden, %NAME% isn't answering. Checking.",
 			"No word from %NAME%. Going to look.",
-			"Desk, %NAME% missed check-in. Going to look.",
+			"Warden, %NAME% missed check-in. Going to look.",
 			"Lost contact with a unit. Checking.",
-			"Desk, a unit's gone quiet. Checking.",
-			"Desk, missed check-in. Going to look."
+			"Warden, a unit's gone quiet. Checking.",
+			"Warden, missed check-in. Going to look."
 		],
 		"stealth_copy": [
 			"Copy. On my way.",
@@ -494,10 +530,10 @@
 			"On my way. Hold on."
 		],
 		"stealth_radio_dead": [
-			"Desk, do you read? Desk?",
+			"Warden, do you read? Warden?",
 			"Radio's dead.",
 			"Nothing but static.",
-			"Hello? Desk? Anyone?",
+			"Hello? Warden? Anyone?",
 			"This radio's gone again."
 		]
 	},
@@ -616,9 +652,9 @@
 		],
 		"clear": [
 			"Dispatch, show us clear.",
-			"Clear here, desk.",
-			"Desk, we're clear.",
-			"Desk, situation over. Clear.",
+			"Clear here, warden.",
+			"Warden, we're clear.",
+			"Warden, situation over. Clear.",
 			"Clear. Back to patrol."
 		],
 		"cell_alarm": [
@@ -636,14 +672,14 @@
 			"This is a concourse. Up."
 		],
 		"radio_call": [
-			"Desk to all. Subject in %LOOK%, by %PLACE%.",
+			"Warden to all. Subject in %LOOK%, by %PLACE%.",
 			"All units. Person of interest, %LOOK%.",
-			"Desk to beat. Trouble near %PLACE%.",
-			"Desk to beat. Complaint at %PLACE%. Check it.",
-			"Desk to all units. Disturbance on the concourse.",
+			"Warden to beat. Trouble near %PLACE%.",
+			"Warden to beat. Complaint at %PLACE%. Check it.",
+			"Warden to all units. Disturbance on the concourse.",
 			"All units, respond to the concourse.",
-			"Desk to beat. Check the concourse.",
-			"Desk to all. Possible incident. Respond."
+			"Warden to beat. Check the concourse.",
+			"Warden to all. Possible incident. Respond."
 		],
 		"radio_call_hot": [
 			"All units. Armed subject, %LOOK%, last by %PLACE%.",
@@ -653,12 +689,12 @@
 			"All units. Armed subject on the concourse.",
 			"Shots reported. All units respond.",
 			"All units. Weapons out. Respond.",
-			"Desk to all. Gun on the floor. Respond."
+			"Warden to all. Gun on the floor. Respond."
 		],
 		"radio_ack": [
 			"Copy. Moving.",
 			"On it.",
-			"Copy, desk.",
+			"Copy, warden.",
 			"Moving now.",
 			"Responding.",
 			"Copy. En route."
@@ -706,11 +742,11 @@
 			"That's not yours! Drop it!"
 		],
 		"body": [
-			"Desk, beat. Body by %PLACE%. Morgue.",
+			"Warden, beat. Body by %PLACE%. Morgue.",
 			"Body on the floor, %PLACE%. Get the morgue down.",
-			"Desk, beat. One dead on the concourse. Morgue.",
-			"Beat to desk. Body. Need the morgue.",
-			"Desk, got a stiff out here. Morgue, sharpish."
+			"Warden, beat. One dead on the concourse. Morgue.",
+			"Beat to warden. Body. Need the morgue.",
+			"Warden, got a stiff out here. Morgue, sharpish."
 		],
 		"idle": [
 			"Quiet.",
@@ -760,15 +796,15 @@
 			"Who filed this?"
 		],
 		"check_in": [
-			"Beat to desk. Concourse quiet.",
-			"Beat, desk. Clear.",
-			"Desk, beat. Nothing.",
+			"Beat to warden. Concourse quiet.",
+			"Beat, warden. Clear.",
+			"Warden, beat. Nothing.",
 			"Beat. Concourse clear.",
-			"Desk, beat. Floor's quiet."
+			"Warden, beat. Floor's quiet."
 		],
 		"check_in_reply": [
 			"Copy.",
-			"Desk copies.",
+			"Warden copies.",
 			"Received.",
 			"Copy. Carry on.",
 			"Logged."
@@ -814,6 +850,42 @@
 			"Clock's on the wall.",
 			"Patience.",
 			"You'll be seen."
+		],
+		"bribe_coming": [
+			"Coming.",
+			"Hold on.",
+			"What now.",
+			"One minute."
+		],
+		"bribe_offer": [
+			"%PRICE% credits. Then you walk.",
+			"Expedited release. %PRICE% credits.",
+			"%PRICE%. Take it or sit.",
+			"Early out is %PRICE% credits."
+		],
+		"bribe_taken": [
+			"Processed. Go.",
+			"You're cleared. Move.",
+			"Paid. Out.",
+			"Done. Don't come back."
+		],
+		"bribe_short": [
+			"Declined. Sit.",
+			"Didn't clear.",
+			"Not enough. Sit back down.",
+			"No funds. Sit."
+		],
+		"bribe_no_card": [
+			"Somebody took my card. Can't help you.",
+			"No card. No door.",
+			"Card's gone. Sit tight.",
+			"Can't. Someone lifted my card."
+		],
+		"bribe_door": [
+			"Door's jammed. Money's back.",
+			"Lock won't take it. Refunded.",
+			"Door's stuck. You're refunded.",
+			"Won't open. Credits returned."
 		],
 		"conversations": [
 			{
@@ -964,12 +1036,12 @@
 			"One of ours isn't answering."
 		],
 		"stealth_radio_report": [
-			"Unit to desk, checking something near %PLACE%.",
-			"Desk, looking into a noise by %PLACE%.",
-			"Desk, checking a disturbance. Stand by.",
-			"Desk, checking an irregularity. Stand by.",
-			"Unit to desk, looking into something.",
-			"Unit to desk. Probably nothing. Checking."
+			"Unit to warden, checking something near %PLACE%.",
+			"Warden, looking into a noise by %PLACE%.",
+			"Warden, checking a disturbance. Stand by.",
+			"Warden, checking an irregularity. Stand by.",
+			"Unit to warden, looking into something.",
+			"Unit to warden. Probably nothing. Checking."
 		],
 		"stealth_radio_alarm": [
 			"All units, incident near %PLACE%!",
@@ -980,11 +1052,11 @@
 			"Unit requires support, now!"
 		],
 		"stealth_radio_missing": [
-			"Desk, no contact with %NAME%. Checking.",
-			"Desk, %NAME% isn't responding. Going to look.",
-			"Desk, no word from %NAME%. Checking it.",
+			"Warden, no contact with %NAME%. Checking.",
+			"Warden, %NAME% isn't responding. Going to look.",
+			"Warden, no word from %NAME%. Checking it.",
 			"Lost a unit's signal. Checking.",
-			"Desk, a unit is unresponsive. Checking.",
+			"Warden, a unit is unresponsive. Checking.",
 			"Missed check-in. Investigating."
 		],
 		"stealth_copy": [
@@ -995,10 +1067,10 @@
 			"Copy. On my way."
 		],
 		"stealth_radio_dead": [
-			"Desk? Desk, respond.",
+			"Warden? Warden, respond.",
 			"My radio's out.",
 			"Nothing. Radio's dead.",
-			"Desk? No signal.",
+			"Warden? No signal.",
 			"Radio's down. Great."
 		]
 	},
@@ -1119,7 +1191,7 @@
 			"Dispatch, show us clear.",
 			"Clear. Finally.",
 			"All clear. Can I sit down now?",
-			"Desk, it's done. Clear.",
+			"Warden, it's done. Clear.",
 			"Clear. Nobody else moving."
 		],
 		"cell_alarm": [
@@ -1137,14 +1209,14 @@
 			"Sleep somewhere else. Now."
 		],
 		"radio_call": [
-			"Desk to all. Someone in %LOOK%, by %PLACE%. Go and look.",
+			"Warden to all. Someone in %LOOK%, by %PLACE%. Go and look.",
 			"All guards. %LOOK%. Near %PLACE%. Deal with it.",
-			"Desk to beat. Trouble by %PLACE%. Again.",
-			"Desk to beat. %PLACE%. Sort it out.",
-			"Desk to all. Trouble on the concourse. Again.",
+			"Warden to beat. Trouble by %PLACE%. Again.",
+			"Warden to beat. %PLACE%. Sort it out.",
+			"Warden to all. Trouble on the concourse. Again.",
 			"All guards. Go and look at the concourse.",
-			"Desk to beat. Something's kicking off.",
-			"Desk to all. Something's off. Go look."
+			"Warden to beat. Something's kicking off.",
+			"Warden to all. Something's off. Go look."
 		],
 		"radio_call_hot": [
 			"All guards. Armed. %LOOK%. Last seen by %PLACE%.",
@@ -1154,7 +1226,7 @@
 			"All guards. Armed idiot on the concourse.",
 			"Shots fired. Everyone. Now.",
 			"All guards. Weapons out. Move.",
-			"Desk to all. Shots. Go."
+			"Warden to all. Shots. Go."
 		],
 		"radio_ack": [
 			"Moving.",
@@ -1207,11 +1279,11 @@
 			"Step off the locker."
 		],
 		"body": [
-			"Desk, another one by %PLACE%. Morgue.",
+			"Warden, another one by %PLACE%. Morgue.",
 			"Body by %PLACE%. Somebody tell the morgue.",
-			"Desk, beat. Got a body. Morgue's got work.",
-			"Beat to desk. One more for the morgue.",
-			"Desk. Body on the floor. Morgue."
+			"Warden, beat. Got a body. Morgue's got work.",
+			"Beat to warden. One more for the morgue.",
+			"Warden. Body on the floor. Morgue."
 		],
 		"idle": [
 			"Quiet. I hate quiet.",
@@ -1261,18 +1333,18 @@
 			"Another one for the file."
 		],
 		"check_in": [
-			"Beat to desk. Nobody's dead.",
-			"Desk, beat. Quiet.",
+			"Beat to warden. Nobody's dead.",
+			"Warden, beat. Quiet.",
 			"Beat. Nothing. Over.",
-			"Desk, beat. Still standing.",
-			"Beat to desk. Quiet. Won't last."
+			"Warden, beat. Still standing.",
+			"Beat to warden. Quiet. Won't last."
 		],
 		"check_in_reply": [
-			"Desk copies.",
+			"Warden copies.",
 			"Yeah. Copy.",
 			"Great. Carry on.",
 			"Copy. Keep your eyes open.",
-			"Fine. Desk out."
+			"Fine. Warden out."
 		],
 		"beat": [
 			"Any trouble?",
@@ -1315,6 +1387,42 @@
 			"Get comfortable.",
 			"Shut it.",
 			"Keep talking. See what happens."
+		],
+		"bribe_coming": [
+			"Yeah, yeah. Coming.",
+			"What do you want?",
+			"Hang on.",
+			"This better be good."
+		],
+		"bribe_offer": [
+			"%PRICE% and nobody saw you.",
+			"Tell you what. %PRICE% credits and you're gone.",
+			"%PRICE%. I don't haggle.",
+			"Door's %PRICE% credits. Interested?"
+		],
+		"bribe_taken": [
+			"Pleasure. Now get lost.",
+			"We never spoke. Go.",
+			"Door's open. Don't thank me.",
+			"Off you go. You were never here."
+		],
+		"bribe_short": [
+			"You're broke. Sit down.",
+			"That's not money. Sit.",
+			"Waste of my time.",
+			"Come back when you're rich."
+		],
+		"bribe_no_card": [
+			"Some joker took my card. Tough luck.",
+			"No card. Not my problem.",
+			"My card's walked off. Sit.",
+			"Can't. Somebody's got my card."
+		],
+		"bribe_door": [
+			"Door's stuck. Here's your money.",
+			"Lock's busted. Keep your cash.",
+			"Won't open. Money's back.",
+			"Door's jammed. You're refunded."
 		],
 		"conversations": [
 			{
@@ -1465,12 +1573,12 @@
 			"Somebody's not checking in."
 		],
 		"stealth_radio_report": [
-			"Desk, checking something by %PLACE%.",
+			"Warden, checking something by %PLACE%.",
 			"Having a look by %PLACE%.",
-			"Desk, checking a noise.",
-			"Desk, having a look. Hang on.",
+			"Warden, checking a noise.",
+			"Warden, having a look. Hang on.",
 			"Something's off here. Checking.",
-			"Desk, something's moving. Checking."
+			"Warden, something's moving. Checking."
 		],
 		"stealth_radio_alarm": [
 			"All guards, trouble by %PLACE%!",
@@ -1481,11 +1589,11 @@
 			"Trouble on the floor! Move!"
 		],
 		"stealth_radio_missing": [
-			"Desk, %NAME% gone quiet. Checking.",
+			"Warden, %NAME% gone quiet. Checking.",
 			"No word from %NAME%. Looking.",
-			"Desk, %NAME%'s not answering. Going.",
+			"Warden, %NAME%'s not answering. Going.",
 			"Lost a guard. Going to look.",
-			"Desk, someone's gone quiet. Looking.",
+			"Warden, someone's gone quiet. Looking.",
 			"Missed check-in. Going to look."
 		],
 		"stealth_copy": [
@@ -1496,11 +1604,11 @@
 			"Copy. Moving."
 		],
 		"stealth_radio_dead": [
-			"Desk? Hello?",
+			"Warden? Hello?",
 			"Radio's dead.",
 			"Nothing. Great.",
 			"Radio's out. Figures.",
-			"Desk? Answer me."
+			"Warden? Answer me."
 		]
 	}
 }

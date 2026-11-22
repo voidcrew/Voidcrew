@@ -178,6 +178,20 @@
 #define OUTPOST_POLICE_CELL_OPEN (10 SECONDS)
 /// A prisoner carried out of a cell has this long to walk back in
 #define OUTPOST_POLICE_CELL_RETURN (20 SECONDS)
+/// The warden's price to let a jailed prisoner out early, per star at arrest, before the zone multiplier (owner decision 64)
+#define OUTPOST_POLICE_BRIBE_PER_STAR 500
+/// ...and never less than this
+#define OUTPOST_POLICE_BRIBE_MIN 1500
+/// After an offer (refused, unanswered or short) the warden won't come to that prisoner again for this long
+#define OUTPOST_POLICE_BRIBE_WAIT (60 SECONDS)
+/// The prisoner has this long to answer the offer
+#define OUTPOST_POLICE_BRIBE_ANSWER (20 SECONDS)
+/// The warden gives up walking to the cell door after this long
+#define OUTPOST_POLICE_BRIBE_WALK (30 SECONDS)
+/// How far from the tile outside the cell door the warden may stand and still take the money
+#define OUTPOST_POLICE_BRIBE_REACH 2
+/// How far from the cell door the warden may be and still walk over to it
+#define OUTPOST_POLICE_BRIBE_WALK_REACH 12
 
 // ===== FOUR AND FIVE STARS =====
 
@@ -235,15 +249,21 @@
 #define POLICE_LINE_FINE_PAID "fine_paid"
 #define POLICE_LINE_LOCKER_THIEF "locker_thief"
 #define POLICE_LINE_BODY "body"
+#define POLICE_LINE_BRIBE_COMING "bribe_coming"
+#define POLICE_LINE_BRIBE_OFFER "bribe_offer"
+#define POLICE_LINE_BRIBE_TAKEN "bribe_taken"
+#define POLICE_LINE_BRIBE_SHORT "bribe_short"
+#define POLICE_LINE_BRIBE_NO_CARD "bribe_no_card"
+#define POLICE_LINE_BRIBE_DOOR "bribe_door"
 
 /// The officers' dialogue file in AMBIENT_STRINGS_DIR
 #define AMBIENT_STRINGS_POLICE "outpost_police.json"
 
 /// Access on officers' IDs: police doors open for it
 #define ACCESS_OUTPOST_POLICE "outpost_police"
-/// Access on the desk sergeant's ID only: the holding cell doors open for it. Never ACCESS_BRIG, which ship security carries.
+/// Access on the warden's ID only: the holding cell doors open for it. Never ACCESS_BRIG, which ship security carries.
 #define ACCESS_OUTPOST_CELLS "outpost_cells"
-/// A desk sergeant's ID stops working this long after it leaves its sergeant
+/// The warden's ID stops working this long after it leaves its warden
 #define OUTPOST_POLICE_SERGEANT_CARD_VOID (5 MINUTES)
 
 // ===== SIGNALS (all sent on the /datum/outpost_police) =====

@@ -195,7 +195,7 @@ If nobody is at the outpost, its hangars and the ships docked there for ten minu
 
 ## Outpost security
 
-Officers walk the concourse, stop for coffee and talk to each other, and a sergeant keeps the security desk by the lobby. They are people, not turrets: they can be stunned, cuffed, wounded and killed like anyone. They work the outpost, its hangars and any ship docked there, but they never break into a ship. They also shoot hostile wildlife and xenos that get loose in the outpost.
+Officers walk the concourse, stop for coffee and talk to each other, and a warden keeps the security desk and the cells by the lobby. They are people, not turrets: they can be stunned, cuffed, wounded and killed like anyone. They work the outpost, its hangars and any ship docked there, but they never break into a ship. They also shoot hostile wildlife and xenos that get loose in the outpost.
 
 Each force has its own manner. Halcyon's is polite, Quartermain's is gruff, and the Exchange's at the Undertow is the hardest.
 
@@ -264,9 +264,11 @@ If you go down before the cuffs are on, you are cuffed where you lie and held th
 - **The fine** (1-2 stars). 300 credits at 1 star and 800 at 2 at Halcyon, half as much again at Quartermain and double at the Undertow. It is paid from your crew's ship accounts together, in full or not at all.
 - **If it is paid.** You wait in a cell, about half a minute at 1 star and a minute at 2, then the door opens onto the lobby.
 - **If it is not.** You go to jail, one minute at 1 star and two at 2. The fine is tried again every half minute, and paying it ends the term. There is no debt afterwards.
-- **At 3 stars and up.** There is no fine and no paying your way out. You go straight to jail: 4 minutes at 3 stars, 7 at 4 and 10 at 5.
+- **At 3 stars and up.** There is no fine. You go straight to jail: 4 minutes at 3 stars, 7 at 4 and 10 at 5.
 
 In jail your gear comes off and goes into a **property locker** outside the cells, and you get an orange jumpsuit and shoes. You keep your ID, your implants, and any ship key or mission item, even one that was in your bag.
+
+A warden guards the cells, and he can be paid to let you out early. Call him over from your cell. It costs at least 1,500 credits from your crew's ship accounts.
 
 If you go down in a cell, the door opens for a medic and your time stops. Once you can walk again you have 20 seconds to get back in, or it counts as a breakout. Dying ends the term.
 
@@ -278,13 +280,13 @@ If you go down in a cell, the door opens for a medic and your time stops. Once y
 
 ### Looting
 
-Officers, guards, traders, medics and cleaning crews drop nothing they wear or carry (the desk sergeant's ID is the one thing you can take off them), and the morgue crew take nothing from a body. Shoppers and regulars carry a little cash, and the first trader behind a counter may drop something from the shelf (see [Killing a trader](#killing-a-trader)).
+Officers, guards, traders, medics and cleaning crews drop nothing they wear or carry (the warden's ID is the one thing you can take off them), and the morgue crew take nothing from a body. Shoppers and regulars carry a little cash, and the first trader behind a counter may drop something from the shelf (see [Killing a trader](#killing-a-trader)).
 
 Emagging a property locker or the evidence locker, or taking anything out of one that isn't yours, is theft: 2 stars if anyone sees it. Officers take the goods back when they arrest you.
 
 ### Breaking out
 
-The cell doors are airlocks that open for the desk sergeant's ID. A sergeant's ID stops working five minutes after it leaves them. The doors can be hacked like any airlock, opened with an airlock override card, or pried with a crowbar once their power is out, and they put themselves right a few minutes later. A plain emag does nothing to them. Opening a cell with someone in it sets off an alarm and is 3 stars for whoever opened it. So is walking out of a cell before your time is up, or carrying a prisoner out. Taking police cuffs off someone is a crime too.
+The cell doors are airlocks that open for the warden's ID. The warden's ID stops working five minutes after it leaves him. The doors can be hacked like any airlock, opened with an airlock override card, or pried with a crowbar once their power is out, and they put themselves right a few minutes later. A plain emag does nothing to them. Opening a cell with someone in it sets off an alarm and is 3 stars for whoever opened it. So is walking out of a cell before your time is up, or carrying a prisoner out. Taking police cuffs off someone is a crime too.
 
 ### Accomplices
 
