@@ -397,6 +397,13 @@
 	TEST_ASSERT(ship.is_ship_captain(captain), "The actual Head Prisoner must hold command")
 	TEST_ASSERT(!ship.is_ship_captain(crew), "A Prisoner must not share the Head Prisoner's command")
 	TEST_ASSERT_NOTNULL(locate(/datum/action/innate/captain_management) in captain.actions, "The Head Prisoner must receive ship controls")
+	// Cloning moves the mind into a new body; the controls have to go with it.
+	var/mob/living/carbon/human/consistent/clone = allocate(/mob/living/carbon/human/consistent)
+	captain.mind.transfer_to(clone)
+	TEST_ASSERT_NOTNULL(locate(/datum/action/innate/captain_management) in clone.actions, "A cloned captain must keep ship controls in the new body")
+	TEST_ASSERT_NULL(locate(/datum/action/innate/captain_management) in captain.actions, "The old body must not keep the captain's ship controls")
+	clone.mind.transfer_to(captain)
+	TEST_ASSERT_NOTNULL(locate(/datum/action/innate/captain_management) in captain.actions, "Ship controls must follow the mind back")
 	TEST_ASSERT(admin_panel.demote_from_captain(captain.mind, ship), "An admin must be able to demote the Head Prisoner")
 	TEST_ASSERT_EQUAL(captain.mind.assigned_role, prisoner, "Demotion must assign the ordinary Prisoner slot")
 	TEST_ASSERT(!ship.has_real_captain(), "Changing to a same-type crew slot must remove real command")
