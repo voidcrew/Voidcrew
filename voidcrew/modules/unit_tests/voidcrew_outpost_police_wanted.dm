@@ -512,7 +512,7 @@
 
 	var/mob/living/carbon/human/fighter = wanted_person(wanted_spot(0, 2))
 	police.officer_struck(officer, fighter, ATTACKER_DAMAGING_ATTACK)
-	TEST_ASSERT_EQUAL(police.warrants[fighter.mind]?.heat, 8, "Bare fists on an officer were not resisting")
+	TEST_ASSERT_EQUAL(police.warrants[fighter.mind]?.heat, 10, "Bare fists on an officer were not resisting") // OUTPOST_CRIME_RESIST: one star at once
 
 	var/mob/living/carbon/human/swinger = wanted_person(wanted_spot(1, 0))
 	var/obj/item/crowbar/bar = allocate(/obj/item/crowbar)
@@ -906,7 +906,7 @@
 	cop_report.due = world.time
 	police.tick_warrants()
 	var/datum/outpost_warrant/cop_warrant = police.warrants[cop_killer.mind]
-	TEST_ASSERT_EQUAL(cop_warrant?.heat, 95, "A pending officer kill did not come to 95 heat") // 50 + 45
+	TEST_ASSERT_EQUAL(cop_warrant?.heat, 60, "A pending officer kill did not come to 60 heat") // 50 + 10
 	TEST_ASSERT_EQUAL(cop_warrant?.officers_killed, 1, "A pending officer kill did not increment officers_killed")
 	TEST_ASSERT_EQUAL(outpost.embargoed_ships[ship], world.time + 20 MINUTES, "A pending officer kill did not add 5 minutes to the 15-minute embargo")
 	wanted_cleanup(list(ship))
@@ -991,7 +991,7 @@
 	case.check_interference(suspect)
 	suspect.pulledby = null
 	police.close_case(suspect.mind)
-	TEST_ASSERT_EQUAL(police.warrants[meddler.mind]?.heat, 8, "A player in an officer's body interfering with an arrest was excused") // OUTPOST_CRIME_RESIST
+	TEST_ASSERT_EQUAL(police.warrants[meddler.mind]?.heat, 10, "A player in an officer's body interfering with an arrest was excused") // OUTPOST_CRIME_RESIST: one star at once
 
 	// officer_killed_by() extends active embargoes without reviving an already-expired custom ship embargo
 	var/mob/living/carbon/human/leader = wanted_person(wanted_spot(3, 0))
