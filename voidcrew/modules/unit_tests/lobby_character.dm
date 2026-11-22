@@ -81,11 +81,14 @@
 	TEST_ASSERT(length_char(name) <= MAX_NAME_LEN, "name over MAX_NAME_LEN")
 
 	// Colours.
-	TEST_ASSERT(!term.act("char_set", list("key" = "eye_color", "value" = "nothex")), "bad hex accepted")
-	TEST_ASSERT(!term.act("char_set", list("key" = "eye_color", "value" = "#12ab3")), "5-digit hex accepted")
+	// A refused value still answers (the page snaps back to the pushed value), but writes nothing.
 	TEST_ASSERT(term.act("char_set", list("key" = "eye_color", "value" = "#1A2B3C")), "good hex refused")
 	TEST_ASSERT_EQUAL(lowertext(prefs.read_preference(/datum/preference/color/eye_color)), "#1a2b3c", "eye colour not written")
+	term.act("char_set", list("key" = "eye_color", "value" = "nothex"))
+	term.act("char_set", list("key" = "eye_color", "value" = "#12ab3"))
+	TEST_ASSERT_EQUAL(lowertext(prefs.read_preference(/datum/preference/color/eye_color)), "#1a2b3c", "a bad hex was written")
 	TEST_ASSERT(!term.act("char_color_pick", list("key" = "underwear_color")), "native picker opened for a non-BODY colour")
+	check_refusals(term, prefs)
 
 	// Slots.
 	var/start_slot = prefs.default_slot
@@ -115,6 +118,8 @@
 	check_quirks(term, prefs)
 	check_species_confirm(term, prefs)
 	check_kit(term, prefs)
+	check_auto_open(term)
+	check_outside_writes(mock)
 
 	// Action spam: the 21st act in one second is dropped.
 	term.char_act_count = 0
@@ -252,3 +257,67 @@
 		loadout = prefs.read_preference(/datum/preference/loadout)
 		TEST_ASSERT(isnull(loadout[named_item.item_path][INFO_NAMED]), "kit name not cleared")
 		term.act("char_kit", list("path" = path, "on" = 0))
+
+/// Refused names and too-dark scales push the char block back and say why on the notice line.
+/datum/unit_test/lobby_character/proc/check_refusals(datum/lobby_terminal/lobby_char_test/term, datum/preferences/prefs)
+	var/old_name = prefs.read_preference(/datum/preference/name/real_name)
+	term.notice = null
+	var/rev = term.char_rev
+	TEST_ASSERT(term.act("char_set", list("key" = "real_name", "value" = "<>!!")), "a refused name gave no answer")
+	TEST_ASSERT_EQUAL(prefs.read_preference(/datum/preference/name/real_name), old_name, "a refused name was written")
+	TEST_ASSERT(term.char_rev > rev, "a refused name did not push the char block")
+	TEST_ASSERT_EQUAL(term.notice?["text"], "The registry won't take that name.", "no notice for a refused name")
+	TEST_ASSERT_EQUAL(term.notice?["kind"], "warn", "a refused name's notice is not a warning")
+
+	term.notice = null
+	prefs.all_quirks = list()
+	term.act("char_set", list("key" = "species", "value" = SPECIES_LIZARD))
+	var/old_scales = prefs.read_preference(/datum/preference/color/mutant_color)
+	rev = term.char_rev
+	TEST_ASSERT(term.act("char_set", list("key" = "feature_mcolor", "value" = "#000000")), "a refused colour gave no answer")
+	TEST_ASSERT_EQUAL(prefs.read_preference(/datum/preference/color/mutant_color), old_scales, "a black scale colour was written")
+	TEST_ASSERT(term.char_rev > rev, "a refused colour did not push the char block")
+	TEST_ASSERT_EQUAL(term.notice?["text"], "That colour is too dark.", "no notice for a too-dark colour")
+	term.notice = null
+	term.act("char_set", list("key" = "species", "value" = SPECIES_HUMAN))
+
+/// The shell's pre-round open (char_open {auto}) holds the idle fill until the player does something.
+/datum/unit_test/lobby_character/proc/check_auto_open(datum/lobby_terminal/lobby_char_test/term)
+	term.char_open = FALSE
+	term.char_preview_lazy = FALSE
+	TEST_ASSERT(term.act("char_open", list("auto" = 1)), "char_open {auto} refused")
+	TEST_ASSERT(term.char_preview_lazy, "char_open {auto} did not hold the idle fill")
+	term.act("char_face", list("dir" = WEST))
+	TEST_ASSERT(term.char_preview_lazy, "char_face woke the idle fill")
+	term.act("char_turn", list("dir" = WEST))
+	TEST_ASSERT(!term.char_preview_lazy, "char_turn did not wake the idle fill")
+	term.act("char_open", list("auto" = 1))
+	TEST_ASSERT(!term.char_preview_lazy, "a second auto open put an open terminal back to sleep")
+	term.char_open = FALSE
+	term.act("char_open")
+	TEST_ASSERT(!term.char_preview_lazy, "char_open without auto held the idle fill")
+
+/// Prefs whose terminal is set by the test (a mock client has none).
+/datum/preferences/lobby_char_sync_test
+	var/datum/lobby_terminal/test_terminal
+
+/datum/preferences/lobby_char_sync_test/lobby_terminal_of()
+	return test_terminal
+
+/// A write that doesn't come through ui_act (tg's recolour menu writes from a callback) still reaches the terminal.
+/datum/unit_test/lobby_character/proc/check_outside_writes(datum/client_interface/mock)
+	var/datum/preferences/lobby_char_sync_test/sync = new(mock)
+	var/datum/lobby_terminal/lobby_char_test/sync_term = new(sync)
+	sync.test_terminal = sync_term
+	sync_term.char_open = TRUE
+	sync.current_window = PREFERENCE_TAB_CHARACTER_PREFERENCES
+	var/rev = sync_term.char_rev
+	TEST_ASSERT(sync.update_preference(GLOB.preference_entries[/datum/preference/loadout], list()), "loadout write refused")
+	TEST_ASSERT(sync_term.char_rev > rev, "a loadout write outside ui_act did not reach the terminal")
+	// The terminal's own writes do their own bookkeeping: no second bump.
+	rev = sync_term.char_rev
+	sync.lobby_update_preference(GLOB.preference_entries[/datum/preference/numeric/age], 40)
+	TEST_ASSERT_EQUAL(sync_term.char_rev, rev, "a terminal write was counted twice")
+	sync.test_terminal = null
+	qdel(sync_term)
+	qdel(sync)

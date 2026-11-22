@@ -326,6 +326,8 @@ type Data = {
   zone_advisory: { label: string; critical: BooleanLike } | null;
 
   calibrating: BooleanLike;
+  isCaptain: BooleanLike;
+  jumpVote: BooleanLike;
   undockCooldown: BooleanLike;
   undockCooldownRemaining: number;
   undockLocked: BooleanLike;
@@ -4671,6 +4673,8 @@ const OpsRow = () => {
     nebulaHideRemaining,
     zone_transitioning,
     calibrating,
+    isCaptain,
+    jumpVote,
     dockOptions,
     speed,
     dockAssistMaxSpeed,
@@ -4884,14 +4888,26 @@ const OpsRow = () => {
       />
       <OpsButton
         label="Bluespace"
-        sub={calibrating ? 'calibrating' : 'leave system'}
+        sub={
+          calibrating ? 'calibrating' : jumpVote ? 'crew voting' : 'leave system'
+        }
         path="M13 2L4 14h6l-1 8 9-12h-6l1-8z"
-        disabled={!flyable || !!zone_transitioning || !!hiddenInNebula}
-        state={calibrating ? 'armed' : undefined}
+        disabled={
+          !isCaptain ||
+          !!jumpVote ||
+          !flyable ||
+          !!zone_transitioning ||
+          !!hiddenInNebula
+        }
+        state={calibrating || jumpVote ? 'armed' : undefined}
         title={
-          calibrating
-            ? 'Cancel the bluespace jump'
-            : 'Calibrate a bluespace jump, this ends the round for your ship'
+          !isCaptain
+            ? 'Captain only'
+            : jumpVote
+              ? 'The crew is voting'
+              : calibrating
+                ? 'Cancel the bluespace jump'
+                : 'Calibrate a bluespace jump, this ends the round for your ship'
         }
         onClick={() => act('bluespace_jump')}
       />

@@ -192,7 +192,7 @@ IPINTEL_REJECT_BAD
 # WIKIURL http://tgstation13.org/wiki
 
 ## Rules address
-# RULESURL http://tgstation13.org/wiki/Rules
+RULESURL https://rules.voidcrew-lrp.com
 
 ## Github address
 # GITHUBURL https://www.github.com/tgstation/tgstation

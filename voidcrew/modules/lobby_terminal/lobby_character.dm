@@ -19,7 +19,7 @@
 /// Most char_* actions one terminal takes in a second; the rest are dropped.
 #define LOBBY_CHAR_ACTS_PER_SECOND 20
 /// Edits are written to disk this long after the last one (and on slot switch, hide and Destroy).
-#define LOBBY_CHAR_SAVE_DELAY (5 SECONDS)
+#define LOBBY_CHAR_SAVE_DELAY (1 SECONDS)
 /// A native colour dialog left open longer than this no longer blocks a new one.
 #define LOBBY_CHAR_PICK_TIMEOUT (2 MINUTES)
 
@@ -31,6 +31,8 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 /datum/lobby_terminal
 	/// Edits not yet written to disk.
 	var/char_dirty = FALSE
+	/// Saves to disk so far; pushed as char_saved so the page can show SAVED.
+	var/char_saved_count = 0
 	/// char_static goes out with the next push (once per page, on char_open).
 	var/char_static_due = FALSE
 	/// Species change waiting on char_confirm: list("value", "quirks", "slot"), or null. Any other edit clears it.
@@ -49,35 +51,44 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 			GLOB.lobby_char_job_pool += job
 	return GLOB.lobby_char_job_pool
 
-/// The small per-round catalog the terminal adds to preferences.json: role examples and kit colour slot counts.
+/// The small per-round catalog the terminal adds to preferences.json: each role's berth titles and kit colour slot counts.
 /proc/lobby_char_static()
-	if(length(GLOB.lobby_char_static))
-		return GLOB.lobby_char_static
+	if(!length(GLOB.lobby_char_static))
+		GLOB.lobby_char_static = lobby_char_build_static(lobby_char_job_pool())
+	return GLOB.lobby_char_static
+
+/// Builds char_static from job_pool (job datums) without caching it. A seam so tests can supply their own pool.
+/proc/lobby_char_build_static(list/job_pool)
 	var/list/roles = list()
 	for(var/category in GLOB.job_categories)
 		var/list/slots_by_title = list()
-		for(var/datum/job/job as anything in lobby_char_job_pool())
+		for(var/datum/job/job as anything in job_pool)
 			if(job.job_category != category || !job.title)
 				continue
 			slots_by_title[job.title] += 1
+		// A role with no berth on any starting ship (Silicon today) is left out: its level would do nothing.
+		if(!length(slots_by_title))
+			continue
 		sortTim(slots_by_title, GLOBAL_PROC_REF(cmp_numeric_dsc), associative = TRUE)
-		var/list/examples = list()
+		var/list/titles = list()
 		for(var/title in slots_by_title)
-			examples += title
-			if(length(examples) >= 3)
+			titles += title
+			if(length(titles) >= 6)
 				break
-		roles += list(list(category, jointext(examples, ", ")))
+		roles += list(list(category, titles))
 	var/list/kit_colors = list()
 	for(var/path in GLOB.all_loadout_datums)
 		var/datum/loadout_item/item = GLOB.all_loadout_datums[path]
 		var/count = lobby_char_kit_color_count(item)
 		if(count)
 			kit_colors["[item.item_path]"] = count
-	GLOB.lobby_char_static = list("roles" = roles, "kit_colors" = kit_colors)
-	return GLOB.lobby_char_static
+	return list("roles" = roles, "kit_colors" = kit_colors)
 
 /// Number of GAGS colour slots a recolourable loadout item has, or 0.
 /proc/lobby_char_kit_color_count(datum/loadout_item/item)
+	// The lipstick has one colour, kept in INFO_GREYSCALE by tg's own loadout action.
+	if(istype(item, /datum/loadout_item/pocket_items/lipstick))
+		return 1
 	if(!istype(item) || !item.can_be_greyscale)
 		return 0
 	var/obj/item/item_path = item.item_path
@@ -126,10 +137,14 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 		return FALSE
 	if(!islist(params))
 		params = list()
+	// The shell's pre-round open renders one facing; anything the player does wakes the idle fill.
+	var/auto_open = action == "char_open" && !!lobby_char_int(params["auto"])
+	if(!auto_open && action != "char_face")
+		char_preview_lazy = FALSE
 
 	switch(action)
 		if("char_open")
-			return char_open_tab(user, prefs)
+			return char_open_tab(user, prefs, auto_open)
 		if("char_slot")
 			return char_switch_slot(user, prefs, lobby_char_int(params["slot"]))
 		if("char_set")
@@ -143,6 +158,8 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 		if("char_voice_play")
 			var/datum/preference_middleware/bark/bark = locate() in prefs.middleware
 			if(bark)
+				// Picking a voice plays it at once, so a new pick never waits out the last one's cooldown.
+				COOLDOWN_RESET(bark, bark_cooldown)
 				INVOKE_ASYNC(bark, TYPE_PROC_REF(/datum/preference_middleware/bark, play_bark), list(), user)
 			return TRUE
 		if("char_role")
@@ -157,6 +174,10 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 			return char_set_kit_name(user, prefs, params["path"], params["name"])
 		if("char_kit_skin")
 			return char_set_kit_skin(user, prefs, params["path"], params["skin"])
+		if("char_kit_layer")
+			return char_set_kit_layer(user, prefs, params["path"])
+		if("char_kit_lip")
+			return char_set_kit_lip(user, prefs, params["path"], params["style"])
 		if("char_dress")
 			return char_set_dress(user, prefs, params["category"])
 		if("char_turn")
@@ -208,7 +229,10 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 	char_edited(user, prefs)
 	return TRUE
 
-/datum/lobby_terminal/proc/char_open_tab(mob/user, datum/preferences/prefs)
+/// auto: opened by the shell before the round, not by the player. Renders the south facing only until woken.
+/datum/lobby_terminal/proc/char_open_tab(mob/user, datum/preferences/prefs, auto = FALSE)
+	if(auto && !char_open)
+		char_preview_lazy = TRUE
 	if(ui && !QDELETED(ui) && ui.window)
 		if(ui.send_asset(get_asset_datum(/datum/asset/json/preferences)))
 			owner?.browse_queue_flush()
@@ -227,6 +251,7 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 		return FALSE
 	if(!prefs.lobby_switch_to_slot(slot, user))
 		return FALSE
+	char_dress = null // a new file wears its own top role
 	char_edited(user, prefs)
 	char_save()
 	return TRUE
@@ -240,7 +265,7 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 	if(istype(preference, /datum/preference/color))
 		value = lobby_char_clean_hex(value)
 		if(!value)
-			return FALSE
+			return char_refused(user, preference)
 	if(istype(preference, /datum/preference/choiced/species))
 		var/list/dropped = char_quirks_dropped_by(prefs, value)
 		if(length(dropped))
@@ -248,7 +273,19 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 			char_rev++
 			char_push(user)
 			return TRUE
-	return char_apply(user, prefs, preference, value)
+	if(!char_apply(user, prefs, preference, value))
+		return char_refused(user, preference)
+	return TRUE
+
+/// A refused char_set: push the char block so the page snaps back, and say why for the two that can be refused.
+/datum/lobby_terminal/proc/char_refused(mob/user, datum/preference/preference)
+	char_rev++
+	char_push(user)
+	if(istype(preference, /datum/preference/name/real_name))
+		set_notice("The registry won't take that name.", "warn")
+	else if(istype(preference, /datum/preference/color))
+		set_notice("That colour is too dark.", "warn")
+	return TRUE
 
 /// Names of the taken quirks the species with that id can't keep.
 /datum/lobby_terminal/proc/char_quirks_dropped_by(datum/preferences/prefs, species_id)
@@ -328,6 +365,8 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 				prefs.ship_category_preferences[other] = JP_MEDIUM
 	if(!prefs.set_ship_category_preference(category, new_level))
 		return FALSE
+	// The preview goes back to wearing the top role's uniform.
+	char_dress = null
 	char_edited(user, prefs)
 	return TRUE
 
@@ -455,6 +494,9 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 	else
 		// Same limits as tg's popup (tgui_input_text, MAX_NAME_LEN), stored HTML-encoded as it does.
 		if(length_char(name) > MAX_NAME_LEN || !reject_bad_text(name, MAX_NAME_LEN))
+			// Snap the page's field back to the stored name.
+			char_push(user)
+			set_notice("That name won't do.", "warn")
 			return FALSE
 		details[INFO_NAMED] = html_encode(name)
 	if(!prefs.lobby_update_preference(GLOB.preference_entries[/datum/preference/loadout], loadout))
@@ -475,6 +517,41 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 	var/list/loadout = prefs.read_preference(/datum/preference/loadout)
 	var/list/details = loadout?[item.item_path]
 	if(!islist(details) || details[INFO_RESKIN] != skin)
+		return FALSE
+	char_edited(user, prefs)
+	return TRUE
+
+/// An accessory over or under the suit: tg's own set_layer action, which flips INFO_LAYER.
+/datum/lobby_terminal/proc/char_set_kit_layer(mob/user, datum/preferences/prefs, path)
+	var/datum/loadout_item/accessory/item = char_kit_item(path)
+	if(!istype(item) || !item.can_be_layer_adjusted)
+		return FALSE
+	var/datum/preference_middleware/loadout/manager = locate() in prefs.middleware
+	if(!manager || !char_kit_has(prefs, item))
+		return FALSE
+	prefs.lobby_char_writes = 1
+	var/done = item.handle_loadout_action(manager, user, "set_layer", list())
+	prefs.lobby_char_writes = 0
+	if(!done)
+		return FALSE
+	char_edited(user, prefs)
+	return TRUE
+
+/// Where the lipstick sits. tg asks with a popup; the terminal sends the style and writes it here.
+/datum/lobby_terminal/proc/char_set_kit_lip(mob/user, datum/preferences/prefs, path, style)
+	var/datum/loadout_item/item = char_kit_item(path)
+	if(!istype(item, /datum/loadout_item/pocket_items/lipstick))
+		return FALSE
+	if(!(style in list(UPPER_LIP, MIDDLE_LIP, LOWER_LIP)))
+		return FALSE
+	var/list/loadout = char_kit_copy(prefs, item)
+	if(!loadout)
+		return FALSE
+	var/list/details = loadout[item.item_path]
+	if(details[INFO_LAYER] == style)
+		return FALSE
+	details[INFO_LAYER] = style
+	if(!prefs.lobby_update_preference(GLOB.preference_entries[/datum/preference/loadout], loadout))
 		return FALSE
 	char_edited(user, prefs)
 	return TRUE
@@ -531,11 +608,15 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 			var/obj/item/kit_item = item_path
 			if(initial(kit_item.greyscale_colors))
 				entry["greyscale"] = initial(kit_item.greyscale_colors)
+			else if(item_path == /obj/item/lipstick)
+				entry["greyscale"] = /obj/item/lipstick::lipstick_color
 		if(islist(details))
 			if(details[INFO_NAMED])
 				entry["name"] = details[INFO_NAMED]
 			if(details[INFO_RESKIN])
 				entry["reskin"] = details[INFO_RESKIN]
+			if(!isnull(details[INFO_LAYER]))
+				entry["layer"] = details[INFO_LAYER]
 		kit["[item_path]"] = entry
 	var/list/confirm
 	if(char_confirm_state)
@@ -551,6 +632,7 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 		"kit" = kit,
 		"dress" = char_resolved_dress(prefs),
 		"confirm" = confirm,
+		"look" = char_appearance_key(),
 	)
 
 /datum/lobby_terminal/char_push(mob/user)
@@ -590,8 +672,13 @@ GLOBAL_LIST_EMPTY(lobby_char_static)
 	if(!prefs?.savefile)
 		return
 	char_dirty = FALSE
-	prefs.save_character()
+	if(!prefs.lobby_save_whole_character())
+		return // a guest's file is never written
 	prefs.save_preferences()
+	// SAVED on the CHARACTER box for a moment.
+	char_saved_count++
+	if(char_open && ui && !QDELETED(ui))
+		ui.send_update(list("char_saved" = char_saved_count))
 
 #undef LOBBY_CHAR_ACTS_PER_SECOND
 #undef LOBBY_CHAR_SAVE_DELAY

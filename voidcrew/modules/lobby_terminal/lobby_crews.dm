@@ -15,6 +15,10 @@
 #define LOBBY_CREW_APPLY_COOLDOWN (10 SECONDS)
 /// How long a cached job eligibility answer (ban, playtime) is trusted.
 #define LOBBY_CREW_JOB_CHECK_TTL (5 MINUTES)
+/// Memo characters sent per ship. The most any screen draws is 244.
+#define LOBBY_CREW_MEMO_MAX 260
+/// Most crew names sent besides the captains. The record shows fewer and says how many more.
+#define LOBBY_CREW_ROSTER_MAX 30
 
 /datum/lobby_terminal
 	/// REF(job) = list(ok, world.time checked). Eligibility can query the ban DB and sleep, so it never runs inside ui_data.
@@ -27,12 +31,21 @@
 	var/static/list/crew_code_seen = list()
 	/// Shared instance of the old join menu, only to reach its static ping cooldown list.
 	var/static/datum/ship_join_menu/crew_ping_menu
+	/// REF(ship) of the crew record this player has open, or null. Only that ship's roster is sent.
+	var/crew_open_ref
+
+/// Every ship the CREWS list shows. A seam so tests can supply their own ships.
+/datum/lobby_terminal/proc/crew_ships()
+	return get_joinable_ships()
 
 /datum/lobby_terminal/crews_data(mob/user)
 	var/list/crews = list()
 	var/ckey = user?.ckey
 	var/list/to_check
-	for(var/obj/structure/overmap/ship/ship as anything in get_joinable_ships())
+	var/datum/voidcrew_crew_record/my_record = ckey ? GLOB.voidcrew_crew_roster[ckey] : null
+	if(QDELETED(my_record))
+		my_record = null
+	for(var/obj/structure/overmap/ship/ship as anything in crew_ships())
 		var/ship_ref = REF(ship)
 		var/list/jobs = list()
 		for(var/datum/job/job as anything in ship.job_slots)
@@ -54,7 +67,7 @@
 			"name" = ship.name,
 			"cls" = ship.source_template?.short_name || "Unknown",
 			"crew" = length(ship.manifest),
-			"memo" = ship.memo || "",
+			"memo" = copytext_char(ship.memo || "", 1, LOBBY_CREW_MEMO_MAX + 1),
 			"locked" = !!ship.join_password,
 			"cleared" = ship.is_password_cleared(ckey),
 			"applied" = !isnull(ship.find_crew_application(ckey)),
@@ -63,21 +76,30 @@
 			"rejoin_wait" = CEILING(cryo_rejoin_wait(ckey, ship) / (1 SECONDS), 1),
 			"code_wait" = code_lock_wait(ckey, ship_ref),
 			"jobs" = jobs,
-			"aboard" = crew_aboard(ship),
+			"mine" = !!(my_record && ship.ship_team?.crew_record == my_record),
 		))
 	if(to_check && !crew_jobs_checking && istype(user, /mob/dead/new_player))
 		crew_jobs_checking = TRUE
 		INVOKE_ASYNC(src, PROC_REF(refresh_crew_jobs), user, to_check)
-	return list("crews" = crews)
-
-/// Most crew names sent per ship. The record shows fewer and says how many more.
-#define LOBBY_CREW_ABOARD_MAX 30
+	// A join already under way (any route): SIGN ON waits for it.
+	var/joining = !!(ckey && GLOB.lobby_join_locks[ckey])
+	var/mob/dead/new_player/player = user
+	if(istype(player) && (player.spawning || player.spawning_ship))
+		joining = TRUE
+	return list("crews" = crews, "roster" = crew_roster(), "joining" = joining)
 
 /**
- * Who is aboard, from the ship's manifest: list(name, job title, is captain), the captain first.
+ * Who is aboard the ship whose record is open: list(ref, names, more), or null when no record
+ * is open or that ship has gone. names are list(name, is captain), captains first, then at most
+ * LOBBY_CREW_ROSTER_MAX others. more is the crew count less the names sent.
  * The captain is whoever is_ship_captain_mind() says holds command (a claim, or the officer job).
  */
-/datum/lobby_terminal/proc/crew_aboard(obj/structure/overmap/ship/ship)
+/datum/lobby_terminal/proc/crew_roster()
+	if(!crew_open_ref)
+		return null
+	var/obj/structure/overmap/ship/ship = crew_find_ship(crew_open_ref)
+	if(!ship)
+		return null
 	var/list/captains = list()
 	for(var/datum/mind/member as anything in ship.ship_team?.members)
 		if(member && ship.is_ship_captain_mind(member))
@@ -85,15 +107,16 @@
 	var/list/first = list()
 	var/list/rest = list()
 	for(var/name in ship.manifest)
-		var/datum/job/job = ship.manifest[name]
-		var/list/line = list("[name]", istype(job) ? job.title : "", !!captains[name])
 		if(captains[name])
-			first += list(line)
-		else if(length(rest) < LOBBY_CREW_ABOARD_MAX)
-			rest += list(line)
-	return first + rest
-
-#undef LOBBY_CREW_ABOARD_MAX
+			first += list(list("[name]", TRUE))
+		else if(length(rest) < LOBBY_CREW_ROSTER_MAX)
+			rest += list(list("[name]", FALSE))
+	var/list/names = first + rest
+	return list(
+		"ref" = crew_open_ref,
+		"names" = names,
+		"more" = max(0, length(ship.manifest) - length(names)),
+	)
 
 /// Runs the job eligibility checks (ban DB, playtime, account age) off the UI tick and caches the answers.
 /datum/lobby_terminal/proc/refresh_crew_jobs(mob/dead/new_player/user, list/jobs)
@@ -124,7 +147,7 @@
 	if(!istext(ship_ref))
 		return null
 	var/obj/structure/overmap/ship/ship = locate(ship_ref)
-	if(!istype(ship) || QDELETED(ship) || !(ship in get_joinable_ships()))
+	if(!istype(ship) || QDELETED(ship) || !(ship in crew_ships()))
 		return null
 	return ship
 
@@ -141,6 +164,11 @@
 	var/mob/dead/new_player/player = user
 	if(!istype(player) || !player.ckey)
 		return FALSE
+	// Opening and closing a record never raise a notice: the page closes a record whose ship left.
+	if(action == "crew_close")
+		return crew_set_open(null)
+	if(action == "crew_open")
+		return crew_set_open(params["ship"])
 	var/obj/structure/overmap/ship/ship = crew_find_ship(params["ship"])
 	if(!ship)
 		set_notice("That ship has left.", "warn")
@@ -155,6 +183,15 @@
 		if("crew_ping")
 			return crew_ping(player, ship)
 	return FALSE
+
+/// Remembers which record is open so its roster goes out. A bad ref clears it. TRUE when it changed.
+/datum/lobby_terminal/proc/crew_set_open(ship_ref)
+	var/obj/structure/overmap/ship/ship = crew_find_ship(ship_ref)
+	var/new_ref = ship ? REF(ship) : null
+	if(new_ref == crew_open_ref)
+		return FALSE
+	crew_open_ref = new_ref
+	return TRUE
 
 /**
  * Port is full: the classic Join button's rule plus the old late join's "first in line"
@@ -179,7 +216,7 @@
 	if(!queue_position)
 		SSticker.queued_players += player
 		queue_position = length(SSticker.queued_players)
-	set_notice("Port is full. You are number [queue_position] in line.", "warn")
+	set_notice("Port is full. You are in line.", "warn")
 	return TRUE
 
 /// The gates SIGN ON checks before and after its sleep. Returns a short denial line, or null.
@@ -211,7 +248,8 @@
 		set_notice("You aren't cleared for that job.", "warn")
 		return TRUE
 	if(!try_join_lock(player))
-		return FALSE
+		set_notice("Already on your way.", "warn")
+		return TRUE
 	INVOKE_ASYNC(src, PROC_REF(crew_finish_sign_on), player, ship, job)
 	return TRUE
 
@@ -325,3 +363,5 @@
 #undef LOBBY_CREW_PING_COOLDOWN
 #undef LOBBY_CREW_APPLY_COOLDOWN
 #undef LOBBY_CREW_JOB_CHECK_TTL
+#undef LOBBY_CREW_MEMO_MAX
+#undef LOBBY_CREW_ROSTER_MAX

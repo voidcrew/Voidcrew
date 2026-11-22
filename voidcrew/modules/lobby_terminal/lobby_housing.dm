@@ -62,21 +62,40 @@ GLOBAL_LIST_EMPTY(lobby_housing_requests)
 	var/asked_at = GLOB.lobby_housing_requests["[player_key]|[REF(home)]"]
 	return asked_at && world.time < asked_at + LOBBY_HOUSING_REQUEST_COOLDOWN
 
+/**
+ * The denial to draw on the outpost's block, or null when the block's word or the round already says it:
+ * before the round, a closed outpost, and an invite outpost the player isn't cleared for (its REQUEST key
+ * is the answer). Takes housing_denial()'s answer so it is worked out once.
+ */
+/datum/lobby_terminal/proc/housing_why(obj/structure/overmap/dynamic/player_outpost/home, player_key, denial)
+	if(!denial || !SSticker.IsRoundInProgress() || home.resident_mode == "closed")
+		return null
+	// Barred and locked down come first in housing_denial(), so this is only ever the invite gate.
+	if(home.resident_mode == "approved" && !home.has_resident_clearance(player_key) && denial == "Residents by invitation.")
+		return null
+	return denial
+
+/// One outpost's block for the page.
+/datum/lobby_terminal/proc/housing_entry(obj/structure/overmap/dynamic/player_outpost/home, player_key)
+	var/denial = housing_denial(home, player_key)
+	return list(
+		"ref" = REF(home),
+		"name" = home.name,
+		"mode" = home.resident_mode,
+		"residents" = home.active_resident_count(),
+		"cleared" = !!home.has_resident_clearance(player_key),
+		"blocked" = !!denial,
+		"why" = housing_why(home, player_key, denial),
+		"code_wait" = code_lock_wait(player_key, housing_code_key(home)),
+		"can_ask" = !!(home.resident_mode == "approved" && SSticker.IsRoundInProgress() && !home.has_resident_clearance(player_key) && !(player_key in home.blocked_residents)),
+		"asked" = !!housing_asked(home, player_key),
+	)
+
 /datum/lobby_terminal/housing_data(mob/user)
 	var/player_key = user?.ckey
 	var/list/outposts = list()
 	for(var/obj/structure/overmap/dynamic/player_outpost/home as anything in housing_outposts())
-		outposts += list(list(
-			"ref" = REF(home),
-			"name" = home.name,
-			"mode" = home.resident_mode,
-			"residents" = home.active_resident_count(),
-			"cleared" = !!home.has_resident_clearance(player_key),
-			"denial" = housing_denial(home, player_key),
-			"code_wait" = code_lock_wait(player_key, housing_code_key(home)),
-			"can_ask" = !!(home.resident_mode == "approved" && SSticker.IsRoundInProgress() && !home.has_resident_clearance(player_key) && !(player_key in home.blocked_residents)),
-			"asked" = !!housing_asked(home, player_key),
-		))
+		outposts += list(housing_entry(home, player_key))
 	return list("outposts" = outposts)
 
 /datum/lobby_terminal/housing_act(action, list/params, mob/user)
@@ -99,6 +118,9 @@ GLOBAL_LIST_EMPTY(lobby_housing_requests)
 /// Checks the code against the limiter, then hands off to join_outpost() off the UI tick.
 /datum/lobby_terminal/proc/housing_move_in(mob/dead/new_player/player, obj/structure/overmap/dynamic/player_outpost/home, code)
 	var/player_key = player.ckey
+	// A second press while a move-in is under way leaves its CONFIRMED box alone.
+	if(GLOB.lobby_join_locks[player_key] && notice?["kind"] == "ok")
+		return
 	if(SSlag_switch.measures[DISABLE_NON_OBSJOBS])
 		set_notice("No berths are being assigned right now.", "warn")
 		return
@@ -193,13 +215,9 @@ GLOBAL_LIST_EMPTY(lobby_housing_requests)
 	if(last && world.time < last + LOBBY_HOUSING_REQUEST_GAP)
 		set_notice("Wait a moment.", "warn")
 		return
-	var/list/recipients = list()
-	for(var/datum/mind/member as anything in home.residents)
-		if(QDELETED(member) || !member.current?.client || member.current.stat == DEAD)
-			continue
-		recipients |= member.current
+	var/list/recipients = housing_request_recipients(home)
 	if(!length(recipients))
-		set_notice("Nobody's home at [home.name].", "warn")
+		set_notice("Nobody's home.", "warn")
 		return
 	GLOB.lobby_housing_requests[player_key] = world.time
 	GLOB.lobby_housing_requests["[player_key]|[REF(home)]"] = world.time
@@ -208,7 +226,15 @@ GLOBAL_LIST_EMPTY(lobby_housing_requests)
 	for(var/mob/resident as anything in recipients)
 		to_chat(resident, span_notice("[safe_name] housing office: [safe_key] is asking to move in."))
 	log_game("[key_name(player)] asked to move in at outpost [home.name] ([length(recipients)] residents told)")
-	set_notice("Request sent to [home.name].", "ok")
+	// No notice: the block's word turns to ASKED.
+
+/// Residents on shift at the outpost, who hear a move-in request.
+/datum/lobby_terminal/proc/housing_request_recipients(obj/structure/overmap/dynamic/player_outpost/home)
+	. = list()
+	for(var/datum/mind/member as anything in home.residents)
+		if(QDELETED(member) || !member.current?.client || member.current.stat == DEAD)
+			continue
+		. |= member.current
 
 #undef LOBBY_HOUSING_REQUEST_COOLDOWN
 #undef LOBBY_HOUSING_REQUEST_GAP
