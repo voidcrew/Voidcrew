@@ -8,20 +8,40 @@
  *
  * UI-local state (tab, selections, pages, fits) lives in React; only actions round-trip.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { resolveAsset } from 'tgui/assets';
 import { useBackend } from 'tgui/backend';
 
-import { BEZEL_EXTRA_CSS, Bezel } from './Bezel';
+import { Bezel } from './Bezel';
+import { Boot } from './Boot';
 import { CharacterTab } from './CharacterTab';
 import { CrewsTab } from './CrewsTab';
-import { Header, TABS } from './Header';
+import { HeaderBand, TABS, TabRow } from './Header';
 import { HousingTab } from './HousingTab';
-import { computeLayout, START_KEY_W } from './layout';
+import { computeLayout, regions } from './layout';
+import { KeyBar, MenuPopup, SideMenu } from './Menu';
+import {
+  backNextScreen,
+  MOTION_CSS,
+  quietNextScreen,
+  ScreenWipe,
+  setSfxTune,
+  usePauseWhenHidden,
+} from './motion';
 import { Confirmed, NoticeLine } from './Notice';
 import { NAV_CSS, NavProvider } from './nav';
-import { type Grid, GridContext, TERM_CSS } from './term';
+import { ObserveConfirm } from './ObserveConfirm';
+import { Settings } from './Settings';
+import {
+  type Grid,
+  GridContext,
+  Region,
+  STARS,
+  TERM_CSS,
+  useBoxInside,
+} from './term';
 import type { LobbyData, TabId } from './types';
+import { Welcome } from './Welcome';
 import { YardTab } from './YardTab';
 
 const FONT = 'VCR';
@@ -102,23 +122,22 @@ function useTerminalFont() {
   return advance;
 }
 
+/** The cover a screen change draws over the inside of the main box (motion.ts). */
+function MainWipe() {
+  return <ScreenWipe style={useBoxInside()} />;
+}
+
 export function LobbyTerminal() {
   const { data, act } = useBackend<LobbyData>();
+  const root = usePauseWhenHidden<HTMLDivElement>();
+  // Stand-in sound clips play at the rate and volume the server lists for them.
+  const tune = data.sfx_tune;
+  useEffect(() => setSfxTune(tune), [tune]);
   const pane = usePaneSize();
   const advance = useTerminalFont();
-  const startKey =
-    !!data.localhost_admin &&
-    (data.phase === 'loading' || data.phase === 'pregame');
   const layout = useMemo(
-    () =>
-      computeLayout(
-        pane.w,
-        pane.h,
-        pane.dpr,
-        advance,
-        startKey ? START_KEY_W : 0,
-      ),
-    [pane.w, pane.h, pane.dpr, advance, startKey],
+    () => computeLayout(pane.w, pane.h, pane.dpr, advance),
+    [pane.w, pane.h, pane.dpr, advance],
   );
   const grid: Grid = useMemo(
     () => ({
@@ -127,22 +146,94 @@ export function LobbyTerminal() {
       cw: layout.cw,
       ch: layout.ch,
       s: layout.s,
-      narrow: layout.narrow,
+      lw: layout.lw,
+      mode: layout.mode,
     }),
     [layout],
   );
+  const reg = regions(layout.mode, layout.rows);
 
   const [tab, setTab] = useState<TabId>('crews');
+  /** The tab that was open before CHARACTER or SETTINGS, for Escape at their top level. */
+  const [prevTab, setPrevTab] = useState<TabId>('crews');
   /** Bumped when SHIPYARD is pressed while already on it. */
   const [yardHome, setYardHome] = useState(0);
-  /** Bumped when CHARACTER (tab or bezel key) is pressed while already on it: back to the file view. */
+  /** Bumped when CHARACTER is pressed while already on it: back to the file view. */
   const [charHome, setCharHome] = useState(0);
+  /** Bumped when SETTINGS is pressed while already on it: back to its top state. */
+  const [settingsHome, setSettingsHome] = useState(0);
+  const [observeOpen, setObserveOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  /** CHARACTER was opened by the shell before the round, not by the player. */
+  const [autoChar, setAutoChar] = useState(false);
+  const autoTried = useRef(false);
+
+  // CHARACTER and SETTINGS are screens the menu opens, not tabs: Escape at their top level goes
+  // back to the tab that was open before either.
+  const isScreen = (id: TabId) => id === 'character' || id === 'settings';
+  const openScreen = (next: TabId) => {
+    if (isScreen(next) && !isScreen(tab)) {
+      setPrevTab(tab);
+    }
+    setTab(next);
+  };
+
   const request = data.tab_request;
+  /** Counts screens the server picked; the tab row mounts again on each so its claim runs. */
+  const [served, setServed] = useState(0);
   useEffect(() => {
     if (request) {
-      setTab(request.tab);
+      // The server picked the screen: the CHARACTER file no longer opens by itself.
+      autoTried.current = true;
+      openScreen(request.tab);
+      setServed((n) => n + 1);
     }
   }, [request?.serial]);
+
+  // The player's first key press or click after LOGIN.
+  const bootRef = useRef(data.boot);
+  bootRef.current = data.boot;
+  const [acted, setActed] = useState(false);
+  useEffect(() => {
+    if (acted) {
+      return;
+    }
+    const onAct = () => {
+      if (!bootRef.current) {
+        setActed(true);
+      }
+    };
+    window.addEventListener('keydown', onAct, true);
+    window.addEventListener('click', onAct, true);
+    return () => {
+      window.removeEventListener('keydown', onAct, true);
+      window.removeEventListener('click', onAct, true);
+    };
+  }, [acted]);
+
+  // Before the round the main area opens on the CHARACTER file, once per page load, until the
+  // player does something. When the round starts and they still have not, CREWS.
+  const before = data.phase === 'loading' || data.phase === 'pregame';
+  useEffect(() => {
+    if (autoTried.current || acted || !before || !data.prefs_ready) {
+      return;
+    }
+    autoTried.current = true;
+    if (tab !== 'character') {
+      openScreen('character');
+      setAutoChar(true);
+    }
+  }, [acted, before, data.prefs_ready]);
+  useEffect(() => {
+    if (data.phase === 'playing' && autoChar && !acted && tab === 'character') {
+      // The shell's own move: no wipe, no sound.
+      quietNextScreen();
+      setTab('crews');
+    }
+    if (data.phase === 'playing' || acted) {
+      setAutoChar(false);
+    }
+  }, [data.phase, acted]);
 
   // Report display metrics once the font settles (Windows scaling, pane size), for tuning.
   useEffect(() => {
@@ -155,6 +246,7 @@ export function LobbyTerminal() {
           s: layout.s,
           cols: layout.cols,
           rows: layout.rows,
+          mode: layout.mode,
         }),
       3000,
     );
@@ -164,6 +256,16 @@ export function LobbyTerminal() {
   const notice = data.notice;
   const confirmed = !!notice && notice.kind === 'ok';
 
+  // The first-time WELCOME box, once the start-up screen is done. Gone here at once when
+  // answered or put off; the server stops sending welcome too.
+  const [welcomeGone, setWelcomeGone] = useState(false);
+  const welcomeOpen =
+    !!data.welcome && !data.boot && !welcomeGone && !confirmed;
+  const welcomeLater = () => {
+    setWelcomeGone(true);
+    act('welcome_later');
+  };
+
   const switchTab = (next: TabId) => {
     if (next === tab && next === 'shipyard') {
       setYardHome(yardHome + 1);
@@ -171,38 +273,93 @@ export function LobbyTerminal() {
     if (next === tab && next === 'character') {
       setCharHome(charHome + 1);
     }
-    setTab(next);
-    if (confirmed) {
-      act('dismiss');
+    if (next === tab && next === 'settings') {
+      setSettingsHome(settingsHome + 1);
+    }
+    openScreen(next);
+    setObserveOpen(false);
+    setMenuOpen(false);
+    if (welcomeOpen) {
+      welcomeLater();
+    }
+    if (confirmed && notice) {
+      act('dismiss', { at: notice.at });
     }
   };
   const { s } = layout;
-  const scan = Math.max(2, Math.round(s));
 
   let body;
   if (confirmed) {
     body = <Confirmed />;
   } else if (tab === 'crews') {
-    body = <CrewsTab />;
+    body = <CrewsTab setTab={switchTab} />;
   } else if (tab === 'shipyard') {
     body = <YardTab home={yardHome} />;
   } else if (tab === 'character') {
-    body = <CharacterTab home={charHome} />;
+    // The tab sends char_open (with auto: 1 for the shell's pre-round open) once, on mount, and
+    // handles Escape at every level; at the file view it calls onLeave.
+    body = (
+      <CharacterTab
+        home={charHome}
+        auto={autoChar}
+        onLeave={() => {
+          backNextScreen();
+          switchTab(prevTab);
+        }}
+      />
+    );
+  } else if (tab === 'settings') {
+    // The screen sends settings_open on mount and settings_close when it goes; Escape at its top
+    // level calls onLeave.
+    body = (
+      <Settings
+        home={settingsHome}
+        onLeave={() => {
+          backNextScreen();
+          switchTab(prevTab);
+        }}
+      />
+    );
   } else {
     body = <HousingTab />;
   }
+  // When the start-up screen ends, the first-focus owners mount again so their claim runs.
+  // The CHARACTER screen is left alone: mounting it again would ask for its file again.
+  const bootKey = data.boot ? 'boot' : 'live';
+  // The open tab's first-focus claim: in setup and ended it wins (design 01 section 9); on
+  // HOUSING it is the stand-in when no key is live (design 02 section 4.4), so a live key's
+  // claim (1) and READY's (9) beat it.
+  const tabClaim =
+    data.phase === 'setup' || data.phase === 'ended'
+      ? 9
+      : tab === 'housing'
+        ? 0
+        : undefined;
+  const menu = {
+    charOpen: tab === 'character' && !confirmed,
+    onCharacter: () => switchTab('character'),
+    settingsOpen: tab === 'settings' && !confirmed,
+    onSettings: () => switchTab('settings'),
+    onObserve: () => {
+      setMenuOpen(false);
+      setObserveOpen(true);
+      if (welcomeOpen) {
+        welcomeLater();
+      }
+    },
+  };
 
   return (
     <div
+      ref={root}
       style={{
         position: 'fixed',
         inset: 0,
         overflow: 'hidden',
-        background: '#0b0b0e',
-        ['--lt-bg' as string]: '#07130d',
+        background: '#0b0a0e',
       }}
     >
-      <style>{TERM_CSS + NAV_CSS + BEZEL_EXTRA_CSS}</style>
+      <style>{TERM_CSS + NAV_CSS + MOTION_CSS}</style>
       <NavProvider
         onTabNumber={(n) => {
           const next = TABS[n - 1];
@@ -216,12 +373,23 @@ export function LobbyTerminal() {
           switchTab(next[0]);
         }}
       >
-        <Bezel
-          s={s}
-          characterLit={tab === 'character' && !confirmed}
-          onCharacter={() => switchTab('character')}
-        >
+        <Bezel s={s}>
           <div className="lt-crt">
+            <div className="lt-nebula" />
+            <div className="lt-stars">
+              {STARS.map(([left, top, opacity], i) => (
+                <i
+                  key={i}
+                  style={{
+                    left: `${left}%`,
+                    top: `${top}%`,
+                    opacity,
+                    width: s,
+                    height: s,
+                  }}
+                />
+              ))}
+            </div>
             <div
               className="lt-tui"
               style={{
@@ -231,21 +399,69 @@ export function LobbyTerminal() {
                 height: layout.rows * layout.ch,
                 fontSize: layout.fs,
                 lineHeight: `${layout.ch}px`,
+                ['--lw' as string]: `${layout.lw}px`,
               }}
             >
               <GridContext.Provider value={grid}>
-                <Header tab={tab} setTab={switchTab} />
-                {body}
-                <NoticeLine />
+                <Region {...reg.header}>
+                  <HeaderBand />
+                </Region>
+                {!!reg.menu && (
+                  <Region {...reg.menu}>
+                    <SideMenu key={bootKey} {...menu} />
+                  </Region>
+                )}
+                <Region {...reg.main}>
+                  <TabRow
+                    key={`${bootKey}-${served}`}
+                    tab={tab}
+                    setTab={switchTab}
+                    claim={tabClaim}
+                  />
+                  <Fragment key={isScreen(tab) ? tab : bootKey}>
+                    {body}
+                  </Fragment>
+                  <MainWipe />
+                  <NoticeLine />
+                  {!!observeOpen && !confirmed && (
+                    <ObserveConfirm onClose={() => setObserveOpen(false)} />
+                  )}
+                  {!!reg.bar && !!menuOpen && (
+                    <MenuPopup {...menu} onClose={() => setMenuOpen(false)} />
+                  )}
+                  {!!welcomeOpen && (
+                    <Welcome
+                      onLater={welcomeLater}
+                      onClose={() => setWelcomeGone(true)}
+                    />
+                  )}
+                </Region>
+                {!!reg.bar && (
+                  <Region {...reg.bar}>
+                    <KeyBar
+                      key={bootKey}
+                      {...menu}
+                      menuOpen={menuOpen}
+                      onMenu={() => {
+                        setObserveOpen(false);
+                        if (welcomeOpen) {
+                          welcomeLater();
+                        }
+                        setMenuOpen(!menuOpen);
+                      }}
+                    />
+                  </Region>
+                )}
               </GridContext.Provider>
             </div>
-            <div
-              className="lt-scan"
-              style={{
-                background: `repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) ${scan - 1}px, rgba(0,0,0,.32) ${scan - 1}px, rgba(0,0,0,.32) ${scan}px)`,
-              }}
+            {/* Glass layers, bottom to top: the canvas, the start-up screen, scanlines, vignette. */}
+            <Boot
+              glassW={layout.screen.w}
+              glassH={layout.screen.h}
+              dpr={layout.dpr}
             />
-            <div className="lt-glass" />
+            <div className="lt-scan" />
+            <div className="lt-vign" />
           </div>
         </Bezel>
       </NavProvider>

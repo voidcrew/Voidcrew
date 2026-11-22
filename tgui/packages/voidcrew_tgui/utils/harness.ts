@@ -10,6 +10,8 @@
  * builds ever do.
  */
 
+import { audioLog, audioState } from '../interfaces/LobbyTerminal/audio';
+
 type Store = { getState: () => any };
 type Args = Record<string, string | undefined>;
 
@@ -792,12 +794,23 @@ const summary = (store: Store, args: Args, full: boolean) => {
   return out;
 };
 
+/**
+ * The lobby terminal's sound, which nobody can hear in a test client: whether sound is running
+ * and the last plays the page asked for (the newest `last=` of them, 40 by default).
+ */
+const audio = (args: Args) => {
+  const { now, plays } = audioLog();
+  const last = Math.max(1, Math.min(120, Number(args.last || 40)));
+  return { state: audioState(), now, plays: plays.slice(-last) };
+};
+
 const ACTIONS: Record<string, (args: Args) => unknown> = {
   click,
   key,
   type,
   scroll,
   layout,
+  audio,
   query: () => ({}),
 };
 
@@ -825,7 +838,10 @@ const run = (store: Store, payload: any) => {
   }
   // Give the interface time to re-render (and the server time to answer an act) before reading it back.
   const settle = Math.min(
-    Number(args.settle ?? (op === 'query' || op === 'layout' ? 0 : 400)),
+    Number(
+      args.settle ??
+        (op === 'query' || op === 'layout' || op === 'audio' ? 0 : 400),
+    ),
     MAX_SETTLE_MS,
   );
   setTimeout(() => {

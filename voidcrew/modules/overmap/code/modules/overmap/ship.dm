@@ -2352,6 +2352,7 @@
 	// broadcast and once plain from the echo. Only refusals get a return value now.
 	ship_notify("Initiating docking sequence. Docking in [DOCK_WARMUP_TIME / 10] seconds.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	dock_warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_dock_warmup), dock_to_use, WEAKREF(to_dock)), DOCK_WARMUP_TIME, TIMER_STOPPABLE)
+	start_landing_animation(to_dock, dock_to_use, DOCK_WARMUP_TIME) // voidcrew/modules/landing_animation
 	return null
 
 /**
@@ -2407,6 +2408,7 @@
 	// Start dock warmup
 	ship_notify("Destination loaded. Docking in [DOCK_WARMUP_TIME / 10] seconds.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	dock_warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_dock_warmup), dock_to_use, WEAKREF(source)), DOCK_WARMUP_TIME, TIMER_STOPPABLE)
+	start_landing_animation(source, dock_to_use, DOCK_WARMUP_TIME) // voidcrew/modules/landing_animation
 
 /**
  * Requests generation of an ungenerated site's interior WITHOUT holding the helm:
@@ -2609,6 +2611,7 @@
 	state = OVERMAP_SHIP_UNDOCKING
 	ship_notify("Initiating undocking sequence. Undocking in [UNDOCK_WARMUP_TIME / 10] seconds.", "UNDOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	undock_warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_undock_warmup)), UNDOCK_WARMUP_TIME, TIMER_STOPPABLE)
+	start_launch_animation(UNDOCK_WARMUP_TIME) // voidcrew/modules/landing_animation
 	return null
 
 /**
@@ -2821,6 +2824,7 @@
 			state = OVERMAP_SHIP_FLYING
 			undock_origin = null
 			SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_UNDOCKED)
+			update_hover_view() // voidcrew/modules/landing_animation: the planet under a ship that undocked over one
 			// Force refresh close_overmap_objects for all ships on this turf
 			var/turf/our_turf = get_turf(src)
 			if(our_turf)
@@ -3343,6 +3347,9 @@
 		return null
 	for(var/obj/structure/overmap/object in tile)
 		if(object == src || !object.parallax_theme)
+			continue
+		// flying over a terrain planet, the crew see the planet itself under the hull (voidcrew/modules/landing_animation)
+		if(landing_animation_wanted(object))
 			continue
 		return object
 	return null

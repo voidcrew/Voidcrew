@@ -75,9 +75,23 @@
 	data["can_observe"] = SSticker.current_state > GAME_STATE_STARTUP
 	data["polls"] = polls_state
 	data["queue"] = SSticker.queued_players.Find(user)
+	data["queue_go"] = lobby_queue_go(user)
+	var/datum/preferences/prefs = user.client?.prefs
+	data["char_name"] = (data["prefs_ready"] && prefs) ? "[prefs.read_preference(/datum/preference/name/real_name)]" : ""
 	data["admin_ready"] = (user.client?.holder && phase != "playing") ? list(SSticker.totalPlayersReady, SSticker.total_admins_ready, length(GLOB.admins)) : null
 	data["notice"] = notice
 	data["tab_request"] = tab_request ? list("tab" = tab_request, "serial" = tab_request_serial) : null
+	// The start-up screen: 0 already seen this connection, 1 still to play, 2 play now (the terminal is on screen).
+	data["boot"] = boot_done ? 0 : (visible ? 2 : 1)
+	// The first-time WELCOME box (first_time_notice.dm): not while its native popup is open, nor after LATER.
+	data["welcome"] = (!welcome_later && !(user.ckey in GLOB.first_time_notice_pending) && first_time_notice_due(welcome_prefs(user))) ? 1 : 0
+
+/// TRUE once the player chose LATER on the WELCOME box: it stays closed for this connection.
+/datum/lobby_terminal/var/welcome_later = FALSE
+
+/// The preferences the WELCOME box answers for.
+/datum/lobby_terminal/proc/welcome_prefs(mob/user)
+	return user?.client?.prefs
 
 /// world.time the client's display metrics were last logged.
 /datum/lobby_terminal/var/metrics_logged_at = -1 MINUTES
@@ -89,32 +103,39 @@
 		if("ready")
 			return act_ready(user)
 		if("observe")
+			// The classic path, with the native confirm. The terminal asks in its own window and sends observe_confirm.
 			if(SSticker.current_state <= GAME_STATE_STARTUP)
 				return FALSE
 			INVOKE_ASYNC(user, TYPE_PROC_REF(/mob/dead/new_player, make_me_an_observer))
+			return FALSE
+		if("observe_confirm")
+			if(SSticker.current_state <= GAME_STATE_STARTUP)
+				return FALSE
+			INVOKE_ASYNC(user, TYPE_PROC_REF(/mob/dead/new_player, make_me_an_observer), TRUE)
 			return FALSE
 		if("character")
 			// The CHARACTER key opens the terminal's own CHARACTER tab (lobby_character.dm).
 			goto_tab("character")
 			return FALSE
 		if("settings")
-			var/datum/preferences/preferences = user.client?.prefs
-			if(!preferences)
-				return FALSE
-			if(!(SSearly_assets.initialized == INITIALIZATION_INNEW_REGULAR || SSatoms.initialized == INITIALIZATION_INNEW_REGULAR))
-				return FALSE
-			preferences.current_window = PREFERENCE_TAB_GAME_PREFERENCES
-			preferences.update_static_data(user)
-			preferences.ui_interact(user)
+			// SETTINGS is the terminal's own screen (lobby_settings.dm); tg's window is no longer opened from here.
+			goto_tab("settings")
 			return FALSE
 		if("wiki")
 			if(CONFIG_GET(string/wikiurl))
 				user.client?.wiki()
 			return FALSE
+		if("rules")
+			if(CONFIG_GET(string/rulesurl))
+				user.client?.rules()
+			return FALSE
 		if("polls")
 			if(!polls_state)
 				return FALSE
 			user.handle_player_polling()
+			// The NEW mark clears once the player has voted: look again a little later.
+			addtimer(CALLBACK(src, PROC_REF(recheck_polls)), 20 SECONDS, TIMER_UNIQUE)
+			addtimer(CALLBACK(src, PROC_REF(recheck_polls)), 90 SECONDS, TIMER_UNIQUE)
 			return FALSE
 		if("manifest")
 			user.ViewManifest()
@@ -130,7 +151,35 @@
 				set_notice("Starting as soon as the port opens.", "warn")
 			return TRUE
 		if("dismiss")
+			// With at, only the notice set at that time: a notice that clears itself never takes a newer one with it.
+			if(!notice)
+				return FALSE
+			if(!isnull(params["at"]) && text2num(params["at"]) != notice["at"])
+				return FALSE
 			notice = null
+			return TRUE
+		if("boot_done")
+			// LOGIN on the start-up screen. Logged once per connection, to tell whether clients get its sound.
+			if(boot_done)
+				return FALSE
+			boot_done = TRUE
+			// The title music waited for this (lobby_music.dm).
+			owner?.lobby_music_release()
+			var/sound_state = params["sound"]
+			if(!(sound_state in list("running", "suspended", "none")))
+				sound_state = "unknown"
+			log_tgui(user, "Lobby start-up screen: sound [sound_state], [clamp(text2num(params["clips"]) || 0, 0, 99)] sounds loaded, dark for [clamp(text2num(params["wait"]) || 0, 0, 999999)] ms[params["failed"] ? ", stepped aside on an error" : ""]", window = window)
+			return TRUE
+		if("welcome_pick")
+			// The first-time WELCOME box: the melee controls, saved for good (first_time_notice.dm).
+			var/mode = params["mode"]
+			if(mode != "combat" && mode != "intents")
+				return FALSE
+			return first_time_notice_answer(welcome_prefs(user), mode == "intents")
+		if("welcome_later")
+			if(welcome_later)
+				return FALSE
+			welcome_later = TRUE
 			return TRUE
 		if("metrics")
 			// Display metrics from the client (Windows scaling, pane size), logged once per load for tuning.
@@ -138,7 +187,8 @@
 			if(world.time < metrics_logged_at + 1 MINUTES)
 				return FALSE
 			metrics_logged_at = world.time
-			log_tgui(user, "Lobby terminal metrics: dpr [text2num(params["dpr"])], pane [text2num(params["w"])]x[text2num(params["h"])], scale [text2num(params["s"])], grid [text2num(params["cols"])]x[text2num(params["rows"])]", window = window)
+			var/mode = params["mode"] == "bar" ? "bar" : "side"
+			log_tgui(user, "Lobby terminal metrics: dpr [text2num(params["dpr"])], pane [text2num(params["w"])]x[text2num(params["h"])], scale [text2num(params["s"])], grid [text2num(params["cols"])]x[text2num(params["rows"])], [mode] mode", window = window)
 			return FALSE
 	return FALSE
 
@@ -158,16 +208,36 @@
 	else
 		relevant_cap = max(hard_popcap, extreme_popcap)
 	if(SSticker.queued_players.len || (relevant_cap && living_player_count() >= relevant_cap && !(ckey(user.key) in GLOB.admin_datums)))
-		var/queue_position = SSticker.queued_players.Find(user)
-		if(!queue_position)
+		if(!SSticker.queued_players.Find(user))
 			SSticker.queued_players += user
-			queue_position = SSticker.queued_players.len
 		to_chat(user, span_danger("[CONFIG_GET(string/hard_popcap_message)]"))
-		set_notice("Port is full. You are number [queue_position] in line.", "warn")
+		set_notice("Port is full. You are in line.", "warn")
 		return TRUE
 	user.auto_deadmin_on_ready_or_latejoin()
 	goto_tab("crews")
 	return TRUE
+
+/// The popcap the classic Join button checks: the lower of the hard and extreme caps when both are set. 0 = none.
+/proc/lobby_relevant_popcap()
+	var/hard_popcap = CONFIG_GET(number/hard_popcap)
+	var/extreme_popcap = CONFIG_GET(number/extreme_popcap)
+	if(hard_popcap && extreme_popcap)
+		return min(hard_popcap, extreme_popcap)
+	return max(hard_popcap, extreme_popcap)
+
+/// TRUE when the player is first in the popcap queue and a place is free: JOIN reads NOW.
+/proc/lobby_queue_go(mob/dead/new_player/user)
+	if(!length(SSticker.queued_players) || SSticker.queued_players[1] != user)
+		return FALSE
+	var/cap = lobby_relevant_popcap()
+	return !cap || living_player_count() < cap
+
+/// Looks for unanswered polls again after the player opened the poll window.
+/datum/lobby_terminal/proc/recheck_polls()
+	var/mob/dead/new_player/player = owner?.mob
+	if(!istype(player))
+		return
+	refresh_polls(player)
 
 /// READY: same as the classic Ready button, and keeps that button's own state in step.
 /datum/lobby_terminal/proc/act_ready(mob/dead/new_player/user)
