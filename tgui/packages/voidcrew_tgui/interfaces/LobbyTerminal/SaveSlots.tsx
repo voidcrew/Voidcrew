@@ -1,335 +1,377 @@
 /**
- * SAVED SHIPS box on the shipyard home: one card per slot with the ship's floor plan,
- * name, class, what it carries and LOAD, a denial line, or UNDER WAY. Too narrow for three
- * cards, it becomes a one-line-per-slot list.
+ * SAVED SHIPS on the shipyard home (spec 02, 3.2): always three slot slabs. Full slots carry
+ * the saved hull's plan in a well, the name, the class line, what the save carries and
+ * [ LOAD ]; compact rows (short panes) carry two lines and the key. States: EMPTY, ready,
+ * ready before the port opens (LOAD dead), UNDER WAY, refused (the reason in amber, the plan
+ * faded). The box itself: `wait` and `off` draw one ghost block with the state.
  */
 import type { ReactNode } from 'react';
-import { useBackend } from 'tgui/backend';
 
 import { PlanPic } from './PlanPic';
-import { Blocks, cut, Frame, Put, pad, RPut, wrap, wrapMax } from './term';
-import type { LobbyData, SaveCard } from './types';
-import { Key, thousands, type YardCtx } from './YardTab';
+import {
+  Big,
+  CUT,
+  cut,
+  Key,
+  NameLine,
+  Put,
+  RPut,
+  SEP,
+  Slab,
+  safe,
+  Well,
+  wrapMax,
+} from './term';
+import type { SaveCard, YardSaves } from './types';
+import type { HomeForm } from './YardHome';
+import type { YardCtx } from './YardTab';
 
-const MIN_CARD = 26;
+/** Carries text: columns 18 to 46. */
+const CARRY_W = 29;
+/** Full slot name: columns 18 to 60. */
+const NAME_W = 43;
+/** Class line: 35, then the cut mark. */
+const CLASS_W = 35;
+/** Compact row text: columns 3 to 46; a refusal runs to 60. */
+const ROW_W = 44;
+const ROW_DENIAL_W = 58;
 
-type Props = {
-  saves: (SaveCard | null)[];
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  ctx: YardCtx;
-};
+type SlotState = 'empty' | 'ready' | 'under' | 'refused';
 
-/** LOAD, or CONFIRM after the first press when loading leaves a crew. */
-function useLoad(ctx: YardCtx) {
-  const { act } = useBackend<LobbyData>();
-  return (sv: SaveCard) => {
-    const key = `load${sv.slot}`;
-    if (ctx.crewChange && ctx.view.confirm !== key) {
-      ctx.set({ confirm: key });
-      return;
-    }
-    ctx.set({ confirm: null });
-    act('yard_load', { slot: sv.slot, leave_crew: ctx.crewChange ? 1 : 0 });
-  };
-}
-
-export function SaveSlots(props: Props) {
-  const { saves, x, y, w, h, ctx } = props;
-  const gap = 2;
-  const n = Math.max(1, saves.length);
-  const cardW = Math.floor((w - 4 - gap * (n - 1)) / n);
-  if (cardW < MIN_CARD || h < 14) {
-    return <SaveList {...props} />;
+function stateOf(card: SaveCard | null): SlotState {
+  if (!card) {
+    return 'empty';
   }
-  return (
-    <Frame x={x} y={y} w={w} h={h} title="SAVED SHIPS">
-      {saves.map((sv, i) => (
-        <Card
-          key={i}
-          sv={sv}
-          n={sv?.slot || i + 1}
-          x={x + 2 + i * (cardW + gap)}
-          y={y + 1}
-          w={cardW}
-          h={h - 2}
-          ctx={ctx}
-        />
-      ))}
-    </Frame>
-  );
+  if (card.locked) {
+    return 'under';
+  }
+  return card.denial ? 'refused' : 'ready';
 }
 
-function Card(props: {
-  sv: SaveCard | null;
-  n: number;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
+/** `<Class> • <n> berths`; the class drops out when the name starts with it. */
+function classLine(card: SaveCard, name: string): string {
+  const cls = safe(card.class).trim();
+  const n = Math.max(0, Math.min(999, Math.floor(card.crew || 0)));
+  const berths = `${n} ${n === 1 ? 'berth' : 'berths'}`;
+  if (!cls || name.startsWith(cls.toUpperCase())) {
+    return berths;
+  }
+  return `${cls} ${SEP} ${berths}`;
+}
+
+/** As many whole items as fit `w` from item `i`; an item longer than `w` is cut. */
+function fitItems(items: string[], i: number, w: number): [string, number] {
+  let text = '';
+  let j = i;
+  while (j < items.length) {
+    const next = text ? `${text} ${SEP} ${items[j]}` : items[j];
+    if (next.length > w) {
+      break;
+    }
+    text = next;
+    j++;
+  }
+  if (!text && j < items.length) {
+    return [cut(items[j], w), j + 1];
+  }
+  return [text, j];
+}
+
+/**
+ * The carries run in at most `n` lines of `w`: whole items joined by ` • `; when items are
+ * left over, the last line ends in the cut mark.
+ */
+export function carryLines(items: string[], n: number, w: number): string[] {
+  const out: string[] = [];
+  let i = 0;
+  for (let l = 0; l < n && i < items.length; l++) {
+    let [text, next] = fitItems(items, i, w);
+    if (l === n - 1 && next < items.length) {
+      [text, next] = fitItems(items, i, w - 1);
+      if (!text.endsWith(CUT)) {
+        text += CUT;
+      }
+    }
+    out.push(text);
+    i = next;
+  }
+  return out;
+}
+
+function itemsOf(card: SaveCard): string[] {
+  return (card.carries || [])
+    .slice(0, 12)
+    .map((s) => safe(s).replace(/\s+/g, ' ').trim())
+    .filter(Boolean);
+}
+
+export function SaveSlots(props: {
   ctx: YardCtx;
+  state: YardSaves['state'];
+  /** ok: three entries, null for an empty slot. */
+  slots: (SaveCard | null)[];
+  plans: (string | null)[];
+  form: HomeForm;
 }) {
-  const { sv, n, x, y, w, h, ctx } = props;
-  const load = useLoad(ctx);
-  const out: ReactNode[] = [];
-  if (!sv) {
+  const { ctx, state, slots, plans, form } = props;
+  const { yB } = form;
+  // Offline, or not read yet: one ghost block with the state, as the other screens draw theirs.
+  if (state === 'off' || state === 'wait') {
     return (
-      <Frame x={x} y={y} w={w} h={h} title={`SLOT ${n}`} dim>
-        <Put
-          x={x + Math.floor((w - 5) / 2)}
-          y={y + Math.floor(h / 2)}
-          cls="faint"
-        >
-          EMPTY
-        </Put>
-      </Frame>
+      <Slab x={1} y={yB} w={61} h={4.75} variant="block" dead>
+        <NameLine
+          x={3}
+          y={yB + 0.25}
+          w={57}
+          text={
+            state === 'off' ? 'YARD RECORDS OFFLINE.' : 'FETCHING YARD RECORDS.'
+          }
+          cls="dim"
+        />
+      </Slab>
     );
   }
-  const ix = x + 2;
-  const iw = w - 4;
-  const denied = !!sv.denial;
-  const fit = sv.fit || [];
-
-  const lines: [string, number | null, string][] = fit.map((f) => [
-    f[0],
-    f[1],
-    f[2] ?? 'red',
-  ]);
-  if (sv.lab) {
-    lines.push(['Lab machines', sv.lab, '']);
-  }
-  if (sv.cargo) {
-    lines.push(['Cargo machines', sv.cargo, 'amb']);
-  }
-  if (sv.research) {
-    lines.push([`Research, ${sv.research} nodes`, null, '']);
-  }
-  if (sv.funds) {
-    lines.push([`Holds ${thousands(sv.funds)} cr`, null, 'amb']);
-  }
-
-  const nameRows = Math.min(2, wrap(sv.name.toUpperCase(), iw).length);
-  const hasStats = sv.mass !== undefined || sv.crew !== undefined;
-  // Rows below the lines: the key, or a two-line denial, or LEAVES + the key.
-  const foot = denied ? 2 : 1 + (ctx.crewChange ? 1 : 0);
-  // The plan shrinks (to 3 rows) before the first few fit lines are cut.
-  // Short cards drop the blank row under the stats.
-  const statRows = hasStats ? (h < 15 ? 1 : 2) : 1;
-  const fixed = 4 + nameRows + 1 + statRows + foot;
-  const prH = Math.max(2, Math.min(11, h - fixed - Math.min(4, lines.length)));
-  if (sv.plan) {
-    out.push(
-      <PlanPic
-        key="plan"
-        x={ix}
-        y={y + 1.5}
-        w={iw}
-        h={prH - 0.5}
-        plan={sv.plan}
-        faded={denied}
-      />,
-    );
-  }
-  let yy = y + 1 + prH + 1;
-  const nameLines = wrap(sv.name.toUpperCase(), iw);
-  const nm = nameLines.slice(0, 2);
-  if (nameLines.length > 2) {
-    nm[1] = `${pad(nm[1], iw - 1)}.`;
-  }
-  nm.forEach((l, i) => {
-    out.push(
-      <Put key={`n${i}`} x={ix} y={yy++} cls={denied ? 'dim' : ''}>
-        {l}
-      </Put>,
-    );
-  });
-  out.push(
-    <Put key="cls" x={ix} y={yy++} cls="dim">
-      {pad(sv.class, iw)}
-    </Put>,
-  );
-  if (hasStats) {
-    if (sv.mass !== undefined) {
-      out.push(
-        <Put key="ml" x={ix} y={yy} cls="dim">
-          MASS
-        </Put>,
-        <Put key="mv" x={ix + 5} y={yy} cls={denied ? 'dim' : ''}>
-          {cut(`${thousands(sv.mass)} t`, sv.crew !== undefined ? 10 : iw - 5)}
-        </Put>,
-      );
-    }
-    if (sv.crew !== undefined) {
-      const cx = sv.mass !== undefined ? ix + 16 : ix;
-      out.push(
-        <Put key="cl" x={cx} y={yy} cls="dim">
-          CREW
-        </Put>,
-        <Put key="cv" x={cx + 5} y={yy} cls={denied ? 'dim' : ''}>
-          {String(sv.crew)}
-        </Put>,
-      );
-    }
-    yy += statRows;
-  } else {
-    yy += 1;
-  }
-
-  const room = Math.max(0, y + h - 2 - foot - yy);
-  const show =
-    lines.length > room ? lines.slice(0, Math.max(0, room - 1)) : lines;
-  show.forEach(([label, count, cls], i) => {
-    out.push(
-      <Blocks
-        key={`b${i}`}
-        x={ix}
-        y={yy}
-        n={1}
-        cls={cls === 'red' ? 'rblk' : cls === 'amb' ? 'ablk' : 'dim'}
-        frac={0.35}
-      />,
-      <Put key={`l${i}`} x={ix + 2} y={yy} cls={denied ? 'faint' : 'dim'}>
-        {pad(label, iw - 8)}
-      </Put>,
-    );
-    if (count) {
-      out.push(
-        <RPut key={`c${i}`} x={ix + iw} y={yy} cls={denied ? 'faint' : ''}>
-          {cut(String(count), 5)}
-        </RPut>,
-      );
-    }
-    yy++;
-  });
-  if (room > 0 && show.length < lines.length) {
-    out.push(
-      <Put key="more" x={ix + 2} y={yy++} cls="faint">
-        {`+${lines.length - show.length} more`}
-      </Put>,
-    );
-  }
-
-  const by = y + h - 2;
-  if (sv.denial) {
-    const denial = wrapMax(sv.denial, iw, 2);
-    denial.forEach((l, i) => {
-      out.push(
-        <Put key={`d${i}`} x={ix} y={by - denial.length + 1 + i} cls="amb">
-          {l}
-        </Put>,
-      );
+  const live = ctx.open && !ctx.sent;
+  const load = (card: SaveCard) =>
+    ctx.found({
+      action: 'yard_load',
+      params: { slot: card.slot },
+      label: 'LOAD',
+      restores: !!card.restores,
     });
-  } else if (sv.locked) {
-    out.push(
-      <Put key="uw" x={ix} y={by} cls="faint">
-        UNDER WAY
-      </Put>,
-    );
-  } else {
-    const confirming = ctx.view.confirm === `load${sv.slot}`;
-    if (ctx.crewChange && confirming) {
-      out.push(
-        <Put key="lv" x={ix} y={by - 1} cls="amb">
-          {pad(`LEAVES ${ctx.crewChange.toUpperCase()}`, iw)}
-        </Put>,
-      );
-    }
-    out.push(
-      <Key
-        key="load"
-        x={ix}
-        y={by}
-        label={confirming ? 'CONFIRM' : 'LOAD'}
-        cls="inv"
-        disabled={!ctx.open}
-        onClick={() => load(sv)}
-      />,
-    );
-  }
-
-  return (
-    <Frame x={x} y={y} w={w} h={h} title={`SLOT ${n}`} dim>
-      {out}
-    </Frame>
-  );
-}
-
-/** Narrow windows: one line per slot. */
-function SaveList(props: Props) {
-  const { saves, x, y, w, h, ctx } = props;
-  const load = useLoad(ctx);
   const out: ReactNode[] = [];
-  let yy = y + 2;
-  const keyW = 12;
-  saves.forEach((sv, i) => {
-    if (yy > y + h - 2) {
-      return;
-    }
-    const n = sv?.slot || i + 1;
-    out.push(
-      <Put key={`s${i}`} x={x + 3} y={yy} cls="dim">
-        {String(n)}
-      </Put>,
-    );
-    if (!sv) {
+  for (let i = 0; i < 3; i++) {
+    const card = slots[i] || null;
+    const st = stateOf(card);
+    const n = card?.slot || i + 1;
+    if (form.full) {
+      const h = form.slotH;
       out.push(
-        <Put key={`e${i}`} x={x + 6} y={yy} cls="faint">
-          EMPTY
-        </Put>,
-      );
-      yy += 2;
-      return;
-    }
-    const nameW = Math.max(4, w - 6 - keyW - 4);
-    out.push(
-      <Put key={`n${i}`} x={x + 6} y={yy} cls={sv.denial ? 'dim' : ''}>
-        {pad(sv.name.toUpperCase(), nameW)}
-      </Put>,
-    );
-    if (sv.denial) {
-      out.push(
-        <Put key={`d${i}`} x={x + 6} y={yy + 1} cls="amb">
-          {pad(sv.denial, w - 9)}
-        </Put>,
-      );
-    } else if (sv.locked) {
-      out.push(
-        <RPut key={`u${i}`} x={x + w - 3} y={yy} cls="faint">
-          UNDER WAY
-        </RPut>,
+        <FullSlot
+          key={i}
+          n={n}
+          card={card}
+          st={st}
+          ys={yB + i * (h + 0.25)}
+          h={h}
+          plan={plans[i] || null}
+          live={live}
+          onLoad={load}
+        />,
       );
     } else {
-      const confirming = ctx.view.confirm === `load${sv.slot}`;
       out.push(
-        <Put key={`c${i}`} x={x + 6} y={yy + 1} cls="dim">
-          {pad(sv.class, w - 9)}
-        </Put>,
-        <Key
-          key={`k${i}`}
-          x={x + w - 3}
-          y={yy}
-          right
-          label={confirming ? 'CONFIRM' : 'LOAD'}
-          cls="inv"
-          disabled={!ctx.open}
-          onClick={() => load(sv)}
+        <RowSlot
+          key={i}
+          n={n}
+          card={card}
+          st={st}
+          ys={yB + i * 2.5}
+          alt={i % 2 === 1}
+          live={live}
+          onLoad={load}
         />,
       );
     }
-    yy += 3;
-  });
-  if (ctx.crewChange && ctx.view.confirm?.startsWith('load')) {
-    out.push(
-      <Put key="lv" x={x + 3} y={y + h - 2} cls="amb">
-        {pad(`LEAVES ${ctx.crewChange.toUpperCase()}`, w - 6)}
-      </Put>,
+  }
+  return <>{out}</>;
+}
+
+function FullSlot(props: {
+  n: number;
+  card: SaveCard | null;
+  st: SlotState;
+  ys: number;
+  h: number;
+  plan: string | null;
+  live: boolean;
+  onLoad: (card: SaveCard) => void;
+}) {
+  const { n, card, st, ys, h, plan, live, onLoad } = props;
+  const p = h >= 4.75 ? 0.25 : 0.125;
+  const wellH = h - 2 * p;
+  const nC = Math.max(1, Math.min(4, Math.floor(h - 2 * p - 2.25)));
+  const dead = st === 'empty';
+  let well: ReactNode;
+  if (dead) {
+    well = <Well x={3} y={ys + p} w={14} h={wellH} />;
+  } else if (plan) {
+    well = (
+      <Well x={3} y={ys + p} w={14} h={wellH}>
+        <PlanPic
+          x={1}
+          y={0.25}
+          w={12}
+          h={wellH - 0.5}
+          plan={plan}
+          faded={st === 'refused'}
+        />
+      </Well>
     );
+  } else {
+    well = <Well x={3} y={ys + p} w={14} h={wellH} note="NO PLAN ON FILE" />;
+  }
+  const body: ReactNode[] = [];
+  if (st === 'empty') {
+    body.push(
+      <NameLine key="n" x={18} y={ys + p} w={30} text="EMPTY" cls="dim" />,
+      // On the class line's row, where a saved ship's slot number sits.
+      <RPut key="s" x={61} y={ys + p + 1.25} cls="dim">
+        {`SLOT ${n}`}
+      </RPut>,
+    );
+  } else if (card) {
+    const name = safe(card.name).toUpperCase();
+    const quiet = st !== 'ready';
+    body.push(
+      <NameLine
+        key="n"
+        x={18}
+        y={ys + p}
+        w={NAME_W}
+        text={name}
+        cls={quiet ? 'dim' : undefined}
+      />,
+      <Put key="c" x={18} y={ys + p + 1.25} cls="dim">
+        {cut(classLine(card, name), CLASS_W)}
+      </Put>,
+      <RPut key="s" x={61} y={ys + p + 1.25} cls="dim">
+        {`SLOT ${n}`}
+      </RPut>,
+    );
+    if (st === 'refused') {
+      wrapMax(safe(card.denial).toUpperCase(), NAME_W, Math.min(2, nC)).forEach((t, j) =>
+        body.push(
+          <Put key={`d${j}`} x={18} y={ys + p + 2.25 + j} cls="amb">
+            {t}
+          </Put>,
+        ),
+      );
+    } else {
+      carryLines(itemsOf(card), nC, CARRY_W).forEach((t, j) =>
+        body.push(
+          <Put
+            key={`k${j}`}
+            x={18}
+            y={ys + p + 2.25 + j}
+            cls={st === 'under' ? 'dim' : ''}
+          >
+            {t}
+          </Put>,
+        ),
+      );
+    }
+    if (st === 'ready') {
+      body.push(
+        <Key
+          key="l"
+          kind="cap"
+          x={49}
+          y={ys + h - p - 1.5}
+          w={12}
+          label="[ LOAD ]"
+          state={live ? 'idle' : 'dead'}
+          onClick={() => onLoad(card)}
+        />,
+      );
+    } else if (st === 'under') {
+      body.push(
+        <Big
+          key="u"
+          x={49}
+          w={12}
+          y={ys + h - p - 1.375}
+          scale={1.25}
+          align="right"
+          cls="dim"
+        >
+          UNDER WAY
+        </Big>,
+      );
+    }
   }
   return (
-    <Frame x={x} y={y} w={w} h={h} title="SAVED SHIPS">
-      {out}
-    </Frame>
+    <Slab x={1} y={ys} w={61} h={h} variant="block" dead={dead}>
+      {well}
+      {body}
+    </Slab>
+  );
+}
+
+function RowSlot(props: {
+  n: number;
+  card: SaveCard | null;
+  st: SlotState;
+  ys: number;
+  alt: boolean;
+  live: boolean;
+  onLoad: (card: SaveCard) => void;
+}) {
+  const { n, card, st, ys, alt, live, onLoad } = props;
+  const dead = st === 'empty';
+  const body: ReactNode[] = [];
+  if (st === 'empty') {
+    body.push(
+      <Put key="n" x={3} y={ys + 0.125} cls="dim">
+        EMPTY
+      </Put>,
+      <RPut key="s" x={61} y={ys + 0.125} cls="dim">
+        {`SLOT ${n}`}
+      </RPut>,
+    );
+  } else if (card) {
+    const name = safe(card.name).toUpperCase();
+    body.push(
+      <Put key="n" x={3} y={ys + 0.125} cls={st === 'ready' ? 'wht' : 'dim'}>
+        {cut(name, ROW_W)}
+      </Put>,
+    );
+    if (st === 'refused') {
+      body.push(
+        <Put key="d" x={3} y={ys + 1.125} cls="amb">
+          {cut(safe(card.denial).toUpperCase(), ROW_DENIAL_W)}
+        </Put>,
+      );
+    } else {
+      const items = itemsOf(card);
+      const head = classLine(card, name);
+      // Whole items only: a figure cut short ("1,85…") would misread.
+      const room = ROW_W - head.length - 3;
+      const [run, next] = fitItems(items, 0, room - 1);
+      const whole = next > 0 && !run.endsWith(CUT);
+      const text = whole
+        ? `${head} ${SEP} ${run}${next < items.length ? CUT : ''}`
+        : head;
+      body.push(
+        <Put key="c" x={3} y={ys + 1.125} cls="dim">
+          {cut(text.trimEnd(), ROW_W)}
+        </Put>,
+      );
+    }
+    if (st === 'under') {
+      body.push(
+        <RPut key="u" x={61} y={ys + 0.125} cls="dim">
+          UNDER WAY
+        </RPut>,
+      );
+    } else if (st === 'ready') {
+      body.push(
+        <Key
+          key="l"
+          kind="cap"
+          x={49}
+          y={ys + 0.375}
+          w={12}
+          label="[ LOAD ]"
+          state={live ? 'idle' : 'dead'}
+          onClick={() => onLoad(card)}
+        />,
+      );
+    }
+  }
+  return (
+    <Slab x={1} y={ys} w={61} h={2.25} variant="row" alt={alt} dead={dead}>
+      {body}
+    </Slab>
   );
 }

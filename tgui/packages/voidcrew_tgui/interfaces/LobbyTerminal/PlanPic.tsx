@@ -1,10 +1,11 @@
 /**
- * A saved ship as a line drawing from its survey plan string: rows split by '/', each a
- * run-length list of cells (`12o` = twelve floor). '#' wall, 'g' window, 'o' floor,
+ * A saved ship as a line drawing from its survey plan string (spec 02, 5.2): rows split by '/',
+ * each a run-length list of cells (`12o` = twelve floor). '#' wall, 'g' window, 'o' floor,
  * 'e' engine, 'w' weapon, 's' sensor, 't' cargo, '.' nothing. Walls are joined centre to
- * centre. A tall hull lies on its side when the space is wide.
+ * centre. The plan is drawn whichever way round gives the larger scale. Drawn in theme
+ * colours; `faded` for a save that cannot load.
  */
-import { useMemo } from 'react';
+import { type CSSProperties, useMemo } from 'react';
 
 import { useGrid } from './term';
 
@@ -12,7 +13,7 @@ function parsePlan(plan: string): string[][] {
   return plan.split('/').map((row) => {
     const out: string[] = [];
     for (const m of row.matchAll(/(\d*)(\D)/g)) {
-      const n = m[1] ? Number(m[1]) : 1;
+      const n = m[1] ? Math.min(512, Number(m[1])) : 1;
       for (let i = 0; i < n; i++) {
         out.push(m[2]);
       }
@@ -21,7 +22,20 @@ function parsePlan(plan: string): string[][] {
   });
 }
 
+/** Turned a quarter turn clockwise. */
+function turn(rows: string[][], W: number, H: number): string[][] {
+  const rot: string[][] = [];
+  for (let cx = 0; cx < W; cx++) {
+    rot.push([]);
+    for (let cy = H - 1; cy >= 0; cy--) {
+      rot[cx].push(rows[cy][cx] || '.');
+    }
+  }
+  return rot;
+}
+
 export function PlanPic(props: {
+  /** Cells, from the parent's top-left corner (the Well). */
   x: number;
   y: number;
   w: number;
@@ -32,8 +46,8 @@ export function PlanPic(props: {
 }) {
   const { x, y, w, h, plan, faded } = props;
   const { cw, ch } = useGrid();
-  const aw = w * cw;
-  const ah = h * ch;
+  const aw = Math.max(1, w * cw);
+  const ah = Math.max(1, h * ch);
 
   const drawing = useMemo(() => {
     let rows = parsePlan(plan);
@@ -42,15 +56,9 @@ export function PlanPic(props: {
     if (!W || !H) {
       return null;
     }
-    if (H > W * 1.15 && aw > ah) {
-      const rot: string[][] = [];
-      for (let cx = 0; cx < W; cx++) {
-        rot.push([]);
-        for (let cy = H - 1; cy >= 0; cy--) {
-          rot[cx].push(rows[cy][cx] || '.');
-        }
-      }
-      rows = rot;
+    // Whichever way round gives the larger scale.
+    if (Math.min(aw / H, ah / W) > Math.min(aw / W, ah / H) * 1.001) {
+      rows = turn(rows, W, H);
       [W, H] = [H, W];
     }
     const k = Math.min(aw / W, ah / H);
@@ -60,7 +68,7 @@ export function PlanPic(props: {
     let lines = '';
     let glass = '';
     let eng = '';
-    const dots: [number, number, string][] = [];
+    const dots: [number, number][] = [];
     for (let cy = 0; cy < H; cy++) {
       for (let cx = 0; cx < W; cx++) {
         const c = at(cx, cy);
@@ -96,7 +104,7 @@ export function PlanPic(props: {
         } else if (c === 'e') {
           eng += `M${cx * k + k * 0.15} ${cy * k + k * 0.15}h${k * 0.7}v${k * 0.7}h-${k * 0.7}z`;
         } else if (c === 'w' || c === 's' || c === 't') {
-          dots.push([px, py, c]);
+          dots.push([px, py]);
         }
       }
     }
@@ -107,44 +115,46 @@ export function PlanPic(props: {
     return null;
   }
   const { W, H, k, floor, lines, glass, eng, dots } = drawing;
-  const ph = faded ? '#2b6450' : '#7effbf';
-  const dim = faded ? '#1d4636' : '#3f9a76';
-  const amb = faded ? '#5a4a15' : '#ffc41f';
-  const red = faded ? '#5a2a30' : '#ff5f6f';
-  const sw = Math.max(1.2, k * 0.18);
+  const small = k < 3;
+  const wallC = faded ? 'var(--lt-faint)' : 'var(--lt-fg)';
+  const markC = faded ? 'var(--lt-edge-dead)' : 'var(--lt-dim)';
+  const dotC = faded ? 'var(--lt-edge-dead)' : 'var(--lt-acc)';
+  const sw = small ? 1 : Math.max(1.2, k * 0.18);
+  const stroke = (c: string, extra?: CSSProperties): CSSProperties => ({
+    stroke: c,
+    strokeWidth: sw,
+    fill: 'none',
+    ...extra,
+  });
   return (
     <div
       style={{
         position: 'absolute',
         left: Math.round(x * cw + (aw - W * k) / 2),
         top: Math.round(y * ch + (ah - H * k) / 2),
-        filter: faded ? 'none' : 'drop-shadow(0 0 2px rgba(126,255,191,.6))',
+        filter: faded ? 'none' : 'drop-shadow(0 0 2px rgba(190,140,255,.6))',
       }}
     >
       <svg width={W * k} height={H * k} style={{ overflow: 'visible' }}>
-        <path d={floor} fill={ph} fillOpacity={0.07} />
+        <path
+          d={floor}
+          style={{ fill: wallC, fillOpacity: small ? 0.2 : 0.07 }}
+        />
         <path
           d={glass}
-          stroke={dim}
-          strokeWidth={sw}
-          strokeDasharray={`${k * 0.35} ${k * 0.25}`}
-          fill="none"
+          style={stroke(markC, {
+            strokeDasharray: `${k * 0.35} ${k * 0.25}`,
+          })}
         />
-        <path
-          d={lines}
-          stroke={ph}
-          strokeWidth={sw}
-          strokeLinecap="square"
-          fill="none"
-        />
-        <path d={eng} stroke={amb} strokeWidth={sw} fill="none" />
-        {dots.map(([cx, cy, c], i) => (
+        <path d={lines} style={stroke(wallC, { strokeLinecap: 'square' })} />
+        <path d={eng} style={stroke(markC)} />
+        {dots.map(([cx, cy], i) => (
           <circle
             key={i}
             cx={cx}
             cy={cy}
-            r={k * 0.22}
-            fill={c === 'w' ? red : c === 't' ? amb : ph}
+            r={Math.max(0.8, k * 0.22)}
+            style={{ fill: dotC }}
           />
         ))}
       </svg>

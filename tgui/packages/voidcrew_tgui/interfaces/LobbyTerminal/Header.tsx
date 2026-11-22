@@ -1,9 +1,14 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 
-import { cut, Put, pad, RPut, Rule, useGrid } from './term';
+import { sfx, useChanged } from './motion';
+import { Band, cut, Hit, HRule, Put, RPut, useGrid } from './term';
 import type { LobbyData, TabId } from './types';
 
+/**
+ * The screens in keyboard order: 1 to 4 and Tab step through them. Only the first three are
+ * tabs; CHARACTER is opened from the menu and lights no tab.
+ */
 export const TABS: [TabId, string][] = [
   ['crews', 'CREWS'],
   ['shipyard', 'SHIPYARD'],
@@ -56,65 +61,129 @@ function clockText(data: LobbyData, elapsed: number): string {
   }
 }
 
-/** Title bar (row 0), tab bar (row 2) and its rule (row 3). */
-export function Header(props: { tab: TabId; setTab: (tab: TabId) => void }) {
-  const { tab, setTab } = props;
+/** The departure clock's last seconds: the clock ticks and turns amber every other second. */
+const LAST_SECONDS = 10;
+
+/**
+ * Header band (its own region, 1.5 rows): BERTH OFFICE at column 2, the counts and the clock
+ * ending at column cols - 3. The clock and the admin counts always draw; the title gives way
+ * whole, then the online count.
+ *
+ * In the last ten seconds before departure the clock is amber and white in turn, with a tick
+ * a second that rises in pitch; DEPARTING blinks three times when it appears.
+ */
+export function HeaderBand() {
   const { data } = useBackend<LobbyData>();
-  const { cols, narrow } = useGrid();
+  const { cols } = useGrid();
   const elapsed = useElapsed(data.clock);
-
-  const title = data.port
-    ? ` ${data.port.toUpperCase()}  :  BERTH OFFICE`
-    : ' BERTH OFFICE';
-  let right = clockText(data, elapsed);
-  if (data.phase !== 'playing' || !narrow) {
-    right = `${data.online} ONLINE   ${right}`;
-  }
-  if (data.admin_ready) {
-    const [ready, admins, adminTotal] = data.admin_ready;
-    right = `${ready} READY  ${admins}/${adminTotal} ADM   ${right}`;
-  }
-
-  if (right.length > cols - 2) {
-    right = right.slice(right.length - Math.max(0, cols - 2));
-  }
-  // The port name gives way to the clock: cut it, never run it under the right-hand text.
-  const titleText = cut(title, Math.max(0, cols - right.length - 3));
-
-  let x = 1;
-  const tabs = TABS.map(([id, label]) => {
-    const text = ` ${label} `;
-    const at = x;
-    x += text.length + 3;
-    return (
-      <Put
-        key={id}
-        x={at}
-        y={2}
-        cls={id === tab ? 'inv' : 'dim'}
-        hoverCls={id === tab ? 'inv' : ''}
-        onClick={() => setTab(id)}
-        tab
-      >
-        {text}
-      </Put>
-    );
+  const clock = clockText(data, elapsed);
+  const counting =
+    (data.phase === 'loading' || data.phase === 'pregame') && data.clock > 0;
+  const left = counting ? Math.max(0, Math.floor(data.clock - elapsed)) : -1;
+  const last = left > 0 && left <= LAST_SECONDS ? left : 0;
+  useChanged(last, (_, now) => {
+    if (now > 0) {
+      sfx('clock', { rate: 1 + (LAST_SECONDS - now) * 0.05 });
+    }
   });
-
+  const departing = data.phase === 'setup';
+  const clockCls = `lt-clock ${last % 2 === 1 ? 'amb' : 'wht'} nog${departing ? ' lt-blink3' : ''}`;
+  const admin = data.admin_ready
+    ? `${data.admin_ready[0]} READY  ${data.admin_ready[1]}/${data.admin_ready[2]} ADM`
+    : '';
+  const online = `${data.online} ONLINE`;
+  const room = cols - 4;
+  const join = (parts: string[]) => parts.filter(Boolean).join('   ');
+  let right = join([admin, online, clock]);
+  let title = 'BERTH OFFICE';
+  if (title.length + 3 + right.length > room) {
+    title = '';
+  }
+  if (right.length > room) {
+    right = join([admin, clock]);
+  }
+  // The clock is its own piece of text, so it can change colour and blink by itself.
+  const whole = right.length <= room && right.endsWith(clock);
+  const before = whole ? right.slice(0, right.length - clock.length) : '';
   return (
     <>
-      {/* One lit bar in three pieces that meet but never overlap: title, clock, end cell. */}
-      <Put x={0} y={0} cls="inv">
-        {pad(titleText, Math.max(0, cols - 1 - right.length))}
-      </Put>
-      <RPut x={cols - 1} y={0} cls="inv" bg={false}>
-        {right}
+      <Band x={0} y={0} w={cols} h={1.5} tone="bar" />
+      {!!title && (
+        <Put x={2} y={0.25} cls="wht nog">
+          {title}
+        </Put>
+      )}
+      {!!before && (
+        <RPut x={cols - 2 - clock.length} y={0.25} cls="wht nog">
+          {before}
+        </RPut>
+      )}
+      <RPut
+        key={departing ? 'departing' : 'clock'}
+        x={cols - 2}
+        y={0.25}
+        cls={whole ? clockCls : 'lt-clock wht nog'}
+      >
+        {whole ? clock : cut(right, room)}
       </RPut>
-      <Put x={cols - 1} y={0} cls="inv">
-        {' '}
-      </Put>
-      {tabs}
-      <Rule x={0} y={3} w={cols} />
+    </>
+  );
+}
+
+/** Tab blocks in main-region columns: [first column, width]. */
+const TAB_BLOCKS: Partial<Record<TabId, [number, number]>> = {
+  crews: [0, 7],
+  shipyard: [8, 10],
+  housing: [19, 9],
+};
+
+/**
+ * Tab row at the top of the main region (rows 0 to 1.5) and the rule under it. While the
+ * CHARACTER screen is open no tab is lit. `claim`: the open tab claims the first focus at that
+ * priority (nav.tsx FocusOpts.auto).
+ */
+export function TabRow(props: {
+  tab: TabId;
+  setTab: (tab: TabId) => void;
+  claim?: number;
+}) {
+  const { tab, setTab, claim } = props;
+  const { cols } = useGrid();
+  /** The tab under the focus, drawn in the body colour. */
+  const [lit, setLit] = useState<TabId | null>(null);
+  return (
+    <>
+      {TABS.map(([id, label]) => {
+        const block = TAB_BLOCKS[id];
+        if (!block) {
+          return null;
+        }
+        const [bx, bw] = block;
+        const open = id === tab;
+        return (
+          <Fragment key={id}>
+            {!!open && <Band x={bx} y={0} w={bw} h={1.5} tone="accent" />}
+            <Put x={bx + 1} y={0.25} cls={open ? 'ink' : lit === id ? '' : 'dim'}>
+              {label}
+            </Put>
+            {/* The whole block is the click target, and the focus ring frames the block. */}
+            <Hit
+              x={bx}
+              y={0}
+              w={bw}
+              h={1.5}
+              onClick={() => setTab(id)}
+              onHover={(over) =>
+                setLit((was) => (over ? id : was === id ? null : was))
+              }
+              auto={open ? claim : undefined}
+              entry={open}
+              tab
+            />
+          </Fragment>
+        );
+      })}
+      <HRule x={0} y={1.75} w={cols} />
     </>
   );
 }

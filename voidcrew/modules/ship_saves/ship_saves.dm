@@ -187,7 +187,7 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 	var/obj/structure/overmap/ship/original = source?.resolve()
 	if(original)
 		if(original.retired_by_checkpoint)
-			return "The original hull has already been replaced."
+			return "The original hull has been replaced."
 		if(!allow_busy && original.checkpoint_rebuilding)
 			return "Already under way."
 		if(!QDELETED(original.shuttle) && !original.abandoned)

@@ -29,7 +29,7 @@
 /// Human dummy slot the preview renders on. Only the worker uses it, so it is never busy.
 #define LOBBY_CHAR_DUMMY "lobby_char"
 /// Looks (appearance keys) cached per terminal, four facings each.
-#define LOBBY_CHAR_CACHE_LOOKS 6
+#define LOBBY_CHAR_CACHE_LOOKS 10
 /// Idle time before the other three facings are rendered.
 #define LOBBY_CHAR_IDLE_FILL (1.5 SECONDS)
 /// Renders a second one terminal may cause.
@@ -63,6 +63,8 @@ GLOBAL_VAR_INIT(lobby_char_forge_serial, 0)
 	var/list/char_preview_renders
 	/// Timer for the idle fill of the other facings.
 	var/char_preview_idle_timer
+	/// TRUE after the shell's pre-round char_open {auto}: no idle fill until the player does something.
+	var/char_preview_lazy = FALSE
 
 /datum/lobby_terminal/Destroy()
 	GLOB.lobby_char_render_queue -= src
@@ -94,6 +96,11 @@ GLOBAL_VAR_INIT(lobby_char_forge_serial, 0)
 		GLOB.lobby_char_render_queue[src] = list(dir)
 		char_preview_urgent = TRUE
 		lobby_char_worker_start()
+	if(char_preview_lazy)
+		if(char_preview_idle_timer)
+			deltimer(char_preview_idle_timer)
+			char_preview_idle_timer = null
+		return TRUE
 	char_preview_idle_timer = addtimer(CALLBACK(src, PROC_REF(char_preview_fill)), LOBBY_CHAR_IDLE_FILL, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_STOPPABLE)
 	return TRUE
 

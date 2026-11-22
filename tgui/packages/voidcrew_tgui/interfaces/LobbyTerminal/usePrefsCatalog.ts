@@ -36,12 +36,24 @@ function attempt(left: number): Promise<ServerData | null> {
     );
 }
 
+/** TRUE after a whole round of tries came back empty (20 tries, 30 s). */
+let failed = false;
+const listeners = new Set<() => void>();
+const tell = () => {
+  for (const fn of listeners) {
+    fn();
+  }
+};
+
 function load(): Promise<ServerData | null> {
   if (!pending) {
+    failed = false;
     pending = attempt(TRIES).then((data) => {
       if (!data) {
-        pending = null; // the next mount tries again
+        pending = null; // the next mount or retry tries again
+        failed = true;
       }
+      tell();
       return data;
     });
   }
@@ -50,22 +62,36 @@ function load(): Promise<ServerData | null> {
 
 /** The catalog, or null until it has arrived. */
 export function usePrefsCatalog(): ServerData | null {
-  const [catalog, setCatalog] = useState<ServerData | null>(cached);
+  return usePrefsCatalogState().cat;
+}
+
+/** The catalog with its failure state: failed after 20 tries; retry() starts a new round. */
+export function usePrefsCatalogState(): {
+  cat: ServerData | null;
+  failed: boolean;
+  retry: () => void;
+} {
+  const [, setTick] = useState(0);
   useEffect(() => {
-    if (catalog) {
-      return;
+    const fn = () => setTick((t) => t + 1);
+    listeners.add(fn);
+    if (!cached) {
+      load();
     }
-    let live = true;
-    load().then((data) => {
-      if (live && data) {
-        setCatalog(data);
-      }
-    });
     return () => {
-      live = false;
+      listeners.delete(fn);
     };
   }, []);
-  return catalog;
+  return {
+    cat: cached,
+    failed: !cached && failed,
+    retry: () => {
+      if (!cached && !pending) {
+        load();
+        tell();
+      }
+    },
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -153,6 +179,24 @@ export function namedHex(cat: ServerData | null, key: string, value: unknown) {
     return ETHEREAL_HEX[v] || null;
   }
   return entry(cat, key)?.to_hex?.[v]?.value || null;
+}
+
+/** A stored kit name (html_encoded by the server) as plain text, for React text only. */
+export function decodeName(text: string): string {
+  return text
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) =>
+      String.fromCharCode(parseInt(n, 16)),
+    )
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+}
+
+/** A voice pack's name without its group ("Goonstation: Bottalk 1" -> "Bottalk 1"). */
+export function voiceShort(name: string): string {
+  return name.split(': ').pop() || name;
 }
 
 /** Loadout item name by typepath. */
