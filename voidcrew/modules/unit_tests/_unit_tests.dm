@@ -220,6 +220,7 @@
 #include "voidcrew_outpost_police_blocking.dm"
 #include "voidcrew_outpost_police_cell.dm"
 #include "voidcrew_outpost_police_dispatch.dm"
+#include "voidcrew_outpost_police_heavy.dm"
 #include "voidcrew_outpost_police_helpers.dm"
 #include "voidcrew_outpost_police_hud.dm"
 #include "voidcrew_outpost_police_life.dm"

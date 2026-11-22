@@ -151,8 +151,9 @@
 /datum/outpost_police/proc/role_of(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
 	if(officer.police_role)
 		return officer.police_role
-	// A zone that finishes the downed sends no stun officers: everyone is lethal (owner decision 39)
-	if(profile && !profile.spares_downed)
+	// A zone that finishes the downed sends no stun officers: everyone is lethal (owner decision 39). Heavy weapons
+	// officers are lethal too: their anti-armour weapon fires only at lethal force (police_units_heavy.dm)
+	if((profile && !profile.spares_downed) || officer.unit_kind == POLICE_UNIT_ARMOUR)
 		officer.police_role = POLICE_ROLE_LETHAL
 		return officer.police_role
 	var/squad = 1
@@ -311,8 +312,9 @@
 		return
 	var/obj/item/gun/ready_gun = officer.police_loaded_gun_for(level)
 	if(isnull(ready_gun))
-		// At stun force never fall through to human_npc_arm, which would draw a stowed lethal long gun
-		if(level == POLICE_FORCE_STUN)
+		// At stun force never fall through to human_npc_arm, which would draw a stowed lethal long gun; nor with a heavy
+		// weapon that is not for this target (police_units_heavy.dm), which human_npc_arm would draw as a backup
+		if(level == POLICE_FORCE_STUN || officer.police_heavy_barred(target))
 			controller.queue_behavior(/datum/ai_behavior/basic_melee_attack/human_npc, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
 			return SUBTREE_RETURN_FINISH_PLANNING
 		return
@@ -341,7 +343,7 @@
 	if(isnull(wanted_gun))
 		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
 	if(officer.bystander_in_line(target))
-		human_npc_sidestep(officer, target)
+		officer.police_reposition(target)
 		return AI_BEHAVIOR_DELAY
 	if(human_npc_loaded_gun(officer) != wanted_gun)
 		var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(controller.blackboard[targeting_strategy_key])
@@ -356,6 +358,14 @@
 		controller.set_blackboard_key(BB_HUMAN_NPC_NEXT_SHOT, world.time + (controller.blackboard[BB_HUMAN_NPC_SHOT_DELAY] || 3 SECONDS))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 	return ..()
+
+/// A bystander spoils this officer's shot at `target`: one step aside for a clear line (a heavy weapons officer may step back instead)
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_reposition(atom/target)
+	human_npc_sidestep(src, target)
+
+/// Whether this officer carries a heavy weapon that is not for `target` (police_units_heavy.dm); nobody else does
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_heavy_barred(atom/target)
+	return FALSE
 
 /// Whether this officer has the working hands `gun` requires (two intact hands for WEAPON_HEAVY)
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_can_handle_gun(obj/item/gun/gun)

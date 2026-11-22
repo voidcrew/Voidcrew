@@ -575,6 +575,8 @@
 			return "Tactical officer"
 		if(POLICE_UNIT_MARSHAL)
 			return "Marshal"
+		if(POLICE_UNIT_ARMOUR)
+			return "Heavy weapons officer"
 	return "Beat officer"
 
 /// Their body lies three minutes (the base asks this in death(); a trader outpost's own five would win otherwise)

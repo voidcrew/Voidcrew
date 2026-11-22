@@ -249,9 +249,11 @@ A report that hasn't gone out yet can be stopped. It is dropped if every witness
 | 2 | As 1, but they stun you first if you don't do as told |
 | 3 | Mixed squad: some officers carry stun batons and disablers and take you alive, the rest shoot to kill |
 | 4 | As 3, with tactical officers. Your crewmates at the outpost are arrested and your crew is banned there |
-| 5 | As 4, with more tactical officers and the marshal |
+| 5 | As 4, with more tactical officers, the marshal and a heavy weapons team |
 
 More officers arrive through the staff lifts as your stars rise, and they keep coming.
+
+**Heavy weapons.** At 5 stars two heavy weapons officers come up with the rest, carrying an ion rifle, a rocket launcher or a grenade launcher. Those are for mechs. Anyone on foot gets their pistol like any other officer.
 
 At Halcyon and Quartermain a downed suspect is cuffed, never shot, at any stars. Nobody fires on someone who is cuffed and being taken in, or who is in a cell. Get away from them and you are fair game again.
 
