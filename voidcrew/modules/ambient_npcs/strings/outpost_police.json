@@ -323,7 +323,7 @@
 		"bribe_offer": [
 			"There's an early release fee. %PRICE% credits.",
 			"For %PRICE% credits I can process you now.",
-			"%PRICE% credits and the paperwork goes away.",
+			"For %PRICE% credits, the paperwork goes away.",
 			"I could let you out early. %PRICE% credits."
 		],
 		"bribe_taken": [
@@ -858,9 +858,9 @@
 			"One minute."
 		],
 		"bribe_offer": [
-			"%PRICE% credits. Then you walk.",
+			"It's %PRICE% credits. Then you walk.",
 			"Expedited release. %PRICE% credits.",
-			"%PRICE%. Take it or sit.",
+			"Take it or sit. %PRICE%.",
 			"Early out is %PRICE% credits."
 		],
 		"bribe_taken": [
@@ -1395,9 +1395,9 @@
 			"This better be good."
 		],
 		"bribe_offer": [
-			"%PRICE% and nobody saw you.",
+			"Give me %PRICE% and nobody saw you.",
 			"Tell you what. %PRICE% credits and you're gone.",
-			"%PRICE%. I don't haggle.",
+			"It's %PRICE%. I don't haggle.",
 			"Door's %PRICE% credits. Interested?"
 		],
 		"bribe_taken": [

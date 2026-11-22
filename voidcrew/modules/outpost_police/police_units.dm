@@ -356,11 +356,12 @@
 	id = /obj/item/card/id/advanced/outpost_sergeant
 	id_trim = /datum/id_trim/outpost_police/sergeant
 
-/// Halcyon's navy: the warden's formal uniform under the navy warden's jacket, and the peaked police hat
+/// Halcyon's navy: the warden's formal uniform under a braided officer's jacket (no armour: only response units wear it),
+/// and the peaked police hat
 /datum/outfit/outpost_police/sergeant/halcyon
 	name = "Outpost Police: Halcyon warden"
 	uniform = /obj/item/clothing/under/rank/security/warden/formal
-	suit = /obj/item/clothing/suit/armor/vest/warden
+	suit = /obj/item/clothing/suit/jacket/officer/blue
 
 /// Quartermain's grey: the old grey warden's suit with its red trim, and the red warden's hat
 /datum/outfit/outpost_police/sergeant/quartermain

@@ -170,6 +170,9 @@
 				TEST_ASSERT(istype(wearer.wear_suit, /obj/item/clothing/suit/armor), "[label] wears no armour")
 				TEST_ASSERT(istype(wearer.head, /obj/item/clothing/head/helmet), "[label] wears no helmet")
 				TEST_ASSERT(wearer.glasses && wearer.glasses.flash_protect >= FLASH_PROTECTION_FLASH, "[label] wears no flash-proof eyewear")
+			else if(kind == "sergeant")
+				// The warden may wear a jacket, never armour (decision 65)
+				TEST_ASSERT(!istype(wearer.wear_suit, /obj/item/clothing/suit/armor), "[label] wears armour")
 			else
 				TEST_ASSERT_NULL(wearer.wear_suit, "[label] wears armour")
 

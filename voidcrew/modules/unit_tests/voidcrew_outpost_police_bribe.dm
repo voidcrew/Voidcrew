@@ -121,7 +121,8 @@
 	TEST_ASSERT(warden.bribe_heard(prisoner), "The warden did not answer a jailed prisoner's call")
 	var/datum/ambient_activity/warden_bribe/visit = warden.activity
 	TEST_ASSERT(istype(visit), "The warden is not going to the cell door")
-	TEST_ASSERT(get_dist(visit.spot, cell.outside_turf) == 0, "The warden is not going to the cell door")
+	if(visit.spot != cell.outside_turf)
+		TEST_FAIL("The warden is going to [visit.spot] ([visit.spot?.x], [visit.spot?.y]), not the cell door ([cell.outside_turf.x], [cell.outside_turf.y])")
 	visit.arrived = TRUE
 	visit.arrive()
 	TEST_ASSERT_EQUAL(police.bribe_offers[prisoner.mind], 2000, "The warden did not name 2,000 at four stars") // OUTPOST_POLICE_BRIBE_PER_STAR * 4
