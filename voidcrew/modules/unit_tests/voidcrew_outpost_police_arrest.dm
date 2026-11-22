@@ -7,7 +7,7 @@
  * the case and calls its step procs directly. The police tick is stopped so the steps run only when the test
  * calls them. Actions (cuffing, the search, the desk, booking) run in the background: the test waits for them.
  * Case steps are the strings in police_arrest.dm: "respond", "order", "subdue", "cuff", "search", "escort",
- * "desk", "book", "standby".
+ * "desk", "book".
  */
 
 /// Heat for one star and for three (OUTPOST_POLICE_STAR_HEAT: 10, 25, 50, ...)
@@ -203,9 +203,9 @@
 	TEST_ASSERT(!police.cases[suspect.mind], "A booked suspect still has an open case")
 
 /**
- * A suspect in crit is cuffed where they lie with no blow struck, then stood by until they come round (owner
- * decision 37: nobody says a suspect is down and walks off); one who dies after the search still sends the
- * officer to the desk
+ * A suspect in crit is cuffed and searched where they lie with no blow struck, then dragged off toward the desk
+ * still in crit (owner decision 60: nobody stands over them waiting for them to come round); one who dies after the
+ * search still sends the officer to the desk
  */
 /datum/unit_test/voidcrew_outpost_police_arrest_downed
 
@@ -226,7 +226,6 @@
 	TEST_ASSERT(HAS_TRAIT(suspect, TRAIT_CRITICAL_CONDITION), "The suspect is not in crit (stat [suspect.stat], health [suspect.health])")
 	var/stamina_before = suspect.getStaminaLoss()
 	var/oxy_before = suspect.getOxyLoss()
-	var/turf/lay_turf = get_turf(suspect)
 	case.process_case()
 	TEST_ASSERT_EQUAL(case.step, "cuff", "A suspect in crit before the cuffs is not being cuffed (the case is on [case.step])")
 	for(var/i in 1 to 6)
@@ -235,15 +234,19 @@
 		case.process_case()
 		police_arrest_wait(case)
 	TEST_ASSERT(istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police/used), "A suspect in crit was not cuffed")
+	TEST_ASSERT_EQUAL(case.step, "search", "A cuffed suspect in crit is not searched next (the case is on [case.step])")
+	for(var/i in 1 to 6)
+		if(QDELETED(case) || case.searched)
+			break
+		case.process_case()
+		police_arrest_wait(case)
+	TEST_ASSERT(case.searched, "A cuffed suspect in crit was not searched where they lie")
+	TEST_ASSERT_EQUAL(case.step, "escort", "A searched suspect in crit is not escorted (the case is on [case.step])")
 	case.process_case()
-	TEST_ASSERT_EQUAL(case.step, "standby", "A cuffed suspect in crit is not stood by (the case is on [case.step])")
-	case.process_case()
-	TEST_ASSERT(officer.pulling != suspect, "An officer dragged a suspect in crit")
-	TEST_ASSERT_EQUAL(get_turf(suspect), lay_turf, "A suspect in crit was moved")
+	TEST_ASSERT_EQUAL(officer.pulling, suspect, "The officer did not take hold of a cuffed suspect in crit to drag them in")
+	TEST_ASSERT(HAS_TRAIT(suspect, TRAIT_CRITICAL_CONDITION), "The suspect came out of crit on their own")
 	TEST_ASSERT_EQUAL(suspect.getStaminaLoss(), stamina_before, "A suspect in crit was struck")
 	TEST_ASSERT(suspect.getOxyLoss() >= oxy_before - 5, "A suspect in crit was healed")
-	case.downed_since = world.time - 10 MINUTES
-	case.process_case()
 	TEST_ASSERT(!QDELETED(case), "The officer walked off a cuffed suspect in crit")
 	TEST_ASSERT(police.in_custody(suspect), "A cuffed suspect in crit is not in custody")
 	police.close_case(suspect.mind)
@@ -1089,10 +1092,8 @@
 	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
 	suspect.equip_to_slot(cuffs, ITEM_SLOT_HANDCUFFED)
 	case.cuffs_on(suspect)
+	TEST_ASSERT_EQUAL(case.step, "search", "A cuffed crit suspect is not searched next (the case is on [case.step])")
 	case.process_case()
-	TEST_ASSERT_EQUAL(case.step, "standby", "A cuffed crit suspect did not enter standby") // CASE_STEP_DOWNED
-
-	case.step_downed()
 	police_arrest_wait(case)
 	TEST_ASSERT(case.searched, "Pat-down of a cuffed suspect in crit failed")
 	TEST_ASSERT(tac.pulling != suspect, "An officer pulled a suspect in crit during the search")

@@ -301,7 +301,7 @@
 
 /**
  * A wanted suspect in crit in view puts nobody on alert: no fight, no alert from the arrest, and the arrest cuffs
- * them where they lie and stands by them until they come round.
+ * them where they lie and goes on to search them and take them in (owner decision 60).
  */
 /datum/unit_test/voidcrew_outpost_police_stun_squad_crit_no_alert
 
@@ -346,7 +346,7 @@
 	TEST_ASSERT(istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police/used), "A suspect in crit was not cuffed (the case is on [QDELETED(case) ? "nothing" : case.step])")
 	TEST_ASSERT_EQUAL(suspect.getStaminaLoss(), stamina_before, "A suspect in crit was struck")
 	case.process_case()
-	TEST_ASSERT_EQUAL(case.step, "standby", "A cuffed suspect in crit is not stood by (the case is on [case.step])")
+	TEST_ASSERT(case.step == "search" || case.step == "escort", "A cuffed suspect in crit is not searched and taken in (the case is on [case.step])")
 	TEST_ASSERT(brain.stealth_state() != "alert", "The officer went on alert over a cuffed suspect in crit")
 	case.process_case()
 	TEST_ASSERT(!QDELETED(case), "The arrest of a cuffed suspect in crit ended")

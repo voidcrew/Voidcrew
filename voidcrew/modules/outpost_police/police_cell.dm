@@ -71,6 +71,8 @@
 	var/list/medic_bodies = list()
 	/// Prisoners in crit whose mover has been charged with taking them out: mind -> TRUE
 	var/list/carry_reported = list()
+	/// Prisoner mind -> TRUE: a medic was called for this spell in crit (police_cell_medic.dm)
+	var/list/medic_called = list()
 
 /datum/outpost_police_cell/New(datum/outpost_police/new_police, new_cell_id)
 	. = ..()
@@ -107,6 +109,7 @@
 	shoved_by.Cut()
 	medic_bodies.Cut()
 	carry_reported.Cut()
+	medic_called.Cut()
 	return ..()
 
 /// This cell is being replaced by a rebuild: it lets go of its door and sign without opening anything
@@ -210,6 +213,7 @@
 	stepped_at -= prisoner
 	shoved_by -= prisoner
 	carry_reported -= prisoner
+	medic_called -= prisoner
 
 /// The prisoner whose body `body` is, or null
 /datum/outpost_police_cell/proc/prisoner_of(mob/living/body)
@@ -508,6 +512,7 @@
 				carried_by -= prisoner
 				walked_out -= prisoner
 				carry_reported -= prisoner
+				medic_called -= prisoner
 				end_medic_hold(body)
 			else if(!can_walk_back(body, prisoner))
 				// Down, held, carried or asleep: the time to walk back starts once they can (abuse MF1)
@@ -562,9 +567,11 @@
 	open_door(OUTPOST_POLICE_CELL_OPEN)
 
 /**
- * `prisoner` is in crit: the term stops, not ends (abuse review 3 SF1). The door opens for a medic and the time
- * left is kept, as for a prisoner carried out: once they can walk again they have OUTPOST_POLICE_CELL_RETURN to be
- * back inside, or it is a jailbreak. Whoever takes them out of the cell meanwhile answers for it.
+ * `prisoner` is in crit: the term stops, not ends (abuse review 3 SF1), and the time left is kept, as for a prisoner
+ * carried out: once they can walk again they have OUTPOST_POLICE_CELL_RETURN to be back inside, or it is a
+ * jailbreak. Whoever takes them out of the cell meanwhile answers for it. A medic is called to the cell
+ * (police_cell_medic.dm, owner decision 60) and the door stays shut for them; with no medic to be had, or once the
+ * one called is not coming after all, the door opens and is held for the prisoner's own people (the medic hold).
  */
 /datum/outpost_police_cell/proc/crit_prisoner(datum/mind/prisoner, mob/living/body)
 	var/started = booking[prisoner]
@@ -573,10 +580,14 @@
 	if(!(prisoner in return_by))
 		booking -= prisoner
 		time_left[prisoner] = max(prisoners[prisoner] - world.time, 0)
-		medic_bodies |= WEAKREF(body)
-		medic_until = world.time + OUTPOST_POLICE_CELL_MEDIC_OPEN
-		police.cell_station_say(POLICE_LINE_MEDIC)
-		open_door(0)
+		if((get_turf(body) in tiles) && police.call_cell_medic(body))
+			medic_called[prisoner] = TRUE
+		else
+			start_medic_hold(body)
+	else if(medic_called[prisoner] && !police.cell_medic_for(body))
+		// The medic is not coming after all (killed, blocked, out of kit, gave up): the door opens for their own people
+		medic_called -= prisoner
+		start_medic_hold(body, quiet = TRUE)
 	return_by[prisoner] = max(return_by[prisoner], world.time + OUTPOST_POLICE_CELL_RETURN)
 	if(!(get_turf(body) in tiles) && !carry_reported[prisoner])
 		var/datum/weakref/ref = carried_by[prisoner]
@@ -584,6 +595,14 @@
 		if(mover && mover != body && mover.mind && !is_outpost_police_npc(mover))
 			carry_reported[prisoner] = TRUE
 			police.report_crime(mover, OUTPOST_CRIME_JAILBREAK)
+
+/// The door opens and is held OUTPOST_POLICE_CELL_MEDIC_OPEN so someone can get to `body`; the station calls for a medic unless `quiet`
+/datum/outpost_police_cell/proc/start_medic_hold(mob/living/body, quiet = FALSE)
+	medic_bodies |= WEAKREF(body)
+	medic_until = world.time + OUTPOST_POLICE_CELL_MEDIC_OPEN
+	if(!quiet)
+		police.cell_station_say(POLICE_LINE_MEDIC)
+	open_door(0)
 
 /// A prisoner who was down is back on their feet in the cell: the door no longer waits for a medic
 /datum/outpost_police_cell/proc/end_medic_hold(mob/living/body)
@@ -1025,7 +1044,8 @@
  * Books `suspect`, brought to a cell by `officer`: into the emptier cell with the officer, the fine, then
  * processing (paid) or the jail strip and a term (not paid), the cuffs off, the officer out. Sleeps. TRUE once
  * the suspect is held (or, in an outpost with no cell, fined and let go); FALSE, with nothing taken, if they
- * cannot be booked: no warrant, down, or already held.
+ * cannot be booked: no warrant, dead, or already held. Someone in crit is booked like anyone else (owner decision
+ * 60); their term stands still while they are in crit (crit_prisoner()) and the cell calls them a medic.
  */
 /datum/outpost_police/proc/book(mob/living/carbon/suspect, mob/living/officer)
 	if(QDELETED(src) || !iscarbon(suspect) || QDELETED(suspect) || !suspect.mind || QDELETED(officer))
@@ -1034,7 +1054,7 @@
 	var/datum/outpost_warrant/warrant = get_warrant(prisoner)
 	if(!warrant || warrant.heat <= 0)
 		return FALSE
-	if(suspect.stat == DEAD || HAS_TRAIT(suspect, TRAIT_CRITICAL_CONDITION) || officer.stat == DEAD)
+	if(suspect.stat == DEAD || officer.stat == DEAD)
 		return FALSE
 	if(cell_holding(prisoner))
 		return FALSE

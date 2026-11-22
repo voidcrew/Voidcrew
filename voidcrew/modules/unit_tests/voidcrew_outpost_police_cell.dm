@@ -493,7 +493,7 @@
 		TEST_ASSERT(booking[2], "The booking signal said a jail term was a paid fine")
 		TEST_ASSERT(!("fine_paid" in police.lines), "An unpaid fine was called paid")
 
-/// A booking with no warrant, a downed suspect or an already held one takes nothing and moves nobody
+/// A booking with no warrant, a dead suspect or an already held one takes nothing and moves nobody
 /datum/unit_test/voidcrew_outpost_police_cell_book_refused
 
 /datum/unit_test/voidcrew_outpost_police_cell_book_refused/Run()
@@ -504,13 +504,50 @@
 	police.fine_result = TRUE
 	TEST_ASSERT(!police.book(suspect, officer), "A suspect with no warrant was booked")
 	police_pin_warrant(police, suspect.mind, 12)
-	ADD_TRAIT(suspect, TRAIT_CRITICAL_CONDITION, "outpost_police_test")
-	TEST_ASSERT(!police.book(suspect, officer), "A suspect in crit was booked")
-	REMOVE_TRAIT(suspect, TRAIT_CRITICAL_CONDITION, "outpost_police_test")
+	var/mob/living/carbon/human/corpse = police_cell_person(cell.outside_turf)
+	police_pin_warrant(police, corpse.mind, 12)
+	corpse.death()
+	TEST_ASSERT(!police.book(corpse, officer), "A dead suspect was booked")
+	TEST_ASSERT_EQUAL(get_turf(corpse), cell.outside_turf, "A refused booking moved the dead suspect")
 	cell.admit(suspect, world.time + 300)
 	TEST_ASSERT(!police.book(suspect, officer), "A suspect already held was booked again")
 	TEST_ASSERT_EQUAL(police.fine_tries, 0, "A refused booking tried the fine")
 	TEST_ASSERT_EQUAL(get_turf(suspect), cell.outside_turf, "A refused booking moved the suspect")
+
+/**
+ * A suspect in crit is booked like anyone else (owner decision 60): walked in, stripped, uncuffed and held, and the
+ * term stands still while they are in crit. The fixture has no outpost, so no medic can come: the door hold opens.
+ */
+/datum/unit_test/voidcrew_outpost_police_cell_book_crit
+
+/datum/unit_test/voidcrew_outpost_police_cell_book_crit/Run()
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	police.pinned_stars = 1
+	police.fine_result = FALSE
+	var/datum/outpost_police_cell/cell = police.cell_best()
+	TEST_ASSERT_NOTNULL(cell, "No cell to book into")
+	var/mob/living/carbon/human/suspect = police_cell_person(cell.outside_turf)
+	var/mob/living/carbon/human/officer = police_cell_person(get_step(cell.outside_turf, NORTH))
+	police_pin_warrant(police, suspect.mind, 12)
+	TEST_ASSERT_NOTNULL(police_cell_cuff(suspect, officer), "Setup: the suspect did not get cuffed")
+	suspect.apply_damage(70, BRUTE, BODY_ZONE_CHEST)
+	suspect.apply_damage(50, BRUTE, BODY_ZONE_HEAD)
+	suspect.updatehealth()
+	TEST_ASSERT(suspect.stat != DEAD && recovery_in_crit(suspect), "Setup: the suspect is not in crit (health [suspect.health])")
+	TEST_ASSERT(police.book(suspect, officer), "book() refused a suspect in crit")
+	TEST_ASSERT(get_turf(suspect) in cell.tiles, "The suspect in crit is not on a cell tile after the booking")
+	TEST_ASSERT_EQUAL(get_turf(officer), cell.outside_turf, "The officer did not step back out")
+	TEST_ASSERT_NULL(suspect.handcuffed, "The suspect in crit is still cuffed after the booking")
+	TEST_ASSERT_EQUAL(police.store_calls, 1, "The jail strip was asked for [police.store_calls] times")
+	TEST_ASSERT(cell.jailed[suspect.mind], "An unpaid fine in crit is not a jail term")
+	police.tick_cells()
+	TEST_ASSERT(suspect.mind in cell.prisoners, "A prisoner booked in crit is not held")
+	TEST_ASSERT(cell.time_left[suspect.mind] > 0, "A prisoner booked in crit has no term kept")
+	TEST_ASSERT("medic" in police.lines, "Nobody called a medic") // POLICE_LINE_MEDIC
+	TEST_ASSERT(cell.medic_until > world.time, "With no medic to be had the door is not held open")
+	cell.prisoners[suspect.mind] = world.time - 1
+	police.tick_cells()
+	TEST_ASSERT(suspect.mind in cell.prisoners, "The term ran out while the prisoner was in crit")
 
 /// An outpost with no cell tries the fine on the spot, takes the cuffs off and lets the suspect go
 /datum/unit_test/voidcrew_outpost_police_cell_no_cell

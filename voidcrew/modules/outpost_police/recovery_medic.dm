@@ -33,13 +33,7 @@
 /// The order the stacks are tried in once the bleeding is stopped: the bruises, the burns, then sutures for what brute is left
 #define MEDIC_STACK_ORDER list(/obj/item/stack/medical/bruise_pack, /obj/item/stack/medical/ointment, /obj/item/stack/medical/suture)
 
-// The lines (AMBIENT_STRINGS_RECOVERY, every zone's section)
-/// Aloud, kneeling by the first patient
-#define RECOVERY_LINE_MEDIC_FOUND "medic_found"
-/// Over the radio, a patient back over the line
-#define RECOVERY_LINE_MEDIC_STABLE "medic_stable"
-/// Over the radio, a patient who died on them
-#define RECOVERY_LINE_MEDIC_LOST "medic_lost"
+// The lines (RECOVERY_LINE_MEDIC_*) are in voidcrew/_DEFINES/outpost_recovery.dm
 
 // =========================================================================
 // THE MEDIC
@@ -91,6 +85,8 @@
 	routine = list(/datum/ambient_activity/treat_patient = 1)
 	/// world.time since when they have had no patient to treat, or 0
 	var/idle_since = 0
+	/// Whether losing them counts against the recovery's crew waves (a medic called to a cell does not, police_cell_medic.dm)
+	var/counts_for_wave = TRUE
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/medic/Initialize(mapload, datum/human_npc_order/order)
 	. = ..()
@@ -164,7 +160,7 @@
 /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/medic/death(gibbed)
 	var/was_alive = stat != DEAD
 	. = ..()
-	if(was_alive && stat == DEAD)
+	if(was_alive && stat == DEAD && counts_for_wave)
 		medic_recovery()?.crew_lost(src)
 
 /// The recovery they work for: the one that sent them, or the outpost's they stand at
