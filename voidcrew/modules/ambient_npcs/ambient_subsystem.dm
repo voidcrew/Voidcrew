@@ -146,6 +146,11 @@ SUBSYSTEM_DEF(ambient_npcs)
 			continue
 		if(ambient_in_bounds(get_turf(player), bounds))
 			. += player
+	// An admin watching as a ghost keeps the place running too: an outpost that froze the moment they left their body
+	// showed them nothing of what it does. Other observers do not wake it.
+	for(var/mob/dead/observer/watcher in GLOB.player_list)
+		if(watcher.client?.holder && ambient_in_bounds(get_turf(watcher), bounds))
+			. += watcher
 
 /// A tile of `outpost`'s hangar lift alcove where someone arriving steps off, or null. Nobody comes up while anyone is still in the lift.
 /datum/controller/subsystem/ambient_npcs/proc/lift_arrival_turf(obj/structure/overmap/trader_outpost/outpost)

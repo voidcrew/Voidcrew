@@ -1116,9 +1116,17 @@
 /// Living officers on the roster plus units ordered and not built yet
 /datum/outpost_police/proc/dispatch_live_count()
 	. = length(dispatch_orders)
+	// An officer in crit or in cuffs is no use to the squad: a floor of them held the cap, and one unit came where
+	// ten were due (owner playtest 3). Only so many lie about before they count again.
+	var/downed = 0
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
-		if(officer.stat != DEAD)
+		if(officer.stat == DEAD)
+			continue
+		if(human_npc_out_of_fight(officer))
+			downed++
+		else
 			.++
+	. += max(0, downed - OUTPOST_POLICE_DOWNED_SLACK)
 
 /// The same over every trader outpost
 /proc/outpost_police_world_count()

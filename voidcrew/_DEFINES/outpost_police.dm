@@ -163,6 +163,8 @@
 #define OUTPOST_POLICE_CAP_OUTPOST 12
 /// Most living officers in the world
 #define OUTPOST_POLICE_CAP_WORLD 24
+/// Officers lying in crit or in cuffs at one outpost that do not count against the caps; any past this do again
+#define OUTPOST_POLICE_DOWNED_SLACK 12
 /// Most officer bodies lying about at one outpost
 #define OUTPOST_POLICE_CORPSE_CAP 8
 /// An officer's body lies this long

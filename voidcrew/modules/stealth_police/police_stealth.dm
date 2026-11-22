@@ -302,8 +302,9 @@
 		return
 	if(new_state != STEALTH_UNAWARE)
 		police_clear_for_duty()
-	if(officer.case)
-		human_npc_set_ai_movement(src, /datum/ai_movement/jps/stealth)
+	// Its pathfinder always, alert or not. Stealth's guards chase in a straight line, which in a checkpoint lobby
+	// left an officer pushing at the queue rails and the lockers (owner playtest 3).
+	human_npc_set_ai_movement(src, /datum/ai_movement/jps/stealth)
 
 // Alert on a wanted person: that is who it is hunting until the police stand it down. Never on someone in hand.
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_go_alert(atom/target, named = TRUE)

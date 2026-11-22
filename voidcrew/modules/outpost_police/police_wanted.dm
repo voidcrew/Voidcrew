@@ -142,6 +142,9 @@
 	if(!GLOB.outpost_crimes[crime])
 		stack_trace("OUTPOST POLICE: unknown crime '[crime]'")
 		return null
+	// Seen or not, an attack or a shot is trouble to the recovery crews' clock (recovery_core.dm death_is_trouble())
+	if(isliving(victim) || crime == OUTPOST_CRIME_GUNFIRE)
+		outpost?.recovery?.note_violence()
 	switch(crime)
 		if(OUTPOST_CRIME_WEAPON_DRAWN, OUTPOST_CRIME_GUNFIRE, OUTPOST_CRIME_VANDALISM)
 			// A hunter in the kingpin's shootout is excused strays from that fight (abuse M16)

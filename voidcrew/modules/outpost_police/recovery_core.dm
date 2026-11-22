@@ -61,6 +61,8 @@
 	/// gives no stars, so it only counts through last_death_at), and the last NPC death in its box
 	var/last_shot_at = 0
 	var/last_death_at = 0
+	/// world.time anyone was last attacked or a gun last fired at the outpost, seen or not (police_wanted.dm report_crime())
+	var/last_violence_at = 0
 	/// world.time the clock stopped because nobody was on the concourse, or 0 while players are there
 	var/paused_at = 0
 	/// Wanted people at the outpost but off its own floor or not at the keys: mind -> world.time first seen so (abuse MF4)
@@ -434,7 +436,8 @@
 		if(is_crew)
 			wake()
 			return
-		last_death_at = world.time
+		if(death_is_trouble())
+			last_death_at = world.time
 		begin_trouble()
 		return
 	if(!dead.mind)
@@ -444,8 +447,21 @@
 		player_dead += dead_ref
 	if(in_box)
 		mark_dirty_near(where)
-		last_death_at = world.time
+		if(death_is_trouble())
+			last_death_at = world.time
 		begin_trouble()
+
+/**
+ * Whether a death now is fresh trouble: someone wanted is still free here, or someone was attacked or a gun fired
+ * here moments ago (an unseen killer gives no stars). Otherwise it is someone going from wounds they already had, and
+ * the wait for the crews does not start over: the wounded dying one by one kept the medics away (owner playtest 3).
+ */
+/datum/outpost_recovery/proc/death_is_trouble()
+	return (last_violence_at && world.time - last_violence_at <= OUTPOST_RECOVERY_VIOLENCE_WINDOW) || stars_present()
+
+/// Someone was attacked, or a gun fired, at the outpost just now
+/datum/outpost_recovery/proc/note_violence()
+	last_violence_at = world.time
 
 /// The patrol stops within OUTPOST_RECOVERY_STOP_RANGE of `where` are dirty now (R4's janitors clear them)
 /datum/outpost_recovery/proc/mark_dirty_near(turf/where)
@@ -541,6 +557,7 @@
 	quiet_since = ambient_shifted(quiet_since, delay)
 	last_death_at = ambient_shifted(last_death_at, delay)
 	last_shot_at = ambient_shifted(last_shot_at, delay)
+	last_violence_at = ambient_shifted(last_violence_at, delay)
 	next_wave_at = ambient_shifted(next_wave_at, delay)
 	port_shut_until = ambient_shifted(port_shut_until, delay)
 	next_refill_at = ambient_shifted(next_refill_at, delay)

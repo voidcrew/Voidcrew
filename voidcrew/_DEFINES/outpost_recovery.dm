@@ -25,6 +25,8 @@
 
 /// No stars here and no NPC death for this long: the outpost is quiet
 #define OUTPOST_RECOVERY_QUIET_TIME (2 MINUTES)
+/// A death this soon after any attack or shot at the outpost is fresh trouble; a later one is someone going from wounds they had
+#define OUTPOST_RECOVERY_VIOLENCE_WINDOW (30 SECONDS)
 /// The first crew wave comes this long after the recovery call
 #define OUTPOST_RECOVERY_FIRST_WAVE (1 MINUTES)
 /// CLEANUP ends this long after quiet at the latest

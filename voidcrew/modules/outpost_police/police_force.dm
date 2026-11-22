@@ -321,6 +321,10 @@
 	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(controller.blackboard[BB_TARGETING_STRATEGY])
 	var/fire_range = controller.blackboard[BB_HUMAN_NPC_FIRE_RANGE] || 7
 	if(get_dist(officer, target) <= fire_range && strategy?.can_attack(officer, target, fire_range))
+		// A locker, a crate or a vendor in the way: round it for a clear line, rather than shooting it
+		if(officer.shot_obstacle(target))
+			controller.queue_behavior(/datum/ai_behavior/human_npc_close_in, BB_BASIC_MOB_CURRENT_TARGET, 1)
+			return SUBTREE_RETURN_FINISH_PLANNING
 		var/keep_away = controller.blackboard[BB_HUMAN_NPC_KEEP_AWAY]
 		if(keep_away && get_dist(officer, target) < keep_away)
 			controller.queue_behavior(/datum/ai_behavior/step_away, BB_BASIC_MOB_CURRENT_TARGET)
@@ -345,6 +349,8 @@
 	if(officer.bystander_in_line(target))
 		officer.police_reposition(target)
 		return AI_BEHAVIOR_DELAY
+	if(officer.shot_obstacle(target))
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
 	if(human_npc_loaded_gun(officer) != wanted_gun)
 		var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(controller.blackboard[targeting_strategy_key])
 		if(!strategy?.can_attack(officer, target))
@@ -358,6 +364,29 @@
 		controller.set_blackboard_key(BB_HUMAN_NPC_NEXT_SHOT, world.time + (controller.blackboard[BB_HUMAN_NPC_SHOT_DELAY] || 3 SECONDS))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 	return ..()
+
+/**
+ * Something solid on the line to `target` that a round would only hit: a wall, a locker, a crate, a vendor, a shut
+ * door. Glass and grilles are left to the gun (a beam goes through them); rails, tables and anything a round passes
+ * over are not in the way; people are bystander_in_line()'s.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/shot_obstacle(atom/target)
+	var/turf/from = get_turf(src)
+	var/turf/end_turf = get_turf(target)
+	if(!from || !end_turf || from == end_turf)
+		return null
+	for(var/turf/line_turf as anything in outpost_police_shot_line(from, end_turf))
+		if(line_turf == from || line_turf == end_turf)
+			continue
+		if(line_turf.density)
+			return line_turf
+		for(var/obj/thing in line_turf)
+			if(!thing.density || thing == target || (thing.flags_1 & ON_BORDER_1) || (thing.pass_flags_self & PASSTABLE))
+				continue
+			if(istype(thing, /obj/structure/window) || istype(thing, /obj/structure/grille) || ismecha(thing))
+				continue
+			return thing
+	return null
 
 /// A bystander spoils this officer's shot at `target`: one step aside for a clear line (a heavy weapons officer may step back instead)
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_reposition(atom/target)
