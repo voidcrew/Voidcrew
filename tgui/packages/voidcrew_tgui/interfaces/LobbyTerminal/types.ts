@@ -66,6 +66,8 @@ export type ShellStatic = {
   wiki: BooleanLike;
   /** The server has a rules address: RULES is live. */
   rules?: BooleanLike;
+  /** The server has a Discord invite: DISCORD is live. */
+  discord?: BooleanLike;
   localhost_admin: BooleanLike;
   /** Station name, shown at the foot of the side menu. */
   port: string | null;
@@ -505,6 +507,7 @@ export type LobbyActions = {
   character: Record<string, never>;
   settings: Record<string, never>;
   wiki: Record<string, never>;
+  discord: Record<string, never>;
   polls: Record<string, never>;
   manifest: Record<string, never>;
   changelog: Record<string, never>;

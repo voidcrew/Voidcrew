@@ -21,6 +21,10 @@
 /datum/config_entry/flag/free_ships
 	default = FALSE
 
+/// Discord invite the lobby terminal's DISCORD key opens. Empty hides the key.
+/datum/config_entry/string/discordurl
+	default = "https://discord.gg/eWP9gwT3NQ"
+
 /**
  * Clients on this BYOND build or newer are not given EXTERNAL_RSC_URLS and fetch
  * resources on demand instead.
