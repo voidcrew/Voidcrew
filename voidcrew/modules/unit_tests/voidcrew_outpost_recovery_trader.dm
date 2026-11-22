@@ -4,7 +4,7 @@
  * Every purchase path refuses with the keeper dead and works again with a replacement at the counter; a first
  * keeper drops one item at or under 750 cr and its SKU's stock falls by one; a drop past the 1 500 cr outpost cap
  * does not happen; a replacement drops nothing; a guard's death leaves the checkpoint scanning; KILL_STAFF floors at
- * 4 stars.
+ * 3 stars.
  *
  * Defines are included after the tests: values are written out with a comment naming the define. Police helpers:
  * voidcrew_outpost_police_helpers.dm; wanted_outpost() and friends: voidcrew_outpost_police_wanted.dm. Tests are
@@ -202,7 +202,7 @@
 		r1_kill(gardener)
 		TEST_ASSERT_EQUAL(shed_sku.stock, 1, "A trader death drop consumed stock reserved for a contract")
 
-/// Hitting a trader is counted with the trader as the victim; killing one right after is KILL_STAFF, 4 stars at least
+/// Hitting a trader is counted with the trader as the victim; killing one right after is KILL_STAFF, three stars
 /datum/unit_test/voidcrew_outpost_recovery_trader_kill
 
 /datum/unit_test/voidcrew_outpost_recovery_trader_kill/Run()
@@ -219,7 +219,7 @@
 	TEST_ASSERT(warrant.recent_victims?[WEAKREF(keeper)], "The hit on the trader was not counted with the trader as the victim")
 	r1_kill(keeper)
 	police.on_wanted_death(null, keeper, FALSE)
-	TEST_ASSERT(police.get_stars(killer.mind) >= 4, "Killing a trader is [police.get_stars(killer.mind)] stars, not 4 or more") // OUTPOST_CRIME_KILL_STAFF floor
+	TEST_ASSERT_EQUAL(police.get_stars(killer.mind), 3, "Killing a trader is not three stars") // OUTPOST_CRIME_KILL_STAFF floor (owner decision 63: no single crime goes past three)
 
 	// Stamina hits (e.g. stunbaton) and thrown items on a trader also record the trader as victim and weapon as evidence
 	var/datum/outpost_shop/clinic = outpost.get_shop(/datum/outpost_shop/vendor/patchup_clinic)
