@@ -1257,6 +1257,17 @@
 	var/amount = fine_amount(warrant)
 	if(amount <= 0)
 		return TRUE
+	return !isnull(charge_crew(warrant, amount, "Fine: [profile.force_name]"))
+
+/**
+ * Takes `amount` from the ship accounts of the crew `warrant`'s holder is on now, pooled, richest first, all or
+ * nothing (the fine's routine; the warden's price uses it too). Returns what came from where (account -> credits),
+ * for refund_crew(), with the money gone; or null with nothing taken. Never sleeps; no debt anywhere.
+ */
+/datum/outpost_police/proc/charge_crew(datum/outpost_warrant/warrant, amount, reason)
+	SHOULD_NOT_SLEEP(TRUE)
+	if(!warrant || amount <= 0 || QDELETED(current_warrant_crew(warrant)))
+		return null
 	var/list/datum/bank_account/accounts = list()
 	var/pool = 0
 	for(var/obj/structure/overmap/ship/ship as anything in crew_ship_list(warrant.crew))
@@ -1267,7 +1278,7 @@
 		accounts += account
 		pool += account.account_balance
 	if(pool < amount)
-		return FALSE
+		return null
 	// Richest first
 	var/list/datum/bank_account/ordered = list()
 	while(length(accounts))
@@ -1277,7 +1288,6 @@
 				richest = account
 		ordered += richest
 		accounts -= richest
-	var/reason = "Fine: [profile.force_name]"
 	var/remaining = amount
 	var/list/taken = list()
 	for(var/datum/bank_account/account as anything in ordered)
@@ -1285,18 +1295,23 @@
 		if(part <= 0)
 			continue
 		if(!account.adjust_money(-part, reason))
-			for(var/datum/bank_account/refund as anything in taken)
-				refund.adjust_money(taken[refund], "[reason] (refunded)")
-			return FALSE
+			refund_crew(taken, reason)
+			return null
 		taken[account] = part
 		remaining -= part
 		if(remaining <= 0)
 			break
 	if(remaining > 0)
-		for(var/datum/bank_account/refund as anything in taken)
+		refund_crew(taken, reason)
+		return null
+	return taken
+
+/// Gives back what charge_crew() took (`taken`: account -> credits)
+/datum/outpost_police/proc/refund_crew(list/taken, reason)
+	SHOULD_NOT_SLEEP(TRUE)
+	for(var/datum/bank_account/refund as anything in taken)
+		if(!QDELETED(refund))
 			refund.adjust_money(taken[refund], "[reason] (refunded)")
-		return FALSE
-	return TRUE
 
 /// The ships of `crew`'s hulls that still exist
 /datum/outpost_police/proc/crew_ship_list(datum/voidcrew_crew_record/crew)

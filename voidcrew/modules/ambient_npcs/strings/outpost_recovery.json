@@ -2,10 +2,10 @@
 	"_owner": "R4 (outpost recovery crews, spec-rehydrate.md 3.3). Keys: RECOVERY_LINE_* in voidcrew/_DEFINES/outpost_recovery.dm, plus the ambient contexts (idle, talk, work, chat, reply, attacked, violence, leave) and conversations. Placeholders: {name}, {other}, {place}.",
 	"halcyon": {
 		"call": [
-			"Desk to all units. The concourse is quiet. Cleaning crew on their way.",
+			"Warden to all units. The concourse is quiet. Cleaning crew on their way.",
 			"All units, stand easy. The crew is coming down to clear up.",
-			"Desk to beat. Quiet now. Sending the cleaners and the morgue crew.",
-			"Desk to all units. All clear. Cleaners on the way down."
+			"Warden to beat. Quiet now. Sending the cleaners and the morgue crew.",
+			"Warden to all units. All clear. Cleaners on the way down."
 		],
 		"first_body": [
 			"Oh dear. Right. Gloves on.",
@@ -136,16 +136,16 @@
 			"Breathe. Slowly. I'm here."
 		],
 		"medic_stable": [
-			"Medic to desk. One patient stable, concourse.",
-			"Desk, medic. They're breathing on their own now.",
+			"Medic to warden. One patient stable, concourse.",
+			"Warden, medic. They're breathing on their own now.",
 			"One back on their feet. Moving on.",
-			"Medic to desk. Patient's stable. All good."
+			"Medic to warden. Patient's stable. All good."
 		],
 		"medic_lost": [
-			"Medic to desk. Lost one. Morgue crew, please.",
-			"Desk, medic. I couldn't keep them.",
+			"Medic to warden. Lost one. Morgue crew, please.",
+			"Warden, medic. I couldn't keep them.",
 			"They're gone. Sorry. Morgue crew to me.",
-			"Desk, medic. They didn't make it. Morgue crew, please."
+			"Warden, medic. They didn't make it. Morgue crew, please."
 		],
 		"morgue_idle": [
 			"All quiet now. Good.",
@@ -278,10 +278,10 @@
 	},
 	"quartermain": {
 		"call": [
-			"Desk to all. Concourse secure. Cleanup crew inbound.",
+			"Warden to all. Concourse secure. Cleanup crew inbound.",
 			"All units, hold position. Sending the crew.",
 			"Concourse quiet. Cleanup is on the way.",
-			"Desk to all. Clear. Crew's on the lift."
+			"Warden to all. Clear. Crew's on the lift."
 		],
 		"first_body": [
 			"Not in my contract.",
@@ -412,15 +412,15 @@
 		],
 		"medic_stable": [
 			"Medic. One patched up. They'll walk.",
-			"Desk, medic. Got one back. Next.",
+			"Warden, medic. Got one back. Next.",
 			"One's up and grumbling.",
-			"Desk, medic. Patient stable. Moving on."
+			"Warden, medic. Patient stable. Moving on."
 		],
 		"medic_lost": [
 			"Medic. Lost one. Send the bag.",
-			"Desk, medic. Too late for this one.",
+			"Warden, medic. Too late for this one.",
 			"Gone. Morgue crew, my position.",
-			"Medic to desk. One dead. Morgue crew."
+			"Medic to warden. One dead. Morgue crew."
 		],
 		"morgue_idle": [
 			"Floor's clear.",
@@ -553,10 +553,10 @@
 	},
 	"undertow": {
 		"call": [
-			"Desk to all. It's quiet. Send in the sweepers.",
+			"Warden to all. It's quiet. Send in the sweepers.",
 			"All guards, stand down. The crew's coming for the mess.",
 			"Concourse is yours again. Cleanup's on the way.",
-			"Desk to all. Shooting's done. Send the sweepers."
+			"Warden to all. Shooting's done. Send the sweepers."
 		],
 		"first_body": [
 			"Huh. Fresh.",
@@ -687,15 +687,15 @@
 		],
 		"medic_stable": [
 			"Medic. This one will live.",
-			"Desk, medic. Patched one. Won't last, never does.",
+			"Warden, medic. Patched one. Won't last, never does.",
 			"One's up. Next idiot.",
-			"Desk, medic. Stable. For now."
+			"Warden, medic. Stable. For now."
 		],
 		"medic_lost": [
 			"Medic. Lost one. Bag it.",
-			"Desk, medic. This one's done. Morgue.",
+			"Warden, medic. This one's done. Morgue.",
 			"Gone. Somebody else's problem now.",
-			"Medic to desk. Dead. Send the bag."
+			"Medic to warden. Dead. Send the bag."
 		],
 		"morgue_idle": [
 			"Nobody left twitching.",

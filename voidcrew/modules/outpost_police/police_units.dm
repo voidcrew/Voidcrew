@@ -101,18 +101,22 @@
 	sechud_icon_state = SECHUD_SECURITY_OFFICER
 	access = list(ACCESS_OUTPOST_POLICE)
 
-/// The desk sergeant's: the police doors and the holding cells (owner decision 56). Its own trim for the reason above.
+/// The warden's (code name: sergeant): the police doors and the holding cells (owner decisions 56, 65). Its own trim for the reason above.
 /datum/id_trim/outpost_police/sergeant
+	assignment = "Warden"
+	trim_state = "trim_warden"
+	sechud_icon_state = SECHUD_WARDEN
 	access = list(ACCESS_OUTPOST_POLICE, ACCESS_OUTPOST_CELLS)
 
 /**
- * The desk sergeant's ID (owner decision 56). It is not locked gear (GLOB.human_npc_not_gear): it comes off them
+ * The warden's ID (owner decisions 56, 65; the code still calls the warden the sergeant). It is not locked gear (GLOB.human_npc_not_gear): it comes off them
  * through the strip menu like anything on a person, and drops when they die. OUTPOST_POLICE_SERGEANT_CARD_VOID after
  * it leaves its sergeant, or its sergeant dies or a player takes the body, its access is gone for good. Back on its own
  * living sergeant in time, it stays good. Every sergeant gets a new one. It sells for nothing and holds no materials,
  * as locked gear does (human_npc_gear.dm).
  */
 /obj/item/card/id/advanced/outpost_sergeant
+	name = "warden's ID card"
 	trim = /datum/id_trim/outpost_police/sergeant
 	trim_changeable = FALSE
 	custom_materials = null
@@ -344,24 +348,33 @@
 	uniform = /obj/item/clothing/under/syndicate
 	head = /obj/item/clothing/head/soft/black
 
-// ----- desk sergeants: the beat look under a drill hat -----
+// ----- wardens (code name: sergeant), who keep the cells: tg's warden pieces in the zone's colours (decision 65) -----
 
 /datum/outfit/outpost_police/sergeant
-	name = "Outpost Police: desk sergeant"
-	head = /obj/item/clothing/head/hats/warden/drill
+	name = "Outpost Police: warden"
+	head = /obj/item/clothing/head/hats/warden
 	id = /obj/item/card/id/advanced/outpost_sergeant
 	id_trim = /datum/id_trim/outpost_police/sergeant
 
+/// Halcyon's navy: the warden's formal uniform under a braided officer's jacket (no armour: only response units wear it),
+/// and the peaked police hat
 /datum/outfit/outpost_police/sergeant/halcyon
-	name = "Outpost Police: Halcyon desk sergeant"
+	name = "Outpost Police: Halcyon warden"
+	uniform = /obj/item/clothing/under/rank/security/warden/formal
+	suit = /obj/item/clothing/suit/jacket/officer/blue
 
+/// Quartermain's grey: the old grey warden's suit with its red trim, and the red warden's hat
 /datum/outfit/outpost_police/sergeant/quartermain
-	name = "Outpost Police: Quartermain desk sergeant"
-	uniform = /obj/item/clothing/under/rank/security/officer/grey
+	name = "Outpost Police: Quartermain warden"
+	uniform = /obj/item/clothing/under/rank/security/warden/grey
+	head = /obj/item/clothing/head/hats/warden/red
 
+/// The Undertow's black: the officers' black fatigues under a leather jacket, and the red warden's hat
 /datum/outfit/outpost_police/sergeant/undertow
-	name = "Outpost Police: Undertow desk sergeant"
+	name = "Outpost Police: Undertow warden"
 	uniform = /obj/item/clothing/under/syndicate
+	suit = /obj/item/clothing/suit/jacket/leather
+	head = /obj/item/clothing/head/hats/warden/red
 
 // ----- response officers: a vest, a helmet and sunglasses (abuse M5) -----
 
@@ -529,7 +542,7 @@
 	if(istype(card))
 		card.registered_name = real_name
 		card.update_label()
-	// A sergeant's card is theirs alone (decision 56)
+	// The warden's card is theirs alone (decision 56)
 	if(istype(card, /obj/item/card/id/advanced/outpost_sergeant))
 		var/obj/item/card/id/advanced/outpost_sergeant/desk_card = card
 		desk_card.bind_owner(src)
@@ -568,7 +581,7 @@
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/unit_title()
 	switch(unit_kind)
 		if(POLICE_UNIT_SERGEANT)
-			return "Desk sergeant"
+			return "Warden"
 		if(POLICE_UNIT_OFFICER)
 			return "Response officer"
 		if(POLICE_UNIT_TACTICAL)

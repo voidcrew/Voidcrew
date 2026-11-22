@@ -218,6 +218,7 @@
 #include "voidcrew_outpost_patrol.dm"
 #include "voidcrew_outpost_police_arrest.dm"
 #include "voidcrew_outpost_police_blocking.dm"
+#include "voidcrew_outpost_police_bribe.dm"
 #include "voidcrew_outpost_police_cell.dm"
 #include "voidcrew_outpost_police_crit_medic.dm"
 #include "voidcrew_outpost_police_dispatch.dm"

@@ -990,6 +990,9 @@
 		// At the desk, or stepped over to the coffee machine beside it
 		if(get_turf(officer) == desk || (istype(officer.activity, /datum/ambient_activity/police_coffee) && officer.z == desk.z && get_dist(officer, desk) <= OUTPOST_POLICE_STOP_REACH + 2))
 			return "desk"
+		// Gone over to a cell door to see a prisoner (police_bribe.dm)
+		if(istype(officer.activity, /datum/ambient_activity/warden_bribe))
+			return "desk"
 	return null
 
 /**
@@ -1024,7 +1027,9 @@
 	var/datum/ambient_activity/current = officer.activity
 	if(!current.at_spot())
 		var/turf/spot = get_turf(current.spot)
-		if(!spot || spot.z != officer.z || get_dist(spot, officer) > OUTPOST_POLICE_STOP_REACH)
+		// The walk to a cell door from the desk is longer than a stop's reach (police_bribe.dm)
+		var/reach = istype(current, /datum/ambient_activity/warden_bribe) ? OUTPOST_POLICE_BRIBE_WALK_REACH : OUTPOST_POLICE_STOP_REACH
+		if(!spot || spot.z != officer.z || get_dist(spot, officer) > reach)
 			officer.end_activity()
 			return
 		controller.set_blackboard_key(BB_AMBIENT_DESTINATION, current.spot)
