@@ -400,6 +400,8 @@
 	dispatch_update_holds()
 	dispatch_respond(alert_level())
 	dispatch_open_cases()
+	// The all clear, the tick the last wanted person is in hand (police_stealth.dm)
+	stealth_tick_squad()
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
 		if(officer.stat == DEAD)
 			continue

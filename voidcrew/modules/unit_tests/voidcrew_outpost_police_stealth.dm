@@ -956,3 +956,182 @@
 	qdel(berth)
 	outpost.berths = old_berths
 	dispatch_clear(police)
+
+// ===== IN HAND (owner decision 58) =====
+// Blackboard keys and noise kinds are written out, as the states are: "stealth_wary"; "scream", "bash", "gun_pistol";
+// STEALTH_CALL_ALARM is 3.
+
+/// The cuffs go on: the arrest's officers are calm at once; with someone else still wanted the rest search on, and the moment nobody is at large the whole squad stands down, calm, its calls dropped and its noises forgotten
+/datum/unit_test/voidcrew_stealth_live/police/in_hand_stand_down
+
+/datum/unit_test/voidcrew_stealth_live/police/in_hand_stand_down/Run()
+	TEST_ASSERT(police_room(20, 9), "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, at(0, 8))
+	person_at(19, 8)
+	var/list/officers = list()
+	var/list/brains = list()
+	for(var/list/spot in list(list(4, 3, EAST), list(8, 4, WEST), list(15, 6, WEST), list(17, 2, WEST)))
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(spot[1], spot[2], spot[3])
+		officer.resume_routine()
+		var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = wake(officer)
+		brain.stealth_setup()
+		officers += officer
+		brains += brain
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/hunting_officer = officers[4]
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/searcher = brains[3]
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/hunter = brains[4]
+	var/mob/living/carbon/human/suspect = visitor_at(6, 3)
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 25) // two stars
+	var/mob/living/carbon/human/other = visitor_at(2, 7)
+	police_pin_warrant(police, other.mind, 25)
+
+	// One came on a colleague's shout with nobody in mind and has its hand up for a call; one lost the suspect itself
+	searcher.stealth_go_searching(at(12, 6))
+	searcher.stealth_start_call(3, at(12, 6))
+	hunter.police_hunt = WEAKREF(suspect.mind)
+	hunter.stealth_go_searching(at(12, 2))
+	var/datum/stealth_group/group = searcher.group
+	TEST_ASSERT_NOTNULL(group, "Fixture: the officers have no patrol group")
+	group.lures += list(list(at(12, 6), world.time))
+	TEST_ASSERT(searcher.blackboard["stealth_wary"] && !isnull(searcher.pending_call), "Fixture: the searching officer is not on edge with a call on its way")
+	police.stealth_tick_squad()
+	TEST_ASSERT_EQUAL(searcher.stealth_state(), "searching", "The squad stood down with two wanted people at large")
+
+	// The cuffs go on the suspect
+	var/datum/outpost_police_case/case = police.open_case(warrant)
+	TEST_ASSERT_NOTNULL(case, "Fixture: no arrest opened at two stars")
+	TEST_ASSERT(isnull(hunting_officer.case), "Fixture: the far officer was put on the arrest")
+	case.cuffs_on(suspect)
+	TEST_ASSERT(police.in_custody(suspect) && police.has_in_hand(suspect), "Fixture: the cuffed suspect is not in hand")
+	for(var/index in 1 to 2)
+		var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/case_brain = brains[index]
+		TEST_ASSERT_EQUAL(case_brain.stealth_state(), "unaware", "An officer on the arrest is [case_brain.stealth_state()] once the cuffs are on")
+		TEST_ASSERT(!case_brain.blackboard["stealth_wary"], "An officer on the arrest walks the prisoner in still on edge")
+		TEST_ASSERT_NULL(case_brain.pending_call, "An officer on the arrest still has a call on its way once the cuffs are on")
+
+	// Someone else is still wanted: the search for them goes on, and only the one after the cuffed suspect stands down
+	police.stealth_tick_squad()
+	police.stealth_tick_officer(hunting_officer)
+	TEST_ASSERT_EQUAL(searcher.stealth_state(), "searching", "The squad stood down with someone else still at large")
+	TEST_ASSERT_EQUAL(hunter.stealth_state(), "unaware", "An officer went on looking for someone already in cuffs")
+
+	// Nobody at large any more: everyone stands down, calm
+	police_pin_warrant(police, other.mind, 0)
+	police.stealth_tick_squad()
+	TEST_ASSERT_EQUAL(searcher.stealth_state(), "unaware", "An officer went on searching after the last wanted person was in hand")
+	TEST_ASSERT(!searcher.blackboard["stealth_wary"], "An officer was left on edge after the all clear")
+	TEST_ASSERT_NULL(searcher.pending_call, "An officer still had a call on its way after the all clear")
+	TEST_ASSERT(!length(group.lures), "The squad remembers the noises of trouble that is over")
+	police.close_case(suspect.mind)
+
+/// Someone in cuffs is no part of the stealth play: their noise brings nobody, a blow from them starts no search, nobody goes on alert over them or keeps them as a target, and an officer on the arrest is not drawn off by a shot
+/datum/unit_test/voidcrew_stealth_live/police/in_hand_quiet
+
+/datum/unit_test/voidcrew_stealth_live/police/in_hand_quiet/Run()
+	TEST_ASSERT(police_room(20, 7), "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, at(0, 6))
+	person_at(19, 6)
+	police_stop(7, 3, "a", 1, 10 MINUTES, null)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/listener = officer_at(7, 3, WEST)
+	listener.resume_routine()
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = wake(listener)
+	brain.stealth_setup()
+	TEST_ASSERT_EQUAL(brain.route_id, "a", "Fixture: the listening officer did not take its beat")
+	var/list/case_brains = list()
+	for(var/list/spot in list(list(13, 3, WEST), list(12, 4, SOUTH)))
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(spot[1], spot[2], spot[3])
+		officer.resume_routine()
+		var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/case_brain = wake(officer)
+		case_brain.stealth_setup()
+		case_brains += case_brain
+	var/mob/living/carbon/human/prisoner = visitor_at(12, 3)
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, prisoner.mind, 25) // two stars
+
+	// Wanted and free, a scream behind its back is heard
+	TEST_ASSERT(stealth_noise(get_turf(prisoner), "scream", null, prisoner) > 0, "Fixture: nobody heard a wanted person scream")
+	TEST_ASSERT(brain.stealth_state() != "unaware", "Fixture: a wanted person's scream did not send the officer to look")
+	police.stealth_tick_squad()
+
+	// In cuffs: the all clear, and then nothing they do is anyone's to look into
+	var/datum/outpost_police_case/case = police.open_case(warrant)
+	TEST_ASSERT_NOTNULL(case, "Fixture: no arrest opened at two stars")
+	TEST_ASSERT(isnull(listener.case), "Fixture: the listening officer was put on the arrest")
+	case.cuffs_on(prisoner)
+	police.stealth_tick_squad()
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "The all clear did not stand the listening officer down")
+	TEST_ASSERT_EQUAL(stealth_noise(get_turf(prisoner), "scream", null, prisoner), 0, "An officer heard a scream from someone in cuffs")
+	TEST_ASSERT_EQUAL(stealth_noise(get_turf(prisoner), "bash", null, prisoner), 0, "An officer heard someone in cuffs beating on something")
+	TEST_ASSERT(!brain.stealth_touched(prisoner), "An officer took someone in cuffs for a target at a blow from them")
+	brain.stealth_go_alert(prisoner)
+	brain.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, prisoner)
+	TEST_ASSERT(!brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET), "Someone in cuffs was kept as a target")
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "An officer went [brain.stealth_state()] over someone in cuffs")
+	TEST_ASSERT_NULL(brain.pending_call, "An officer has a call on its way about someone in cuffs")
+	TEST_ASSERT(!brain.blackboard["stealth_wary"], "An officer is on edge over someone in cuffs")
+
+	// A shot from someone else: a free officer goes to look, the two on the arrest stay with their prisoner
+	var/mob/living/carbon/human/shooter = visitor_at(9, 3)
+	stealth_noise(get_turf(shooter), "gun_pistol", null, shooter)
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "Fixture: a pistol shot two tiles off did not send a free officer to look")
+	for(var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/case_brain as anything in case_brains)
+		TEST_ASSERT_EQUAL(case_brain.stealth_state(), "unaware", "An officer on an arrest went [case_brain.stealth_state()] at a shot")
+		TEST_ASSERT(!case_brain.blackboard["stealth_wary"], "An officer on an arrest was left on edge by a shot")
+
+	// Off the arrest and still wanted, they are heard again
+	police.close_case(prisoner.mind)
+	for(var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/each as anything in case_brains + brain)
+		each.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+		each.stealth_go_unaware()
+		each.stealth_clear_wary()
+		each.stealth_drop_call()
+	brain.group.forget_noises()
+	TEST_ASSERT(!police.has_in_hand(prisoner), "Fixture: the suspect is still in hand with the arrest closed")
+	TEST_ASSERT(stealth_noise(get_turf(prisoner), "scream", null, prisoner) > 0, "Nobody heard a wanted person scream once the arrest on them was over")
+
+/// Out of its sight but in a colleague's, a wanted person is not lost: no "lost them", no search. In cuffs they are let go at once, seen or not.
+/datum/unit_test/voidcrew_stealth_live/police/in_hand_not_lost
+
+/datum/unit_test/voidcrew_stealth_live/police/in_hand_not_lost/Run()
+	TEST_ASSERT(police_room(20, 9), "No room for the test")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(3, 4, EAST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	brain.stealth_setup()
+	for(var/list/spot in list(list(10, 4, WEST), list(9, 5, SOUTH)))
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/near = officer_at(spot[1], spot[2], spot[3])
+		var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/near_brain = near.ai_controller
+		near_brain.stealth_setup()
+	var/mob/living/carbon/human/suspect = visitor_at(9, 4)
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 25) // two stars
+	brain.stealth_go_alert(suspect)
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "alert", "Fixture: the officer is not alert on a two-star suspect")
+	for(var/dy in 0 to 8)
+		var/turf/wall_spot = at(6, dy)
+		wall_spot.ChangeTurf(/turf/closed/wall)
+	TEST_ASSERT(!brain.stealth_has_in_view(suspect), "Fixture: the officer sees the suspect through a wall")
+
+	// A colleague has eyes on them (the warrant's sighting is live): past the time to lose them, it is still on them
+	warrant.last_seen_turf = get_turf(suspect)
+	warrant.unseen_since = 0
+	brain.lost_since = world.time - 10 SECONDS
+	brain.stealth_keep_target()
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "alert", "An officer gave a suspect up for lost while a colleague had eyes on them")
+	TEST_ASSERT_EQUAL(brain.blackboard[BB_BASIC_MOB_CURRENT_TARGET], suspect, "An officer dropped a suspect a colleague had eyes on")
+	TEST_ASSERT_EQUAL(brain.last_seen_turf, get_turf(suspect), "An officer does not head for where its colleague sees the suspect")
+
+	// In cuffs behind that wall: let go at once, without a search
+	var/datum/outpost_police_case/case = police.open_case(warrant)
+	TEST_ASSERT_NOTNULL(case, "Fixture: no arrest opened at two stars")
+	TEST_ASSERT(isnull(officer.case), "Fixture: the far officer was put on the arrest")
+	case.cuffs_on(suspect)
+	brain.stealth_keep_target()
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "An officer is [brain.stealth_state()] over a suspect in cuffs it cannot see")
+	TEST_ASSERT_NULL(brain.police_hunt, "An officer is still after a suspect in cuffs")
+	police.close_case(suspect.mind)
+
+	// Nobody sees them: lost as before, and searched for
+	brain.stealth_go_alert(suspect)
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "alert", "Fixture: the officer is not alert on the suspect again")
+	warrant.unseen_since = world.time
+	brain.lost_since = world.time - 10 SECONDS
+	brain.stealth_keep_target()
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "An officer did not search for a suspect nobody had eyes on")

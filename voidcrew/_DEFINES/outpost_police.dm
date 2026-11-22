@@ -158,8 +158,8 @@
 /// Time in a cell after a paid fine, at one and two stars
 #define OUTPOST_POLICE_HOLDS list(30 SECONDS, 60 SECONDS)
 /// Jail term when the fine is not paid, at one and two stars (no debt afterwards); at three to five stars, the
-/// sentence with no fine on offer (owner decision 37)
-#define OUTPOST_POLICE_JAIL list(3 MINUTES, 6 MINUTES, 10 MINUTES, 15 MINUTES, 20 MINUTES)
+/// sentence with no fine on offer (owner decision 37). Ten minutes at the most (owner decision 59).
+#define OUTPOST_POLICE_JAIL list(1 MINUTES, 2 MINUTES, 4 MINUTES, 7 MINUTES, 10 MINUTES)
 /// A jailed prisoner's fine is tried again this often
 #define OUTPOST_POLICE_BAIL_RETRY (30 SECONDS)
 /// Searching one item off a suspect

@@ -149,7 +149,7 @@
 	TEST_ASSERT_EQUAL(ship.ship_account.account_balance, 5000, "A three-star suspect was fined")
 	TEST_ASSERT(cell.jailed[suspect.mind], "A three-star suspect was not jailed")
 	var/left = cell.prisoners[suspect.mind] - world.time
-	TEST_ASSERT(left > 5900 && left <= 6000, "A three-star sentence is [left / 10] seconds, not ten minutes") // OUTPOST_POLICE_JAIL at three stars
+	TEST_ASSERT(left > 2300 && left <= 2400, "A three-star sentence is [left / 10] seconds, not four minutes") // OUTPOST_POLICE_JAIL at three stars
 	TEST_ASSERT(cell.bail_due[suspect.mind] > world.time + 1 HOURS, "A three-star prisoner can make bail")
 	TEST_ASSERT(police.in_custody(suspect), "A jailed suspect is not in custody")
 	cell.forget_prisoner(suspect.mind)

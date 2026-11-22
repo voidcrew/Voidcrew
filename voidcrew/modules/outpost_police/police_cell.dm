@@ -342,7 +342,8 @@
 		if(world.time < override_until)
 			door.cell_take_over()
 		driving_door = TRUE
-		var/opened = door.open(BYPASS_DOOR_CHECKS)
+		// An ordinary opening, with the door's own sound, as its closing is; only a door left broken by a hack is forced
+		var/opened = door.open(FORCING_DOOR_CHECKS) || (!QDELETED(door) && door.open(BYPASS_DOOR_CHECKS))
 		driving_door = FALSE
 		if(opened)
 			return TRUE

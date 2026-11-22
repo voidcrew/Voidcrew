@@ -263,8 +263,8 @@ If you go down before the cuffs are on, you are cuffed where you lie and held th
 - **What they take.** Every weapon or tool you used in a crime goes into the **evidence locker** at the security desk. Implants, cyberware, ship keys and mission items are never taken. Anything you stole from a prisoner's locker goes back to that locker.
 - **The fine** (1-2 stars). 300 credits at 1 star and 800 at 2 at Halcyon, half as much again at Quartermain and double at the Undertow. It is paid from your crew's ship accounts together, in full or not at all.
 - **If it is paid.** You wait in a cell, about half a minute at 1 star and a minute at 2, then the door opens onto the lobby.
-- **If it is not.** You go to jail, three minutes at 1 star and six at 2. The fine is tried again every half minute, and paying it ends the term. There is no debt afterwards.
-- **At 3 stars and up.** There is no fine and no paying your way out. You go straight to jail: 10 minutes at 3 stars, 15 at 4 and 20 at 5.
+- **If it is not.** You go to jail, one minute at 1 star and two at 2. The fine is tried again every half minute, and paying it ends the term. There is no debt afterwards.
+- **At 3 stars and up.** There is no fine and no paying your way out. You go straight to jail: 4 minutes at 3 stars, 7 at 4 and 10 at 5.
 
 In jail your gear comes off and goes into a **property locker** outside the cells, and you get an orange jumpsuit and shoes. You keep your ID, your implants, and any ship key or mission item, even one that was in your bag.
 

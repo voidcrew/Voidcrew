@@ -18,6 +18,10 @@
  * - Overrides: the leash (anywhere at the outpost), the walk (another sector goes by the police lift), becoming a
  *   sentry (a route is taken back on return), the radio call (it makes the officer's waiting reports), setup (on
  *   the roster), a seat of its own is not captivity, and the alert (who the police set it on).
+ * - Someone the police have in hand (has_in_hand(): cuffed, in a cell, or down with an arrest on them) is no part of
+ *   the stealth play: nobody loses, searches for, goes on alert over or calls an alarm about them, their noise brings
+ *   nobody, an officer on an arrest is not drawn off by a noise, and the squad stands down as one when the last
+ *   wanted person is in hand (stealth_all_clear(); owner decision 58).
  */
 
 // =========================================================================
@@ -301,21 +305,27 @@
 	if(officer.case)
 		human_npc_set_ai_movement(src, /datum/ai_movement/jps/stealth)
 
-// Alert on a wanted person: that is who it is hunting until the police stand it down
-/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_go_alert(atom/target)
-	. = ..()
+// Alert on a wanted person: that is who it is hunting until the police stand it down. Never on someone in hand.
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_go_alert(atom/target, named = TRUE)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
 	var/mob/living/person = istype(officer) ? officer.police_mech_suspect(target) : (ismecha(target) ? bounty_ai_pilot_of(target) : target)
+	if(istype(officer) && isliving(person) && officer.police?.has_in_hand(person, officer))
+		return
+	. = ..()
 	if(isliving(person) && person.mind)
 		police_hunt = WEAKREF(person.mind)
 
+// Someone in hand is never a target, whoever set them: a blow from the cuffs makes the base's retaliation pick them
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/on_target_set(datum/source)
 	SIGNAL_HANDLER
-	..()
-	police_clear_for_duty()
 	var/atom/target = blackboard[BB_BASIC_MOB_CURRENT_TARGET]
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
 	var/mob/living/person = istype(officer) ? officer.police_mech_suspect(target) : (ismecha(target) ? bounty_ai_pilot_of(target) : target)
+	if(istype(officer) && isliving(person) && officer.police?.has_in_hand(person, officer))
+		clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+		return
+	..()
+	police_clear_for_duty()
 	if(isliving(person) && person.mind)
 		police_hunt = WEAKREF(person.mind)
 
@@ -382,14 +392,86 @@
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
 	if(!istype(officer) || !officer.police)
 		return ..()
-	if(!officer.police.arrest_downed(fallen, officer) && !(isliving(fallen) && fallen.stat != DEAD && officer.police.in_custody(fallen)))
+	if(!officer.police.arrest_downed(fallen, officer) && !officer.police.has_in_hand(fallen, officer))
 		return ..()
-	notice_map -= REF(fallen)
+	police_let_go(fallen)
+
+// ----- in hand (owner decision 58) -----
+// Once the police have someone (cuffed, in a cell, or down with an arrest on them) the stealth play over them is
+// done. Without these an officer went on losing them, searching for them, looking into the noise they made and
+// calling alarms about them while a colleague walked them to the desk, and for a minute after they were in a cell.
+
+/// Drops `who` as its target, focus and quarry and goes back to its beat without a word
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/proc/police_let_go(mob/living/who)
 	clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
 	clear_blackboard_key(BB_STEALTH_FOCUS)
 	// The arrest drives the officer on it; anyone else is back to its beat. Nobody stays on alert over them.
 	police_hunt = null
 	stealth_go_unaware()
+
+/// On an arrest, leaving or riding a lift: nothing it hears sends it anywhere
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/proc/police_busy()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	return istype(officer) && (officer.case || officer.npc_exit || officer.dispatch_riding)
+
+/**
+ * Someone in hand is nobody's target: it lets them go, whether or not it can see them. Someone a colleague has eyes
+ * on is not lost either: it keeps closing in on them, with no "lost them" and no search of where it last saw them.
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_keep_target()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	var/datum/outpost_police/police = istype(officer) ? officer.police : null
+	var/atom/remembered = blackboard[BB_BASIC_MOB_CURRENT_TARGET] || blackboard[BB_STEALTH_FOCUS]
+	var/mob/living/person = (police && !QDELETED(remembered)) ? officer.police_mech_suspect(remembered) : null
+	if(!isliving(person) || !person.mind)
+		return ..()
+	if(police.has_in_hand(person, officer))
+		police_let_go(person)
+		return
+	var/datum/outpost_warrant/warrant = police.get_warrant(person.mind)
+	if(warrant?.last_seen_turf && !warrant.unseen_since && officer.police_will_fight(remembered) && !stealth_has_in_view(remembered))
+		lost_since = 0
+		last_seen_turf = warrant.last_seen_turf
+		blackboard[BB_STEALTH_LAST_SEEN_AT] = world.time
+		if(!blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+			set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, remembered)
+		return
+	return ..()
+
+// A shove from the cuffs, a kick in the cell: the charge is the arrest's (police_arrest.dm). Nobody searches for, or
+// shouts about, someone they are holding.
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_touched(atom/source)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	var/mob/living/person = source
+	if(istype(officer) && isliving(person) && person.mind && officer.police?.has_in_hand(person, officer))
+		explained_at = world.time
+		return FALSE
+	return ..()
+
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_can_investigate()
+	if(police_busy())
+		return FALSE
+	return ..()
+
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_go_heard(turf/where, again = FALSE)
+	if(police_busy())
+		return
+	return ..()
+
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_glance(turf/where, time = STEALTH_GLANCE_TIME)
+	if(police_busy())
+		return
+	return ..()
+
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_hold(turf/where)
+	if(police_busy())
+		return
+	return ..()
+
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_respond(turf/where)
+	if(police_busy())
+		return FALSE
+	return ..()
 
 // ----- the public (owner decision 35) -----
 // The concourse is a public place. Stealth's guards treat anyone they are not allied with as a stranger to look
@@ -479,9 +561,16 @@
 	return is_hostile_creature(actor)
 
 /datum/stealth_group/hear(turf/where, kind, reach, level, flags, mob/living/actor, door = FALSE)
-	if(!(flags & STEALTH_NOISE_GROUP_ONLY) && outpost_police_everyday_noise(kind))
-		var/datum/outpost_police/police = outpost_police()
-		if(police && (isnull(actor) || !outpost_police_group_has_business(police, actor)))
+	var/datum/outpost_police/police = (flags & STEALTH_NOISE_GROUP_ONLY) ? null : outpost_police()
+	if(police)
+		// A cell working its own door, and anything someone in hand does (a fall under the baton, a scream from the
+		// cuffs, a fist on the cell glass): no officer goes to look (owner decision 58)
+		var/obj/machinery/door/airlock/outpost/glass/police_cell/cell_door = door
+		if(istype(cell_door) && cell_door.holding_cell?.driving_door)
+			return 0
+		if(isliving(actor) && police.has_in_hand(actor))
+			return 0
+		if(outpost_police_everyday_noise(kind) && (isnull(actor) || !outpost_police_group_has_business(police, actor)))
 			return 0
 	return ..()
 
@@ -509,6 +598,9 @@
 	if(!istype(brain) || !police || QDELETED(offender) || stat != CONSCIOUS || client)
 		return
 	brain.stealth_setup()
+	// Someone in hand: the report is passed on quietly (police_perception.dm nudge_witness()), with no alert and no alarm
+	if(police.has_in_hand(offender, src))
+		return
 	var/atom/fighting = brain.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
 	if(brain.stealth_state() == STEALTH_ALERT && !QDELETED(fighting))
 		// Already fighting someone: it knows, and turns on them by stealth's own rules
@@ -534,8 +626,12 @@
 	brain.stealth_setup()
 	brain.stealth_go_alert(suspect)
 
-/// Nothing to fight or look for any more: back to unaware and its beat, as stealth has it (wary a while yet)
-/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_stand_easy()
+/**
+ * Nothing to fight or look for any more: back to unaware and its beat, as stealth has it (wary a while yet).
+ * `calm`: the trouble is over for everyone (the all clear, the cuffs going on its own arrest). It is not left wary,
+ * and a call it had its hand up for is not made; what it was waiting to report still counts.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_stand_easy(calm = FALSE)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = ai_controller
 	if(!istype(brain) || QDELETED(src) || stat == DEAD)
 		return
@@ -543,6 +639,17 @@
 	brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
 	if(brain.stealth_state() != STEALTH_UNAWARE)
 		brain.stealth_go_unaware()
+	if(!calm)
+		return
+	brain.clear_blackboard_key(BB_STEALTH_FOCUS)
+	brain.notice_map?.Cut()
+	brain.glance_until = 0
+	if(brain.pending_call)
+		brain.stealth_drop_call()
+		if(stat == CONSCIOUS && !HAS_TRAIT(src, TRAIT_INCAPACITATED) && human_npc_can_talk(src) && stealth_radio_ready())
+			police?.confirm_reports(src)
+	brain.stealth_clear_wary()
+	brain.stealth_meter_update()
 
 /// A stood-down unit walking to a lift stands easy, holsters its weapons and keeps stealth's 60-step pathfinder
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/npc_walk_out(atom/exit, datum/callback/on_left)
@@ -880,6 +987,71 @@
 // =========================================================================
 // STARS DRIVE THE STATES (the police tick; spec-stealth 1.4)
 // =========================================================================
+
+/datum/outpost_police
+	/// Whether anyone wanted was at large at the last tick: the tick that ends on is the all clear (stealth_tick_squad())
+	var/stealth_trouble = FALSE
+
+/**
+ * Whether the police have `who` in hand: in custody (an arrest's cuffs or grip, or a cell), or with an arrest on them
+ * and down or restrained, at the stars `officer` knows of. The exact cases police_will_fight() never fights a person in.
+ */
+/datum/outpost_police/proc/has_in_hand(mob/living/who, mob/living/officer)
+	if(!isliving(who) || !who.mind || who.stat == DEAD)
+		return FALSE
+	if(in_custody(who))
+		return TRUE
+	if(!arrest_on(who))
+		return FALSE
+	if(police_suspect_down(who))
+		return !finishes_downed(who, officer)
+	return HAS_TRAIT(who, TRAIT_RESTRAINED) && force_level(who, officer) < POLICE_FORCE_LETHAL
+
+/// Whether anyone wanted at the outpost is still at large: not in hand
+/datum/outpost_police/proc/stealth_anyone_at_large()
+	for(var/datum/outpost_warrant/warrant as anything in suspects_at_outpost())
+		var/mob/living/body = warrant.mind?.current
+		if(isliving(body) && body.stat != DEAD && !has_in_hand(body))
+			return TRUE
+	return FALSE
+
+/// Once a second, before the officers (police_dispatch.dm tick_dispatch()): the tick the last wanted person at the
+/// outpost is in hand, dead, gone or faded is the all clear
+/datum/outpost_police/proc/stealth_tick_squad()
+	var/trouble = stealth_anyone_at_large()
+	if(stealth_trouble && !trouble)
+		stealth_all_clear()
+	stealth_trouble = trouble
+
+/**
+ * The all clear (owner decision 58): nobody wanted is at large any more, so every officer stands down at once and
+ * calm, whatever brought it (a colleague's shout, a radio call, a townsperson's scream, a search of its own), and the
+ * noises of the trouble are forgotten, so the next one is a first noise again. An officer still fighting something,
+ * or after someone only it knows of (a crime it saw and has not called in), is left to it.
+ */
+/datum/outpost_police/proc/stealth_all_clear()
+	var/kept = FALSE
+	var/list/datum/stealth_group/groups = list()
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+		var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+		if(!istype(brain) || officer.stat == DEAD || officer.client)
+			continue
+		if(brain.group)
+			groups |= brain.group
+		var/atom/target = brain.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+		if(!QDELETED(target) && officer.police_will_fight(target))
+			kept = TRUE
+			continue
+		var/datum/mind/hunted = brain.police_hunt?.resolve()
+		var/mob/living/quarry = hunted?.current
+		if(isliving(quarry) && force_level(quarry, officer) != POLICE_FORCE_NONE && !has_in_hand(quarry, officer))
+			kept = TRUE
+			continue
+		officer.police_stand_easy(TRUE)
+	if(kept)
+		return
+	for(var/datum/stealth_group/group as anything in groups)
+		group.forget_noises()
 
 /**
  * Once a second for each officer (police_dispatch.dm tick_dispatch()): one the police set on someone with no stars

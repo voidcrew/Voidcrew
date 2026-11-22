@@ -470,12 +470,12 @@
 		TEST_ASSERT("fine_paid" in police.lines, "Nobody told the prisoner their fine was paid") // POLICE_LINE_FINE_PAID
 		police.lines.Cut()
 
-/// An unpaid fine strips the suspect before the cuffs come off, and holds them 3 min at one star and 6 at two
+/// An unpaid fine strips the suspect before the cuffs come off, and holds them 1 min at one star and 2 at two
 /datum/unit_test/voidcrew_outpost_police_cell_book_jail
 
 /datum/unit_test/voidcrew_outpost_police_cell_book_jail/Run()
 	var/datum/outpost_police/cell_test/police = police_cells_fixture()
-	var/list/term_for = list(1800, 3600) // OUTPOST_POLICE_JAIL: 3 MINUTES and 6 MINUTES
+	var/list/term_for = list(600, 1200) // OUTPOST_POLICE_JAIL: 1 MINUTES and 2 MINUTES
 	for(var/stars in 1 to 2)
 		var/list/result = police_test_book(police, stars, FALSE)
 		TEST_ASSERT_NOTNULL(result, "The [stars] star booking did not finish")
@@ -538,7 +538,7 @@
 	var/datum/outpost_police_cell/cell = police_cell_named(police, "a")
 	var/mob/living/carbon/human/prisoner = police_cell_person(cell.tiles[1])
 	police_pin_warrant(police, prisoner.mind, 12)
-	cell.admit(prisoner, world.time + 1800, TRUE) // a jail term: OUTPOST_POLICE_JAIL, 3 MINUTES
+	cell.admit(prisoner, world.time + 1800, TRUE) // a jail term of three minutes
 	police.tick_cells()
 	TEST_ASSERT_EQUAL(police.fine_tries, 0, "The fine was tried before the retry was due")
 	TEST_ASSERT(cell.bail_due[prisoner.mind] >= world.time + 250, "The first retry is not about 30 seconds off") // OUTPOST_POLICE_BAIL_RETRY, 30 SECONDS
@@ -856,7 +856,7 @@
 	cell.admit(other, world.time + 2100)
 	police.tick_cells()
 	TEST_ASSERT_EQUAL(cell.sign.message2, "1:30", "The sign does not show the nearer release")
-	cell.prisoners[prisoner.mind] = world.time + 3600 // six minutes, OUTPOST_POLICE_JAIL at two stars
+	cell.prisoners[prisoner.mind] = world.time + 3600 // six minutes
 	cell.prisoners[other.mind] = world.time + 3700
 	police.tick_cells()
 	TEST_ASSERT_EQUAL(cell.sign.message2, "6:00", "A six minute term shows [cell.sign.message2]")
@@ -1286,3 +1286,24 @@
 
 
 
+
+/// A cell works its own healthy door as an ordinary opening, with the door's own sound: never the forced one (owner decision 58)
+/datum/unit_test/voidcrew_outpost_police_cell_opens_plainly
+	/// How each opening of the door was made (tg's door check levels)
+	var/list/open_kinds = list()
+
+/datum/unit_test/voidcrew_outpost_police_cell_opens_plainly/proc/note_open(datum/source, forced)
+	SIGNAL_HANDLER
+	open_kinds += forced
+
+/datum/unit_test/voidcrew_outpost_police_cell_opens_plainly/Run()
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	var/datum/outpost_police_cell/cell = police_cell_named(police, "a")
+	var/obj/machinery/door/airlock/outpost/glass/police_cell/door = cell.door
+	RegisterSignal(door, COMSIG_AIRLOCK_OPEN, PROC_REF(note_open))
+	TEST_ASSERT(door.density, "A cell door starts open")
+	TEST_ASSERT(cell.pass_door(), "The cell could not open its own door")
+	UnregisterSignal(door, COMSIG_AIRLOCK_OPEN)
+	TEST_ASSERT(!door.density, "The cell's door is still shut")
+	TEST_ASSERT_EQUAL(length(open_kinds), 1, "The cell's door opened [length(open_kinds)] times for one opening")
+	TEST_ASSERT(open_kinds[1] != BYPASS_DOOR_CHECKS, "The cell forced its own healthy door open")

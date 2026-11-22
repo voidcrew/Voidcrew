@@ -1343,7 +1343,7 @@
 	// In hand: nobody to fight or look for. The walk to the desk is a calm one.
 	for(var/datum/weakref/ref as anything in officers)
 		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = ref?.resolve()
-		officer?.police_stand_easy()
+		officer?.police_stand_easy(TRUE)
 	set_step(searched ? CASE_STEP_ESCORT : CASE_STEP_SEARCH)
 
 /// Search: police.confiscate() takes the offending items into an evidence case (P12). Once per case.

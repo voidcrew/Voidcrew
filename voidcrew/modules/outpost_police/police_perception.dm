@@ -456,10 +456,14 @@
 	if(!is_officer(officer) || !can_report(officer))
 		return FALSE
 	if(officer.stealth_radio_ready())
+		var/mob/living/offender = report.offender?.resolve()
+		// Someone the police have in hand (owner decision 58): no alarm goes out over them. It is passed on quietly,
+		// in the time it takes to tell someone in person.
+		if(isliving(offender) && police?.has_in_hand(offender, officer))
+			return TRUE
 		var/datum/ai_controller/basic_controller/human_npc/stealth/brain = officer.ai_controller
 		if(istype(brain) && isnull(brain.pending_call))
 			// Where a witness last saw them, not where they are now (owner decision 52)
-			var/mob/living/offender = report.offender?.resolve()
 			brain.stealth_start_call(STEALTH_CALL_ALARM, report.seen_turf || get_turf(offender) || get_turf(officer))
 		return FALSE
 	var/turf/here = get_turf(officer)

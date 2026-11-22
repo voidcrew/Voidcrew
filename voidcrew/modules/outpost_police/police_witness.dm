@@ -217,6 +217,10 @@
 		teller.done_telling()
 		return
 	teller.speak_context(AMBIENT_LINE_REPORT_RUN, null, force = TRUE)
+	// The police already have them: the shout sends no officer off to look (owner decision 58)
+	var/mob/living/offender = report.offender?.resolve()
+	if(isliving(offender) && has_in_hand(offender))
+		return
 	stealth_noise(teller, STEALTH_NOISE_SCREAM)
 
 /// A runner who lost their way there (knocked out and back up) sets off again, without another shout
