@@ -18,8 +18,9 @@
  *   officer follows the arresting one, and at two stars may fire on disable through the force and shooting
  *   subtrees (police_force.dm and the human NPC base).
  *
- * When it goes wrong (spec 6.4, owner decision 37): a suspect in crit before the cuffs is cuffed where they lie,
- * then held there with a medic called until they come round; one dead before the cuffs ends the case. At three
+ * When it goes wrong (spec 6.4, owner decisions 37 and 60): a suspect in crit is cuffed and searched where they lie,
+ * then dragged to the desk and booked in crit; the cell calls a medic for them (police_cell_medic.dm). One dead
+ * before the cuffs ends the case. At three
  * stars and up only a suspect who is down is taken alive (by a stun officer if one is free). A suspect lost after the search still
  * sends the officer to the evidence locker with the evidence. Slipping police cuffs is SLIP_CUFFS, someone else
  * taking them off is ABET, pulling the suspect away is RESIST. A suspect who breaks the hold on the walk is run
@@ -29,7 +30,7 @@
  * (the release step), and a booking with no cell to be had fines and frees them on the spot: nobody is left in
  * police cuffs. A wanted suspect down in front of an officer, at any stars, is arrested where they lie
  * (arrest_downed(), from the stealth layer).
- * No healing, no moving a downed body, no state of our own on the suspect: what they feel is tg's baton,
+ * No healing, no state of our own on the suspect: what they feel is tg's baton,
  * cuffs and pull.
  */
 
@@ -43,8 +44,6 @@
 #define CASE_STEP_ESCORT "escort"
 #define CASE_STEP_DESK "desk"
 #define CASE_STEP_BOOK "book"
-/// Standing by a suspect who went down before the cuffs
-#define CASE_STEP_DOWNED "standby"
 /// The arrest is called off with our cuffs still on them: an officer goes and takes them off
 #define CASE_STEP_RELEASE "release"
 /// Three stars and up with no cell to be had (none, or none that can be got to): held in cuffs by the desk, and the
@@ -83,8 +82,6 @@
 #define CASE_RECOVER_TIME (2 SECONDS)
 /// Taking police cuffs off someone when a case is called off
 #define CASE_UNCUFF_TIME (2 SECONDS)
-/// Longest an officer stands by a cuffed suspect in crit before the arrest is called off
-#define CASE_DOWNED_LIMIT (10 MINUTES)
 /// A lift point the officer gets no nearer to for this long is given up for another
 #define CASE_LIFT_PATIENCE (8 SECONDS)
 /// ...and left out of every lift choice for this long
@@ -238,10 +235,6 @@
 	var/order_at = 0
 	/// The suspect took a step of their own after the order
 	var/suspect_moved = FALSE
-	/// world.time the suspect went down before the cuffs, or 0
-	var/downed_since = 0
-	/// The medic was called for this fall
-	var/medic_called = FALSE
 	/// The suspect is in cuffs (ours, or on them already)
 	var/cuffed = FALSE
 	/// Those cuffs are police cuffs: getting out of them is a crime
@@ -669,19 +662,12 @@
 		// Nobody to work it: the case waits for dispatch, and the clock waits with it
 		step_started_at = world.time
 		return
-	if(step != CASE_STEP_DOWNED && step != CASE_STEP_HOLD && world.time - step_started_at >= OUTPOST_POLICE_STEP_TIMEOUT)
+	if(step != CASE_STEP_HOLD && world.time - step_started_at >= OUTPOST_POLICE_STEP_TIMEOUT)
 		// Three stars and up, in cuffs with the evidence handed in, and the cell can't be got to: held, not let go
 		if((step == CASE_STEP_DESK || step == CASE_STEP_BOOK) && hold_for_cell())
 			start_hold()
 			return
 		reset_case()
-		return
-	// Nobody stands over someone in crit for ever (review-1 S1): the arrest is called off and the cuffs come off
-	if(step == CASE_STEP_DOWNED && downed_since && world.time - downed_since >= CASE_DOWNED_LIMIT)
-		var/datum/mind/held_mind = warrant?.mind || suspect_mind_ref?.resolve()
-		if(police && held_mind && !QDELETED(held_mind))
-			LAZYSET(police.case_holds, WEAKREF(held_mind), world.time + CASE_REOPEN_HOLD)
-		finish()
 		return
 	if(recover_evidence(officer))
 		return
@@ -741,8 +727,6 @@
 			step_desk()
 		if(CASE_STEP_BOOK)
 			step_book()
-		if(CASE_STEP_DOWNED)
-			step_downed()
 		if(CASE_STEP_RELEASE)
 			step_release()
 		if(CASE_STEP_HOLD)
@@ -783,7 +767,7 @@
 			officer.stop_pulling()
 		unregister_order(suspect)
 		lift_goal = null
-	// Lost after being stood by (dead in crit, or gone): the standby is over too (review-1 S1)
+	// Lost (dead, or gone): only the evidence goes on (review-1 S1)
 	if(step != CASE_STEP_DESK && step != CASE_STEP_ESCORT)
 		set_step(CASE_STEP_ESCORT)
 
@@ -838,9 +822,10 @@
 	report(puller, OUTPOST_CRIME_RESIST, arresting() || suspect)
 
 /**
- * Dead, or in crit (owner decision 37). Dead before the cuffs: nobody left to arrest. Dead after the cuffs or the
- * search: only the evidence goes on. Alive in crit: cuffed where they lie, nobody shooting at them, then held there
- * (a medic called once) until they come round and can be walked to the cell.
+ * Dead, or in crit (owner decisions 37 and 60). Dead before the cuffs: nobody left to arrest. Dead after the cuffs or
+ * the search: only the evidence goes on. Alive in crit: cuffed where they lie, nobody shooting at them; after that
+ * the arrest goes on as for anyone in cuffs: searched where they lie, then dragged by tg's pull to the desk and
+ * booked in crit (the cell calls the medic).
  */
 /datum/outpost_police_case/proc/check_down(mob/living/carbon/suspect)
 	if(!suspect_downed(suspect))
@@ -862,21 +847,10 @@
 	if(suspect_lost)
 		return
 	clear_targets(suspect)
-	if(!cuffed)
-		if(step != CASE_STEP_CUFF)
-			if(officer?.pulling == suspect)
-				officer.stop_pulling()
-			enter_cuff(suspect)
-		return
-	if(step == CASE_STEP_DOWNED)
-		return
-	if(officer?.pulling == suspect)
-		officer.stop_pulling()
-	unregister_order(suspect)
-	lift_goal = null
-	set_step(CASE_STEP_DOWNED)
-	downed_since = world.time
-	medic_called = FALSE
+	if(!cuffed && step != CASE_STEP_CUFF)
+		if(officer?.pulling == suspect)
+			officer.stop_pulling()
+		enter_cuff(suspect)
 
 /// Nobody on the case keeps `suspect` as a target
 /datum/outpost_police_case/proc/clear_targets(mob/living/carbon/suspect)
@@ -1563,36 +1537,6 @@
 	begin_action(CASE_ACT_BOOKING)
 
 /**
- * Standing by a cuffed suspect in crit: a medic called once, the search done where they lie, and the step's clock
- * held while they lie there. Once they come round, on to the cell.
- */
-/datum/outpost_police_case/proc/step_downed()
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = arresting()
-	var/mob/living/carbon/suspect = get_suspect()
-	if(!suspect || !officer)
-		return
-	if(!suspect_downed(suspect))
-		downed_since = 0
-		after_contact()
-		return
-	step_started_at = world.time
-	// Died while stood by (review-1 S1): searched where they lie, then only the evidence goes on
-	if(suspect.stat == DEAD && searched)
-		mark_lost(suspect)
-		return
-	if(!medic_called && suspect.stat != DEAD)
-		medic_called = TRUE
-		officer.police_say(POLICE_LINE_MEDIC, line_values(suspect), TRUE)
-	if(!isturf(suspect.loc) && !expose_suspect(officer, suspect))
-		return
-	if(!officer.Adjacent(suspect))
-		route_to(officer, suspect, 1)
-		return
-	set_goal(null)
-	if(!searched)
-		begin_action(CASE_ACT_SEARCHING)
-
-/**
  * Held for want of a cell: the officer keeps hold of them and stands them by the desk, and every CASE_HOLD_RETRY
  * takes them back to a cell if there is one. No timeout: they are held until booked, let go or out of the cuffs.
  */
@@ -1611,10 +1555,13 @@
 	if(police.desk_turf)
 		route_to(officer, police.desk_turf, CASE_COVER_DISTANCE)
 
-/// Whether a booking that cannot be done now holds the suspect instead (three stars and up, in real cuffs)
+/**
+ * Whether a booking that cannot be done now holds the suspect instead (three stars and up, in real cuffs). Never
+ * someone in crit: nobody is dragged about the desk in crit with no cell to put them in, so the case ends instead.
+ */
 /datum/outpost_police_case/proc/hold_for_cell()
 	var/mob/living/carbon/suspect = get_suspect()
-	if(!suspect || !cuffed || !suspect.handcuffed || grip_held || suspect_lost || !warrant?.mind || suspect.stat == DEAD)
+	if(!suspect || !cuffed || !suspect.handcuffed || grip_held || suspect_lost || !warrant?.mind || suspect_downed(suspect))
 		return FALSE
 	return police.get_stars(warrant.mind) >= 3
 
@@ -1729,7 +1676,7 @@
 		return
 	searched = TRUE
 	evidence_ref = QDELETED(found) ? null : WEAKREF(found)
-	if(step == CASE_STEP_SEARCH || (step == CASE_STEP_DOWNED && suspect_lost))
+	if(step == CASE_STEP_SEARCH)
 		set_step(CASE_STEP_ESCORT)
 
 /// The police lift, with whoever they pull (P4)
@@ -1775,10 +1722,13 @@
 		finish()
 		return
 	if(shut)
+		// Booked in crit (owner decision 60): the officer calls the medic for them as they step out
+		if(!QDELETED(suspect) && police.cell_holding(suspect.mind) && recovery_in_crit(suspect))
+			police.call_cell_medic(suspect, officer)
 		close()
 		return
 	log_game("OUTPOST POLICE: [key_name(suspect)] was not put in a cell at [police.outpost] ([AREACOORD(suspect)]).")
-	if(!get_suspect() || suspect_downed(suspect) || !warrant?.mind || police.get_warrant(warrant.mind) != warrant)
+	if(!get_suspect() || suspect.stat == DEAD || !warrant?.mind || police.get_warrant(warrant.mind) != warrant)
 		booked_at = 0
 		return
 	if(police.cell_holding(suspect.mind))
@@ -1984,7 +1934,6 @@
 #undef CASE_STEP_ESCORT
 #undef CASE_STEP_DESK
 #undef CASE_STEP_BOOK
-#undef CASE_STEP_DOWNED
 #undef CASE_STEP_RELEASE
 #undef CASE_STEP_HOLD
 #undef CASE_HOLD_RETRY
@@ -2007,7 +1956,6 @@
 #undef CASE_STRIPPER_WINDOW
 #undef CASE_RECOVER_TIME
 #undef CASE_UNCUFF_TIME
-#undef CASE_DOWNED_LIMIT
 #undef CASE_LIFT_PATIENCE
 #undef CASE_LIFT_SKIP
 #undef CASE_EVIDENCE_PATIENCE

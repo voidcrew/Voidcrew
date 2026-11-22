@@ -7626,6 +7626,7 @@
 #include "voidcrew\modules\outpost_police\evidence_locker.dm"
 #include "voidcrew\modules\outpost_police\police_arrest.dm"
 #include "voidcrew\modules\outpost_police\police_cell.dm"
+#include "voidcrew\modules\outpost_police\police_cell_medic.dm"
 #include "voidcrew\modules\outpost_police\police_core.dm"
 #include "voidcrew\modules\outpost_police\police_dispatch.dm"
 #include "voidcrew\modules\outpost_police\police_force.dm"

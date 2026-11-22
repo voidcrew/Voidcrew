@@ -195,6 +195,12 @@
 #define OUTPOST_POLICE_CELL_OPEN (10 SECONDS)
 /// A prisoner carried out of a cell has this long to walk back in
 #define OUTPOST_POLICE_CELL_RETURN (20 SECONDS)
+/// Medics on their way to or treating prisoners in crit at one outpost, at most (police_cell_medic.dm)
+#define OUTPOST_POLICE_CELL_MEDICS_MAX 2
+/// A medic called to a prisoner in crit gives up after this long, lift ride and walk included; the door hold takes over
+#define OUTPOST_POLICE_CELL_MEDIC_LIMIT (5 MINUTES)
+/// Tries at getting into the cell (or beside the patient in it) before the medic gives up
+#define OUTPOST_POLICE_CELL_MEDIC_TRIES 3
 
 // ===== FOUR AND FIVE STARS =====
 

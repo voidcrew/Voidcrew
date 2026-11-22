@@ -121,6 +121,12 @@
 #define RECOVERY_LINE_MESS "mess"
 /// To a player walking on a wet or dirty floor (R4)
 #define RECOVERY_LINE_MIND_FLOOR "mind_floor"
+/// A medic, aloud, kneeling by the first patient (AMBIENT_STRINGS_RECOVERY, every zone's section)
+#define RECOVERY_LINE_MEDIC_FOUND "medic_found"
+/// A medic, over the radio, a patient back over the line
+#define RECOVERY_LINE_MEDIC_STABLE "medic_stable"
+/// A medic, over the radio, a patient who died on them
+#define RECOVERY_LINE_MEDIC_LOST "medic_lost"
 
 /// The stick-up and the gate guard's lines. Owner: R7.
 #define AMBIENT_STRINGS_ROBBERY "outpost_robbery.json"
