@@ -745,6 +745,15 @@
    "reason": "Melee 5 and nothing else. Too little to count.",
    "tier": "none"
   },
+  "/obj/item/clothing/under/syndicate/scav": {
+   "confidence": "high",
+   "group": "Armored uniforms",
+   "hash": "",
+   "name": "scav fatigues",
+   "rank": 3,
+   "reason": "A renamed tactical turtleneck with the same stats. Only taken off scav den guards; part of their disguise.",
+   "tier": "green"
+  },
   "/obj/item/clothing/under/syndicate/scrubs": {
    "confidence": "high",
    "group": "Armored uniforms",
