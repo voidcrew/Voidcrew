@@ -167,6 +167,8 @@
 	var/datum/outpost_police/police = outpost.police
 	test_police = police
 	police.sleep_tick()
+	// The ambient system makes the outpost's place once someone is there; the medic is made into it
+	TEST_ASSERT_NOTNULL(SSambient_npcs.outpost_place(outpost), "The outpost has no ambient place")
 	TEST_ASSERT(length(police.cells) >= 2, "The outpost has fewer than two cells")
 	var/datum/outpost_police_cell/cell_a = police.cells[1]
 	var/datum/outpost_police_cell/cell_b = police.cells[2]
