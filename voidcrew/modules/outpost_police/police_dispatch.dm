@@ -661,10 +661,15 @@
 	INVOKE_ASYNC(src, PROC_REF(say_dispatch), level >= 5 ? POLICE_LINE_MARSHAL : POLICE_LINE_ALL_UNITS, null)
 	return wave
 
-/// The kind the level's make-up is shortest of (spec 5.2: 4 stars two tactical, 5 stars four tactical and a marshal)
+/**
+ * The kind the level's make-up is shortest of (spec 5.2: 4 stars two tactical, 5 stars four tactical and a marshal;
+ * owner decision 62: at 5 stars a heavy weapons team of OUTPOST_POLICE_ARMOUR_TEAM, after the marshal and before the
+ * last tactical officers)
+ */
 /datum/outpost_police/proc/dispatch_next_kind(level)
 	var/tactical = 0
 	var/marshals = 0
+	var/armour = 0
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
 		if(officer.stat == DEAD)
 			continue
@@ -672,13 +677,19 @@
 			tactical++
 		else if(officer.unit_kind == POLICE_UNIT_MARSHAL)
 			marshals++
+		else if(officer.unit_kind == POLICE_UNIT_ARMOUR)
+			armour++
 	for(var/datum/human_npc_order/order as anything in dispatch_orders)
 		if(dispatch_orders[order] == POLICE_UNIT_TACTICAL)
 			tactical++
 		else if(dispatch_orders[order] == POLICE_UNIT_MARSHAL)
 			marshals++
+		else if(dispatch_orders[order] == POLICE_UNIT_ARMOUR)
+			armour++
 	if(level >= 5 && !marshals)
 		return POLICE_UNIT_MARSHAL
+	if(level >= 5 && armour < OUTPOST_POLICE_ARMOUR_TEAM)
+		return POLICE_UNIT_ARMOUR
 	if(tactical < (level >= 5 ? 4 : (level >= 4 ? 2 : 0)))
 		return POLICE_UNIT_TACTICAL
 	return POLICE_UNIT_OFFICER
@@ -1164,6 +1175,8 @@
 			return /mob/living/carbon/human/npc/ambient_npc/outpost/police/tactical
 		if(POLICE_UNIT_MARSHAL)
 			return /mob/living/carbon/human/npc/ambient_npc/outpost/police/marshal
+		if(POLICE_UNIT_ARMOUR)
+			return dispatch_heavy_type()
 	return null
 
 /// A dispatched unit was built: on the roster, in its wave, held behind the door until the wave leaves

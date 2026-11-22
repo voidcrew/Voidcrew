@@ -57,6 +57,11 @@
 			"Lock the lifts down. Nobody in or out.",
 			"Lifts closed until further notice."
 		],
+		"heavy": [
+			"Heavy weapons, on scene.",
+			"Heavy weapons team in position.",
+			"Heavy team's here. Clear the floor, please."
+		],
 		"lost": [
 			"Lost them. Check the stalls.",
 			"Where did they go? Check the stalls.",
@@ -558,6 +563,11 @@
 			"Lifts locked. Nobody moves.",
 			"Seal the lifts. Full lockdown."
 		],
+		"heavy": [
+			"Heavy weapons on site.",
+			"Heavy team. Clear the floor.",
+			"Heavy weapons. Everyone back."
+		],
 		"lost": [
 			"Lost them. Check the stalls.",
 			"Gone. Sweep the stalls.",
@@ -1058,6 +1068,11 @@
 			"Shut the lifts. All of them.",
 			"Lifts shut. Anyone runs, drop them.",
 			"Lock it down. Nobody leaves."
+		],
+		"heavy": [
+			"Heavy team's here.",
+			"Brought the big guns.",
+			"Somebody order launchers?"
 		],
 		"lost": [
 			"Lost them. Check the stalls.",

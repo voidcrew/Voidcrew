@@ -62,6 +62,8 @@
 	var/called_level = 0
 	/// The marshal has spoken for this incident
 	var/marshal_spoke = FALSE
+	/// The heavy weapons team has called itself in for this incident
+	var/heavy_spoke = FALSE
 	/// Weakrefs to the officers already called down
 	var/list/called_down = list()
 	/// world.time until which orders run a level harder in voice
@@ -623,6 +625,14 @@
 				break
 	else if(level < 5)
 		voice.marshal_spoke = FALSE
+	// The heavy weapons team calls itself in once it is off the lift (owner decision 62)
+	if(level >= 5 && !voice.heavy_spoke)
+		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+			if(officer.unit_kind == POLICE_UNIT_ARMOUR && !HAS_TRAIT(officer, TRAIT_AI_PAUSED) && officer.police_can_speak())
+				voice.heavy_spoke = !!officer.police_say(POLICE_LINE_HEAVY)
+				break
+	else if(level < 5)
+		voice.heavy_spoke = FALSE
 
 /// The level rose from `old_level` to `level`: the desk calls it, officers answer, and the louder calls follow
 /datum/outpost_police/proc/life_call_level(level, old_level)

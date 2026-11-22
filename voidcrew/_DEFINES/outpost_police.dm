@@ -113,6 +113,13 @@
 #define POLICE_UNIT_OFFICER "officer"
 #define POLICE_UNIT_TACTICAL "tactical"
 #define POLICE_UNIT_MARSHAL "marshal"
+/// Heavy weapons (owner decision 62): an ion rifle, rocket launcher or grenade launcher for mechs, the zone's sidearm for people
+#define POLICE_UNIT_ARMOUR "armour"
+
+/// A heavy weapons officer's loadout: an index into their profile's heavy_outfits, and the order dispatch sends them in
+#define POLICE_HEAVY_ION 1
+#define POLICE_HEAVY_ROCKET 2
+#define POLICE_HEAVY_GRENADE 3
 
 /// Where an officer or suspect is (sector_of()). A hangar's sector is its /datum/outpost_berth itself.
 #define POLICE_SECTOR_CONCOURSE "concourse"
@@ -138,6 +145,14 @@
 
 /// Officers on the scene per star level
 #define OUTPOST_POLICE_UNITS list(2, 3, 4, 7, 10)
+/// Heavy weapons officers sent at five stars, after the marshal and before the last tactical officers
+#define OUTPOST_POLICE_ARMOUR_TEAM 2
+/// Spare rockets in a rocket officer's pack (one more is loaded)
+#define OUTPOST_POLICE_HEAVY_ROCKETS 2
+/// Spare 40mm shells in a grenadier's pack (one more is loaded)
+#define OUTPOST_POLICE_HEAVY_SHELLS 5
+/// A rocket or shell that misses flies on: this many tiles past the target must be clear of bystanders and docked ships too
+#define OUTPOST_POLICE_HEAVY_OVERSHOOT 3
 /// Officers per wave per star level
 #define OUTPOST_POLICE_WAVE list(1, 1, 2, 3, 4)
 /// Time between waves per star level
@@ -235,6 +250,7 @@
 #define POLICE_LINE_FINE_PAID "fine_paid"
 #define POLICE_LINE_LOCKER_THIEF "locker_thief"
 #define POLICE_LINE_BODY "body"
+#define POLICE_LINE_HEAVY "heavy"
 
 /// The officers' dialogue file in AMBIENT_STRINGS_DIR
 #define AMBIENT_STRINGS_POLICE "outpost_police.json"
