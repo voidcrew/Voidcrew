@@ -141,6 +141,12 @@
 	var/list/force_events = list()
 	/// How many of them the force invariant has looked at
 	var/force_checked = 0
+	/// world.time of the suspect's last step of their own (own_step())
+	var/own_step_at = 0
+	/// Whether an officer had hold of the suspect at the last sample
+	var/was_held = FALSE
+	/// world.times an officer lost hold of a suspect in custody who had not taken a step of their own
+	var/list/hold_losses = list()
 	/// GLOB.total_runtimes when the run began
 	var/runtimes_before = 0
 	/// A stand-in hangar berth built for this run (make_hangar()), its lift panel and the berths the outpost had
@@ -262,6 +268,12 @@
 			found.moved_at = world.time
 	if(length(at_large()))
 		ever_wanted = TRUE
+	// An officer walking someone in who lets go of them, with the suspect standing where they were put
+	var/held_now = !QDELETED(suspect) && is_outpost_police_npc(suspect.pulledby)
+	if(was_held && !held_now && !QDELETED(suspect) && police.in_custody(suspect) && !police.cell_holding(suspect.mind) && world.time - own_step_at > 5 SECONDS)
+		hold_losses += world.time
+		note(">>", "the officer's hold on the suspect is gone at [where(suspect)]")
+	was_held = held_now
 	sample_suspect(now)
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police.officers)
 		sample_officer(officer, now)
@@ -661,7 +673,10 @@
 	var/direction = get_dir(suspect, next)
 	SEND_SIGNAL(suspect, COMSIG_MOB_CLIENT_PRE_MOVE, list(next, direction))
 	suspect.Move(next, direction)
-	return suspect.loc == next
+	if(suspect.loc != next)
+		return FALSE
+	own_step_at = world.time
+	return TRUE
 
 /// Tenths of a second a step of the suspect's takes: tg's speed for them, and never faster than a run (config RUN_DELAY, 1.5; a test world loads none)
 /datum/police_soak/proc/step_delay()

@@ -355,3 +355,21 @@
 		var/stuck = found && goal && goal.z == officer.z && get_dist(officer, goal) > far && !HAS_TRAIT(officer, TRAIT_AI_PAUSED) && !officer.case?.acting && isturf(officer.loc) && !officer.buckled
 		if(run.held("[name]|[REF(officer)]|[run.where(officer)]", stuck) > limit)
 			run.breach(src, REF(officer), "[run.who(officer)] has stood at [run.where(officer)] for over [limit]s with a walk to [run.where(goal)] ([get_dist(officer, goal)] tiles off)", list(officer))
+
+/// An officer walking a cuffed suspect in keeps losing hold of them, though the suspect only stands where they are put
+/datum/police_soak_invariant/escort_lets_go
+	name = "escort_lets_go"
+	rank = 2
+	/// Times an escort may lose its hold on a suspect who is not moving, within `window` seconds (once is a bump in a crowd)
+	var/limit = 1
+	var/window = 30
+
+/datum/police_soak_invariant/escort_lets_go/check(datum/police_soak/run)
+	var/recent = 0
+	for(var/time in run.hold_losses)
+		if(world.time - time <= window SECONDS)
+			recent++
+	if(recent > limit)
+		var/datum/outpost_police_case/case = run.police.cases[run.suspect?.mind]
+		run.breach(src, "[run.hold_losses[1]]", "the officer walking [run.who(run.suspect)] in lost hold of them [recent] times in [window]s though they never took a step (arrest step \"[case?.step]\", pull breaks counted by the case: [case?.pull_breaks])", case?.arresting() ? list(case.arresting()) : null)
+
