@@ -1223,8 +1223,12 @@
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/hunter = officer_at(8, 4, WEST)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/hunter_brain = hunter.ai_controller
 	hunter_brain.stealth_setup()
+	// It was not there to see the grab: the holder is on record, as they are for any officer sent after them
+	police_pin_warrant(police, holder.mind, 30)
 	hunter_brain.stealth_go_alert(holder)
 	hunter_brain.police_onto_at = world.time - 30 SECONDS
+	TEST_ASSERT_EQUAL(stealth_hostage_of(holder), local, "Fixture: the resident is no longer held at gunpoint")
+	TEST_ASSERT(hunter_brain.stealth_has_in_view(holder), "Fixture: the second officer doesn't have the holder in view")
 	TEST_ASSERT(!hunter_brain.police_caught_cold(), "An officer half a minute into a hunt counts as caught cold")
 	TEST_ASSERT_EQUAL(hostage_tree.SelectBehaviors(hunter_brain, 1), SUBTREE_RETURN_FINISH_PLANNING, "An officer on a hunt didn't hold fire for one of the outpost's people")
 	TEST_ASSERT(!hunter_brain.standoff_cold, "A standoff with an officer on a hunt counts as one that caught it cold")
