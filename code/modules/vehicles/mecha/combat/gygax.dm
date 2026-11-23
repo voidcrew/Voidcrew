@@ -86,7 +86,7 @@
 
 /obj/vehicle/sealed/mecha/gygax/dark/decrepid
 desc = "A lightweight exosuit, painted in a dark scheme. This model's armor has been upgraded with a cutting-edge armor composite, resulting in greater protection and performance at the cost of modularity. This one has suffered Major irreparable damage and its functions and integrity are compromised"
-	name = "\improper DecrepidDark Gygax"
+	name = "\improper Decrepid Dark Gygax"
 	ui_theme = "syndicate"
 	icon_state = "darkgygax"
 	base_icon_state = "darkgygax"
@@ -100,5 +100,5 @@ desc = "A lightweight exosuit, painted in a dark scheme. This model's armor has 
 		MECHA_R_ARM = 1,
 		MECHA_UTILITY = 2,
 		MECHA_POWER = 1,
-		MECHA_ARMOR = 1,
+		MECHA_ARMOR = 1
 	)
