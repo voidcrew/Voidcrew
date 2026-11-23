@@ -17,6 +17,10 @@
  * (chamber_place_for()): the tile furthest in first, so the one inside the outer door fills last and never shuts
  * the rest of the chamber off. With no place to be had they wait in the lobby in front of the outer door; one
  * caught in the doorway (the place they were walking to was taken) steps back out to the lobby.
+ *
+ * "By the outer door" is a tile they can step to the door's front tile from (outpost_checkpoint_by_outer_door()).
+ * Quartermain's and the Undertow's lobbies lead up to the door between queue rails: a tile across a rail from the
+ * door's front is one tile away and nowhere near it.
  */
 
 /// How long a place in the chamber is kept for someone who has stopped asking for it
@@ -139,9 +143,10 @@
 	if(here == outer_turf)
 		go_to(chamber_entry(post) || outpost_checkpoint_lobby_spot(post, doer))
 		return AMBIENT_STEP_MOVE
-	// Outside: by the outer door until it is open for them and there is room inside, then in
-	if(get_dist(here, post.lobby_turf) > 1)
-		go_to(post.lobby_turf, 1)
+	// Outside: by the outer door until it is open for them and there is room inside, then in. One tile from its
+	// front tile across a queue rail is not by it: round into the lane
+	if(!outpost_checkpoint_by_outer_door(post, here))
+		go_to(post.lobby_turf, get_dist(here, post.lobby_turf) > 1 ? 1 : 0)
 		return AMBIENT_STEP_MOVE
 	var/outer_open = !post.outer_door.density && !post.outer_door.operating
 	if(outer_open && (post.state == CHECKPOINT_IDLE || free_pass))
@@ -237,32 +242,24 @@
 	return best
 
 /**
- * Where `walker` waits in the lobby, or steps back to out of the outer doorway: the tile in front of the door if it
- * is free, else the nearest free lobby tile beside it. Whoever of the outpost's people stands in front of the door
- * makes room for one coming back out of it.
+ * Where `walker` steps back to out of the outer doorway: the tile in front of the door, the only way out of it.
+ * Whoever of the outpost's people stands there makes room for the one coming back out.
  */
 /proc/outpost_checkpoint_lobby_spot(datum/outpost_checkpoint/post, mob/living/walker)
 	var/turf/front = post.lobby_turf
 	if(!front)
 		return null
-	if(front == walker.loc || !front.is_blocked_turf(exclude_mobs = FALSE, source_atom = walker))
-		return front
-	if(get_turf(walker) == get_turf(post.outer_door))
-		for(var/mob/living/waiting in front)
+	for(var/mob/living/waiting in front)
+		if(waiting != walker && waiting.density)
 			outpost_npc_step_aside(waiting, walker, list())
-		return front
-	var/turf/best
-	var/best_distance = INFINITY
-	for(var/turf/open/tile in RANGE_TURFS(1, front))
-		if(tile == front || !istype(tile.loc, /area/voidcrew/trader_outpost/checkpoint) || (tile in post.chamber_turfs) || (locate(/obj/machinery/door) in tile))
-			continue
-		if(tile != walker.loc && tile.is_blocked_turf(exclude_mobs = FALSE, source_atom = walker))
-			continue
-		var/distance = get_dist(tile, walker)
-		if(distance < best_distance)
-			best = tile
-			best_distance = distance
-	return best || front
+	return front
+
+/// Whether `here` is by `post`'s outer door: its front tile, or a tile beside that with a clear step onto it (no queue rail, wall or counter between)
+/proc/outpost_checkpoint_by_outer_door(datum/outpost_checkpoint/post, turf/here)
+	var/turf/front = post.lobby_turf
+	if(!here || !front || here.z != front.z)
+		return FALSE
+	return here == front || (get_dist(here, front) <= 1 && outpost_police_way_step_ok(here, front))
 
 /// The free concourse tile just past the inner door (the one straight ahead if it is free)
 /proc/outpost_checkpoint_concourse_step(datum/outpost_checkpoint/post, mob/living/walker)
@@ -396,7 +393,9 @@
 	// In the outer doorway: on in if there is a place for them, else back out. Nobody waits in a doorway.
 	if(here == outer_turf)
 		return outpost_checkpoint_chamber_entry(post, walker) || outpost_checkpoint_lobby_spot(post, walker) || here
-	if(get_dist(here, post.lobby_turf) > 1)
+	// One tile from the door's front tile across a queue rail is not by the door: round into the lane first
+	var/by_door = outpost_checkpoint_by_outer_door(post, here)
+	if(!by_door)
 		return post.lobby_turf
 	var/outer_open = !post.outer_door.density && !post.outer_door.operating
 	if(outer_open && (post.is_disabled() || post.state == CHECKPOINT_IDLE || post.state == CHECKPOINT_FORCED || (post.state == CHECKPOINT_REJECTING && !length(post.inspect_chamber()))))
@@ -406,7 +405,7 @@
 			if(istype(officer))
 				officer.dispatch_checkpoint_ask_at = world.time + OUTPOST_CHECKPOINT_NPC_ASK_GAP
 			post.request_outer(walker)
-	return get_dist(here, post.lobby_turf) <= 1 ? here : post.lobby_turf
+	return here
 
 /proc/outpost_police_elevator_panel(obj/structure/overmap/trader_outpost/outpost, sector)
 	if(!outpost)

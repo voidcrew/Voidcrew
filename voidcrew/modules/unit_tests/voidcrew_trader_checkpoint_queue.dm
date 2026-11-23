@@ -202,6 +202,49 @@
 	TEST_ASSERT_EQUAL(host.police.checkpoint_step_to_concourse(cop), between_doors, "An officer in the outer doorway was not sent on in to the free tile")
 	host.police.clear_checkpoint_crossing(cop)
 
+/// A queue rail between someone and the tile in front of the outer door: they are not by the door, however near, and go round onto that tile itself; an officer too, who walks to the railed tile and not to one beside it
+/datum/unit_test/voidcrew_trader_checkpoint/queue/rails
+
+/datum/unit_test/voidcrew_trader_checkpoint/queue/rails/Run()
+	TEST_ASSERT(queue_fixture(), "Could not prepare the checkpoint")
+	// A rail along the south edge of the tile in front of the outer door, as Quartermain's and the Undertow's lanes have
+	var/obj/structure/railing/rail = allocate(/obj/structure/railing, lobby)
+	rail.setDir(SOUTH)
+	var/turf/across = spot(3, 0)
+	var/turf/beside = spot(2, 1)
+	TEST_ASSERT(!outpost_checkpoint_by_outer_door(checkpoint, across), "A tile across a rail from the outer door's front tile counts as by the door")
+	TEST_ASSERT(outpost_checkpoint_by_outer_door(checkpoint, beside), "The tile beside the outer door's front tile, nothing between, does not count as by the door")
+	TEST_ASSERT(outpost_checkpoint_by_outer_door(checkpoint, lobby), "The outer door's front tile does not count as by the door")
+	TEST_ASSERT(hold_outer_open(), "Setup: the outer door did not open")
+
+	// A customer across the rail, the door open and the chamber empty: round onto the front tile, not straight at the chamber
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/npc = customer(across, FALSE)
+	ambient_cross_checkpoint_on_arrival(npc, host)
+	var/datum/ambient_activity/cross_checkpoint/crossing = npc.activity
+	TEST_ASSERT(istype(crossing), "Setup: someone across the rail did not set off through the checkpoint")
+	TEST_ASSERT_EQUAL(npc.activity_step(1), 1, "Someone across a rail from the outer door did not set off round it") // AMBIENT_STEP_MOVE
+	TEST_ASSERT_EQUAL(crossing.spot, lobby, "Someone across a rail from the outer door was not sent to its front tile")
+	TEST_ASSERT(!crossing.spot_distance, "Someone across a rail from the outer door was sent to stand near its front tile, where they already are")
+	npc.end_activity()
+	npc.forceMove(spot(0, 1))
+
+	// An officer the same, and the walk there is to the railed tile itself
+	host.ensure_police()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/cop = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, across)
+	cop.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	host.police.add_officer(cop)
+	TEST_ASSERT_EQUAL(host.police.checkpoint_step_to_concourse(cop), lobby, "An officer across a rail from the outer door was not sent round to its front tile")
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = cop.ai_controller
+	TEST_ASSERT_EQUAL(brain.stealth_next_leg(lobby), lobby, "An officer sent to a tile with only a rail on it walks to a tile beside it")
+	// Something really standing on a tile still sends it beside
+	var/turf/crated = spot(5, 0)
+	allocate(/obj/structure/closet/crate, crated)
+	TEST_ASSERT(brain.stealth_next_leg(crated) != crated, "An officer sent to a tile with a crate on it walks onto the crate's tile")
+	// By the door, in it goes
+	cop.forceMove(lobby)
+	TEST_ASSERT(host.police.checkpoint_step_to_concourse(cop) in chamber, "An officer on the outer door's front tile, the door open, was not sent in")
+	host.police.clear_checkpoint_crossing(cop)
+
 // ===== THE WHOLE WALK =====
 
 /// Three of them off the lift at once, a chamber of two tiles: all three are through in good time, and nobody stands in a doorway on the way
@@ -346,9 +389,9 @@
 // ===== THE THREE OUTPOSTS =====
 
 /**
- * On a real outpost's map: more people than its chamber holds come off the lift at once, with two officers among
- * them, and all of them get through to the concourse in good time without anyone standing in a doorway; then some
- * of them leave again by the exit gate, and nobody stands in a doorway or in the gate on the way out.
+ * On a real outpost's map: more people than its chamber holds come off the lift a few seconds apart, an officer
+ * among them, and all of them get through to the concourse in good time without anyone standing in a doorway; then
+ * some of them leave again by the exit gate, and nobody stands in a doorway or in the gate on the way out.
  */
 /datum/unit_test/voidcrew_trader_checkpoint_maps
 	abstract_type = /datum/unit_test/voidcrew_trader_checkpoint_maps
@@ -403,46 +446,50 @@
 	SSmobs.clients_by_zlevel[watcher_turf.z] += watcher
 	listed[watcher] = watcher_turf.z
 
-	// The lobby's free floor near the outer door, nearest first: where the crowd starts, as a lift load does
-	var/list/turf/start_tiles = list()
-	for(var/reach in 2 to 6)
-		for(var/turf/open/tile in RANGE_TURFS(reach, post.lobby_turf))
-			if((tile in start_tiles) || tile == post.lobby_turf || get_dist(tile, post.lobby_turf) < 2)
-				continue
-			if(!istype(tile.loc, /area/voidcrew/trader_outpost/checkpoint) || (tile in post.chamber_turfs) || tile.is_blocked_turf(exclude_mobs = FALSE))
-				continue
-			if((locate(/obj/machinery/door) in tile) || (locate(/obj/structure/outpost_exit_gate) in tile) || !can_see(post.lobby_turf, tile, reach + 1))
-				continue
-			start_tiles += tile
-	var/wanted = length(post.chamber_turfs) + 3
-	TEST_ASSERT(length(start_tiles) >= wanted + 2, "[outpost_type]'s lobby has only [length(start_tiles)] free tiles by its outer door for [wanted + 2] people")
-
+	// One more customer than the chamber holds, and an officer among them, off the lift four seconds apart (the
+	// game's own arrivals are ten apart): each steps off onto a free tile of the lift alcove, as arrive() has them
+	var/arrivals = length(post.chamber_turfs) + 2
 	var/list/crowd = list()
-	for(var/i in 1 to wanted)
-		var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/npc = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, start_tiles[i])
-		npc.set_place(place)
-		// No client is near (the watcher is only on the list of players): they would idle, and an idle NPC does nothing
-		npc.ai_controller?.can_idle = FALSE
-		npc.ai_controller?.reset_ai_status()
-		ambient_cross_checkpoint_on_arrival(npc, outpost)
-		TEST_ASSERT(istype(npc.activity, /datum/ambient_activity/cross_checkpoint), "[outpost_type]: someone in the lobby did not set off through the checkpoint")
-		crowd += npc
-	// Two officers off the same lift, sent to look at a spot on the concourse
 	var/list/officers = list()
-	for(var/i in 1 to 2)
-		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/cop = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, start_tiles[wanted + i])
-		var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = cop.ai_controller
-		brain.reset_ai_status()
-		brain.stealth_setup()
-		brain.stealth_go_searching(post.secured_turf)
-		officers += cop
-	var/list/everyone = crowd + officers
-
+	var/list/everyone = list()
 	var/list/through = list()
 	var/most_inside = 0
-	var/deadline = world.time + 150 SECONDS
-	while(world.time < deadline && length(through) < length(everyone))
+	var/next_arrival = world.time
+	var/deadline = world.time + 60 SECONDS
+	while(world.time < deadline && (length(everyone) < arrivals || length(through) < length(everyone)))
 		sleep(world.tick_lag)
+		if(length(everyone) < arrivals && world.time >= next_arrival)
+			var/turf/step_off
+			for(var/turf/tile as anything in outpost.lobby_alcove_turfs)
+				if(!tile.is_blocked_turf(exclude_mobs = FALSE))
+					step_off = tile
+					break
+			if(step_off)
+				next_arrival = world.time + 4 SECONDS
+				if(length(everyone) == 2)
+					var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/cop = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, step_off)
+					var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = cop.ai_controller
+					brain.reset_ai_status()
+					brain.stealth_setup()
+					officers += cop
+					everyone += cop
+				else
+					var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/npc = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, step_off)
+					npc.set_place(place)
+					// No client is near (the watcher is only on the list of players): they would idle, and an idle NPC does nothing
+					npc.ai_controller?.can_idle = FALSE
+					npc.ai_controller?.reset_ai_status()
+					ambient_cross_checkpoint_on_arrival(npc, outpost)
+					TEST_ASSERT(istype(npc.activity, /datum/ambient_activity/cross_checkpoint), "[outpost_type]: someone off the lift did not set off through the checkpoint")
+					crowd += npc
+					everyone += npc
+				// Everyone has 150 seconds from the last arrival
+				deadline = world.time + 150 SECONDS
+		// The officer is sent to a spot on the concourse, and sent again when its search runs out, as dispatch does
+		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cop as anything in officers)
+			var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = cop.ai_controller
+			if(!(cop in through) && brain.stealth_state() == "unaware")
+				brain.stealth_go_searching(post.secured_turf)
 		watch_doorways(everyone)
 		var/inside = 0
 		for(var/mob/living/person as anything in everyone)
@@ -453,6 +500,7 @@
 			else if(outpost.is_secured_turf(get_turf(person)))
 				through |= person
 		most_inside = max(most_inside, inside)
+	TEST_ASSERT_EQUAL(length(everyone), arrivals, "[outpost_type]: only [length(everyone)] of [arrivals] could step off the lift: its alcove never cleared")
 	var/list/stuck = list()
 	for(var/mob/living/person as anything in everyone)
 		if(!(person in through))
@@ -464,7 +512,7 @@
 
 	// Out again: three of them leave for the lift, by the exit gate
 	var/list/leaving = list()
-	for(var/i in 1 to 3)
+	for(var/i in 1 to min(3, length(crowd)))
 		var/mob/living/carbon/human/npc/ambient_npc/npc = crowd[i]
 		if(QDELETED(npc))
 			continue

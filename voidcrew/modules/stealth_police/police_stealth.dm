@@ -719,6 +719,22 @@
 			return 0
 	return ..()
 
+/**
+ * The turf to walk to now on the way to `dest`. Stealth walks to a tile beside `dest` when anything dense is on it;
+ * a rail along a tile's edge is dense and in nobody's way, and the tile in front of Quartermain's and the Undertow's
+ * checkpoint doors has two. Sent to it, an officer went and stood on the far side of the rail, one tile from the door
+ * and nowhere near it, for good. A tile with nothing on it but rails is walked to itself.
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_next_leg(turf/dest)
+	. = ..()
+	var/turf/here = get_turf(pawn)
+	if(. == dest || isnull(here) || isnull(dest) || here.z != dest.z || get_dist(here, dest) > STEALTH_WALK_LEG || !isopenturf(dest))
+		return
+	for(var/atom/movable/thing as anything in dest)
+		if(thing.density && !ismob(thing) && !(thing.flags_1 & ON_BORDER_1))
+			return
+	return dest
+
 // =========================================================================
 // ON THE OFFICER
 // =========================================================================
