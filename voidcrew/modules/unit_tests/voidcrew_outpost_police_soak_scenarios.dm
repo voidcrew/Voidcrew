@@ -230,27 +230,46 @@ POLICE_SOAK_SCENARIO(hangar_wait)
 	run.stand(100 SECONDS)
 
 // ----- a full scanner room while more of the outpost's people arrive -----
-// The owner's report: people waiting in the door while four stand in the scanner room.
+// The owner's report: people waiting in the door while four stand in the scanner room. Visitors fill the room but
+// for one tile, townspeople come up the lift behind the suspect, and the suspect takes the last tile, leaving the
+// outer door open behind them.
 
 POLICE_SOAK_SCENARIO(crowded_gate)
 
 /datum/police_soak_scenario/crowded_gate/start_turf(datum/police_soak/run, datum/outpost_checkpoint/post)
-	return run.scanner_room_tile(post)
+	return post?.lobby_turf
 
 /datum/police_soak_scenario/crowded_gate/play(datum/police_soak/run)
 	var/datum/outpost_checkpoint/post = run.outpost.lobby_checkpoint(null)
-	var/others = 0
+	var/list/turf/free = list()
 	for(var/turf/tile as anything in post?.chamber_turfs)
+		if(!tile.is_blocked_turf(TRUE))
+			free += tile
+	if(!length(free))
+		run.script_failed("the scanner room has no free tile")
+		return
+	// The tile left for the suspect: the one nearest the outer door
+	var/turf/last_tile = free[1]
+	for(var/turf/tile as anything in free)
+		if(get_dist(tile, post.outer_door) < get_dist(last_tile, post.outer_door))
+			last_tile = tile
+	var/others = 0
+	for(var/turf/tile as anything in free - last_tile)
 		if(others >= 3)
 			break
-		if(tile == get_turf(run.suspect) || tile.is_blocked_turf(TRUE))
-			continue
 		run.test.police_arrest_person(tile)
 		others++
-	run.note(">>", "stands in the scanner room with [others] other visitors")
-	for(var/wave in 1 to 4)
-		run.arrival()
+	run.note(">>", "[others] other visitors stand in the scanner room ([length(post.chamber_turfs)] tiles); one tile is left at [run.where(last_tile)]")
+	run.arrival()
+	run.stand(6 SECONDS)
+	run.arrival()
+	run.stand(4 SECONDS)
+	if(!run.go_to(last_tile, 0, 20 SECONDS))
+		run.script_failed("could not step into the scanner room at [run.where(last_tile)] (got to [run.where(run.suspect)])")
+	run.note(">>", "stands in the scanner room at [run.where(run.suspect)]; the room is full")
+	for(var/wave in 1 to 2)
 		run.stand(10 SECONDS)
-	run.stand(50 SECONDS)
+		run.arrival()
+	run.stand(60 SECONDS)
 
 #undef POLICE_SOAK_SCENARIO
