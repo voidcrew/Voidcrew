@@ -144,8 +144,10 @@
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "suspicious", "A guard didn't react to a friend knocked to the floor")
 	TEST_ASSERT(!stealth_ai.bark_ready_at["stealth_body"], "A guard called a friend who is awake on the floor a body")
 	TEST_ASSERT(stealth_ai.bark_ready_at["stealth_helpless"] > world.time, "A guard had no word for a friend awake on the floor")
-	// Back on its feet, then out cold
+	// Back on its feet (tg's getting up, without its second of waiting), then out cold
 	friend.SetKnockdown(0)
+	friend.get_up(TRUE)
+	TEST_ASSERT_EQUAL(friend.body_position, STANDING_UP, "Test fixture: the friend didn't get back up")
 	stealth_ai.stealth_go_unaware()
 	stealth_ai.next_body_scan = 0
 	stealth_ai.stealth_check_bodies()
