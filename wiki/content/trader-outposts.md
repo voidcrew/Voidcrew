@@ -255,6 +255,8 @@ A report that hasn't gone out yet can be stopped. It is dropped if every witness
 
 More officers arrive through the staff lifts as your stars rise, and they keep coming.
 
+**Losing them.** Out of sight, the officers search outward from where you were last seen, one officer to a place, and they keep at it for as long as you are wanted. Anyone who spots you brings the rest.
+
 **Heavy weapons.** At 5 stars two heavy weapons officers come up with the rest, carrying an ion rifle, a rocket launcher or a grenade launcher. Those are for mechs. Anyone on foot gets their pistol like any other officer.
 
 **Hostages.** Hold one of the outpost's people by the neck with a gun in your other hand, and every officer who can see it holds fire and keeps their distance. Tell them out loud to back off and they will. Tell them to drop it, and an officer who walked in on it puts their weapon away; one who was already after you, or already looking for you, keeps it. The hostage struggles, and once they get loose or you let go the officers carry on. They hold fire for one minute, counted from the first officer to do it, and say so when it is nearly up. Then they shoot, hostage or not, and a second hostage buys no more time while you are still wanted there. Hurt the hostage or attack an officer, and the officers who saw it never hold fire for you again. They do not hold fire for a hostage who is not one of the outpost's own, or for one who is out cold.
@@ -277,7 +279,9 @@ If you go down before the cuffs are on, you are cuffed and searched where you li
 
 In jail your gear comes off and goes into a **property locker** outside the cells, and you get an orange jumpsuit and shoes. You keep your ID, your implants, and any ship key or mission item, even one that was in your bag.
 
-A warden guards the cells, and he can be paid to let you out early. Call him over from your cell. It costs at least 1,500 credits from your crew's ship accounts.
+A warden guards the cells, and he can be paid to let you out early. Say anything or try the cell door and he comes over, and he comes by once on his own soon after you are jailed. It costs at least 1,500 credits from your crew's ship accounts.
+
+A crime in the cell starts your time over, at the length for the stars you have by then, and after that no fine gets you out. Hit an officer in there and they hit back.
 
 If you are booked in a bad way, or go down in a cell, security sends a medic up to patch you where you lie, and your time stops until you can stand. If no medic can come, the door opens so your crew can get to you; once you can walk again you have 20 seconds to get back in, or it counts as a breakout. Dying ends the term.
 
