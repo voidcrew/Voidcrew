@@ -7072,6 +7072,7 @@
 #include "voidcrew\modules\ambient_npcs\faction_recruiters.dm"
 #include "voidcrew\modules\ambient_npcs\outpost_angler.dm"
 #include "voidcrew\modules\ambient_npcs\outpost_dancer.dm"
+#include "voidcrew\modules\ambient_npcs\outpost_doorways.dm"
 #include "voidcrew\modules\ambient_npcs\outpost_patrons.dm"
 #include "voidcrew\modules\ambient_npcs\outpost_regulars.dm"
 #include "voidcrew\modules\ambient_npcs\outpost_staff_door.dm"
