@@ -180,6 +180,41 @@
 	TEST_ASSERT(recovery.stars_present(), "A suspect who escaped custody did not hold TROUBLE again")
 	outpost.police.warrants -= offender.mind
 
+/// A wanted person hiding on the outpost's floor holds TROUBLE a minute past the last sighting, then the crews come; seen again, they hold it again
+/datum/unit_test/voidcrew_outpost_recovery_stars_hidden
+
+/datum/unit_test/voidcrew_outpost_recovery_stars_hidden/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = recovery_outpost()
+	var/datum/outpost_recovery/recovery = outpost.recovery
+	recovery_corpse(outpost, wanted_spot(1, 1))
+	var/mob/living/carbon/human/offender = wanted_person(wanted_spot(5, 5))
+	police_pin_warrant(outpost.police, offender.mind, 100)
+	var/datum/outpost_warrant/warrant = outpost.police.warrants[offender.mind]
+	TEST_ASSERT(outpost.police.stars_of(warrant.heat) >= 3, "Setup: the offender is not at three stars")
+	recovery.last_death_at = world.time - 10 MINUTES
+
+	// Just out of sight: still trouble
+	warrant.unseen_since = world.time - 30 SECONDS
+	TEST_ASSERT(recovery.stars_present(), "A wanted person out of sight for half a minute no longer holds TROUBLE")
+	recovery.tick()
+	TEST_ASSERT_EQUAL(recovery.state, 1, "TROUBLE ended with a wanted person only just out of sight") // OUTPOST_RECOVERY_TROUBLE
+
+	// Hidden for a minute: they hold it no longer, and the quiet runs from when they did
+	warrant.unseen_since = world.time - 1 MINUTES // RECOVERY_STARS_HIDDEN_MAX
+	TEST_ASSERT(!recovery.stars_present(), "A wanted person hidden for a minute still holds TROUBLE")
+	recovery.tick()
+	TEST_ASSERT_EQUAL(recovery.state, 1, "The crews were called the moment a wanted person had hidden a minute") // OUTPOST_RECOVERY_TROUBLE
+	recovery.last_shot_at = world.time - 10 MINUTES
+	recovery.tick()
+	TEST_ASSERT_EQUAL(recovery.state, 2, "The crews were not called with a wanted person long hidden") // OUTPOST_RECOVERY_CLEANUP
+
+	// Seen again: trouble again
+	warrant.unseen_since = 0
+	TEST_ASSERT(recovery.stars_present(), "A wanted person seen again does not hold TROUBLE")
+	recovery.tick()
+	TEST_ASSERT_EQUAL(recovery.state, 1, "A wanted person seen during the cleanup did not make trouble again") // OUTPOST_RECOVERY_TROUBLE
+	outpost.police.warrants -= offender.mind
+
 /// CLEANUP is over fifteen minutes after quiet at the latest, body or no body
 /datum/unit_test/voidcrew_outpost_recovery_cleanup_cap
 

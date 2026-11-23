@@ -35,6 +35,8 @@
 #define RECOVERY_ROOM_MAX 60
 /// A wanted person off the outpost's own floor (aboard a docked ship, in a hangar) or not at the keys holds TROUBLE this long at most (abuse MF4)
 #define RECOVERY_STARS_AWAY_MAX (3 MINUTES)
+/// A wanted person on the outpost's floor that no officer has seen for this long stops holding TROUBLE, until one sees them again
+#define RECOVERY_STARS_HIDDEN_MAX (1 MINUTES)
 /// One medic comes with a wave for up to this many patients, two past it (decision 31, recovery_medic.dm)
 #define RECOVERY_MEDIC_SECOND_AT 2
 
@@ -324,8 +326,10 @@
 /**
  * Whether anyone with stars is at the outpost and up: a dead holder's stars fade within seconds (police_wanted.dm).
  * One sitting aboard their docked ship or in a hangar, or logged off, holds it for RECOVERY_STARS_AWAY_MAX at most,
- * so a wanted crew shut in its ship never keeps the shops shut for good (abuse MF4); on the outpost's own floor
- * with a player at the keys, they hold it as long as they stay.
+ * so a wanted crew shut in its ship never keeps the shops shut for good (abuse MF4). On the outpost's own floor
+ * with a player at the keys, they hold it while an officer sees them and for RECOVERY_STARS_HIDDEN_MAX after: at
+ * three stars or more the stars never fade here, so one killer in a cupboard kept the dead on the floor for good
+ * (owner, playtest 3). Seen again, they hold it again: no further crew is called until it is quiet once more.
  */
 /datum/outpost_recovery/proc/stars_present()
 	. = FALSE
@@ -340,7 +344,8 @@
 			continue
 		var/turf/where = get_turf(holder)
 		if(where && police.dispatch_in_box(where) && (holder.client || !warrant.mind.key))
-			. = TRUE
+			if(!warrant.unseen_since || world.time - warrant.unseen_since < RECOVERY_STARS_HIDDEN_MAX)
+				. = TRUE
 			continue
 		var/since = stars_away[warrant.mind] || world.time
 		still_away[warrant.mind] = since
@@ -348,7 +353,7 @@
 			. = TRUE
 	stars_away = still_away
 
-/// Whether the outpost is quiet: nobody at it has stars and no NPC died here for OUTPOST_RECOVERY_QUIET_TIME
+/// Whether the outpost is quiet: nobody with stars is about (stars_present()) and no NPC died here for OUTPOST_RECOVERY_QUIET_TIME
 /datum/outpost_recovery/proc/is_quiet()
 	if(stars_present())
 		return FALSE
