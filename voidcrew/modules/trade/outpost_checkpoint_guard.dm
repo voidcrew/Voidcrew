@@ -52,6 +52,10 @@
 	if(offer)
 		police.payoff_prompt(src, user, offer)
 
+// Someone he would tell the time left, or name a price to, is not being ignored
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/ignores_barred(mob/user)
+	return isnull(outpost?.police?.payoff_quote(user))
+
 // A permit desk has nothing worth taking
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/drop_from_shelf()
 	if(shop)
