@@ -1197,15 +1197,16 @@
 
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/local = local_at(3, 3)
 	var/mob/living/carbon/human/holder = visitor_at(2, 3)
+	TEST_ASSERT_EQUAL(brain.police_onto_at, 0, "Fixture: an officer that has seen nothing is already on a hunt")
 	var/obj/item/gun/ballistic/automatic/pistol/pistol = allocate(/obj/item/gun/ballistic/automatic/pistol)
 	holder.put_in_active_hand(pistol, forced = TRUE)
 	holder.setDir(EAST)
 	stealth_test_grab(holder, local, GRAB_NECK)
 	TEST_ASSERT_EQUAL(stealth_hostage_of(holder), local, "Fixture: the resident isn't held at gunpoint")
 
-	// Caught cold: unaware until it saw this
-	TEST_ASSERT_EQUAL(brain.police_onto_at, 0, "Fixture: an officer that has seen nothing is already on a hunt")
+	// Caught cold: unaware until it saw this (the grab in front of it may already have set it on them)
 	brain.stealth_go_alert(holder)
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "alert", "Fixture: the officer is [brain.stealth_state()], not alert on the holder")
 	TEST_ASSERT(brain.police_caught_cold(), "An officer that went alert this moment doesn't count as caught cold")
 	TEST_ASSERT_EQUAL(hostage_tree.SelectBehaviors(brain, 1), SUBTREE_RETURN_FINISH_PLANNING, "An officer didn't hold fire for one of the outpost's people")
 	TEST_ASSERT_EQUAL(brain.standoff_holder?.resolve(), holder, "No standoff")
