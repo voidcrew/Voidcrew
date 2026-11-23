@@ -591,6 +591,8 @@
 		return
 	if(officer.case || controller.stealth_state() != STEALTH_UNAWARE || controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
 		return
+	// On edge until the cuffs are on: it is not over yet (the all clear calms it)
+	controller.stealth_set_wary()
 	// All round, as for someone it is after (stealth_has_in_view()): standing over them, it does not need them in its cone
 	var/seen = isturf(who.loc) && controller.stealth_alert_lit(who) && can_see(officer, who, HUMAN_NPC_SIGHT_RANGE)
 	if(!seen)
