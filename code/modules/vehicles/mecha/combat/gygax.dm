@@ -102,3 +102,4 @@ desc = "A lightweight exosuit, painted in a dark scheme. This model's armor has 
 		MECHA_UTILITY = 2,
 		MECHA_POWER = 1,
 		MECHA_ARMOR = 1,
+	)
