@@ -492,7 +492,8 @@
 	if(!search_reading)
 		search_reading = TRUE
 		INVOKE_ASYNC(src, PROC_REF(search_read_all), walker)
-	return floor
+	// With time to spare in this tick it is read already
+	return berth ? search_hangar(berth) : search_main
 
 /// `fresh` is the floor of `berth`'s hangar (null: the outpost's own) from now
 /datum/outpost_police/proc/search_keep(datum/outpost_berth/berth, datum/outpost_police_floor/fresh)
