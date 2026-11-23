@@ -1,0 +1,239 @@
+/**
+ * Outpost police tests: who uses force on whom, and when (voidcrew/modules/outpost_police/police_force.dm and the
+ * notice stages of voidcrew/modules/stealth_police/police_stealth.dm).
+ *
+ * The room and police of voidcrew_stealth_live/police (voidcrew_outpost_police_stealth.dm), on the real stealth rules.
+ * Nothing sleeps: the scan, the case and the force subtree are stepped by hand, and what puts someone on the floor is
+ * tg's own knockdown. Fork defines are included after the tests, so values are written out: states "unaware",
+ * "suspicious", "alert"; arrest steps "respond", "order", "subdue", "cuff"; the crime "resist"; the line kind
+ * "stealth_suspicious"; heat 25 is two stars and 55 three (OUTPOST_POLICE_STAR_HEAT).
+ */
+
+/// A two-star suspect at (6, 4) with the arrest's two officers beside them and a third officer, alert on them and not on the arrest, four tiles off. Returns list(suspect, case, arresting, cover, watcher).
+/datum/unit_test/voidcrew_stealth_live/police/proc/force_scene()
+	if(!police_room(20, 9))
+		TEST_FAIL("No room for the test")
+		return null
+	allocate(/obj/effect/landmark/stealth_group, at(0, 8))
+	person_at(19, 8)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/arresting = ready_officer(5, 4, EAST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cover = ready_officer(6, 6, NORTH)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/watcher = ready_officer(10, 4, WEST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/watcher_brain = watcher.ai_controller
+	var/mob/living/carbon/human/suspect = visitor_at(6, 4)
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 25) // two stars
+	watcher_brain.stealth_go_alert(suspect)
+	var/datum/outpost_police_case/case = police.open_case(warrant)
+	if(!case || case.arresting() != arresting || case.cover() != cover || watcher.case)
+		TEST_FAIL("Fixture: the arrest is not the two officers beside the suspect (arresting [case?.arresting()], cover [case?.cover()], third officer's case [watcher.case])")
+		return null
+	if(watcher_brain.stealth_state() != "alert" || !watcher.police_will_fight(suspect))
+		TEST_FAIL("Fixture: the third officer is not alert on the two-star suspect")
+		return null
+	return list(suspect, case, arresting, cover, watcher)
+
+/**
+ * The soak's force_on_the_held: a two-star suspect who stands still is not fired on by an officer off the arrest,
+ * before the order, in the time to comply, or once they have done as told and the cuffs are coming. A shot it had
+ * already planned is not taken either.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/gave_up_no_fire
+
+/datum/unit_test/voidcrew_stealth_live/police/gave_up_no_fire/Run()
+	var/list/scene = force_scene()
+	if(!scene)
+		return
+	var/mob/living/carbon/human/suspect = scene[1]
+	var/datum/outpost_police_case/case = scene[2]
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/watcher = scene[5]
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/watcher_brain = watcher.ai_controller
+
+	// Nobody has spoken to them yet, and they are standing there
+	TEST_ASSERT_EQUAL(case.step, "respond", "Fixture: the arrest did not start at respond")
+	TEST_ASSERT(!police_plans_shot(watcher, suspect), "An officer off the arrest plans a shot at a two-star suspect who stands still, before anyone has given them an order")
+
+	// The order, and the time to comply
+	case.set_step("order")
+	case.step_order()
+	TEST_ASSERT(police.order_pending(suspect), "Fixture: the suspect was not given the order")
+	TEST_ASSERT(!police_plans_shot(watcher, suspect), "An officer off the arrest plans a shot at a suspect in the time to comply")
+
+	// They did as told: the cuffs are coming
+	case.order_at = world.time - 10 SECONDS
+	case.step_order()
+	TEST_ASSERT_EQUAL(case.step, "cuff", "Fixture: a suspect who stood still with empty hands was not taken as having complied")
+	TEST_ASSERT(watcher.police_will_fight(suspect), "An officer off the arrest lost a suspect who is not yet in cuffs as someone to watch")
+	TEST_ASSERT(!police_plans_shot(watcher, suspect), "An officer off the arrest plans a shot at a suspect who gave up and is about to be cuffed")
+	TEST_ASSERT_EQUAL(watcher_brain.stealth_state(), "alert", "An officer off the arrest is [watcher_brain.stealth_state()] with the cuffs still to come")
+
+	// A shot planned a moment before is not taken
+	watcher.sync_force(2) // POLICE_FORCE_STUN
+	var/obj/item/gun/energy/sidearm = watcher.get_sidearm()
+	TEST_ASSERT_NOTNULL(sidearm, "Fixture: the officer has no sidearm")
+	TEST_ASSERT_EQUAL(watcher.police_loaded_gun_for(2), sidearm, "Fixture: the officer's disabler is not in its hand and ready")
+	var/charge = sidearm.cell.charge
+	watcher_brain.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, suspect)
+	watcher_brain.set_blackboard_key("human_npc_next_shot", 0) // BB_HUMAN_NPC_NEXT_SHOT
+	var/datum/ai_behavior/human_npc_shoot/outpost_police/shot = GET_AI_BEHAVIOR(/datum/ai_behavior/human_npc_shoot/outpost_police)
+	shot.perform(1, watcher_brain, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
+	TEST_ASSERT_EQUAL(sidearm.cell.charge, charge, "An officer off the arrest fired on a suspect who gave up and is about to be cuffed")
+	police.close_case(suspect.mind)
+
+/**
+ * The owner's playtest, 18:55:07 to 18:55:10: a two-star suspect knocked down by the baton, awake and not stunned,
+ * with the arresting officer going for the cuffs. The officers off the arrest hold their fire, and so does the
+ * arrest's cover.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/floored_no_fire
+
+/datum/unit_test/voidcrew_stealth_live/police/floored_no_fire/Run()
+	var/list/scene = force_scene()
+	if(!scene)
+		return
+	var/mob/living/carbon/human/suspect = scene[1]
+	var/datum/outpost_police_case/case = scene[2]
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cover = scene[4]
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/watcher = scene[5]
+
+	// They would not do as told: the baton. tg's stun baton floors them two seconds after the blow.
+	case.set_step("subdue")
+	suspect.Knockdown(5 SECONDS) // /obj/item/melee/baton/security knockdown_time
+	TEST_ASSERT(suspect.body_position == LYING_DOWN && !police_suspect_down(suspect), "Fixture: a knockdown did not leave the suspect awake on the floor")
+	case.step_subdue()
+	TEST_ASSERT_EQUAL(case.step, "cuff", "Fixture: the arrest did not go for the cuffs with the suspect on the floor")
+	TEST_ASSERT(!police.has_in_hand(suspect), "Fixture: a suspect who is only knocked down counts as in hand")
+	TEST_ASSERT(!police_plans_shot(watcher, suspect), "An officer off the arrest plans a shot at a two-star suspect who is knocked down with the arresting officer going for the cuffs")
+	police.close_case(suspect.mind)
+
+	// The arrest's cover fires while they are to be subdued, but not at someone who is staying where they are
+	var/datum/outpost_police_case/second = police.open_case(police.get_warrant(suspect.mind))
+	TEST_ASSERT_NOTNULL(second, "Fixture: no second arrest opened")
+	suspect.SetKnockdown(0)
+	suspect.set_resting(FALSE, silent = TRUE, instant = TRUE)
+	TEST_ASSERT_EQUAL(suspect.body_position, STANDING_UP, "Fixture: the suspect did not get back up")
+	second.set_step("subdue")
+	TEST_ASSERT_EQUAL(second.cover(), cover, "Fixture: the second officer is not the cover")
+	TEST_ASSERT(!police_plans_shot(cover, suspect), "The arrest's cover plans a shot at a two-star suspect who stands still while the arresting officer subdues them")
+	police.close_case(suspect.mind)
+
+/// A two-star person who has given up and stands in an officer's line of fire at someone else is not shot through
+/datum/unit_test/voidcrew_stealth_live/police/gave_up_in_the_line
+
+/datum/unit_test/voidcrew_stealth_live/police/gave_up_in_the_line/Run()
+	var/list/scene = force_scene()
+	if(!scene)
+		return
+	var/mob/living/carbon/human/suspect = scene[1]
+	var/datum/outpost_police_case/case = scene[2]
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/watcher = scene[5]
+	case.set_step("order")
+	case.step_order()
+	case.order_at = world.time - 10 SECONDS
+	case.step_order()
+	TEST_ASSERT_EQUAL(case.step, "cuff", "Fixture: the suspect was not taken as having complied")
+	// Someone else, also two stars, further along the same line
+	var/mob/living/carbon/human/other = visitor_at(3, 4)
+	police_pin_warrant(police, other.mind, 25) // two stars
+	watcher.set_force(2) // POLICE_FORCE_STUN
+	TEST_ASSERT_EQUAL(watcher.bystander_in_line(other), suspect, "An officer would fire through someone who gave up and is about to be cuffed")
+	police.close_case(suspect.mind)
+
+/// Three stars: nobody holds fire for someone standing still (owner decision 37: only someone down is taken alive)
+/datum/unit_test/voidcrew_stealth_live/police/three_stars_no_hold
+
+/datum/unit_test/voidcrew_stealth_live/police/three_stars_no_hold/Run()
+	TEST_ASSERT(police_room(20, 9), "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, at(0, 8))
+	person_at(19, 8)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/lethal = ready_officer(10, 4, WEST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/stunner = ready_officer(10, 5, WEST)
+	lethal.police_role = "lethal" // POLICE_ROLE_LETHAL
+	stunner.police_role = "stun" // POLICE_ROLE_STUN
+	var/mob/living/carbon/human/suspect = visitor_at(6, 4)
+	police_pin_warrant(police, suspect.mind, 55) // three stars
+	TEST_ASSERT(police_plans_shot(lethal, suspect), "A lethal officer holds fire for a three-star suspect who stands still")
+	TEST_ASSERT(police_plans_shot(stunner, suspect), "A stun officer holds fire for a three-star suspect who stands still")
+
+/// The states an officer goes through over `scans` looks, from where it stands
+/datum/unit_test/voidcrew_stealth_live/police/proc/notice_stages(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, scans = 12)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	. = list()
+	for(var/i in 1 to scans)
+		brain.stealth_scan_once()
+		. += brain.stealth_state()
+		if(brain.stealth_state() == "alert")
+			return
+
+/// An officer on its beat and someone with two stars five tiles in front of it
+/datum/unit_test/voidcrew_stealth_live/police/proc/notice_scene()
+	if(!police_room(20, 9))
+		TEST_FAIL("No room for the test")
+		return null
+	allocate(/obj/effect/landmark/stealth_group, at(0, 8))
+	person_at(19, 8)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = ready_officer(4, 4, EAST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	var/mob/living/carbon/human/suspect = visitor_at(9, 4)
+	police_pin_warrant(police, suspect.mind, 25) // two stars
+	if(brain.stealth_state() != "unaware" || !officer.police_will_fight(suspect))
+		TEST_FAIL("Fixture: the officer is not unaware with a two-star suspect to notice")
+		return null
+	return list(officer, suspect)
+
+/**
+ * The owner's playtest, 18:55:31: "Just a moment. What's that?" to someone an arrest was open on. An officer who
+ * sees someone the police have an arrest open on is on them at once: no second look, and no line for one.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/wanted_seen_at_once
+
+/datum/unit_test/voidcrew_stealth_live/police/wanted_seen_at_once/Run()
+	var/list/scene = notice_scene()
+	if(!scene)
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = scene[1]
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	var/mob/living/carbon/human/suspect = scene[2]
+	// An arrest open on them, with its officers still on their way
+	var/datum/outpost_police_case/case = new(police, police.get_warrant(suspect.mind))
+	police.cases[suspect.mind] = case
+	TEST_ASSERT(police.arrest_on(suspect) && isnull(officer.case), "Fixture: no arrest open on the suspect with the officer off it")
+	var/list/stages = notice_stages(officer)
+	TEST_ASSERT(!("suspicious" in stages), "An officer took a second look at someone an arrest is open on ([stages.Join(", ")])")
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "alert", "An officer who sees someone an arrest is open on is [brain.stealth_state()] ([stages.Join(", ")])")
+	TEST_ASSERT_EQUAL(brain.blackboard[BB_BASIC_MOB_CURRENT_TARGET], suspect, "An officer who sees someone an arrest is open on is not on them")
+	TEST_ASSERT(!brain.bark_ready_at["stealth_suspicious"], "An officer said its \"what's that\" line to someone an arrest is open on")
+	police.close_case(suspect.mind)
+
+/// The same for someone the police have sent units after
+/datum/unit_test/voidcrew_stealth_live/police/sought_seen_at_once
+
+/datum/unit_test/voidcrew_stealth_live/police/sought_seen_at_once/Run()
+	var/list/scene = notice_scene()
+	if(!scene)
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = scene[1]
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	var/mob/living/carbon/human/suspect = scene[2]
+	// A unit sent after them, far off with its back turned
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/unit = ready_officer(1, 1, WEST)
+	unit.dispatch_mind = WEAKREF(suspect.mind)
+	TEST_ASSERT(!police.arrest_on(suspect) && isnull(officer.dispatch_mind), "Fixture: an arrest is open, or the officer itself was sent")
+	var/list/stages = notice_stages(officer)
+	TEST_ASSERT(!("suspicious" in stages), "An officer took a second look at someone units were sent after ([stages.Join(", ")])")
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "alert", "An officer who sees someone units were sent after is [brain.stealth_state()] ([stages.Join(", ")])")
+	TEST_ASSERT(!brain.bark_ready_at["stealth_suspicious"], "An officer said its \"what's that\" line to someone units were sent after")
+
+/// Someone with stars the police are not yet after is noticed as before: a second look first
+/datum/unit_test/voidcrew_stealth_live/police/wanted_unsought_second_look
+
+/datum/unit_test/voidcrew_stealth_live/police/wanted_unsought_second_look/Run()
+	var/list/scene = notice_scene()
+	if(!scene)
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = scene[1]
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	var/mob/living/carbon/human/suspect = scene[2]
+	TEST_ASSERT(!police.arrest_on(suspect), "Fixture: an arrest is open on the suspect")
+	var/list/stages = notice_stages(officer)
+	TEST_ASSERT("suspicious" in stages, "An officer went straight at someone the police are not yet after ([stages.Join(", ")])")
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "alert", "An officer never went alert on a two-star suspect in front of it ([stages.Join(", ")])")
