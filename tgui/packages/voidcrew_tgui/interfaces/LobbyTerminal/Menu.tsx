@@ -137,8 +137,8 @@ type Util = {
 };
 
 /**
- * WIKI, RULES, POLLS, MANIFEST, SETTINGS, CHANGELOG. SETTINGS opens the terminal's SETTINGS
- * screen (lit while it is open); WIKI and RULES open the server's pages in the player's
+ * WIKI, RULES, DISCORD, POLLS, MANIFEST, SETTINGS, CHANGELOG. SETTINGS opens the terminal's SETTINGS
+ * screen (lit while it is open); WIKI, RULES and DISCORD open the server's pages in the player's
  * browser. POLLS, MANIFEST and CHANGELOG are switched off for now and draw dead.
  */
 function utilities(
@@ -148,6 +148,11 @@ function utilities(
   return [
     { label: 'WIKI', action: 'wiki', state: data.wiki ? 'idle' : 'dead' },
     { label: 'RULES', action: 'rules', state: data.rules ? 'idle' : 'dead' },
+    {
+      label: 'DISCORD',
+      action: 'discord',
+      state: data.discord ? 'idle' : 'dead',
+    },
     { label: 'POLLS', action: 'polls', state: 'dead' },
     { label: 'MANIFEST', action: 'manifest', state: 'dead' },
     {
