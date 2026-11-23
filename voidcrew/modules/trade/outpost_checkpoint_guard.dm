@@ -11,6 +11,9 @@
  * outpost_trespass.dm); the paper the guard hands over is a receipt and proves nothing by itself.
  * It is sold like any SKU, so barred customers (aggressors, embargoed crews, armed trespassers) are
  * refused by the shop flow before it gets this far.
+ *
+ * A banned or barred customer with no stars is told how long is left, and can pay the guard to be let back in
+ * (open_trader_menu() below; outpost_police/police_payoff.dm).
  */
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard
@@ -38,6 +41,16 @@
 // He keeps his post behind the desk
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/may_flee()
 	return FALSE
+
+// Someone the outpost has banned or barred, with no stars on them, is told how long is left and what clears it now
+// (outpost_police/police_payoff.dm). Anyone else gets the desk as usual, or the usual refusal.
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/open_trader_menu(mob/living/user)
+	var/datum/outpost_police/police = outpost?.police
+	var/offer = police?.payoff_ask(src, user)
+	if(isnull(offer))
+		return ..()
+	if(offer)
+		police.payoff_prompt(src, user, offer)
 
 // A permit desk has nothing worth taking
 /mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/drop_from_shelf()

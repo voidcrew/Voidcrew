@@ -226,6 +226,7 @@
 #include "voidcrew_outpost_police_helpers.dm"
 #include "voidcrew_outpost_police_hud.dm"
 #include "voidcrew_outpost_police_life.dm"
+#include "voidcrew_outpost_police_payoff.dm"
 #include "voidcrew_outpost_police_playtest2.dm"
 #include "voidcrew_outpost_police_property.dm"
 #include "voidcrew_outpost_police_stealth.dm"

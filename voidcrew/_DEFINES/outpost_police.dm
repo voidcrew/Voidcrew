@@ -229,6 +229,28 @@
 /// Embargo length at four and five stars, at the outpost where it happened: a flat time, nothing added to it. It starts
 /// over at each further crime of the crew there while it runs (owner decisions 71 and 72)
 #define OUTPOST_POLICE_EMBARGO list(15 MINUTES, 30 MINUTES)
+/// The checkpoint guard's price to lift a crew's ban at once, for a four and a five star ban, before the zone multiplier
+#define OUTPOST_POLICE_PAYOFF_BAN list(2000, 4000)
+/// ...and to lift one person's own bar, with no ban on their crew
+#define OUTPOST_POLICE_PAYOFF_BAR 1000
+/// Each pay-off a crew has made at an outpost doubles its next one there, this many times at the most
+#define OUTPOST_POLICE_PAYOFF_DOUBLINGS 6
+/// The guard tells the same person how long is left again only after this long
+#define OUTPOST_POLICE_PAYOFF_WAIT (8 SECONDS)
+/// The customer has this long to answer the price
+#define OUTPOST_POLICE_PAYOFF_ANSWER (20 SECONDS)
+/// What is being bought off: the crew's ban (and the payer's own bar with it), or the payer's bar alone
+#define OUTPOST_POLICE_PAYOFF_KIND_BAN "ban"
+#define OUTPOST_POLICE_PAYOFF_KIND_BAR "bar"
+/// Why the guard names no price: the ban is not the police's own to lift, or a crewmate is still wanted for it
+#define OUTPOST_POLICE_PAYOFF_NOT_OURS "not_ours"
+#define OUTPOST_POLICE_PAYOFF_CREW_WANTED "crew_wanted"
+// The guard's lines for it (JSON contexts in AMBIENT_STRINGS_POLICE; %TIME% is how long is left, %PRICE% the price)
+#define POLICE_LINE_PAYOFF_OFFER "payoff_offer"
+#define POLICE_LINE_PAYOFF_TIME "payoff_time"
+#define POLICE_LINE_PAYOFF_CREW "payoff_crew"
+#define POLICE_LINE_PAYOFF_TAKEN "payoff_taken"
+#define POLICE_LINE_PAYOFF_SHORT "payoff_short"
 
 // ===== LIFTS AND AI =====
 

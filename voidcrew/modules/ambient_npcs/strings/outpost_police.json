@@ -322,6 +322,36 @@
 			"All under control.",
 			"Couple of chatty ones. That's all."
 		],
+		"payoff_offer": [
+			"You're not allowed in for %TIME% yet. Or there's a fee: %PRICE% credits.",
+			"It's %TIME% before I can let you through. %PRICE% credits would clear it now.",
+			"Come back in %TIME%, please. Or pay %PRICE% credits and go in today.",
+			"You've %TIME% left to wait, I'm afraid. For %PRICE% credits I can waive it."
+		],
+		"payoff_time": [
+			"You're not allowed in for %TIME% yet. Sorry.",
+			"It's %TIME% before I can let you through.",
+			"Come back in %TIME%, please.",
+			"You've %TIME% left to wait, I'm afraid."
+		],
+		"payoff_crew": [
+			"Not while one of your crew is still wanted here. Sorry.",
+			"One of yours still has business with security. Come back after.",
+			"I can't clear you while your crewmate's on our list.",
+			"Settle your friend's trouble first, please."
+		],
+		"payoff_taken": [
+			"Thank you. You're clear to come in.",
+			"That's settled. Welcome back to Halcyon.",
+			"All paid. Step through when you're ready.",
+			"You're clear. Mind how you go this time."
+		],
+		"payoff_short": [
+			"That didn't go through, I'm afraid.",
+			"Declined. You'll have to wait it out.",
+			"Your account won't cover it. Sorry.",
+			"Not enough there. Come back when the time's up."
+		],
 		"cell_check": [
 			"Quiet in there?",
 			"You all right in there?",
@@ -930,6 +960,36 @@
 			"Nothing I couldn't handle.",
 			"All logged."
 		],
+		"payoff_offer": [
+			"You're out for %TIME% yet. Or it's %PRICE% credits.",
+			"Gate's shut to you for %TIME%. %PRICE% credits opens it.",
+			"Come back in %TIME%. Or pay %PRICE% credits, now.",
+			"You've got %TIME% to wait. %PRICE% credits and I forget it."
+		],
+		"payoff_time": [
+			"You're out for %TIME% yet.",
+			"Gate's shut to you for %TIME%.",
+			"Come back in %TIME%.",
+			"You've got %TIME% to wait. Go wait."
+		],
+		"payoff_crew": [
+			"Not while one of yours is still wanted in here.",
+			"Your mate's still on the list. No.",
+			"Sort your crewmate out first.",
+			"One of your lot still owes us. Come back after."
+		],
+		"payoff_taken": [
+			"Paid. Go on through.",
+			"That squares it. Behave.",
+			"Right. You're back in.",
+			"Done. Don't let me see you back at this desk."
+		],
+		"payoff_short": [
+			"Didn't clear. You wait.",
+			"Not enough in there.",
+			"Account says no. So do I.",
+			"Come back with the money, or come back later."
+		],
 		"cell_check": [
 			"Quiet in there?",
 			"Behave.",
@@ -1537,6 +1597,36 @@
 			"Same as always.",
 			"Few blades. Nothing new.",
 			"Usual scum."
+		],
+		"payoff_offer": [
+			"You're out for %TIME%. Or %PRICE% credits and I never saw you.",
+			"Door's shut to you for %TIME%. %PRICE% credits opens it.",
+			"Try me again in %TIME%. Or %PRICE% credits, now.",
+			"For %PRICE% credits you walk in. Otherwise it's %TIME%."
+		],
+		"payoff_time": [
+			"You're out for %TIME%.",
+			"Door's shut to you for %TIME%.",
+			"Try me again in %TIME%.",
+			"Not for %TIME%. Walk."
+		],
+		"payoff_crew": [
+			"Not while one of yours is still wanted in there.",
+			"Your friend's still on the list. No deal.",
+			"Deal with your crewmate first.",
+			"One of your people still owes the house."
+		],
+		"payoff_taken": [
+			"In.",
+			"We're square. Go on.",
+			"Never happened. In you go.",
+			"Paid. Behave yourself in there."
+		],
+		"payoff_short": [
+			"You're short.",
+			"Didn't clear.",
+			"Come back with money.",
+			"Not enough. Walk."
 		],
 		"cell_check": [
 			"Still breathing in there?",
