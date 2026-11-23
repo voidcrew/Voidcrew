@@ -263,4 +263,12 @@
 	TEST_ASSERT(!guard.IsKnockdown(), "Fixture: the officer is still down")
 	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "An officer shoved over by someone in cuffs got up [brain.stealth_state()]")
 	TEST_ASSERT_NULL(brain.pending_call, "An officer shoved over by someone in cuffs called an alarm")
+
+	// Someone else lays a hand on it after the prisoner did: that is not the prisoner's doing, and it looks round when it gets up
+	var/mob/living/carbon/human/stranger = visitor_at(8, 3)
+	brain.stealth_touched(prisoner)
+	brain.stealth_touched(stranger)
+	guard.Knockdown(2 SECONDS) // SHOVE_KNOCKDOWN_SOLID
+	guard.SetKnockdown(0)
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "An officer put on the floor after a stranger's hand on it took it for the prisoner's doing")
 	police.close_case(prisoner.mind)
