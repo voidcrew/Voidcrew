@@ -129,6 +129,11 @@
 			if(CONFIG_GET(string/rulesurl))
 				user.client?.rules()
 			return FALSE
+		if("discord")
+			var/discordurl = CONFIG_GET(string/discordurl)
+			if(discordurl && user.client)
+				DIRECT_OUTPUT(user.client, link(discordurl))
+			return FALSE
 		if("polls")
 			if(!polls_state)
 				return FALSE
