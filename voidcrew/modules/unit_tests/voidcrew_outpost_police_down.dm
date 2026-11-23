@@ -138,8 +138,14 @@
 	TEST_ASSERT_EQUAL(stealth_noise(get_turf(suspect), "scream", null, suspect), 0, "An officer went to look at a scream from a suspect who is down with an arrest on them")
 	TEST_ASSERT(watcher_brain.stealth_state() != "alert", "An officer is on alert over a suspect who is down")
 
-	// But it is not over: no all clear, and the officer who was on them stays on them
+	// But it is not over: no all clear, and the officer who was on them stays by them, closing in to stand over them
 	TEST_ASSERT(police.stealth_trouble, "The squad stood down over a suspect who is down with no cuffs on")
+	TEST_ASSERT(police.has_in_hand(suspect) && police.has_down(suspect) && !police.has_secured(suspect), "A suspect who is down with no cuffs on is not in hand and still to be cuffed")
+	TEST_ASSERT_EQUAL(watcher_brain.police_covered(), suspect, "An officer who was on a suspect left them when they went down with no cuffs on")
+	watcher_brain.SelectBehaviors(1)
+	TEST_ASSERT_EQUAL(watcher_brain.police_covered(), suspect, "An officer standing over a downed suspect left them at its next thought")
+	TEST_ASSERT(locate(/datum/ai_behavior/human_npc_close_in) in watcher_brain.planned_behaviors, "An officer four tiles from a downed suspect it is on did not close in to stand over them")
+	TEST_ASSERT_EQUAL(watcher_brain.stealth_state(), "unaware", "An officer standing over a downed suspect is [watcher_brain.stealth_state()]")
 
 	// Up again before the cuffs (their stamina comes back, as tg gives it back): it is on them at once
 	suspect.setStaminaLoss(0)
@@ -152,6 +158,7 @@
 	suspect.adjustStaminaLoss(200)
 	TEST_ASSERT(HAS_TRAIT(suspect, TRAIT_INCAPACITATED), "Fixture: the suspect did not go down again")
 	watcher_brain.stealth_keep_target()
+	TEST_ASSERT_EQUAL(watcher_brain.police_covered(), suspect, "An officer fighting a suspect left them when they went down again")
 	case.process_case()
 	TEST_ASSERT(!QDELETED(case), "The arrest ended with the suspect down")
 	TEST_ASSERT_EQUAL(case.arresting(), cover, "The cover officer did not take the arrest from an arresting officer on the floor")
@@ -172,6 +179,46 @@
 	TEST_ASSERT(!police.stealth_trouble, "The squad did not stand down once the cuffs were on")
 	TEST_ASSERT_EQUAL(watcher_brain.stealth_state(), "unaware", "An officer is [watcher_brain.stealth_state()] once the cuffs are on")
 	TEST_ASSERT(!watcher_brain.blackboard["stealth_wary"], "An officer was left on edge once the cuffs were on")
+	TEST_ASSERT_NULL(watcher_brain.police_covered(), "An officer still stands over a suspect in cuffs")
+	TEST_ASSERT(police.has_secured(suspect) && !police.has_down(suspect), "A suspect in cuffs is not held")
+	police.close_case(suspect.mind)
+
+/// An officer who was not on a downed suspect but sees them lying there with an arrest on them stays by them too, and one searching for them out of sight stops searching
+/datum/unit_test/voidcrew_stealth_live/police/down_seen_is_covered
+
+/datum/unit_test/voidcrew_stealth_live/police/down_seen_is_covered/Run()
+	TEST_ASSERT(police_room(20, 9), "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, at(0, 8))
+	person_at(19, 8)
+	ready_officer(5, 4, EAST)
+	ready_officer(6, 5, NORTH)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/passer = ready_officer(10, 4, WEST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/searcher = ready_officer(16, 4, EAST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/passer_brain = passer.ai_controller
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/searcher_brain = searcher.ai_controller
+	var/mob/living/carbon/human/suspect = visitor_at(6, 4)
+	suspect.physiology.stamina_mod = 1
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 25) // two stars
+	var/datum/outpost_police_case/case = police.open_case(warrant)
+	TEST_ASSERT_NOTNULL(case, "Fixture: no arrest opened at two stars")
+	TEST_ASSERT(isnull(passer.case) && isnull(searcher.case), "Fixture: the far officers were put on the arrest")
+	for(var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/each as anything in list(passer_brain, searcher_brain))
+		each.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+		each.stealth_go_unaware()
+		each.stealth_drop_call()
+	// One has its back to them and is looking for them where they were last seen
+	searcher_brain.police_hunt = WEAKREF(suspect.mind)
+	searcher_brain.stealth_go_searching(at(18, 4))
+	suspect.adjustStaminaLoss(200)
+	TEST_ASSERT(police.has_down(suspect), "Fixture: the suspect is not down with the cuffs still to come")
+	TEST_ASSERT(police.perception.sees(passer, suspect), "Fixture: the passing officer does not see the downed suspect")
+	TEST_ASSERT(!police.perception.sees(searcher, suspect), "Fixture: the searching officer sees the downed suspect")
+	police.stealth_tick_officer(passer)
+	police.stealth_tick_officer(searcher)
+	TEST_ASSERT_EQUAL(passer_brain.police_covered(), suspect, "An officer who sees a suspect down with no cuffs on walked past them")
+	TEST_ASSERT_EQUAL(passer_brain.stealth_state(), "unaware", "An officer went [passer_brain.stealth_state()] over a suspect who is down")
+	TEST_ASSERT_EQUAL(searcher_brain.stealth_state(), "unaware", "An officer went on searching for a suspect who is down with an arrest on them")
+	TEST_ASSERT_NULL(searcher_brain.police_covered(), "An officer who cannot see a downed suspect stands over them")
 	police.close_case(suspect.mind)
 
 /// An officer shoved over by someone in cuffs gets up without a search: the charge is the arrest's, and nobody looks for someone they are holding (owner decision 58)
@@ -197,6 +244,7 @@
 	brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
 	brain.stealth_go_unaware()
 	brain.stealth_clear_wary()
+	brain.stealth_drop_call()
 
 	// The prisoner shoves it over; it gets up
 	TEST_ASSERT(!brain.stealth_touched(prisoner), "An officer took someone in cuffs for a target at a shove from them")

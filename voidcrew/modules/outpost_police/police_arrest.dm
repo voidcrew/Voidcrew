@@ -481,6 +481,13 @@
 	var/mob/living/carbon/suspect = step == CASE_STEP_RELEASE ? suspect_ref?.resolve() : get_suspect()
 	if(QDELETED(suspect))
 		suspect = null
+	// A suspect on the floor with the cuffs still to come is up again in seconds: of the two, the nearer one on its
+	// feet cuffs them (an arresting officer back up beside them takes the arrest back from a cover further off)
+	if(length(kept) >= 2 && suspect && !cuffed && !acting && step != CASE_STEP_RELEASE && (police_suspect_down(suspect) || suspect.body_position == LYING_DOWN))
+		var/mob/living/first = kept[1]
+		var/mob/living/second = kept[2]
+		if(!HAS_TRAIT(second, TRAIT_INCAPACITATED) && first.z == suspect.z && second.z == suspect.z && get_dist(second, suspect) < get_dist(first, suspect))
+			kept.Swap(1, 2)
 	while(length(kept) < 2)
 		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/found = nearest_free_officer(suspect, kept)
 		if(!found)

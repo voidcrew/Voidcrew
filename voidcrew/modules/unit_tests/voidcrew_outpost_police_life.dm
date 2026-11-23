@@ -36,7 +36,7 @@
 		"search", "evidence", "strip", "bail", "fine_paid", "locker_thief", "body", // POLICE_LINE_*
 		"idle", "talk", "chat", "reply", "work", // AMBIENT_LINE_*
 		"radio_call_hot", "check_in", "check_in_reply", "beat", "trader_reply", "guard", "guard_reply", "cell_check", "cell_reply", "talk_prior", // P3's own
-		"stealth_suspicious", "stealth_give_up", "stealth_search", "stealth_hit_unseen", "stealth_body", "stealth_chatter",
+		"stealth_suspicious", "stealth_give_up", "stealth_search", "stealth_hit_unseen", "stealth_body", "stealth_helpless", "stealth_chatter",
 		"stealth_target_downed", "stealth_closet_open", "stealth_closet_give_up", "stealth_heard", "stealth_heard_again",
 		"stealth_gunfire", "stealth_hold", "stealth_help", "stealth_missing", "stealth_radio_report", "stealth_radio_alarm",
 		"stealth_radio_missing", "stealth_copy", "stealth_radio_dead", // stealth's barks (police_stealth.dm)

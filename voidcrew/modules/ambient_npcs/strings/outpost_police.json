@@ -449,6 +449,13 @@
 			"Someone's hurt! Over here!",
 			"Body here! Get help!"
 		],
+		"stealth_helpless": [
+			"Who put those on you?",
+			"Hold still. Who did this to you?",
+			"Officer in cuffs! Over here!",
+			"Are you hurt? Who was it?",
+			"One of ours is tied up! I need help here!"
+		],
 		"stealth_chatter": [
 			"Quiet shift so far.",
 			"Docking fees went up again, did you hear?",
@@ -1057,6 +1064,13 @@
 			"Body here! Get medical!",
 			"Someone's down! Over here!"
 		],
+		"stealth_helpless": [
+			"Officer in cuffs! Over here!",
+			"Who cuffed you?",
+			"Hold still. Who did it?",
+			"Officer restrained. Send help.",
+			"One of ours, tied up. Over here!"
+		],
 		"stealth_chatter": [
 			"Did you file the incident sheet?",
 			"They cut overtime again.",
@@ -1664,6 +1678,13 @@
 			"Someone's down here!",
 			"Body! Over here!",
 			"Guard down here! Move!"
+		],
+		"stealth_helpless": [
+			"Guard in cuffs! Over here!",
+			"Who cuffed you? Where'd they go?",
+			"One of ours is tied up! Move!",
+			"Hold still. Who did it?",
+			"Somebody cuffed a guard! Get over here!"
 		],
 		"stealth_chatter": [
 			"Pay's late again.",
