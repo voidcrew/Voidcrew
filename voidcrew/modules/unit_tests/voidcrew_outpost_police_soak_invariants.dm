@@ -356,10 +356,13 @@
 		if(here != found.stuck_turf)
 			found.stuck_turf = here
 			found.stuck_ticks = 0
-		var/datum/ai_controller/brain = officer.ai_controller
+		var/datum/ai_controller/basic_controller/human_npc/stealth/brain = officer.ai_controller
 		var/datum/outpost_police_case/case = officer.case
-		// Where its AI is walking it, or where its arrest wants it
-		var/turf/goal = get_turf(brain?.current_movement_target) || get_turf(case?.goal)
+		// Standing off from someone holding a hostage is standing still on purpose
+		if(istype(brain) && brain.standoff_holder?.resolve())
+			continue
+		// Where its AI is walking it, or where the arrest it is making wants it (the goal is the arresting officer's, not the cover's)
+		var/turf/goal = get_turf(brain?.current_movement_target) || (case?.arresting() == officer ? get_turf(case.goal) : null)
 		if(!goal || goal.z != officer.z || get_dist(officer, goal) <= far || HAS_TRAIT(officer, TRAIT_AI_PAUSED) || case?.acting || !isturf(officer.loc) || officer.buckled)
 			continue
 		found.stuck_ticks++
