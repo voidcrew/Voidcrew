@@ -137,6 +137,10 @@
 	var/list/script_failures = list()
 	/// Whether anyone was ever wanted and at large during the run
 	var/ever_wanted = FALSE
+	/// Every time an officer hit the suspect: list(world.time, officer, what with, what the suspect was to the police then or null)
+	var/list/force_events = list()
+	/// How many of them the force invariant has looked at
+	var/force_checked = 0
 	/// GLOB.total_runtimes when the run began
 	var/runtimes_before = 0
 	/// A stand-in hangar berth built for this run (make_hangar()), its lift panel and the berths the outpost had
@@ -157,6 +161,8 @@
 	finished = TRUE
 	if(suspect && listed_z)
 		SSmobs.clients_by_zlevel[listed_z] -= suspect
+	if(!QDELETED(suspect))
+		UnregisterSignal(suspect, list(COMSIG_ATOM_BULLET_ACT, COMSIG_ATOM_AFTER_ATTACKEDBY))
 	for(var/mob/living/body as anything in tracks)
 		if(!QDELETED(body))
 			UnregisterSignal(body, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_SAY, COMSIG_QDELETING))
@@ -209,6 +215,8 @@
 	// tg's AI runs only on a level with a player on it: the suspect stands in for one, as in voidcrew_stealth_live
 	listed_z = start.z
 	SSmobs.clients_by_zlevel[listed_z] += suspect
+	RegisterSignal(suspect, COMSIG_ATOM_BULLET_ACT, PROC_REF(on_suspect_shot))
+	RegisterSignal(suspect, COMSIG_ATOM_AFTER_ATTACKEDBY, PROC_REF(on_suspect_struck))
 	runtimes_before = GLOB.total_runtimes
 	started_at = world.time
 	ready = TRUE
@@ -322,7 +330,7 @@
 	var/datum/police_soak_track/found = tracks[source]
 	if(!found)
 		return
-	var/message = "[speech_args[SPEECH_MESSAGE]]"
+	var/message = html_decode("[speech_args[SPEECH_MESSAGE]]")
 	if(findtext(message, ";") == 1)
 		message = copytext(message, 2)
 	found.said_text = message
@@ -367,6 +375,40 @@
 	var/pair = found.id < other.id ? "[found.id]|[other.id]" : "[other.id]|[found.id]"
 	LAZYADD(swaps[pair], world.time)
 	rows += list(list(now(), found.id, "<> trades tiles with [other.id] at [where(from)]/[where(to_turf)]"))
+
+// ----- force on the suspect -----
+
+/datum/police_soak/proc/on_suspect_shot(mob/living/source, obj/projectile/shot, def_zone, piercing_hit, blocked)
+	SIGNAL_HANDLER
+	force_used(shot.firer, shot.name)
+
+/datum/police_soak/proc/on_suspect_struck(mob/living/source, obj/item/weapon, mob/user, list/modifiers)
+	SIGNAL_HANDLER
+	force_used(user, weapon.name)
+
+/// An officer hit the suspect: written to the trace with what the suspect was to the police at that moment
+/datum/police_soak/proc/force_used(atom/by, what_with)
+	if(!is_outpost_police_npc(by) || QDELETED(suspect) || finished)
+		return
+	var/state = held_state()
+	note(">>", "is hit by [who(by)]'s [what_with][state ? " while [state]" : ""]")
+	force_events += list(list(world.time, by, what_with, state))
+
+/// What the police have the suspect as, if they are someone no officer should be using force on; null otherwise
+/datum/police_soak/proc/held_state()
+	if(police.cell_holding(suspect.mind))
+		return "in a cell"
+	if(police.in_custody(suspect))
+		return "in custody"
+	if(police.has_in_hand(suspect))
+		return "down with an arrest on them"
+	if(police.order_pending(suspect))
+		return "inside the time to comply with an order"
+	var/datum/outpost_police_case/case = police.cases[suspect.mind]
+	// CASE_STEP_CUFF: they did as told and the cuffs are going on
+	if(case && !QDELETED(case) && case.step == "cuff")
+		return "being cuffed after giving up"
+	return null
 
 // ----- the trace -----
 
@@ -483,7 +525,7 @@
 	var/walk_text = "-"
 	if(walking_to)
 		walk_text = where(walking_to)
-		if(brain.goto_dest && brain.goto_purpose)
+		if(brain.goto_turf == walking_to && brain.goto_purpose)
 			walk_text += ":[brain.goto_purpose]"
 	var/said = "-"
 	if(found.said_at)
@@ -574,7 +616,7 @@
 	sortTim(breaks, GLOBAL_PROC_REF(cmp_police_soak_breaks))
 	for(var/list/found as anything in breaks)
 		// The officers concerned, for the seconds around it (the whole squad's trace is in the file)
-		var/excerpt = trace_text(found["at"] - 12, found["at"] + 2, found["ids"])
+		var/excerpt = trace_text(found["at"] - 8, found["at"] + 1, found["ids"])
 		test.Fail("[label] BREAK [found["name"]] at [found["at"]]s: [found["text"]]\n[excerpt]", __FILE__, __LINE__)
 	for(var/failure in script_failures)
 		test.Fail("[label] SCRIPT: [failure]", __FILE__, __LINE__)
@@ -621,9 +663,9 @@
 	suspect.Move(next, direction)
 	return suspect.loc == next
 
-/// Tenths of a second a step of the suspect's takes, as tg has their speed
+/// Tenths of a second a step of the suspect's takes: tg's speed for them, and never faster than a run (config RUN_DELAY, 1.5; a test world loads none)
 /datum/police_soak/proc/step_delay()
-	return max(1, suspect.cached_multiplicative_slowdown)
+	return max(1.5, suspect.cached_multiplicative_slowdown)
 
 /**
  * The suspect walks to `goal` (or within `reach` of it) on their own feet, by tg's pathfinder, bumping doors open

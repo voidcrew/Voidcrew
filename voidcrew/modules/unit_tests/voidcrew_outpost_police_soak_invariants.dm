@@ -110,6 +110,14 @@
 		var/count = length(found.steps)
 		if(count < 6 || !is_outpost_police_npc(body))
 			continue
+		// Two of them trading tiles is tile_trading's
+		var/trading = FALSE
+		for(var/pair in run.swaps)
+			if((found.id in splittext(pair, "|")) && length(run.swaps[pair]) && world.time - run.swaps[pair][length(run.swaps[pair])] < window SECONDS)
+				trading = TRUE
+				break
+		if(trading)
+			continue
 		var/turf/a = found.steps[count]
 		var/turf/b = found.steps[count - 1]
 		if(a == b || found.steps[count - 2] != a || found.steps[count - 4] != a || found.steps[count - 3] != b || found.steps[count - 5] != b)
@@ -248,6 +256,20 @@
 
 // ----- what the code suggests -----
 
+/// An officer's shot or blow landing on someone the police already have, or who is doing as told
+/datum/police_soak_invariant/force_on_the_held
+	name = "force_on_the_held"
+	rank = 1
+
+/datum/police_soak_invariant/force_on_the_held/check(datum/police_soak/run)
+	var/from = run.force_checked
+	run.force_checked = length(run.force_events)
+	for(var/index in (from + 1) to length(run.force_events))
+		var/list/event = run.force_events[index]
+		if(!event[4])
+			continue
+		run.breach(src, "[REF(event[2])]|[event[4]]", "[run.who(event[2])] hit [run.who(run.suspect)] with its [event[3]] while they were [event[4]]", list(event[2]))
+
 /// A wanted person down (stunned, out cold, in crit) with an officer near and no arrest opened on them
 /datum/police_soak_invariant/downed_unattended
 	name = "downed_unattended"
@@ -331,5 +353,5 @@
 		var/datum/ai_controller/brain = officer.ai_controller
 		var/turf/goal = get_turf(brain?.current_movement_target)
 		var/stuck = found && goal && goal.z == officer.z && get_dist(officer, goal) > far && !HAS_TRAIT(officer, TRAIT_AI_PAUSED) && !officer.case?.acting && isturf(officer.loc) && !officer.buckled
-		if(stuck && world.time - found.moved_at > limit SECONDS)
+		if(run.held("[name]|[REF(officer)]|[run.where(officer)]", stuck) > limit)
 			run.breach(src, REF(officer), "[run.who(officer)] has stood at [run.where(officer)] for over [limit]s with a walk to [run.where(goal)] ([get_dist(officer, goal)] tiles off)", list(officer))
