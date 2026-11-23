@@ -1,0 +1,645 @@
+/**
+ * # Outpost police: looking for someone
+ *
+ * Where officers go for a wanted person nobody has eyes on. Everything here starts from where the police last saw
+ * them or were told they were, never from where they are (owner decision 52).
+ *
+ * Why it exists (owner playtest 4): two stars for an emagged gate, the suspect ran to the far wing, and nobody
+ * came. Every officer had been sent to the last-seen tile, which was inside the scan chamber no NPC can walk into,
+ * so the arresting officer never left its lift and the lift unit searched its own alcove. With a tile they could
+ * reach they would still only ever have looked within five tiles of it.
+ *
+ * - The floor (/datum/outpost_police_floor): what an officer can walk to with no key (outpost_police_flood(), the
+ *   pathfinder's own rules), and the places a search stops at to look about, chosen so that every tile a visitor
+ *   can get to is in sight of one (outpost_police_cover()). Read for the outpost's own floor, concourse and lobby
+ *   together, and for a hangar once a search gets that far; read again after POLICE_SEARCH_REREAD, as doors and
+ *   crates move.
+ * - The start (reach()): the last-seen tile, or the nearest tile an officer can stand on when that one cannot be
+ *   walked to or stood beside: a scan chamber, a locked room, a ship's deck.
+ * - The search (/datum/outpost_police_search): one for each wanted person, from their last sighting. Officers are
+ *   dealt its places one each, the ring nearest the start first; a place looked at is done, and with every place
+ *   done it starts over. A new sighting starts a new search.
+ * - Who asks: an officer sent to look (police_stealth.dm police_search_for()), the arresting officer of a case
+ *   that has not found its suspect (respond_unseen() below), and dispatch, for the sector a wave comes up in
+ *   (search_start()) and whether a unit still in its lift is shut in (search_shut_in()).
+ */
+
+/// Every tile a visitor can get to is within this many tiles, in a clear line, of a place the search stops at
+#define POLICE_SEARCH_SIGHT 6
+/// Places are dealt in rings this wide round where the search starts, the nearest ring first
+#define POLICE_SEARCH_RING 8
+/// A place this near one just looked at was looked at with it
+#define POLICE_SEARCH_NEAR 2
+/// A stop of the beat is one of the places when this many tiles are in its sight that no place before it has
+#define POLICE_SEARCH_STOP_WORTH 12
+/// A floor is read again once it was read this long ago
+#define POLICE_SEARCH_REREAD (2 MINUTES)
+/// With nothing to stand on this near the last-seen tile, the search starts at the tile itself
+#define POLICE_SEARCH_REACH 8
+/// A place dealt to an officer who has not asked after it for this long is dealt again
+#define POLICE_SEARCH_CLAIM (45 SECONDS)
+/// How long the arresting officer of a case looks about at a place
+#define POLICE_SEARCH_LOOK (4 SECONDS)
+/// The arresting officer gives up a place it gets no nearer to in this long...
+#define POLICE_SEARCH_PATIENCE (10 SECONDS)
+/// ...or this long, when the way there is through the checkpoint or by a lift
+#define POLICE_SEARCH_PATIENCE_FAR (40 SECONDS)
+/// What a walk through the checkpoint or round by the exit gate adds to how far off a place counts for an officer
+#define POLICE_SEARCH_CROSSING 16
+/// The same for a place a lift ride away
+#define POLICE_SEARCH_RIDE 60
+/// A unit that can walk to fewer tiles than this from where it stands is shut in
+#define POLICE_SEARCH_SHUT_IN 30
+
+/// Whether `tile` is inside `box` (list(low x, low y, high x, high y, z))
+#define POLICE_SEARCH_IN_BOX(tile, box) (tile.z == box[5] && tile.x >= box[1] && tile.y >= box[2] && tile.x <= box[3] && tile.y <= box[4])
+
+// =========================================================================
+// STATE
+// =========================================================================
+
+/datum/outpost_police
+	/// The outpost's own floor as a search knows it, or null until one first asks (search_floor())
+	var/datum/outpost_police_floor/search_main
+	/// The hangars a search has got as far as
+	var/list/datum/outpost_police_floor/search_hangars = list()
+	/// The searches going on: mind -> /datum/outpost_police_search
+	var/list/searches = list()
+
+// Chains with police_core.dm's Destroy()
+/datum/outpost_police/Destroy()
+	QDEL_NULL(search_main)
+	QDEL_LIST(search_hangars)
+	QDEL_LIST_ASSOC_VAL(searches)
+	return ..()
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/police
+	/// The place a search has dealt them (/datum/outpost_police_search), or null
+	var/turf/search_claim
+
+/datum/outpost_police_case
+	/// The place the arresting officer is looking for the suspect at (respond_unseen())
+	var/turf/search_at
+	/// world.time it is done looking about there, or 0 while it is on its way
+	var/search_look_until = 0
+	/// The nearest it has been to that place...
+	var/search_best = INFINITY
+	/// ...and world.time it last got nearer
+	var/search_best_at = 0
+
+/// A floor the police search: the outpost's own (concourse and lobby), or a hangar
+/datum/outpost_police_floor
+	/// Weakref to the hangar's berth; null for the outpost's own floor
+	var/datum/weakref/berth_ref
+	/// Tiles an officer can walk to with no key: turf -> TRUE
+	var/list/walkable = list()
+	/// Where a search of it stops to look about
+	var/list/turf/places = list()
+	/// Where someone coming to it arrives: a tile of its lift alcove, or null
+	var/turf/entry
+	/// world.time it was read
+	var/read_at = 0
+	/// The last tile reach() was asked about, and its answer
+	var/turf/reach_of
+	var/turf/reach_is
+
+/datum/outpost_police_floor/Destroy()
+	berth_ref = null
+	walkable = null
+	places = null
+	entry = null
+	reach_of = null
+	reach_is = null
+	return ..()
+
+/**
+ * Where a search for someone last seen at `last` starts on this floor: `last` itself when an officer can stand on it
+ * or right beside it (the walk ends beside a tile it cannot step on), else the nearest tile one can stand on, in
+ * sight of `last` before out of sight of it. Null with none within POLICE_SEARCH_REACH.
+ */
+/datum/outpost_police_floor/proc/reach(turf/last)
+	if(!last)
+		return null
+	if(walkable[last])
+		return last
+	if(last == reach_of)
+		return reach_is
+	reach_of = last
+	reach_is = null
+	for(var/ring in 1 to POLICE_SEARCH_REACH)
+		var/turf/best
+		var/best_score = INFINITY
+		for(var/turf/near as anything in RANGE_TURFS(ring, last))
+			if(get_dist(near, last) != ring || !walkable[near])
+				continue
+			var/score = (near.x - last.x) ** 2 + (near.y - last.y) ** 2
+			if(!stealth_can_see(near, last, ring))
+				score += 1000
+			if(score < best_score)
+				best = near
+				best_score = score
+		if(best)
+			reach_is = ring == 1 ? last : best
+			break
+	return reach_is
+
+/// The search for one wanted person since they were last seen
+/datum/outpost_police_search
+	/// The sighting it started from (the warrant's last_seen_at)
+	var/stamp = 0
+	/// Where it starts (/datum/outpost_police_floor/proc/reach())
+	var/turf/start
+	/// Places looked at since: turf -> TRUE
+	var/list/done = list()
+	/// Places dealt and not yet looked at: turf -> list(weakref to the officer, world.time it last asked)
+	var/list/claims = list()
+
+/datum/outpost_police_search/New(new_stamp, turf/new_start)
+	. = ..()
+	stamp = new_stamp
+	start = new_start
+
+/datum/outpost_police_search/Destroy()
+	start = null
+	done = null
+	claims = null
+	return ..()
+
+/// Whether `place` is free for `officer`: not looked at, and nobody else on their way to it
+/datum/outpost_police_search/proc/open_to(turf/place, mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+	if(done[place])
+		return FALSE
+	var/list/claim = claims[place]
+	if(!claim)
+		return TRUE
+	var/datum/weakref/holder_ref = claim[1]
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/holder = holder_ref?.resolve()
+	if(holder == officer)
+		return TRUE
+	if(QDELETED(holder) || holder.stat != CONSCIOUS || holder.search_claim != place || world.time - claim[2] >= POLICE_SEARCH_CLAIM)
+		claims -= place
+		return TRUE
+	return FALSE
+
+/// `officer` has `place` from now
+/datum/outpost_police_search/proc/claim(turf/place, mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+	var/turf/old = officer.search_claim
+	if(old && old != place)
+		var/list/old_claim = claims[old]
+		var/datum/weakref/old_ref = old_claim?[1]
+		if(old_ref?.resolve() == officer)
+			claims -= old
+	officer.search_claim = place
+	claims[place] = list(WEAKREF(officer), world.time)
+	return place
+
+/**
+ * The place `officer` looks at next: the one it has, until it has looked there; else the start, then the places
+ * of the floor the search started on, the nearest ring to the start first and the nearest to the officer within
+ * it; then the other floors (a hangar only for a response unit, which is all that rides to one). With every place
+ * it could be given looked at, the search starts over. Null when there is nowhere to send it at all.
+ */
+/datum/outpost_police_search/proc/deal(datum/outpost_police/police, mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+	var/turf/mine = officer.search_claim
+	if(mine && !done[mine])
+		var/list/claim = claims[mine]
+		var/datum/weakref/holder_ref = claim?[1]
+		if(holder_ref?.resolve() == officer)
+			claim[2] = world.time
+			return mine
+	for(var/pass in 1 to 2)
+		var/turf/found = pick_place(police, officer)
+		if(found)
+			return claim(found, officer)
+		// Everywhere it could go has been looked at: again from the start
+		if(!length(done))
+			break
+		done.Cut()
+	return null
+
+/// One pass of deal() over the floors, in the order a search takes them
+/datum/outpost_police_search/proc/pick_place(datum/outpost_police/police, mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+	var/turf/here = get_turf(officer)
+	if(!here || !start)
+		return null
+	var/rides = police.dispatch_is_response_unit(officer)
+	var/datum/outpost_police_floor/first = police.search_floor(start, officer)
+	var/datum/outpost_police_floor/own = police.search_floor(here, officer)
+	var/here_sector = police.sector_of(here)
+	var/start_sector = police.sector_of(start)
+	for(var/datum/outpost_police_floor/floor as anything in police.search_floors(first, officer, rides))
+		// A hangar is for a unit that rides to one, or one that stands in it already
+		if(floor.berth_ref && !rides && floor != own)
+			continue
+		var/turf/anchor = start
+		var/anchor_sector = start_sector
+		var/list/turf/spots = floor.places
+		if(floor == first)
+			spots = list(start) + spots
+		else
+			anchor = floor.entry
+			anchor_sector = anchor ? police.sector_of(anchor) : null
+		var/turf/best
+		var/best_ring = INFINITY
+		var/best_cost = INFINITY
+		for(var/turf/place as anything in spots)
+			if(!open_to(place, officer))
+				continue
+			var/place_sector = floor.berth_ref ? null : police.sector_of(place)
+			// How far the search has to spread to get there: on foot, so the lobby is a long way from the concourse
+			var/spread = anchor ? get_dist(anchor, place) : 0
+			if(!floor.berth_ref && anchor && place_sector != anchor_sector)
+				spread += POLICE_SEARCH_CROSSING
+			var/ring = (place == start) ? -1 : round(spread / POLICE_SEARCH_RING)
+			if(ring > best_ring)
+				continue
+			var/cost
+			if(floor != own)
+				cost = POLICE_SEARCH_RIDE + (floor.entry ? get_dist(floor.entry, place) : 0)
+			else
+				cost = get_dist(here, place)
+				if(!floor.berth_ref && place_sector != here_sector)
+					cost += POLICE_SEARCH_CROSSING
+			if(ring < best_ring || cost < best_cost)
+				best = place
+				best_ring = ring
+				best_cost = cost
+		if(best)
+			return best
+	return null
+
+/// `officer` has looked about at `center`: the place it was dealt is done, and so is any place that near
+/datum/outpost_police_search/proc/looked(datum/outpost_police/police, mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, turf/center)
+	var/turf/mine = officer?.search_claim
+	if(mine)
+		var/list/claim = claims[mine]
+		var/datum/weakref/holder_ref = claim?[1]
+		if(holder_ref?.resolve() == officer)
+			claims -= mine
+			done[mine] = TRUE
+		officer.search_claim = null
+	if(!center)
+		return
+	var/list/turf/known = list(start)
+	if(police.search_main)
+		known += police.search_main.places
+	for(var/datum/outpost_police_floor/hangar as anything in police.search_hangars)
+		known += hangar.places
+	for(var/turf/place as anything in known)
+		if(place && place.z == center.z && get_dist(place, center) <= POLICE_SEARCH_NEAR)
+			done[place] = TRUE
+
+// =========================================================================
+// READING A FLOOR
+// =========================================================================
+
+/**
+ * Every tile that can be walked to from `seeds` without leaving `box`, by the pathfinder's own rules for `walker`
+ * carrying `access` (none: only what the public can open). A null walker is a visitor: someone who works the
+ * checkpoint's doors as a player does and climbs over a counter. `skip` (turf -> TRUE) is never entered.
+ * Returns turf -> TRUE in the order found, `limit` tiles at most.
+ */
+/proc/outpost_police_flood(list/turf/seeds, list/box, mob/living/walker, list/access, list/skip, limit = INFINITY)
+	var/list/found = list()
+	if(length(box) < 5)
+		return found
+	var/datum/can_pass_info/pass = new(walker, access || list())
+	if(isnull(walker))
+		pass.pass_flags |= PASSTABLE
+	var/list/turf/frontier = list()
+	for(var/turf/seed as anything in seeds)
+		if(!isopenturf(seed) || found[seed] || skip?[seed] || !POLICE_SEARCH_IN_BOX(seed, box))
+			continue
+		found[seed] = TRUE
+		frontier += seed
+	var/at = 1
+	while(at <= length(frontier) && length(frontier) < limit)
+		var/turf/here = frontier[at]
+		at++
+		for(var/direction in GLOB.cardinals)
+			var/turf/next = get_step(here, direction)
+			if(!next || found[next] || skip?[next] || !POLICE_SEARCH_IN_BOX(next, box))
+				continue
+			if(!CAN_STEP(here, next, TRUE, pass, null))
+				continue
+			found[next] = TRUE
+			frontier += next
+	return found
+
+/// The tiles of `public` (turf -> TRUE) within POLICE_SEARCH_SIGHT of `from`, in a clear line, that `covered` does not have yet
+/proc/outpost_police_in_sight(turf/from, list/public, list/covered)
+	. = list()
+	for(var/turf/tile as anything in RANGE_TURFS(POLICE_SEARCH_SIGHT, from))
+		if(public[tile] && !covered[tile] && stealth_can_see(from, tile, POLICE_SEARCH_SIGHT))
+			. += tile
+
+/**
+ * The places a search stops at so that every tile of `public` is in sight of one, each of them a tile of
+ * `walkable`: the beat's own `stops` where they show enough that is new (the mappers already have officers stand
+ * there), then one for every tile still out of sight, on the tile itself or, where no officer can stand on it (a
+ * shop's far side of the counter), the nearest tile that sees it.
+ */
+/proc/outpost_police_cover(list/public, list/walkable, list/turf/stops)
+	var/list/turf/places = list()
+	var/list/covered = list()
+	for(var/turf/stop as anything in stops)
+		if(!walkable[stop])
+			continue
+		var/list/turf/shown = outpost_police_in_sight(stop, public, covered)
+		if(length(shown) < POLICE_SEARCH_STOP_WORTH)
+			continue
+		places += stop
+		for(var/turf/tile as anything in shown)
+			covered[tile] = TRUE
+	for(var/turf/tile as anything in public)
+		if(covered[tile])
+			continue
+		covered[tile] = TRUE
+		var/turf/stand = walkable[tile] ? tile : null
+		if(!stand)
+			for(var/ring in 1 to POLICE_SEARCH_SIGHT)
+				for(var/turf/near as anything in RANGE_TURFS(ring, tile))
+					if(get_dist(near, tile) == ring && walkable[near] && stealth_can_see(near, tile, POLICE_SEARCH_SIGHT))
+						stand = near
+						break
+				if(stand)
+					break
+		// Nowhere an officer can stand sees it: nothing to send anyone to
+		if(!stand)
+			continue
+		places |= stand
+		for(var/turf/shown as anything in outpost_police_in_sight(stand, public, covered))
+			covered[shown] = TRUE
+	return places
+
+/// The corners of the outpost's own floor, or of `berth`'s hangar, as list(low x, low y, high x, high y, z); null if it has no ground
+/datum/outpost_police/proc/search_box(datum/outpost_berth/berth)
+	var/turf/low
+	var/turf/high
+	if(berth)
+		low = berth.get_bottom_left()
+		high = berth.get_top_right()
+	else if(outpost?.template_bottom_left && outpost.outpost_template)
+		low = outpost.template_bottom_left
+		high = locate(min(world.maxx, low.x + outpost.outpost_template.width - 1), min(world.maxy, low.y + outpost.outpost_template.height - 1), low.z)
+	if(!low || !high)
+		return null
+	return list(low.x, low.y, high.x, high.y, low.z)
+
+/// An officer whose legs a floor is read for: `officer` if it is one of ours on its feet, else any that is; null with none
+/datum/outpost_police/proc/search_walker(mob/living/officer)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/asked = officer
+	if(istype(asked) && !QDELETED(asked) && asked.stat != DEAD && !asked.client && !asked.mind)
+		return asked
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/other in officers)
+		if(other.stat != DEAD && !other.client && !other.mind)
+			return other
+	return null
+
+/// The floor `berth`'s hangar was last read as, or null
+/datum/outpost_police/proc/search_hangar(datum/outpost_berth/berth)
+	for(var/datum/outpost_police_floor/floor as anything in search_hangars.Copy())
+		var/datum/outpost_berth/its = floor.berth_ref?.resolve()
+		if(QDELETED(its) || !(its in outpost?.berths))
+			search_hangars -= floor
+			qdel(floor)
+			continue
+		if(its == berth)
+			return floor
+	return null
+
+/**
+ * The floor `where` is on, read now if it never was or was read long ago: the outpost's own for anywhere in its box,
+ * a hangar for anywhere on a berth's ground. Null anywhere else, and before any officer exists to read it for.
+ */
+/datum/outpost_police/proc/search_floor(turf/where, mob/living/officer)
+	var/turf/spot = get_turf(where)
+	if(!spot || !outpost)
+		return null
+	var/datum/outpost_berth/berth
+	if(!dispatch_in_box(spot))
+		berth = sector_of(spot)
+		if(!istype(berth))
+			return null
+	var/datum/outpost_police_floor/floor = berth ? search_hangar(berth) : search_main
+	if(floor && world.time - floor.read_at < POLICE_SEARCH_REREAD)
+		return floor
+	var/mob/living/walker = search_walker(officer)
+	var/datum/outpost_police_floor/fresh = walker ? search_read(berth, walker) : null
+	if(!fresh)
+		return floor
+	if(berth)
+		if(floor)
+			search_hangars -= floor
+		search_hangars += fresh
+	else
+		search_main = fresh
+	if(floor)
+		qdel(floor)
+	return fresh
+
+/**
+ * The floors a search goes through, in order: `first` (the one it started on), the outpost's own floor, then, for
+ * `rider` (a response unit: nobody else rides to a hangar), each hangar with ground under it. A hangar is first
+ * read when a search asks for it here.
+ */
+/datum/outpost_police/proc/search_floors(datum/outpost_police_floor/first, mob/living/walker, rider = FALSE)
+	. = list()
+	if(first)
+		. += first
+	var/datum/outpost_police_floor/main = outpost?.template_bottom_left ? search_floor(outpost.template_bottom_left, walker) : null
+	if(main)
+		. |= main
+	if(!rider)
+		return
+	for(var/datum/outpost_berth/berth as anything in outpost?.berths)
+		var/turf/ground = berth?.get_bottom_left()
+		if(!ground || !length(berth.alcove_turfs))
+			continue
+		var/datum/outpost_police_floor/hangar = search_floor(ground, walker)
+		if(hangar)
+			. |= hangar
+
+/// Reads the outpost's own floor (`berth` null) or `berth`'s hangar for `walker`. Null if it has no ground.
+/datum/outpost_police/proc/search_read(datum/outpost_berth/berth, mob/living/walker)
+	var/list/box = search_box(berth)
+	if(!box || !walker)
+		return null
+	var/list/turf/seeds = list()
+	var/list/turf/stops = list()
+	var/list/skip
+	if(berth)
+		seeds += berth.alcove_turfs
+		// Never a docked ship's own decks: officers hold its airlock, they do not go aboard (dispatch_update_holds())
+		var/list/turf/hull = berth.ship?.shuttle?.return_turfs()
+		if(length(hull))
+			skip = list()
+			for(var/turf/deck as anything in hull)
+				skip[deck] = TRUE
+	else
+		for(var/turf/stop as anything in stop_activities)
+			stops += stop
+		seeds += stops
+		if(length(outpost.lobby_alcove_turfs))
+			seeds += outpost.lobby_alcove_turfs
+	// A floor with no stops and no lift (a test's room): wherever the officer stands
+	if(!length(seeds))
+		seeds += get_turf(walker)
+	var/datum/outpost_police_floor/floor = new
+	floor.berth_ref = berth ? WEAKREF(berth) : null
+	floor.read_at = world.time
+	floor.walkable = outpost_police_flood(seeds, box, walker, null, skip)
+	var/list/turf/alcove = berth ? berth.alcove_turfs : outpost.lobby_alcove_turfs
+	for(var/turf/tile as anything in alcove)
+		if(floor.walkable[tile])
+			floor.entry = tile
+			break
+	var/list/public = outpost_police_flood(seeds, box, null, null, skip)
+	// Whoever stands in a scan chamber is seen by its scanner (police_perception.dm scanned())
+	for(var/checkpoint_id in outpost.checkpoints)
+		var/datum/outpost_checkpoint/post = outpost.checkpoints[checkpoint_id]
+		if(QDELETED(post))
+			continue
+		for(var/turf/tile as anything in post.chamber_turfs)
+			public -= tile
+		public -= get_turf(post.inner_door)
+		public -= get_turf(post.outer_door)
+	floor.places = outpost_police_cover(public, floor.walkable, stops)
+	return floor
+
+// =========================================================================
+// THE API
+// =========================================================================
+
+/// Where a search for someone last seen at `last` starts (/datum/outpost_police_floor/proc/reach()); `last` itself where the floor is not known
+/datum/outpost_police/proc/search_start(turf/last, mob/living/officer)
+	if(!last)
+		return null
+	var/datum/outpost_police_floor/floor = search_floor(last, officer)
+	return floor?.reach(last) || last
+
+/**
+ * Where `officer` goes to look for `warrant`'s holder now. With someone's eyes on them this moment (an officer, a
+ * scan): where they are seen. Else the next place of the search since they were last seen. Null with no sighting
+ * to start from: nobody is sent to look for someone nobody has seen (owner decision 52).
+ */
+/datum/outpost_police/proc/search_place(datum/outpost_warrant/warrant, mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+	var/turf/last = warrant?.last_seen_turf
+	if(!last)
+		return null
+	var/datum/outpost_police_floor/floor = search_floor(last, officer)
+	// Off every floor the police know (carried away aboard a ship): the tile itself
+	if(!floor)
+		return last
+	var/turf/start = floor.reach(last) || last
+	// Someone has eyes on them now: straight to where they are seen
+	if(!warrant.unseen_since || !istype(officer) || !warrant.mind)
+		return start
+	var/datum/outpost_police_search/search = searches[warrant.mind]
+	if(!search || search.stamp != warrant.last_seen_at || search.start != start)
+		if(search)
+			qdel(search)
+		search = new(warrant.last_seen_at, start)
+		searches[warrant.mind] = search
+		search_prune()
+	return search.deal(src, officer) || start
+
+/// `officer` has looked about at `center` for `warrant`'s holder and not found them
+/datum/outpost_police/proc/search_looked(datum/outpost_warrant/warrant, mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, turf/center)
+	var/datum/outpost_police_search/search = warrant?.mind ? searches[warrant.mind] : null
+	if(search)
+		search.looked(src, officer, center)
+	else if(officer)
+		officer.search_claim = null
+
+/// Drops the searches for people no longer wanted here
+/datum/outpost_police/proc/search_prune()
+	for(var/datum/mind/mind as anything in searches)
+		if(mind && get_stars(mind) >= 1)
+			continue
+		var/datum/outpost_police_search/search = searches[mind]
+		searches -= mind
+		qdel(search)
+
+/**
+ * Whether `officer` cannot walk more than a few tiles from where it stands, with its own keys: something is across
+ * its lift's door (abuse M2). A unit that has not moved because it has nowhere to go is not shut in.
+ */
+/datum/outpost_police/proc/search_shut_in(mob/living/officer)
+	var/turf/here = get_turf(officer)
+	if(!here)
+		return FALSE
+	var/datum/outpost_berth/berth
+	if(!dispatch_in_box(here))
+		berth = sector_of(here)
+		if(!istype(berth))
+			return FALSE
+	var/list/box = search_box(berth)
+	if(!box)
+		return FALSE
+	return length(outpost_police_flood(list(here), box, officer, officer.get_access(), null, POLICE_SEARCH_SHUT_IN)) < POLICE_SEARCH_SHUT_IN
+
+// =========================================================================
+// THE ARREST THAT HAS NOT FOUND ITS SUSPECT
+// =========================================================================
+
+/**
+ * Respond (police_arrest.dm step_respond()) with the suspect out of the arresting officer's sight. Seen by someone
+ * else: to where they are seen. Seen by nobody: to the place the search deals it, a look about there, then the
+ * next one. It used to walk to the last-seen tile and wait there for the step to time out.
+ */
+/datum/outpost_police_case/proc/respond_unseen(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/carbon/suspect)
+	var/turf/place = police.search_place(warrant, officer)
+	if(!place)
+		// No sighting to start from (an accomplice nobody saw): as it was
+		search_at = null
+		route_to(officer, warrant.last_seen_turf || get_turf(suspect), 1)
+		return
+	if(!warrant.unseen_since)
+		search_at = null
+		route_to(officer, place, 1)
+		return
+	var/turf/here = get_turf(officer)
+	if(place != search_at)
+		search_at = place
+		search_look_until = 0
+		search_best = INFINITY
+		search_best_at = world.time
+	if(search_look_until)
+		if(world.time < search_look_until)
+			var/datum/ai_controller/basic_controller/human_npc/stealth/brain = officer.ai_controller
+			if(istype(brain))
+				brain.stealth_turn_to(turn(stealth_facing(officer), 90))
+			return
+		// Not here: the next place, dealt at the next step
+		police.search_looked(warrant, officer, here)
+		search_at = null
+		return
+	if(route_to(officer, place, 1))
+		search_look_until = world.time + POLICE_SEARCH_LOOK
+		return
+	// No nearer for a while (a crate across the way, a door that will not open): the next place
+	var/dist = (here && here.z == place.z) ? get_dist(here, place) : INFINITY
+	if(dist < search_best)
+		search_best = dist
+		search_best_at = world.time
+		return
+	var/far = !here || here.z != place.z || police.sector_of(here) != police.sector_of(place)
+	if(world.time - search_best_at >= (far ? POLICE_SEARCH_PATIENCE_FAR : POLICE_SEARCH_PATIENCE))
+		police.search_looked(warrant, officer, null)
+		search_at = null
+
+#undef POLICE_SEARCH_SIGHT
+#undef POLICE_SEARCH_RING
+#undef POLICE_SEARCH_NEAR
+#undef POLICE_SEARCH_STOP_WORTH
+#undef POLICE_SEARCH_REREAD
+#undef POLICE_SEARCH_REACH
+#undef POLICE_SEARCH_CLAIM
+#undef POLICE_SEARCH_LOOK
+#undef POLICE_SEARCH_PATIENCE
+#undef POLICE_SEARCH_PATIENCE_FAR
+#undef POLICE_SEARCH_CROSSING
+#undef POLICE_SEARCH_RIDE
+#undef POLICE_SEARCH_SHUT_IN
+#undef POLICE_SEARCH_IN_BOX

@@ -190,6 +190,12 @@
 	wave.members += WEAKREF(stuck)
 	if(get_dist(suspect, first) <= 2)
 		suspect.forceMove(police_floor(outpost))
+	// Something across every way off the point (abuse M2): a unit with a way out is not stuck, wherever it stands
+	// (voidcrew_outpost_police_search_lift_open)
+	for(var/direction in GLOB.cardinals)
+		var/turf/beside = get_step(first, direction)
+		if(isopenturf(beside))
+			allocate(/obj/structure/girder, beside)
 	wave.released_at = world.time - 11 SECONDS // OUTPOST_POLICE_LIFT_BLOCKED
 	police.dispatch_check_waves()
 	TEST_ASSERT(police.dispatch_skipped[first] > world.time, "A lift point whose unit could not get out was not skipped")

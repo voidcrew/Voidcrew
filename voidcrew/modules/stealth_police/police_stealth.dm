@@ -95,6 +95,18 @@
 	var/police_onto_at = 0
 	/// Whether the standoff it is in found it off its guard (police_caught_cold()): only then does it drop its weapon when told to
 	var/standoff_cold = FALSE
+	/// Set while police_search_for() starts a search: its place is one the police dealt it (police_search.dm)
+	var/police_dealing = FALSE
+	/// Whether the search it is on is of a place the police dealt it: looked at from where it stands, and no more
+	var/police_dealt = FALSE
+	/// How often the search it is on has asked for its spots: more than once, and they have all been looked at
+	var/police_spots_asked = 0
+	/// Whether it has looked at every spot of the search it is on: the police have its next place (stealth_search_on())
+	var/police_looked = FALSE
+	/// The sighting (the warrant's last_seen_at) it was last sent to look from
+	var/police_search_stamp = 0
+	/// world.time it may next be turned, mid-search, to a fresher sighting
+	var/police_redirect_at = 0
 
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/UnpossessPawn(destroy)
 	police_hunt = null
@@ -297,6 +309,11 @@
 		home_retry_at = 0
 		home_turf = here
 		officer.police_claim_route()
+	// Off a police lift, no stop of the beat within reach: it takes a free route now. The police's tick does that too
+	// (stealth_tick_officer()), but it sleeps while nobody is wanted, and the officer stood in its lift until the next
+	// crime woke it (owner playtest 4).
+	else if(isnull(route_id))
+		officer.police_claim_route()
 
 // Its own seat (the desk chair, a bench at a stop) is not being held: it still looks about and can report
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_captive()
@@ -321,6 +338,27 @@
 	// Its pathfinder always, alert or not. Stealth's guards chase in a straight line, which in a checkpoint lobby
 	// left an officer pushing at the queue rails and the lockers (owner playtest 3).
 	human_npc_set_ai_movement(src, /datum/ai_movement/jps/stealth)
+
+// ----- the search (police_search.dm) -----
+
+// Every search starts with its spots still to look at
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_go_searching(turf/where)
+	police_dealt = police_dealing
+	police_spots_asked = 0
+	police_looked = FALSE
+	return ..()
+
+/**
+ * A place the police dealt it is looked at from where it stands: the places round it are other officers', or its own
+ * next. Asked a second time in one search (the first is stealth_go_searching()'s), every spot has been looked at.
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_search_spots(turf/center)
+	police_spots_asked++
+	if(police_spots_asked > 1)
+		police_looked = TRUE
+	if(police_dealt && center)
+		return list(center)
+	return ..()
 
 // ----- hostages (owner decision 68) -----
 
@@ -457,6 +495,11 @@
 		return ..()
 	if(officer.stat != CONSCIOUS || officer.client || officer.mind)
 		return FALSE
+	// Dispatch still has it after someone at large: the police send it on to look again, so it has not given up
+	if(kind == STEALTH_BARK_GIVE_UP)
+		var/datum/mind/sought = officer.dispatch_mind?.resolve()
+		if(sought && officer.police?.get_stars(sought) >= 1 && !officer.police.has_in_hand(sought.current, officer))
+			return FALSE
 	// The last of the squad's minute with a hostage-taker: it says so (decision 70)
 	if(kind == STEALTH_BARK_HOSTAGE)
 		var/mob/living/holder = standoff_holder?.resolve()
@@ -817,13 +860,21 @@
 	if(!istype(brain) || !mind || stat != CONSCIOUS || client || case || npc_exit)
 		return FALSE
 	var/datum/outpost_warrant/warrant = police?.get_warrant(mind)
-	// Only where the police last saw them, or were told they were: never where they are now (owner decision 52)
-	var/turf/where = warrant?.last_seen_turf
+	// Only from where the police last saw them, or were told they were: never where they are now (owner decision 52).
+	// From there the search works outward, a place to each officer (police_search.dm).
+	var/turf/where = police?.search_place(warrant, src)
 	if(!where)
 		return FALSE
 	brain.police_hunt = WEAKREF(mind)
 	brain.police_research_at = world.time + OUTPOST_POLICE_RESEARCH_GAP
+	brain.police_search_stamp = warrant.last_seen_at
+	// The next place of a search already going is no new search: its lines keep their own time
+	var/next_bark = brain.stealth_state() == STEALTH_SEARCHING ? brain.next_search_bark : 0
+	brain.police_dealing = TRUE
 	brain.stealth_go_searching(where)
+	brain.police_dealing = FALSE
+	if(next_bark)
+		brain.next_search_bark = next_bark
 	return TRUE
 
 /// A beat officer with no route takes a free one: it walks to its first stop and claims it there
@@ -1234,5 +1285,32 @@
 		assigned = null
 	if(assigned && get_stars(assigned) >= 1 && brain.stealth_state() == STEALTH_UNAWARE && !brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET) && world.time >= brain.police_research_at)
 		officer.police_search_for(assigned)
+	else if(assigned && get_stars(assigned) >= 1)
+		stealth_search_on(officer, brain, assigned)
 	if(officer.unit_kind == POLICE_UNIT_BEAT && !assigned && isnull(brain.route_id) && brain.stealth_state() == STEALTH_UNAWARE)
 		officer.police_claim_route()
+
+/**
+ * `officer` is searching for `sought`, whom dispatch has it after. With every spot of its search looked at, it is
+ * dealt the next place (police_search.dm). A sighting fresher than the one it was sent from turns it to that. And on
+ * its way to a place the police dealt it, its search does not run out. So the search widens until the stars are gone:
+ * it used to be forty seconds within five tiles of one spot, a walk back to its post, and the same spot again.
+ */
+/datum/outpost_police/proc/stealth_search_on(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain, datum/mind/sought)
+	if(brain.stealth_state() != STEALTH_SEARCHING || brain.calm_until || brain.search_for_body || brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+		return
+	var/datum/outpost_warrant/warrant = get_warrant(sought)
+	if(!warrant?.last_seen_turf)
+		return
+	if(brain.police_looked)
+		search_looked(warrant, officer, brain.search_center)
+		officer.police_search_for(sought)
+		return
+	if(warrant.last_seen_at > brain.police_search_stamp && world.time >= brain.police_redirect_at)
+		// Lost again since: the search starts over from there. In someone's sight still: only if that is somewhere else.
+		if(warrant.unseen_since || get_dist(search_start(warrant.last_seen_turf, officer), brain.search_center) > STEALTH_SEARCH_RADIUS)
+			brain.police_redirect_at = world.time + 3 SECONDS
+			officer.police_search_for(sought)
+			return
+	if(brain.police_dealt && world.time - brain.blackboard[BB_STEALTH_STATE_SINCE] > brain.stealth_skill().search_time - 5 SECONDS)
+		brain.blackboard[BB_STEALTH_STATE_SINCE] = world.time

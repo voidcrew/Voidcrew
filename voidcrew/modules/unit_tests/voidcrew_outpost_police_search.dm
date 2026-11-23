@@ -271,3 +271,317 @@
 	var/datum/stealth_stop/first = brain.group.routes[brain.route_id][1]
 	TEST_ASSERT_EQUAL(brain.home_turf, first.spot, "A beat officer off the police lift is not headed for the first stop of its route")
 	dispatch_clear(police)
+
+// ===== THE FLOOR OF EVERY MAP =====
+
+/**
+ * Every tile that can be walked to from `seeds` inside the box `low`..`high`, by tg's own pathfinding rule
+ * (CAN_STEP): for `walker` carrying `access`, or, with no walker, for a visitor who works the checkpoint's doors
+ * and (`climbs`) gets over a counter. Kept apart from police_search.dm's own flood, which these tests check.
+ */
+/datum/unit_test/proc/police_search_walk(list/turf/seeds, turf/low, turf/high, mob/living/walker, list/access, climbs = FALSE)
+	var/datum/can_pass_info/pass = new(walker, access || list())
+	if(climbs)
+		pass.pass_flags |= PASSTABLE
+	var/list/found = list()
+	var/list/turf/frontier = list()
+	for(var/turf/seed as anything in seeds)
+		if(!found[seed])
+			found[seed] = TRUE
+			frontier += seed
+	var/at = 1
+	while(at <= length(frontier))
+		var/turf/here = frontier[at]
+		at++
+		for(var/direction in GLOB.cardinals)
+			var/turf/next = get_step(here, direction)
+			if(!next || found[next] || next.x < low.x || next.y < low.y || next.x > high.x || next.y > high.y)
+				continue
+			if(!CAN_STEP(here, next, TRUE, pass, null))
+				continue
+			found[next] = TRUE
+			frontier += next
+	return found
+
+/**
+ * On each of the three outposts, the floor a search works from: its places can all be walked to from every police
+ * lift and every stop of the beat; every tile a visitor can get to (over the counters too) is within six tiles of a
+ * place, in a clear line; and someone last seen on the scanner's tile inside the lobby checkpoint is looked for from
+ * a tile an officer can stand on. No public tile is somewhere a search never looks.
+ */
+/datum/unit_test/voidcrew_outpost_police_search_floors
+
+/datum/unit_test/voidcrew_outpost_police_search_floors/Run()
+	for(var/outpost_type in list(
+		/obj/structure/overmap/trader_outpost/general,
+		/obj/structure/overmap/trader_outpost/outfitter,
+		/obj/structure/overmap/trader_outpost/black_market,
+	))
+		var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost(outpost_type)
+		if(!outpost)
+			continue
+		var/datum/outpost_police/police = outpost.police
+		dispatch_clear(police)
+		var/turf/low = outpost.template_bottom_left
+		var/turf/high = locate(low.x + outpost.outpost_template.width - 1, low.y + outpost.outpost_template.height - 1, low.z)
+		TEST_ASSERT(length(police.lift_turfs), "[outpost_type] has no police lift")
+		TEST_ASSERT(length(outpost.lobby_alcove_turfs), "[outpost_type] has no lobby lift")
+		TEST_ASSERT(length(police.stop_activities), "[outpost_type] has no beat")
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, police.lift_turfs[1])
+		var/datum/outpost_police_floor/floor = police.search_floor(police.desk_turf, officer)
+		TEST_ASSERT_NOTNULL(floor, "[outpost_type]: the police could not read their own floor")
+		TEST_ASSERT(length(floor.places), "[outpost_type]: a search has no places to look at")
+
+		// Walked to from every police lift, with an officer's own keys
+		for(var/turf/lift as anything in police.lift_turfs)
+			var/list/reach = police_search_walk(list(lift), low, high, officer, officer.get_access())
+			var/list/missed = list()
+			for(var/turf/place as anything in floor.places)
+				if(!reach[place])
+					missed += "[place.x - low.x + 1],[place.y - low.y + 1]"
+			TEST_ASSERT(!length(missed), "[outpost_type]: from the police lift at [lift.x - low.x + 1],[lift.y - low.y + 1] an officer cannot walk to the search places at [missed.Join(" ")]")
+			for(var/turf/stop as anything in police.stop_activities)
+				TEST_ASSERT(reach[stop], "[outpost_type]: from the police lift at [lift.x - low.x + 1],[lift.y - low.y + 1] an officer cannot walk to the beat stop at [stop.x - low.x + 1],[stop.y - low.y + 1]")
+		// And from any stop of the beat, with no keys at all
+		var/turf/a_stop = police.stop_activities[1]
+		var/list/from_beat = police_search_walk(list(a_stop), low, high, officer, null)
+		for(var/turf/place as anything in floor.places)
+			TEST_ASSERT(from_beat[place], "[outpost_type]: from the beat an officer cannot walk to the search place at [place.x - low.x + 1],[place.y - low.y + 1]")
+		// From the lobby lift the lobby's places are a walk, and the rest are through the checkpoint
+		var/list/from_lobby = police_search_walk(list(outpost.lobby_alcove_turfs[1]), low, high, officer, officer.get_access())
+		var/lobby_places = 0
+		for(var/turf/place as anything in floor.places)
+			if(police.sector_of(place) != "lobby")
+				continue
+			lobby_places++
+			TEST_ASSERT(from_lobby[place], "[outpost_type]: from the lobby lift an officer cannot walk to the lobby's search place at [place.x - low.x + 1],[place.y - low.y + 1]")
+		TEST_ASSERT(lobby_places, "[outpost_type]: no search place in the lobby")
+		officer.forceMove(outpost.lobby_alcove_turfs[1])
+		TEST_ASSERT_NOTNULL(police.checkpoint_step_to_concourse(officer), "[outpost_type]: an officer in the lobby has no way through the checkpoint to the concourse")
+		police.clear_checkpoint_crossing(officer)
+
+		// Every tile a visitor can get to is in sight of a place. Whoever stands in a scan chamber is seen by its scanner.
+		var/list/turf/seeds = list()
+		seeds += outpost.lobby_alcove_turfs
+		for(var/turf/stop as anything in police.stop_activities)
+			seeds += stop
+		var/list/public = police_search_walk(seeds, low, high, null, null, TRUE)
+		var/datum/outpost_checkpoint/lobby_post = outpost.lobby_checkpoint()
+		for(var/checkpoint_id in outpost.checkpoints)
+			var/datum/outpost_checkpoint/post = outpost.checkpoints[checkpoint_id]
+			for(var/turf/tile as anything in post.chamber_turfs)
+				public -= tile
+			public -= get_turf(post.inner_door)
+			public -= get_turf(post.outer_door)
+		TEST_ASSERT(length(public) > 200, "[outpost_type]: only [length(public)] tiles a visitor can get to: the fixture's flood is broken")
+		var/list/unseen = list()
+		for(var/turf/tile as anything in public)
+			var/shown = FALSE
+			for(var/turf/place as anything in floor.places)
+				if(get_dist(place, tile) <= 6 && stealth_can_see(place, tile, 6)) // POLICE_SEARCH_SIGHT
+					shown = TRUE
+					break
+			if(!shown)
+				unseen += "[tile.x - low.x + 1],[tile.y - low.y + 1]"
+		TEST_ASSERT(!length(unseen), "[outpost_type]: [length(unseen)] of the [length(public)] tiles a visitor can get to are in sight of no search place: [unseen.Join(" ")]")
+
+		// The round: last seen on the scanner's tile, in the chamber no NPC walks into
+		TEST_ASSERT_NOTNULL(lobby_post?.sensor, "[outpost_type]: the lobby checkpoint has no scanner")
+		var/turf/scanner = get_turf(lobby_post.sensor)
+		TEST_ASSERT(!floor.walkable[scanner], "[outpost_type]: an officer can now walk onto the scanner's tile: this test's premise is gone")
+		var/turf/start = police.search_start(scanner, officer)
+		TEST_ASSERT(start && floor.walkable[start], "[outpost_type]: someone last seen in the scan chamber is looked for from a tile no officer can stand on")
+		TEST_ASSERT(get_dist(start, scanner) <= 3, "[outpost_type]: someone last seen in the scan chamber is looked for [get_dist(start, scanner)] tiles away")
+		TEST_ASSERT_EQUAL(police.sector_of(start), "concourse", "[outpost_type]: someone last seen in the scan chamber is looked for on the lobby side of it")
+		log_test("[outpost_type]: [length(floor.places)] search places for [length(public)] public tiles ([length(floor.walkable)] an officer can walk to)")
+		dispatch_clear(police)
+
+// ===== DEALING THE PLACES =====
+
+/// A wanted person nobody sees, in the stealth police room: last seen at (dx, dy), two stars
+/datum/unit_test/voidcrew_stealth_live/police/proc/unseen_suspect(dx, dy, at_dx, at_dy)
+	var/mob/living/carbon/human/suspect = visitor_at(at_dx, at_dy)
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 40)
+	warrant.last_seen_turf = at(dx, dy)
+	warrant.last_seen_at = world.time
+	warrant.unseen_since = world.time
+	return suspect
+
+/**
+ * The search for someone nobody sees: the first officer is sent to where they were last seen, the next somewhere
+ * else, and each keeps its place until it has looked there. Every place is looked at once before any is looked at
+ * again, the nearest to the start first. A new sighting starts over from there; in someone's sight, everyone goes to
+ * where they are seen; with no sighting nobody is sent anywhere. Last seen somewhere no officer can walk to, the
+ * search starts from the nearest tile one can.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/search_deal
+
+/datum/unit_test/voidcrew_stealth_live/police/search_deal/Run()
+	TEST_ASSERT(police_room(40, 9), "No room for the test")
+	// A cell nobody can walk into, built before the floor is first read
+	for(var/dx in 29 to 31)
+		for(var/dy in 3 to 5)
+			if(dx == 30 && dy == 4)
+				continue
+			var/turf/wall_spot = at(dx, dy)
+			wall_spot.ChangeTurf(/turf/closed/wall)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/first = officer_at(4, 4)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/second = officer_at(5, 6)
+	var/mob/living/carbon/human/suspect = unseen_suspect(2, 4, 38, 7)
+	var/datum/outpost_warrant/warrant = police.get_warrant(suspect.mind)
+	var/turf/last = warrant.last_seen_turf
+
+	var/turf/first_place = police.search_place(warrant, first)
+	TEST_ASSERT_EQUAL(first_place, last, "The first officer is not sent to where they were last seen")
+	var/turf/second_place = police.search_place(warrant, second)
+	TEST_ASSERT_NOTNULL(second_place, "The second officer was sent nowhere")
+	TEST_ASSERT_NOTEQUAL(second_place, last, "Both officers were sent to the same tile")
+	TEST_ASSERT_EQUAL(police.search_place(warrant, first), last, "An officer was given a new place before it had looked at its own")
+	TEST_ASSERT_EQUAL(police.search_place(warrant, second), second_place, "An officer was given a new place before it had looked at its own")
+
+	// Looked at, one after another: every place once before any twice, and never further from the start than the next
+	var/datum/outpost_police_floor/floor = police.search_floor(last, first)
+	TEST_ASSERT_NOTNULL(floor, "The room's floor was not read")
+	TEST_ASSERT(length(floor.places) >= 3, "A 40x9 room has only [length(floor.places)] places to look at")
+	var/list/turf/visited = list()
+	var/turf/place = first_place
+	var/widest = 0
+	for(var/i in 1 to length(floor.places) + 3)
+		if(place in visited)
+			break
+		visited += place
+		// Places are dealt in rings 8 wide (POLICE_SEARCH_RING): never back to an inner one while it has places left
+		var/ring = round(get_dist(last, place) / 8)
+		TEST_ASSERT(ring >= widest, "A place [get_dist(last, place)] tiles from the start was dealt after one in ring [widest]")
+		widest = max(widest, ring)
+		police.search_looked(warrant, first, place)
+		place = police.search_place(warrant, first)
+	for(var/turf/known as anything in floor.places)
+		TEST_ASSERT((known in visited) || get_dist(known, second_place) <= 2 || length(visited & RANGE_TURFS(2, known)), "The search started over without the place at [known.x],[known.y]")
+	TEST_ASSERT(place in visited, "With every place looked at the search did not start over")
+	TEST_ASSERT(widest >= 3, "The search never got further than ring [widest] of a 40-tile room")
+
+	// A new sighting: from there
+	warrant.last_seen_turf = at(20, 7)
+	warrant.last_seen_at = world.time + 1
+	TEST_ASSERT_EQUAL(police.search_place(warrant, second), at(20, 7), "A new sighting did not start the search over from there")
+	// In someone's sight: everyone to where they are seen
+	warrant.unseen_since = 0
+	TEST_ASSERT_EQUAL(police.search_place(warrant, first), at(20, 7), "With eyes on the suspect an officer was sent somewhere else")
+	TEST_ASSERT_EQUAL(police.search_place(warrant, second), at(20, 7), "With eyes on the suspect an officer was sent somewhere else")
+	// Last seen where nobody can walk: the nearest tile an officer can stand on
+	warrant.unseen_since = world.time
+	warrant.last_seen_turf = at(30, 4)
+	warrant.last_seen_at = world.time + 2
+	var/turf/reached = police.search_place(warrant, first)
+	TEST_ASSERT(reached && reached != at(30, 4) && floor.walkable[reached], "Last seen in a walled-off cell: the officer was sent to [reached ? "[reached.x],[reached.y]" : "nowhere"], not to a tile it can stand on")
+	TEST_ASSERT_EQUAL(get_dist(reached, at(30, 4)), 2, "The search for someone last seen in a walled-off cell starts [get_dist(reached, at(30, 4))] tiles from it")
+	// Nobody has seen them at all (owner decision 52): nobody is sent
+	warrant.last_seen_turf = null
+	TEST_ASSERT_NULL(police.search_place(warrant, first), "An officer was sent to look for someone nobody has seen")
+	TEST_ASSERT(!first.police_search_for(suspect.mind), "An officer went looking for someone nobody has seen")
+
+/**
+ * An officer dispatch has after someone looks at the place it was sent to, then is sent on to the next; it does not
+ * give the search up while they are wanted; a fresher sighting turns it; and an officer nobody sent searches as it
+ * always did.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/search_widens
+
+/datum/unit_test/voidcrew_stealth_live/police/search_widens/Run()
+	TEST_ASSERT(police_room(40, 9), "No room for the test")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(4, 4)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	brain.stealth_setup()
+	var/mob/living/carbon/human/suspect = unseen_suspect(2, 4, 38, 7)
+	var/datum/outpost_warrant/warrant = police.get_warrant(suspect.mind)
+	var/turf/last = warrant.last_seen_turf
+	officer.dispatch_mind = WEAKREF(suspect.mind)
+
+	police.stealth_tick_officer(officer)
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "An officer sent after someone nobody sees is not searching")
+	TEST_ASSERT_EQUAL(brain.search_center, last, "It is not looking where they were last seen")
+	TEST_ASSERT_EQUAL(length(brain.search_queue), 1, "A place the police dealt has [length(brain.search_queue)] spots to look at, not the one")
+	// Nothing new: it stays on its place
+	police.stealth_tick_officer(officer)
+	TEST_ASSERT_EQUAL(brain.search_center, last, "It was sent on before it had looked")
+	// It has looked (the search asks for its spots again once the last is done)
+	brain.stealth_search_spots(brain.search_center)
+	TEST_ASSERT(brain.police_looked, "Asking for a search's spots a second time did not mark it looked at")
+	police.stealth_tick_officer(officer)
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "An officer stopped searching with the suspect still wanted")
+	TEST_ASSERT_NOTEQUAL(brain.search_center, last, "With its place looked at the officer was not sent on")
+	var/turf/second_center = brain.search_center
+	// The time a search lasts runs out on the way: it goes on
+	brain.blackboard["stealth_state_since"] = world.time - 10 MINUTES // BB_STEALTH_STATE_SINCE
+	police.stealth_tick_officer(officer)
+	brain.stealth_scan_once()
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "An officer on its way to a place gave the search up")
+	TEST_ASSERT(!brain.stealth_bark("stealth_give_up"), "An officer said it was giving up with its suspect still wanted") // STEALTH_BARK_GIVE_UP
+
+	// A fresher sighting, lost again: it turns to that
+	warrant.last_seen_turf = at(30, 2)
+	warrant.last_seen_at = world.time + 1
+	police.stealth_tick_officer(officer)
+	TEST_ASSERT_EQUAL(brain.search_center, at(30, 2), "A fresher sighting did not turn the search")
+	TEST_ASSERT_NOTEQUAL(second_center, at(30, 2), "Fixture: the second place was the new sighting")
+
+	// An officer nobody sent: its own search, as before
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/loner = officer_at(10, 6)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/loner_brain = loner.ai_controller
+	loner_brain.stealth_setup()
+	loner_brain.stealth_go_searching(at(12, 6))
+	TEST_ASSERT(length(loner_brain.search_queue) > 1, "A search nobody dealt has only its centre to look at")
+	loner_brain.stealth_search_spots(loner_brain.search_center)
+	police.stealth_tick_officer(loner)
+	TEST_ASSERT_EQUAL(loner_brain.search_center, at(12, 6), "An officer dispatch never sent was dealt a place")
+
+/**
+ * The arrest that has not found its suspect: the arresting officer goes to where they were last seen, looks about,
+ * and goes on to the next place. It used to stand on the first until the step timed out.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/search_arrest
+
+/datum/unit_test/voidcrew_stealth_live/police/search_arrest/Run()
+	TEST_ASSERT(police_room(40, 9), "No room for the test")
+	// A wall across the room with a gap, so the suspect at the far end is out of sight
+	for(var/dy in 0 to 6)
+		var/turf/wall_spot = at(24, dy)
+		wall_spot.ChangeTurf(/turf/closed/wall)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(8, 4, WEST)
+	var/mob/living/carbon/human/suspect = unseen_suspect(2, 4, 38, 1)
+	var/datum/outpost_warrant/warrant = police.get_warrant(suspect.mind)
+	var/turf/last = warrant.last_seen_turf
+	var/datum/outpost_police_case/case = police.open_case(warrant)
+	TEST_ASSERT_NOTNULL(case, "Fixture: no arrest opened at two stars")
+	TEST_ASSERT_EQUAL(case.arresting(), officer, "Fixture: the officer is not the arresting officer")
+
+	case.process_case()
+	TEST_ASSERT_EQUAL(case.search_at, last, "The arresting officer is not sent to where the suspect was last seen")
+	TEST_ASSERT_EQUAL(get_turf(case.goal), last, "The arresting officer's walk is not to where the suspect was last seen")
+	// There: a look about, standing
+	officer.forceMove(at(3, 4))
+	case.process_case()
+	TEST_ASSERT(case.search_look_until > world.time, "At the place it was sent to, the arresting officer did not look about")
+	TEST_ASSERT_NULL(case.goal, "The arresting officer walks on while it looks about")
+	// Looked: the next place, somewhere else
+	case.search_look_until = world.time - 1
+	case.process_case()
+	case.process_case()
+	TEST_ASSERT_NOTNULL(case.search_at, "With its place looked at the arresting officer was sent nowhere")
+	TEST_ASSERT_NOTEQUAL(case.search_at, last, "With its place looked at the arresting officer was sent to it again")
+	TEST_ASSERT_EQUAL(get_turf(case.goal), case.search_at, "The arresting officer does not walk to its next place")
+	// A place it gets no nearer to is given up for the next
+	var/turf/stuck_on = case.search_at
+	case.search_best_at = world.time - 1 MINUTES
+	case.search_best = 0
+	case.process_case()
+	case.process_case()
+	TEST_ASSERT_NOTEQUAL(case.search_at, stuck_on, "The arresting officer kept to a place it was getting no nearer to")
+	// Someone has eyes on them: straight there
+	warrant.last_seen_turf = at(30, 2)
+	warrant.last_seen_at = world.time
+	warrant.unseen_since = 0
+	case.process_case()
+	TEST_ASSERT_EQUAL(get_turf(case.goal), at(30, 2), "With a colleague's eyes on the suspect the arresting officer does not go to where they are seen")
+	police.close_case(suspect.mind)
