@@ -1176,3 +1176,71 @@
 	TEST_ASSERT(police.pending_report_of(grabber, "resist") || police.get_stars(grabber.mind) >= 1, "A neck grab on an officer reached nobody")
 	grabber.stop_pulling()
 	TEST_ASSERT(!officer.grab_charged, "Letting go of an officer left the grab charged")
+
+// ===== HOSTAGES (owner decision 68) =====
+// Written out: OUTPOST_POLICE_STANDOFF_COLD is 10 seconds.
+
+/// One of the outpost's people held at gunpoint: an officer holds fire ahead of its arrest and its use of force. Caught cold it puts its weapon down when told to; already on a hunt it keeps it, and still backs off. Never for a stranger.
+/datum/unit_test/voidcrew_stealth_live/police/hostage_standoff
+
+/datum/unit_test/voidcrew_stealth_live/police/hostage_standoff/Run()
+	TEST_ASSERT(police_room(16, 7), "No room for the test")
+	var/datum/ai_planning_subtree/stealth_hostage/hostage_tree = GLOB.ai_subtrees[/datum/ai_planning_subtree/stealth_hostage]
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(8, 3, WEST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	brain.stealth_setup()
+	var/at_tree = brain.planning_subtrees.Find(hostage_tree)
+	TEST_ASSERT(at_tree, "The hostage subtree isn't in an officer's planning")
+	TEST_ASSERT_EQUAL(brain.planning_subtrees.Find(hostage_tree, at_tree + 1), 0, "The hostage subtree is in an officer's planning twice")
+	TEST_ASSERT(at_tree < brain.planning_subtrees.Find(GLOB.ai_subtrees[/datum/ai_planning_subtree/outpost_police_case]), "An officer plans its arrest before it looks for a hostage")
+	TEST_ASSERT(at_tree < brain.planning_subtrees.Find(GLOB.ai_subtrees[/datum/ai_planning_subtree/outpost_police_force]), "An officer plans its use of force before it looks for a hostage")
+
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/local = local_at(3, 3)
+	var/mob/living/carbon/human/holder = visitor_at(2, 3)
+	var/obj/item/gun/ballistic/automatic/pistol/pistol = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	holder.put_in_active_hand(pistol, forced = TRUE)
+	holder.setDir(EAST)
+	stealth_test_grab(holder, local, GRAB_NECK)
+	TEST_ASSERT_EQUAL(stealth_hostage_of(holder), local, "Fixture: the resident isn't held at gunpoint")
+
+	// Caught cold: unaware until it saw this
+	TEST_ASSERT_EQUAL(brain.police_onto_at, 0, "Fixture: an officer that has seen nothing is already on a hunt")
+	brain.stealth_go_alert(holder)
+	TEST_ASSERT(brain.police_caught_cold(), "An officer that went alert this moment doesn't count as caught cold")
+	TEST_ASSERT_EQUAL(hostage_tree.SelectBehaviors(brain, 1), SUBTREE_RETURN_FINISH_PLANNING, "An officer didn't hold fire for one of the outpost's people")
+	TEST_ASSERT_EQUAL(brain.standoff_holder?.resolve(), holder, "No standoff")
+	TEST_ASSERT(brain.standoff_cold, "The standoff doesn't know it caught the officer cold")
+	var/obj/item/gun/sidearm = officer.get_sidearm()
+	TEST_ASSERT_NOTNULL(sidearm, "Fixture: the officer has no sidearm")
+	TEST_ASSERT(officer.police_draw(sidearm), "Fixture: the officer couldn't draw")
+	holder.say("Drop it!")
+	TEST_ASSERT(brain.standoff_dropped, "Caught cold and told to drop it, an officer didn't")
+	TEST_ASSERT(!officer.is_holding(sidearm), "Caught cold and told to drop it, an officer kept its gun in hand")
+	TEST_ASSERT_EQUAL(sidearm.loc, officer, "An officer's gun left its body when it put it down")
+
+	// Already on a hunt: it holds fire all the same, keeps its weapon, and backs off when told to
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/hunter = officer_at(8, 4, WEST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/hunter_brain = hunter.ai_controller
+	hunter_brain.stealth_setup()
+	hunter_brain.stealth_go_alert(holder)
+	hunter_brain.police_onto_at = world.time - 30 SECONDS
+	TEST_ASSERT(!hunter_brain.police_caught_cold(), "An officer half a minute into a hunt counts as caught cold")
+	TEST_ASSERT_EQUAL(hostage_tree.SelectBehaviors(hunter_brain, 1), SUBTREE_RETURN_FINISH_PLANNING, "An officer on a hunt didn't hold fire for one of the outpost's people")
+	TEST_ASSERT(!hunter_brain.standoff_cold, "A standoff with an officer on a hunt counts as one that caught it cold")
+	var/obj/item/gun/hunter_gun = hunter.get_sidearm()
+	TEST_ASSERT(hunter.police_draw(hunter_gun), "Fixture: the second officer couldn't draw")
+	holder.say("Drop the gun!")
+	TEST_ASSERT(!hunter_brain.standoff_dropped, "An officer already on a hunt put its weapon down when told to")
+	TEST_ASSERT(hunter.is_holding(hunter_gun), "An officer already on a hunt no longer holds its gun")
+	holder.say("Back off!")
+	TEST_ASSERT(hunter_brain.standoff_backed_off, "Told to back off, an officer on a hunt didn't")
+
+	// Unaware again: the next one can catch it cold
+	hunter_brain.stealth_standoff_end()
+	hunter_brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+	hunter_brain.stealth_go_unaware()
+	TEST_ASSERT_EQUAL(hunter_brain.police_onto_at, 0, "An officer back to unaware still counts as on a hunt")
+
+	// Not for a stranger, whoever they stand with
+	var/mob/living/carbon/human/stranger = person_at(13, 5, FALSE)
+	TEST_ASSERT(!brain.stealth_standoff_with(holder, stranger), "An officer would hold fire for a stranger")

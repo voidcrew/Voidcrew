@@ -89,6 +89,8 @@
 #define OUTPOST_POLICE_RADIOLESS_TIME (3 SECONDS)
 /// An officer whose search for a wanted person ran out is sent to look again no sooner than this
 #define OUTPOST_POLICE_RESEARCH_GAP (20 SECONDS)
+/// An officer whose standoff with a hostage-taker starts this soon after it first went on a hunt or a search was caught cold, and puts its weapon down when told to (decision 68)
+#define OUTPOST_POLICE_STANDOFF_COLD (10 SECONDS)
 /// What an officer does at a patrol stop happens within this many tiles of it (a seat, the coffee machine, a chat)
 #define OUTPOST_POLICE_STOP_REACH 3
 /// A death this soon after the offender's last counted hit on the victim is a killing
@@ -263,6 +265,7 @@
 #define POLICE_LINE_OFFICER_DOWN "officer_down"
 #define POLICE_LINE_CLEAR "clear"
 #define POLICE_LINE_KNOCK "knock"
+#define POLICE_LINE_HOSTAGE_REFUSE "stealth_hostage_refuse"
 #define POLICE_LINE_CELL_ALARM "cell_alarm"
 #define POLICE_LINE_MOVE_ALONG "move_along"
 #define POLICE_LINE_RADIO_CALL "radio_call"

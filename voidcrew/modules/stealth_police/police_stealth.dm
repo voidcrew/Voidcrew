@@ -22,6 +22,9 @@
  *   the stealth play: nobody loses, searches for, goes on alert over or calls an alarm about them, their noise brings
  *   nobody, an officer on an arrest is not drawn off by a noise, and the squad stands down as one when the last
  *   wanted person is in hand (stealth_all_clear(); owner decision 58).
+ * - One of the outpost's people held at gunpoint: every officer that sees it holds fire and stands off, as stealth's
+ *   guards do (stealth_hostage.dm), ahead of the arrest and the use of force. Told to drop it, only an officer caught
+ *   cold puts its weapon down: one already on a hunt or a search keeps it (owner decision 68).
  */
 
 // =========================================================================
@@ -62,6 +65,9 @@
 		/datum/ai_planning_subtree/human_npc_soft_crit,
 		/datum/ai_planning_subtree/ambient_escape,
 		/datum/ai_planning_subtree/human_npc_walk_out,
+		// Ahead of the arrest and the use of force, which plan for any target they will fight: after them, as
+		// stealth's own list has it, an officer never held fire for a hostage (decision 68)
+		/datum/ai_planning_subtree/stealth_hostage,
 		/datum/ai_planning_subtree/outpost_police_case,
 		/datum/ai_planning_subtree/stealth_react,
 		/datum/ai_planning_subtree/outpost_police_force,
@@ -83,6 +89,10 @@
 	var/police_research_at = 0
 	/// world.time it may try a lift ride again after one failed
 	var/police_ride_retry_at = 0
+	/// world.time it last went on a hunt or a search from being unaware, or 0 while it is unaware
+	var/police_onto_at = 0
+	/// Whether the standoff it is in found it off its guard (police_caught_cold()): only then does it drop its weapon when told to
+	var/standoff_cold = FALSE
 
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/UnpossessPawn(destroy)
 	police_hunt = null
@@ -302,9 +312,37 @@
 		return
 	if(new_state != STEALTH_UNAWARE)
 		police_clear_for_duty()
+	if(new_state == STEALTH_UNAWARE)
+		police_onto_at = 0
+	else if(new_state != STEALTH_SUSPICIOUS && !police_onto_at)
+		police_onto_at = world.time
 	// Its pathfinder always, alert or not. Stealth's guards chase in a straight line, which in a checkpoint lobby
 	// left an officer pushing at the queue rails and the lockers (owner playtest 3).
 	human_npc_set_ai_movement(src, /datum/ai_movement/jps/stealth)
+
+// ----- hostages (owner decision 68) -----
+
+/// Whether a standoff starting now finds it off its guard: it was on no hunt and no search until a moment ago
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/proc/police_caught_cold()
+	return police_onto_at && world.time - police_onto_at <= OUTPOST_POLICE_STANDOFF_COLD
+
+// Only for the outpost's own people (its residents, staff and officers): not a pet or a stranger brought in to hide behind
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_standoff_with(mob/living/holder, mob/living/hostage)
+	if(!istype(hostage, /mob/living/carbon/human/npc/ambient_npc/outpost))
+		return FALSE
+	return ..()
+
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_standoff_start(mob/living/holder, mob/living/hostage)
+	var/news = standoff_holder?.resolve() != holder || standoff_hostage?.resolve() != hostage
+	. = ..()
+	if(news)
+		standoff_cold = police_caught_cold()
+
+// Its weapon goes down only for someone who caught it cold. Already after them, or looking for them, it keeps it and says so.
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_standoff_drop()
+	if(standoff_cold)
+		return ..()
+	stealth_bark(POLICE_LINE_HOSTAGE_REFUSE)
 
 // Alert on a wanted person: that is who it is hunting until the police stand it down. Never on someone in hand.
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_go_alert(atom/target, named = TRUE)

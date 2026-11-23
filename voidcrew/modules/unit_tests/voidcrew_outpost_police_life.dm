@@ -40,6 +40,7 @@
 		"stealth_target_downed", "stealth_closet_open", "stealth_closet_give_up", "stealth_heard", "stealth_heard_again",
 		"stealth_gunfire", "stealth_hold", "stealth_help", "stealth_missing", "stealth_radio_report", "stealth_radio_alarm",
 		"stealth_radio_missing", "stealth_copy", "stealth_radio_dead", // stealth's barks (police_stealth.dm)
+		"stealth_hostage", "stealth_hostage_drop", "stealth_hostage_back", "stealth_hostage_refuse", "stealth_hostage_executed", "stealth_hostage_released", // a standoff (decision 68)
 	)
 	// Kinds whose lines may carry a token: the desk's calls (%PLACE%, %LOOK%), a body called in (%PLACE%) and stealth's calls (%PLACE%, %NAME%)
 	var/list/token_kinds = list("radio_call", "radio_call_hot", "body", "stealth_missing", "stealth_radio_report", "stealth_radio_alarm", "stealth_radio_missing")

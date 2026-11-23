@@ -557,6 +557,43 @@
 			"Nothing but static.",
 			"Hello? Warden? Anyone?",
 			"This radio's gone again."
+		],
+		"stealth_hostage": [
+			"Let them go, please. Nobody needs to get hurt.",
+			"Easy. Let them go and we can talk.",
+			"Nobody's shooting. Let them go.",
+			"Let them walk. Please.",
+			"Easy now. Let them go."
+		],
+		"stealth_hostage_drop": [
+			"All right. It's down. See?",
+			"Okay. Okay. It's on the floor.",
+			"There. It's down. Now let them go.",
+			"It's down. Nobody do anything."
+		],
+		"stealth_hostage_back": [
+			"I'm backing up. Easy.",
+			"All right. Backing off.",
+			"Okay. I'm moving back.",
+			"Giving you room. Easy."
+		],
+		"stealth_hostage_refuse": [
+			"I can't do that. Let them go.",
+			"No. That's not happening.",
+			"I'm keeping it. Let them go.",
+			"Not while you've got them."
+		],
+		"stealth_hostage_executed": [
+			"That's it. No more talking.",
+			"You didn't have to do that!",
+			"Take them down!",
+			"That's enough! Take them!"
+		],
+		"stealth_hostage_released": [
+			"They're clear!",
+			"Hostage is clear. Move in!",
+			"Clear! Go!",
+			"They're out. Move in!"
 		]
 	},
 	"quartermain": {
@@ -1116,6 +1153,43 @@
 			"Nothing. Radio's dead.",
 			"Warden? No signal.",
 			"Radio's down. Great."
+		],
+		"stealth_hostage": [
+			"Let them go.",
+			"Let them go and step back.",
+			"Nobody fires. Let them go.",
+			"Let them walk. Now.",
+			"Think it through. Let them go."
+		],
+		"stealth_hostage_drop": [
+			"Fine. It's down.",
+			"Weapon's down.",
+			"It's on the deck. Your move.",
+			"Down. See it?"
+		],
+		"stealth_hostage_back": [
+			"Backing off.",
+			"Moving back.",
+			"Fine. You've got room.",
+			"Giving you space."
+		],
+		"stealth_hostage_refuse": [
+			"Not a chance.",
+			"No. Let them go.",
+			"The weapon stays. Let them go.",
+			"Negative."
+		],
+		"stealth_hostage_executed": [
+			"That's it. Take them down!",
+			"No more deals.",
+			"Drop them!",
+			"Deal's off."
+		],
+		"stealth_hostage_released": [
+			"Hostage clear.",
+			"Clear. Move in.",
+			"They're loose. Go.",
+			"They're out. Take them."
 		]
 	},
 	"undertow": {
@@ -1675,6 +1749,43 @@
 			"Nothing. Great.",
 			"Radio's out. Figures.",
 			"Warden? Answer me."
+		],
+		"stealth_hostage": [
+			"Let them go.",
+			"Let go of them, friend.",
+			"Hurt them and you don't walk out.",
+			"Easy. Let them go.",
+			"Think hard. Let them go."
+		],
+		"stealth_hostage_drop": [
+			"Fine. It's down.",
+			"There. Happy?",
+			"It's down. Don't get clever.",
+			"On the floor. Look."
+		],
+		"stealth_hostage_back": [
+			"Backing off.",
+			"Fine. You've got room.",
+			"I'm moving. Easy.",
+			"Room enough for you?"
+		],
+		"stealth_hostage_refuse": [
+			"No.",
+			"Not happening.",
+			"I keep it. You let go.",
+			"Try again."
+		],
+		"stealth_hostage_executed": [
+			"You're dead for that!",
+			"Wrong move!",
+			"That's it. Kill them!",
+			"Now you've done it."
+		],
+		"stealth_hostage_released": [
+			"They're loose!",
+			"Clear. Get them!",
+			"Now!",
+			"They're out. Go!"
 		]
 	}
 }
