@@ -459,6 +459,22 @@
 	TEST_ASSERT_EQUAL(length(down_log), 1, "The officer's death was not announced once")
 	TEST_ASSERT_EQUAL(down_log[1][2], leader, "The announcement did not name the killer")
 
+	// Another crime of the crew here while it runs: it runs its whole length again (5 stars and one officer: 35 minutes)
+	incident.ends_at = world.time + 2 MINUTES
+	outpost.embargoed_ships[ship] = incident.ends_at
+	var/mob/living/carbon/human/bystander = wanted_person(wanted_spot(4, 0))
+	police.count_crime(bystander, "unarmed") // OUTPOST_CRIME_ASSAULT_UNARMED
+	TEST_ASSERT_EQUAL(incident.ends_at, world.time + 2 MINUTES, "Someone else's crime started the crew's embargo over")
+	police.count_crime(mate, "unarmed")
+	TEST_ASSERT_EQUAL(incident.ends_at, world.time + 35 MINUTES, "A crewmate's crime during the embargo did not start it over")
+	TEST_ASSERT_EQUAL(outpost.embargoed_ships[ship], incident.ends_at, "The embargo started over did not reach the ship here")
+	// Never shortened by it
+	incident.ends_at = world.time + 50 MINUTES
+	police.count_crime(mate, "unarmed")
+	TEST_ASSERT_EQUAL(incident.ends_at, world.time + 50 MINUTES, "A crime shortened the crew's embargo")
+	incident.ends_at = world.time + 35 MINUTES
+	outpost.embargoed_ships[ship] = incident.ends_at
+
 	// It runs out on its own: the next tick after its end forgets the incident, and the embargo has lapsed
 	police.remove_warrant(warrant)
 	incident.ends_at = world.time

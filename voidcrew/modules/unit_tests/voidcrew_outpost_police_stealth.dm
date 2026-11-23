@@ -1246,6 +1246,33 @@
 	hunter_brain.stealth_go_unaware()
 	TEST_ASSERT_EQUAL(hunter_brain.police_onto_at, 0, "An officer back to unaware still counts as on a hunt")
 
+	// A minute of it for the whole squad, counted from the first officer to hold fire (OUTPOST_POLICE_STANDOFF_MAX)
+	var/datum/weakref/holder_ref = WEAKREF(holder.mind)
+	var/first_end = police.standoff_until[holder_ref]
+	TEST_ASSERT(first_end, "No clock runs on a standoff")
+	TEST_ASSERT(first_end <= world.time + 1 MINUTES, "A standoff has more than a minute to run")
+	TEST_ASSERT(police.standoff_left(holder) > 0, "Fixture: the squad's minute is already gone")
+	police.standoff_begin(holder)
+	TEST_ASSERT_EQUAL(police.standoff_until[holder_ref], first_end, "Another officer holding fire started the minute again")
+	TEST_ASSERT_EQUAL(brain.standoff_holder?.resolve(), holder, "Fixture: the first officer is no longer standing off")
+	police.standoff_until[holder_ref] = world.time - 1
+	TEST_ASSERT(!brain.stealth_standoff_with(holder, local), "The minute gone, an officer would still hold fire")
+	TEST_ASSERT_NULL(hostage_tree.SelectBehaviors(brain, 1), "The minute gone, an officer still held fire")
+	TEST_ASSERT_NULL(brain.standoff_holder, "The minute gone, an officer is still in a standoff")
+	// Still wanted, the clock is kept: letting go and taking hold again buys no second minute
+	police.standoff_until[holder_ref] = world.time - 5 MINUTES
+	police.prune_standoffs()
+	TEST_ASSERT(police.standoff_until[holder_ref], "The clock of someone still wanted was forgotten")
+	TEST_ASSERT(!brain.stealth_standoff_with(holder, local), "Still wanted, a hostage-taker got a second minute")
+	// No longer wanted, it is forgotten: the next time is a new standoff
+	var/datum/outpost_warrant/holder_warrant = police.get_warrant(holder.mind)
+	TEST_ASSERT_NOTNULL(holder_warrant, "Fixture: the holder has no record")
+	var/held_heat = holder_warrant.heat
+	holder_warrant.heat = 0
+	police.prune_standoffs()
+	TEST_ASSERT_NULL(police.standoff_until[holder_ref], "The clock of someone no longer wanted was kept")
+	holder_warrant.heat = held_heat
+
 	// Not for a stranger, whoever they stand with
 	var/mob/living/carbon/human/stranger = person_at(13, 5, FALSE)
 	TEST_ASSERT(!brain.stealth_standoff_with(holder, stranger), "An officer would hold fire for a stranger")

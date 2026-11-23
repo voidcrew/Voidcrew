@@ -257,7 +257,7 @@ More officers arrive through the staff lifts as your stars rise, and they keep c
 
 **Heavy weapons.** At 5 stars two heavy weapons officers come up with the rest, carrying an ion rifle, a rocket launcher or a grenade launcher. Those are for mechs. Anyone on foot gets their pistol like any other officer.
 
-**Hostages.** Hold one of the outpost's people by the neck with a gun in your other hand, and every officer who can see it holds fire and keeps their distance. Tell them out loud to back off and they will. Tell them to drop it, and an officer who walked in on it puts their weapon away; one who was already after you, or already looking for you, keeps it. The hostage struggles, and once they get loose or you let go the officers carry on. Hurt the hostage or attack an officer, and the officers who saw it never hold fire for you again. They do not hold fire for a hostage who is not one of the outpost's own, or for one who is out cold.
+**Hostages.** Hold one of the outpost's people by the neck with a gun in your other hand, and every officer who can see it holds fire and keeps their distance. Tell them out loud to back off and they will. Tell them to drop it, and an officer who walked in on it puts their weapon away; one who was already after you, or already looking for you, keeps it. The hostage struggles, and once they get loose or you let go the officers carry on. They hold fire for one minute, counted from the first officer to do it, and say so when it is nearly up. Then they shoot, hostage or not, and a second hostage buys no more time while you are still wanted there. Hurt the hostage or attack an officer, and the officers who saw it never hold fire for you again. They do not hold fire for a hostage who is not one of the outpost's own, or for one who is out cold.
 
 At Halcyon and Quartermain a downed suspect is cuffed, never shot, at any stars. Nobody fires on someone who is cuffed and being taken in, or who is in a cell. Get away from them and you are fair game again.
 
@@ -303,7 +303,7 @@ At 4 stars and up, while you are free and alive at the outpost, every crewmate o
 
 ### The ban
 
-At 4 stars every ship of your crew is banned from that outpost: no shops, no checkpoint, no trade. It lasts 15 minutes, 30 at 5 stars, and each officer you kill adds 5 more, up to two hours. Crewmates who walk in anyway are arrested on sight. It only covers the outpost where it happened; the other two still trade with you. There is no paying it off.
+At 4 stars every ship of your crew is banned from that outpost: no shops, no checkpoint, no trade. It lasts 15 minutes, 30 at 5 stars, and each officer you kill adds 5 more, up to two hours. Any crime there by anyone on your crew while it runs starts it over from the beginning. Crewmates who walk in anyway are arrested on sight. It only covers the outpost where it happened; the other two still trade with you. There is no paying it off.
 
 !!! danger "The ban covers your whole crew"
     One person losing their temper bars every ship of the crew, including people who were still shopping.

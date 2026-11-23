@@ -91,6 +91,10 @@
 #define OUTPOST_POLICE_RESEARCH_GAP (20 SECONDS)
 /// An officer whose standoff with a hostage-taker starts this soon after it first went on a hunt or a search was caught cold, and puts its weapon down when told to (decision 68)
 #define OUTPOST_POLICE_STANDOFF_COLD (10 SECONDS)
+/// Officers hold fire for a hostage-taker this long, counted from the first of them to do it; then they shoot (owner decision 70)
+#define OUTPOST_POLICE_STANDOFF_MAX (1 MINUTES)
+/// ...and say it is nearly up from this long before the end
+#define OUTPOST_POLICE_STANDOFF_WARNING (15 SECONDS)
 /// What an officer does at a patrol stop happens within this many tiles of it (a seat, the coffee machine, a chat)
 #define OUTPOST_POLICE_STOP_REACH 3
 /// A death this soon after the offender's last counted hit on the victim is a killing
@@ -222,11 +226,12 @@
 
 // ===== FOUR AND FIVE STARS =====
 
-/// Embargo length at four and five stars, at the outpost where it happened
+/// Embargo length at four and five stars, at the outpost where it happened. It starts over at each further crime of
+/// the crew there while it runs (owner decision 71)
 #define OUTPOST_POLICE_EMBARGO list(15 MINUTES, 30 MINUTES)
 /// Added to the embargo per officer killed
 #define OUTPOST_POLICE_EMBARGO_PER_KILL (5 MINUTES)
-/// The embargo never runs longer than this
+/// The embargo never has longer than this left to run
 #define OUTPOST_POLICE_EMBARGO_MAX (120 MINUTES)
 
 // ===== LIFTS AND AI =====
@@ -266,6 +271,8 @@
 #define POLICE_LINE_CLEAR "clear"
 #define POLICE_LINE_KNOCK "knock"
 #define POLICE_LINE_HOSTAGE_REFUSE "stealth_hostage_refuse"
+#define POLICE_LINE_HOSTAGE_LAST "stealth_hostage_last"
+#define POLICE_LINE_HOSTAGE_TIMEOUT "stealth_hostage_timeout"
 #define POLICE_LINE_CELL_ALARM "cell_alarm"
 #define POLICE_LINE_MOVE_ALONG "move_along"
 #define POLICE_LINE_RADIO_CALL "radio_call"

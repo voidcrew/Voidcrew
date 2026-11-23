@@ -24,7 +24,9 @@
  *   wanted person is in hand (stealth_all_clear(); owner decision 58).
  * - One of the outpost's people held at gunpoint: every officer that sees it holds fire and stands off, as stealth's
  *   guards do (stealth_hostage.dm), ahead of the arrest and the use of force. Told to drop it, only an officer caught
- *   cold puts its weapon down: one already on a hunt or a search keeps it (owner decision 68).
+ *   cold puts its weapon down: one already on a hunt or a search keeps it (owner decision 68). They hold fire for
+ *   OUTPOST_POLICE_STANDOFF_MAX in all, counted for the whole squad from the first of them to do it, and then shoot
+ *   (owner decision 70).
  */
 
 // =========================================================================
@@ -334,6 +336,8 @@
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_standoff_with(mob/living/holder, mob/living/hostage)
 	if(!istype(hostage, /mob/living/carbon/human/npc/ambient_npc/outpost) || hostage.stat != CONSCIOUS)
 		return FALSE
+	if(police_standoff_left(holder) <= 0)
+		return FALSE
 	return ..()
 
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_standoff_start(mob/living/holder, mob/living/hostage)
@@ -341,6 +345,51 @@
 	. = ..()
 	if(news)
 		standoff_cold = police_caught_cold()
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+		if(istype(officer))
+			officer.police?.standoff_begin(holder)
+
+/// How long the squad still holds fire for `holder` (/datum/outpost_police/proc/standoff_left())
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/proc/police_standoff_left(mob/living/holder)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	if(!istype(officer) || !officer.police)
+		return OUTPOST_POLICE_STANDOFF_MAX
+	return officer.police.standoff_left(holder)
+
+// The minute ran out with the hostage still held: it says so as it stops holding fire
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_standoff_end(line)
+	var/mob/living/holder = standoff_holder?.resolve()
+	if(!line && holder && police_standoff_left(holder) <= 0 && stealth_hostage_of(holder))
+		line = POLICE_LINE_HOSTAGE_TIMEOUT
+	return ..()
+
+/**
+ * The first officer holds fire for `holder`: the squad's minute with them starts (OUTPOST_POLICE_STANDOFF_MAX). One
+ * clock for the outpost, so the next officer to arrive, another hostage, or letting go and taking hold again buys
+ * no more time (abuse review, decision 70).
+ */
+/datum/outpost_police/proc/standoff_begin(mob/living/holder)
+	var/datum/mind/mind = holder?.mind
+	if(!mind)
+		return
+	var/datum/weakref/mind_ref = WEAKREF(mind)
+	if(!standoff_until[mind_ref])
+		standoff_until[mind_ref] = world.time + OUTPOST_POLICE_STANDOFF_MAX
+
+/// How long officers still hold fire for `holder`: all of it before any of them has, 0 once it has run out
+/datum/outpost_police/proc/standoff_left(mob/living/holder)
+	var/datum/mind/mind = holder?.mind
+	if(!mind)
+		return OUTPOST_POLICE_STANDOFF_MAX
+	var/until = standoff_until[WEAKREF(mind)]
+	return until ? max(0, until - world.time) : OUTPOST_POLICE_STANDOFF_MAX
+
+/// Forgets the clock of someone no longer wanted here, a while after it ran out: wanted again, they get a new one
+/datum/outpost_police/proc/prune_standoffs()
+	for(var/datum/weakref/mind_ref as anything in standoff_until)
+		var/datum/mind/mind = mind_ref.resolve()
+		if(!mind || (world.time >= standoff_until[mind_ref] + OUTPOST_POLICE_STANDOFF_MAX && get_stars(mind) < 1))
+			standoff_until -= mind_ref
 
 // Its weapon goes down only for someone who caught it cold. Already after them, or looking for them, it keeps it and says so.
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_standoff_drop()
@@ -408,6 +457,11 @@
 		return ..()
 	if(officer.stat != CONSCIOUS || officer.client || officer.mind)
 		return FALSE
+	// The last of the squad's minute with a hostage-taker: it says so (decision 70)
+	if(kind == STEALTH_BARK_HOSTAGE)
+		var/mob/living/holder = standoff_holder?.resolve()
+		if(holder && police_standoff_left(holder) <= OUTPOST_POLICE_STANDOFF_WARNING)
+			kind = POLICE_LINE_HOSTAGE_LAST
 	if(!always && world.time < bark_ready_at[kind])
 		return FALSE
 	var/list/values = list()

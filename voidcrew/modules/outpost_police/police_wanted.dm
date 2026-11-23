@@ -31,6 +31,8 @@
 	var/list/pending_reports = list()
 	/// Four and five star incidents: crew record -> /datum/outpost_incident
 	var/list/incidents = list()
+	/// weakref to a mind -> world.time the officers stop holding fire for them as a hostage-taker (police_stealth.dm, decision 70)
+	var/list/standoff_until = list()
 	/// Crew records whose deletion we listen for
 	var/list/watched_crews = list()
 	/// Whether the death hook is registered
@@ -50,6 +52,7 @@
 	QDEL_LIST(pending_reports)
 	QDEL_LIST_ASSOC_VAL(incidents)
 	recent_reports.Cut()
+	standoff_until.Cut()
 	case_holds = null
 	return ..()
 
@@ -313,6 +316,7 @@
 	var/new_stars = stars_of(warrant.heat)
 	if(new_stars >= 3)
 		warrant.barred_until = max(warrant.barred_until, world.time + OUTPOST_POLICE_BAR_TIME)
+	crime_during_ban(warrant)
 	if(new_stars != old_stars)
 		stars_changed(warrant, old_stars, new_stars)
 	wake()
@@ -616,6 +620,7 @@
 	var/new_stars = stars_of(warrant.heat)
 	if(new_stars >= 3)
 		warrant.barred_until = max(warrant.barred_until, world.time + OUTPOST_POLICE_BAR_TIME)
+	crime_during_ban(warrant)
 	if(new_stars != old_stars)
 		stars_changed(warrant, old_stars, new_stars)
 	wake()
@@ -966,6 +971,7 @@
 	if(QDELETED(src) || !outpost)
 		return
 	process_pending_reports()
+	prune_standoffs()
 	var/list/stand_at_four = list()
 	for(var/datum/mind/mind as anything in warrants.Copy())
 		var/datum/outpost_warrant/warrant = warrants[mind]
@@ -1189,10 +1195,8 @@
 	if(!incident)
 		return
 	incident.officers_killed++
-	incident.ends_at = min(incident.ends_at + OUTPOST_POLICE_EMBARGO_PER_KILL, incident.started_at + OUTPOST_POLICE_EMBARGO_MAX)
-	for(var/obj/structure/overmap/ship/ship as anything in crew_ship_list(incident.crew))
-		if(outpost.is_ship_embargoed(ship))
-			outpost.embargoed_ships[ship] = incident.ends_at
+	incident.ends_at = min(incident.ends_at + OUTPOST_POLICE_EMBARGO_PER_KILL, world.time + OUTPOST_POLICE_EMBARGO_MAX)
+	move_ship_bans(incident)
 
 // =========================================================================
 // OFFICERS STRUCK (abuse M3; called from the officer's body, police_units.dm)
@@ -1346,14 +1350,39 @@
 	if(stars <= incident.stars)
 		return
 	incident.stars = stars
-	var/list/lengths = OUTPOST_POLICE_EMBARGO
-	var/length_for = lengths[stars - 3] + incident.officers_killed * OUTPOST_POLICE_EMBARGO_PER_KILL
-	incident.ends_at = min(max(incident.ends_at, world.time + length_for), incident.started_at + OUTPOST_POLICE_EMBARGO_MAX)
+	incident.ends_at = max(incident.ends_at, world.time + incident_length(incident))
 	for(var/obj/structure/overmap/ship/ship as anything in crew_ship_list(crew))
 		outpost.embargo_ship(ship, max(1, incident.ends_at - world.time))
 		incident.ships_embargoed |= WEAKREF(ship)
 	sync_incident(incident)
 	record_metric(METRIC_COMBAT, "police_embargo", actor = warrant.mind?.current, points = stars, quantity = round((incident.ends_at - world.time) / (1 MINUTES)))
+
+/// How long `incident`'s embargo runs from its start, or from the crew's latest crime here: by its stars, longer per officer killed
+/datum/outpost_police/proc/incident_length(datum/outpost_incident/incident)
+	var/list/lengths = OUTPOST_POLICE_EMBARGO
+	var/by_stars = lengths[clamp(incident.stars - 3, 1, length(lengths))]
+	return min(by_stars + incident.officers_killed * OUTPOST_POLICE_EMBARGO_PER_KILL, OUTPOST_POLICE_EMBARGO_MAX)
+
+/// `incident`'s crew committed another crime here while its embargo runs: it runs its whole length again from now
+/datum/outpost_police/proc/renew_incident(datum/outpost_incident/incident)
+	var/ends_at = world.time + incident_length(incident)
+	if(ends_at <= incident.ends_at)
+		return
+	incident.ends_at = ends_at
+	move_ship_bans(incident)
+
+/// `warrant`'s holder committed a crime here: a ban on their crew that is still running starts over (owner decision 71)
+/datum/outpost_police/proc/crime_during_ban(datum/outpost_warrant/warrant)
+	var/datum/voidcrew_crew_record/crew = current_warrant_crew(warrant)
+	var/datum/outpost_incident/incident = crew ? incidents[crew] : null
+	if(incident && world.time < incident.ends_at)
+		renew_incident(incident)
+
+/// `incident`'s end moved: the ships it still holds follow it (one an admin let go stays let go)
+/datum/outpost_police/proc/move_ship_bans(datum/outpost_incident/incident)
+	for(var/obj/structure/overmap/ship/ship as anything in crew_ship_list(incident.crew))
+		if(outpost.is_ship_embargoed(ship))
+			outpost.embargoed_ships[ship] = incident.ends_at
 
 /// Crewmates and ships of an embargoed crew at this outpost
 /datum/outpost_police/proc/sync_incident(datum/outpost_incident/incident)
