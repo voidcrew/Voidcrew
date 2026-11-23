@@ -229,6 +229,8 @@
 #define OUTPOST_POLICE_BRIBE_REACH 2
 /// How far from the cell door the warden may be and still walk over to it
 #define OUTPOST_POLICE_BRIBE_WALK_REACH 12
+/// The warden comes to a jailed prisoner of his own accord once, this long into their term
+#define OUTPOST_POLICE_BRIBE_FIRST (20 SECONDS)
 
 // ===== FOUR AND FIVE STARS =====
 
@@ -316,6 +318,7 @@
 #define POLICE_LINE_BRIBE_SHORT "bribe_short"
 #define POLICE_LINE_BRIBE_NO_CARD "bribe_no_card"
 #define POLICE_LINE_BRIBE_DOOR "bribe_door"
+#define POLICE_LINE_CELL_MORE_TIME "cell_more_time"
 
 /// The officers' dialogue file in AMBIENT_STRINGS_DIR
 #define AMBIENT_STRINGS_POLICE "outpost_police.json"

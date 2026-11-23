@@ -1,9 +1,10 @@
 /**
  * # Outpost police: the warden's price
  *
- * Owner decision 64. A prisoner serving a jail term in a station cell calls out; the warden (code name: sergeant,
- * police_units.dm) hears it as he hears any knock on the cell (police_life.dm life_answer_cell()), walks to the cell
- * door, names a price and the prisoner answers Pay or No. Paid, the money comes from the prisoner's crew's pooled
+ * Owner decision 64. A prisoner serving a jail term in a station cell calls out, by saying anything or by trying the
+ * cell door (police_cell.dm called_out()); the warden (code name: sergeant, police_units.dm) hears it (police_life.dm
+ * life_answer_cell()), walks to the cell door, names a price and the prisoner answers Pay or No. He also comes once of
+ * his own accord, OUTPOST_POLICE_BRIBE_FIRST into a jail term (tick_bribes()). Paid, the money comes from the prisoner's crew's pooled
  * ship accounts (charge_crew(), the fine's routine) before anything else happens, the cell's own door control opens
  * the door, and the cell lets them go exactly as a served term does (release()). If the door will not open the
  * money goes back. Nothing is owed after a short payment.
@@ -88,6 +89,25 @@
 	cell.release(mind, prisoner, POLICE_LINE_BRIBE_TAKEN)
 	return TRUE
 
+/**
+ * Once a second (police_cell.dm tick_cells()): the warden goes of his own accord, once, to each prisoner serving a
+ * jail term, OUTPOST_POLICE_BRIBE_FIRST after it starts, and names his price as if called. While he cannot (busy,
+ * trouble at the outpost, the prisoner down or being offered already) it waits for him.
+ */
+/datum/outpost_police/proc/tick_bribes()
+	for(var/datum/outpost_police_cell/cell as anything in cells)
+		for(var/datum/mind/prisoner in cell.visit_due)
+			if(world.time < cell.visit_due[prisoner])
+				continue
+			var/mob/living/body = cell.body_of(prisoner)
+			if(!body || bribe_cell_for(body) != cell)
+				continue
+			for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/warden in officers)
+				if(warden.bribe_visit(body, cell))
+					cell.visit_due -= prisoner
+					return
+			return // nobody free to go: the next tick tries again
+
 /// Shows `prisoner` the price the warden just said, and hands their answer back. Sleeps (the prompt).
 /datum/outpost_police/proc/bribe_ask(mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/warden, mob/living/prisoner, datum/outpost_police_cell/cell, text)
 	var/answer = tgui_alert(prisoner, text, warden.name, list("Pay", "No"), OUTPOST_POLICE_BRIBE_ANSWER)
@@ -126,6 +146,19 @@
 		return FALSE
 	bribe_say(POLICE_LINE_BRIBE_COMING)
 	return TRUE
+
+/// He goes to `prisoner`'s door in `cell` without being called (tick_bribes()), if he is at ease, has his card and it is within his walk. TRUE if he set off.
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/proc/bribe_visit(mob/living/prisoner, datum/outpost_police_cell/cell)
+	if(activity && istype(activity, /datum/ambient_activity/warden_bribe))
+		return FALSE // at someone's door already
+	if(stat != CONSCIOUS || client || mind || !police_can_speak() || case || npc_exit || dispatch_riding || dispatch_responding() || !bribe_has_card())
+		return FALSE
+	var/datum/ai_controller/basic_controller/human_npc/stealth/brain = ai_controller
+	if(istype(brain) && (brain.stealth_state() != STEALTH_UNAWARE || brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET)))
+		return FALSE
+	if(!cell?.outside_turf || cell.outside_turf.z != z || get_dist(src, cell.outside_turf) > OUTPOST_POLICE_BRIBE_WALK_REACH)
+		return FALSE
+	return !!start_activity(new /datum/ambient_activity/warden_bribe(src, prisoner))
 
 /// Whether his own cell card is on him and still good
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/proc/bribe_has_card()
@@ -219,6 +252,8 @@
 		return
 	price = asking
 	police.bribe_offers[mind] = asking
+	// He has been: no call of his own on them after this
+	cell.visit_due -= mind
 	ends_at = world.time + OUTPOST_POLICE_BRIBE_ANSWER + 2 SECONDS
 	// Only the prisoner can answer; one with nobody at the keys never does, and the offer lapses
 	if(prisoner.client)

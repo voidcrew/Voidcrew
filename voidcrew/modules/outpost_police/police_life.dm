@@ -594,9 +594,41 @@
 		return
 	addtimer(CALLBACK(src, PROC_REF(life_answer_cell), WEAKREF(prisoner)), rand(AMBIENT_REPLY_DELAY_LOW, AMBIENT_REPLY_DELAY_HIGH), TIMER_DELETE_ME)
 
+/**
+ * A prisoner called out from `cell` (spoke, or tried its door: police_cell.dm called_out()). The warden answers as he
+ * does one he overhears, from as far off as he would still walk to that cell's door: the cell tells him, so he need
+ * not see into it (the Undertow's desk has no view of its cells). TRUE if he will answer. Never sleeps.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/proc/life_cell_called(mob/living/prisoner, datum/outpost_police_cell/cell)
+	if(QDELETED(prisoner) || !police_can_speak() || case || npc_exit || dispatch_riding || !life_cell_in_earshot(prisoner))
+		return FALSE
+	var/datum/ai_controller/basic_controller/human_npc/stealth/brain = ai_controller
+	if(istype(brain) && (brain.stealth_state() != STEALTH_UNAWARE || brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET)))
+		return FALSE
+	if(!reaction_ready("cell reply", 20 SECONDS))
+		return FALSE
+	addtimer(CALLBACK(src, PROC_REF(life_answer_cell), WEAKREF(prisoner)), rand(AMBIENT_REPLY_DELAY_LOW, AMBIENT_REPLY_DELAY_HIGH), TIMER_DELETE_ME)
+	return TRUE
+
+/// Whether a call from `prisoner` reaches him: within 9 tiles of them, or within his walk to their cell's door
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/proc/life_cell_in_earshot(mob/prisoner)
+	if(prisoner.z != z)
+		return FALSE
+	if(get_dist(src, prisoner) <= 9)
+		return TRUE
+	var/turf/door_side = police?.cell_holding(prisoner.mind)?.outside_turf
+	return !!door_side && door_side.z == z && get_dist(src, door_side) <= OUTPOST_POLICE_BRIBE_WALK_REACH
+
+/// A prisoner called out from `cell`: the warden hears of it
+/datum/outpost_police/proc/cell_called(mob/living/prisoner, datum/outpost_police_cell/cell)
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/warden in officers)
+		if(warden.life_cell_called(prisoner, cell))
+			return TRUE
+	return FALSE
+
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/proc/life_answer_cell(datum/weakref/prisoner_ref)
 	var/mob/prisoner = prisoner_ref?.resolve()
-	if(QDELETED(prisoner) || !police_can_speak() || case || prisoner.z != z || get_dist(src, prisoner) > 9 || !police?.life_prisoner_held(prisoner.mind))
+	if(QDELETED(prisoner) || !police_can_speak() || case || !life_cell_in_earshot(prisoner) || !police?.life_prisoner_held(prisoner.mind))
 		return
 	var/datum/ai_controller/basic_controller/human_npc/stealth/brain = ai_controller
 	if(istype(brain) && (brain.stealth_state() != STEALTH_UNAWARE || brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET)))

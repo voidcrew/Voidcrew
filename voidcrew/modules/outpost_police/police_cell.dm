@@ -30,6 +30,8 @@
 #define CELL_UNCUFF_WAIT (10 SECONDS)
 /// How long after someone works a cell door an opening is still put down to them (a pry with jaws takes 5 seconds)
 #define CELL_OPENER_WINDOW (6 SECONDS)
+/// An officer struck by a prisoner takes this long to swing back (the blow that struck it lands first)
+#define CELL_HIT_BACK_DELAY (0.4 SECONDS)
 
 // =========================================================================
 // THE CELL
@@ -73,6 +75,12 @@
 	var/list/carry_reported = list()
 	/// Prisoner mind -> TRUE: a medic was called for this spell in crit (police_cell_medic.dm)
 	var/list/medic_called = list()
+	/// Prisoners with a crime counted while this cell held them: mind -> TRUE. Their term is a jail term no fine buys off (crime_inside())
+	var/list/crimes_inside = list()
+	/// Jailed prisoners the warden has yet to come to of his own accord: mind -> world.time he may (police_bribe.dm tick_bribes())
+	var/list/visit_due = list()
+	/// Officers with a blow on its way back to a prisoner who struck them: weakref -> world.time it is given up (hit_back())
+	var/list/hitting_back = list()
 
 /datum/outpost_police_cell/New(datum/outpost_police/new_police, new_cell_id)
 	. = ..()
@@ -83,7 +91,7 @@
 	for(var/datum/mind/prisoner in bodies)
 		var/mob/living/body = body_of(prisoner)
 		if(body)
-			UnregisterSignal(body, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_CLIENT_PRE_MOVE, COMSIG_LIVING_DISARM_HIT))
+			UnregisterSignal(body, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_CLIENT_PRE_MOVE, COMSIG_LIVING_DISARM_HIT, COMSIG_MOB_SAY))
 	if(door)
 		if(door.holding_cell == src)
 			door.holding_cell = null
@@ -110,6 +118,9 @@
 	medic_bodies.Cut()
 	carry_reported.Cut()
 	medic_called.Cut()
+	crimes_inside.Cut()
+	visit_due.Cut()
+	hitting_back.Cut()
 	return ..()
 
 /// This cell is being replaced by a rebuild: it lets go of its door and sign without opening anything
@@ -194,13 +205,14 @@
 	RegisterSignal(body, COMSIG_MOVABLE_MOVED, PROC_REF(on_prisoner_moved), override = TRUE)
 	RegisterSignal(body, COMSIG_MOB_CLIENT_PRE_MOVE, PROC_REF(on_prisoner_step), override = TRUE)
 	RegisterSignal(body, COMSIG_LIVING_DISARM_HIT, PROC_REF(on_prisoner_shoved), override = TRUE)
+	RegisterSignal(body, COMSIG_MOB_SAY, PROC_REF(on_prisoner_spoke), override = TRUE)
 	police?.wake()
 
 /// `prisoner` is no longer held here (released, escaped, down, or gone). Warrant and signals are the caller's.
 /datum/outpost_police_cell/proc/forget_prisoner(datum/mind/prisoner)
 	var/mob/living/body = body_of(prisoner)
 	if(body)
-		UnregisterSignal(body, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_CLIENT_PRE_MOVE, COMSIG_LIVING_DISARM_HIT))
+		UnregisterSignal(body, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_CLIENT_PRE_MOVE, COMSIG_LIVING_DISARM_HIT, COMSIG_MOB_SAY))
 	prisoners -= prisoner
 	jailed -= prisoner
 	booking -= prisoner
@@ -214,6 +226,8 @@
 	shoved_by -= prisoner
 	carry_reported -= prisoner
 	medic_called -= prisoner
+	crimes_inside -= prisoner
+	visit_due -= prisoner
 
 /// The prisoner whose body `body` is, or null
 /datum/outpost_police_cell/proc/prisoner_of(mob/living/body)
@@ -253,6 +267,85 @@
 	var/datum/mind/prisoner = prisoner_of(source)
 	if(prisoner && isliving(attacker) && attacker != source)
 		shoved_by[prisoner] = list(WEAKREF(attacker), world.time)
+
+/// A prisoner said something: that is a call to the warden
+/datum/outpost_police_cell/proc/on_prisoner_spoke(mob/living/source, list/speech_args)
+	SIGNAL_HANDLER
+	called_out(source)
+
+/**
+ * A prisoner called out from inside the cell: spoke, or tried the door. The warden is told by the cell, so a wall
+ * between his desk and the cell does not keep it from him (police_life.dm cell_called()). Never sleeps.
+ */
+/datum/outpost_police_cell/proc/called_out(mob/living/body)
+	if(QDELETED(src) || QDELETED(police) || !isliving(body) || !prisoner_of(body) || !(get_turf(body) in tiles))
+		return
+	police.cell_called(body, src)
+
+/**
+ * A crime of `prisoner`'s was counted while this cell holds them (police_wanted.dm count_crime()). Their term starts
+ * over at the jail term for the stars they have now, never shorter than what was left, and no fine buys it off, as a
+ * crew ban starts over at each further crime (owner decision 71). A paid hold becomes a jail term. A booking still
+ * running is given it when it ends (book_in()). Never sleeps.
+ */
+/datum/outpost_police_cell/proc/crime_inside(datum/mind/prisoner)
+	if(QDELETED(src) || QDELETED(police) || !(prisoner in prisoners))
+		return
+	crimes_inside[prisoner] = TRUE
+	if(!isnull(booking[prisoner]))
+		return
+	var/list/terms = OUTPOST_POLICE_JAIL
+	var/term = terms[clamp(police.get_stars(prisoner), 1, length(terms))]
+	if(!jailed[prisoner])
+		jailed[prisoner] = TRUE
+		visit_due[prisoner] = world.time + OUTPOST_POLICE_BRIBE_FIRST
+	bail_due[prisoner] = INFINITY
+	if(prisoner in return_by)
+		// Out of the cell (carried off, in crit): the clock is stopped, and starts over when they are back in
+		time_left[prisoner] = max(time_left[prisoner] || 0, term)
+	else
+		prisoners[prisoner] = max(prisoners[prisoner], world.time + term)
+	police.cell_station_say(POLICE_LINE_CELL_MORE_TIME)
+	update_sign()
+
+/**
+ * `prisoner`, held here, struck `officer` (police_wanted.dm officer_struck()). The officer answers there and then
+ * with its baton, a real blow as the arrest's subdue step gives (police_arrest.dm strike()). Nobody else comes and
+ * nobody goes on alert: they are in hand (owner decision 58). Never sleeps.
+ */
+/datum/outpost_police_cell/proc/struck_officer(mob/living/officer, mob/living/prisoner)
+	if(QDELETED(src) || !is_outpost_police_npc(officer) || !isliving(prisoner) || !prisoner_of(prisoner))
+		return
+	var/datum/weakref/officer_ref = WEAKREF(officer)
+	if(hitting_back[officer_ref] > world.time)
+		return // one blow at a time: the baton's own wait sets the pace
+	hitting_back[officer_ref] = world.time + 6 SECONDS
+	INVOKE_ASYNC(src, PROC_REF(hit_back), officer, prisoner)
+
+/// `officer` hits `prisoner` back once with the baton (a fist with no working baton), as soon as it can and while they stand beside it. Sleeps. TRUE if the blow was thrown.
+/datum/outpost_police_cell/proc/hit_back(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/prisoner)
+	. = FALSE
+	var/datum/weakref/officer_ref = WEAKREF(officer)
+	sleep(CELL_HIT_BACK_DELAY)
+	for(var/attempt in 1 to 25)
+		if(QDELETED(src) || QDELETED(officer) || QDELETED(prisoner) || !istype(officer) || officer.stat != CONSCIOUS || officer.client || officer.mind)
+			break
+		// Someone down is never struck (owner decision 37), and one no longer held here is the squad's
+		if(!prisoner_of(prisoner) || police_suspect_down(prisoner) || !officer.Adjacent(prisoner))
+			break
+		if(!HAS_TRAIT(officer, TRAIT_INCAPACITATED) && !HAS_TRAIT(officer, TRAIT_HANDS_BLOCKED))
+			if(officer.force != POLICE_FORCE_ARREST)
+				officer.set_force(POLICE_FORCE_ARREST)
+			var/obj/item/baton = officer.get_baton()
+			if(baton && !officer.is_holding(baton))
+				baton = null
+			var/obj/item/melee/baton/stick = baton
+			if((!istype(stick) || COOLDOWN_FINISHED(stick, cooldown_check)) && outpost_prison_npc_hit(officer, prisoner, baton))
+				. = TRUE
+				break
+		sleep(0.2 SECONDS)
+	if(!QDELETED(src))
+		hitting_back -= officer_ref
 
 /// Whoever shoved `body` this tick, or is pushing it or swapping places with it in a bump beside `old_loc` (abuse MF1). Null if nobody.
 /datum/outpost_police_cell/proc/pusher_of(mob/living/body, atom/old_loc, datum/mind/prisoner)
@@ -499,6 +592,8 @@
 			if(world.time - started < CELL_BOOKING_STALE)
 				continue // book() is still working on them
 			booking -= prisoner // it never finished; the term they were given stands
+			if(crimes_inside[prisoner])
+				crime_inside(prisoner)
 		var/datum/outpost_warrant/warrant = police.get_warrant(prisoner)
 		if(!warrant || warrant.heat <= 0)
 			release(prisoner, body, POLICE_LINE_RELEASE)
@@ -924,7 +1019,11 @@
 		jailed[prisoner] = TRUE
 		// No bail at three stars and up: the sentence is served
 		bail_due[prisoner] = no_fine ? INFINITY : world.time + OUTPOST_POLICE_BAIL_RETRY
+		visit_due[prisoner] = world.time + OUTPOST_POLICE_BRIBE_FIRST
 	booking -= prisoner
+	// A crime of theirs counted while they were being booked: the term is the one for it
+	if(crimes_inside[prisoner])
+		crime_inside(prisoner)
 	shut_door(TRUE)
 	update_sign()
 	SEND_SIGNAL(police, COMSIG_OUTPOST_POLICE_BOOKED, suspect, !paid)
@@ -1154,6 +1253,7 @@
 /datum/outpost_police/proc/tick_cells()
 	for(var/datum/outpost_police_cell/cell in cells)
 		cell.tick_cell()
+	tick_bribes()
 
 // =========================================================================
 // THE DOORS
@@ -1270,11 +1370,16 @@
 /obj/machinery/door/airlock/outpost/glass/police_cell/try_to_activate_door(mob/living/user, access_bypass = FALSE)
 	if(density && isliving(user) && (access_bypass || (requiresID() && allowed(user))))
 		note_opener(user, user.get_idcard(TRUE))
+	else if(density && isliving(user))
+		// A prisoner trying their own cell door: the warden hears it rattle
+		holding_cell?.called_out(user)
 	return ..()
 
 /obj/machinery/door/airlock/outpost/glass/police_cell/bumpopen(mob/living/user)
 	if(density && isliving(user) && requiresID() && allowed(user))
 		note_opener(user, user.get_idcard(TRUE))
+	else if(density && isliving(user))
+		holding_cell?.called_out(user)
 	return ..()
 
 /obj/machinery/door/airlock/outpost/glass/police_cell/try_to_crowbar(obj/item/tool, mob/living/user, forced = FALSE)
@@ -1404,3 +1509,4 @@
 #undef CELL_UNCUFF_TIME
 #undef CELL_UNCUFF_WAIT
 #undef CELL_OPENER_WINDOW
+#undef CELL_HIT_BACK_DELAY

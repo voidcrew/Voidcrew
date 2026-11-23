@@ -366,6 +366,12 @@
 			"Patience, please. We'll get to you.",
 			"Someone will be along soon."
 		],
+		"cell_more_time": [
+			"That's your clock started over.",
+			"You've just added to your stay.",
+			"That goes on your sheet. The clock starts again.",
+			"More time for that. Sit down, please."
+		],
 		"bribe_coming": [
 			"One moment, please.",
 			"Coming. Hold on.",
@@ -1011,6 +1017,12 @@
 			"Patience.",
 			"You'll be seen."
 		],
+		"cell_more_time": [
+			"Clock starts over.",
+			"That's more time. Sit.",
+			"Noted. Your time starts again.",
+			"You just bought more time."
+		],
 		"bribe_coming": [
 			"Coming.",
 			"Hold on.",
@@ -1655,6 +1667,12 @@
 			"Get comfortable.",
 			"Shut it.",
 			"Keep talking. See what happens."
+		],
+		"cell_more_time": [
+			"Clock's back to the top. Well done.",
+			"That's more time. Clever.",
+			"Starting your clock again. Keep going.",
+			"More time for you. Sit down."
 		],
 		"bribe_coming": [
 			"Yeah, yeah. Coming.",

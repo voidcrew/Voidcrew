@@ -171,8 +171,8 @@
 				TEST_ASSERT(istype(wearer.head, /obj/item/clothing/head/helmet), "[label] wears no helmet")
 				TEST_ASSERT(wearer.glasses && wearer.glasses.flash_protect >= FLASH_PROTECTION_FLASH, "[label] wears no flash-proof eyewear")
 			else if(kind == "sergeant")
-				// The warden may wear a jacket, never armour (decision 65)
-				TEST_ASSERT(!istype(wearer.wear_suit, /obj/item/clothing/suit/armor), "[label] wears armour")
+				// The warden wears tg's own Warden's armoured jacket at every outpost (decision 65, the playtest of 11-23)
+				TEST_ASSERT(istype(wearer.wear_suit, /obj/item/clothing/suit/armor/vest/warden), "[label] does not wear the Warden's jacket")
 			else
 				TEST_ASSERT_NULL(wearer.wear_suit, "[label] wears armour")
 

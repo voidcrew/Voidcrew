@@ -48,23 +48,32 @@
 	TEST_ASSERT_EQUAL(card.assignment, "Warden", "The warden's card does not say warden")
 	TEST_ASSERT(findtext(card.name, "Warden"), "The warden's card is not named for a warden: [card.name]")
 	TEST_ASSERT(!findtext(lowertext(card.name), "sergeant"), "The warden's card still says sergeant: [card.name]")
-	var/list/zones = list(
-		/datum/outpost_police_profile/halcyon = /obj/item/clothing/under/rank/security/warden/formal,
-		/datum/outpost_police_profile/quartermain = /obj/item/clothing/under/rank/security/warden/grey,
-		/datum/outpost_police_profile/undertow = /obj/item/clothing/under/syndicate,
-	)
+	// tg's own Warden at every outpost (/datum/outfit/job/warden): the red suit, the red armoured jacket, the red hat
+	var/datum/outfit/job/warden/tg_warden = new
 	var/turf/spot = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
-	for(var/profile_type in zones)
+	for(var/profile_type in list(/datum/outpost_police_profile/halcyon, /datum/outpost_police_profile/quartermain, /datum/outpost_police_profile/undertow))
 		var/datum/outpost_police_profile/profile = new profile_type
 		var/outfit_type = profile.outfits["sergeant"] // POLICE_UNIT_SERGEANT
 		qdel(profile)
 		TEST_ASSERT(ispath(outfit_type, /datum/outfit/outpost_police/sergeant), "[profile_type] dresses its warden in [outfit_type]")
 		var/mob/living/carbon/human/dummy = allocate(/mob/living/carbon/human/consistent, spot)
 		dummy.equipOutfit(outfit_type)
-		TEST_ASSERT(istype(dummy.w_uniform, zones[profile_type]), "[profile_type]'s warden wears [dummy.w_uniform?.type]")
-		TEST_ASSERT(istype(dummy.head, /obj/item/clothing/head/hats/warden), "[profile_type]'s warden wears no warden's hat ([dummy.head?.type])")
+		TEST_ASSERT_EQUAL(dummy.w_uniform?.type, tg_warden.uniform, "[profile_type]'s warden does not wear the Warden's suit")
+		TEST_ASSERT_EQUAL(dummy.wear_suit?.type, tg_warden.suit, "[profile_type]'s warden does not wear the Warden's jacket")
+		TEST_ASSERT_EQUAL(dummy.head?.type, tg_warden.head, "[profile_type]'s warden does not wear the Warden's hat")
+		TEST_ASSERT_EQUAL(dummy.glasses?.type, tg_warden.glasses, "[profile_type]'s warden does not wear the Warden's glasses")
+		TEST_ASSERT_EQUAL(dummy.gloves?.type, tg_warden.gloves, "[profile_type]'s warden does not wear the Warden's gloves")
+		TEST_ASSERT_EQUAL(dummy.shoes?.type, tg_warden.shoes, "[profile_type]'s warden does not wear the Warden's boots")
+		// The police's own: the radio net, the belt with the baton, cuffs and sidearm, and the cell card
+		TEST_ASSERT(istype(dummy.ears, /obj/item/radio/headset/guard_net/outpost_police), "[profile_type]'s warden is off the police radio ([dummy.ears?.type])")
+		TEST_ASSERT(istype(dummy.belt, /obj/item/storage/belt/security/outpost_police), "[profile_type]'s warden has no police belt ([dummy.belt?.type])")
 		var/obj/item/card/id/dummy_card = dummy.wear_id
 		TEST_ASSERT(istype(dummy_card, /obj/item/card/id/advanced/outpost_sergeant) && dummy_card.assignment == "Warden", "[profile_type]'s warden has no warden's card")
+		qdel(dummy)
+	qdel(tg_warden)
+	// On the warden himself everything but the card is locked to him
+	for(var/obj/item/worn in list(warden.w_uniform, warden.wear_suit, warden.head, warden.glasses, warden.gloves, warden.shoes, warden.belt, warden.ears))
+		TEST_ASSERT(human_npc_gear_locked(worn), "The warden's [worn.name] can be taken off him")
 
 /// Every zone has the warden's lines; the offer always names the price and nothing else carries a token
 /datum/unit_test/voidcrew_outpost_police_bribe_lines
