@@ -1,0 +1,9 @@
+/datum/unit_test/voidcrew_police_soak/quiet_visit
+/datum/unit_test/voidcrew_police_soak/seen_crime_stand_still
+/datum/unit_test/voidcrew_police_soak/crime_then_hide
+/datum/unit_test/voidcrew_police_soak/shove_officers
+/datum/unit_test/voidcrew_police_soak/stunned_then_up
+/datum/unit_test/voidcrew_police_soak/jailed_shove_walk_out
+/datum/unit_test/voidcrew_police_soak/hostage
+/datum/unit_test/voidcrew_police_soak/hangar_wait
+/datum/unit_test/voidcrew_police_soak/crowded_gate
