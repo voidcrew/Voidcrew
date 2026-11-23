@@ -95,6 +95,12 @@
 #define OUTPOST_POLICE_STANDOFF_MAX (1 MINUTES)
 /// ...and say it is nearly up from this long before the end
 #define OUTPOST_POLICE_STANDOFF_WARNING (15 SECONDS)
+/// How near an officer stays to a suspect who is down with the cuffs still to come (police_stealth.dm, outpost_police_cover)
+#define OUTPOST_POLICE_COVER_RANGE 3
+/// Blackboard key: the suspect an officer stands over (police_stealth.dm, outpost_police_cover)
+#define BB_OUTPOST_POLICE_COVER "outpost_police_cover"
+/// An officer put on the floor within this long of a hand on it from someone the police hold gets up without a search (owner decision 58)
+#define OUTPOST_POLICE_HELD_TOUCH_MEMORY (15 SECONDS)
 /// What an officer does at a patrol stop happens within this many tiles of it (a seat, the coffee machine, a chat)
 #define OUTPOST_POLICE_STOP_REACH 3
 /// A death this soon after the offender's last counted hit on the victim is a killing

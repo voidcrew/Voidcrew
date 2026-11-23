@@ -1194,10 +1194,28 @@
 	stealth_bark(STEALTH_BARK_DOWNED)
 
 /**
- * Fallen friends (abuse P13): group members that are dead, in crit, cuffed or lying down, in its sight.
- * It reacts to each fall once: a friend who gets back up and goes down again is news again. The first
- * guard to find one is suspicious and walks over; a guard that finds a body someone already reported just
- * searches there.
+ * What `member`, one of its group, is to it when it sees them: STEALTH_FALLEN_BODY dead or out cold (asleep,
+ * unconscious, in crit), STEALTH_FALLEN_HELPLESS awake but in cuffs or on the floor (shoved over, stunned, out of
+ * stamina, lying down), or null on their feet. On the floor from its own slip is on its feet (on_slipped()).
+ * Only the first is a body: someone awake is never called in as one.
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_fallen(mob/living/member)
+	if(member.stat != CONSCIOUS || HAS_TRAIT(member, TRAIT_CRITICAL_CONDITION))
+		return STEALTH_FALLEN_BODY
+	if(HAS_TRAIT(member, TRAIT_RESTRAINED))
+		return STEALTH_FALLEN_HELPLESS
+	if(member.body_position != LYING_DOWN)
+		return null
+	var/datum/ai_controller/basic_controller/human_npc/stealth/member_ai = member.ai_controller
+	if(istype(member_ai) && member_ai.slip_down_until >= world.time)
+		return null
+	return STEALTH_FALLEN_HELPLESS
+
+/**
+ * Fallen friends (abuse P13): group members that are dead, out cold, cuffed or on the floor, in its sight
+ * (stealth_fallen()). It reacts to each fall once: a friend who gets back up and goes down again is news again.
+ * The first guard to find one is suspicious and walks over; a guard that finds one someone already reported just
+ * searches there. Only the dead and the out cold are called in as a body; a friend who is awake is asked after.
  */
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_check_bodies()
 	next_body_scan = world.time + STEALTH_BODY_SCAN_INTERVAL
@@ -1213,10 +1231,8 @@
 		if(member == guard)
 			continue
 		var/key = REF(member)
-		// On the floor from its own slip: nobody did that to it (on_slipped()).
-		var/datum/ai_controller/basic_controller/human_npc/stealth/member_ai = member.ai_controller
-		var/slipped = istype(member_ai) && member_ai.slip_down_until >= world.time
-		if(!(member.stat == DEAD || HAS_TRAIT(member, TRAIT_CRITICAL_CONDITION) || HAS_TRAIT(member, TRAIT_RESTRAINED) || (member.body_position == LYING_DOWN && !slipped)))
+		var/fallen = stealth_fallen(member)
+		if(!fallen)
 			// On its feet again.
 			seen -= key
 			group.reported_bodies -= key
@@ -1243,15 +1259,17 @@
 		var/news = !(key in group.reported_bodies)
 		if(news)
 			group.reported_bodies += key
+		// Awake, it is no body: it is asked what happened, not called in as one.
+		var/line = fallen == STEALTH_FALLEN_BODY ? STEALTH_BARK_BODY : STEALTH_BARK_HELPLESS
 		if(!news || stealth_state() == STEALTH_SEARCHING)
 			stealth_go_searching(where)
 			search_for_body = TRUE
 			// Already searching, it still says what it found (decision 31: guards that searched beside a
 			// body without a word looked blind).
 			if(news)
-				stealth_bark(STEALTH_BARK_BODY)
+				stealth_bark(line)
 		else
-			stealth_go_suspicious(where, STEALTH_GOTO_BODY)
+			stealth_go_suspicious(where, STEALTH_GOTO_BODY, line)
 		stealth_first_hand(where)
 		// Someone in their colours standing over it as it is found (decision 40).
 		for(var/mob/living/carbon/human/near in range(1, where))
