@@ -250,7 +250,12 @@
 	var/datum/outpost_police_floor/own = police.search_floor(here, officer)
 	var/here_sector = police.sector_of(here)
 	var/start_sector = police.sector_of(start)
-	for(var/datum/outpost_police_floor/floor as anything in police.search_floors(first, officer, rides))
+	for(var/entry in police.search_floors(first, officer, rides))
+		// A hangar is read when the search gets as far as it, and no sooner
+		var/datum/outpost_berth/unread = entry
+		var/datum/outpost_police_floor/floor = istype(unread) ? police.search_floor(unread.get_bottom_left(), officer) : entry
+		if(!floor)
+			continue
 		// A hangar is for an officer that rides to one, or one that stands in it already
 		if(floor.berth_ref && !rides && floor != own)
 			continue
@@ -470,8 +475,8 @@
 
 /**
  * The floors a search goes through, in order: `first` (the one it started on), the outpost's own floor, then, for
- * a `rider` (an officer who is taken to hangars), each hangar with ground under it. A hangar is first read when a
- * search asks for it here.
+ * a `rider` (an officer who is taken to hangars), each hangar with ground under it. A hangar is given as its berth:
+ * whoever gets that far down the list reads it then (search_floor()), so a search of the concourse reads none.
  */
 /datum/outpost_police/proc/search_floors(datum/outpost_police_floor/first, mob/living/walker, rider = FALSE)
 	. = list()
@@ -482,13 +487,11 @@
 		. |= main
 	if(!rider)
 		return
+	var/datum/outpost_berth/first_berth = first?.berth_ref?.resolve()
 	for(var/datum/outpost_berth/berth as anything in outpost?.berths)
-		var/turf/ground = berth?.get_bottom_left()
-		if(!ground || !length(berth.alcove_turfs))
+		if(!berth || berth == first_berth || !berth.get_bottom_left() || !length(berth.alcove_turfs))
 			continue
-		var/datum/outpost_police_floor/hangar = search_floor(ground, walker)
-		if(hangar)
-			. |= hangar
+		. += berth
 
 /// Reads the outpost's own floor (`berth` null) or `berth`'s hangar for `walker`. Null if it has no ground.
 /datum/outpost_police/proc/search_read(datum/outpost_berth/berth, mob/living/walker)

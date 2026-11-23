@@ -642,8 +642,9 @@
 	if(short > 0 && world.time >= dispatch_next_wave)
 		var/datum/outpost_warrant/top = dispatch_top_suspect(suspects)
 		var/mob/living/suspect = top?.mind?.current
-		// Where the search for them starts (police_search.dm): somewhere a unit can walk to, which the scan chamber of
-		// a checkpoint is not. A unit sent up the lobby lift for someone last seen in it searched the lobby.
+		// Where the search for them starts (police_search.dm search_start()): somewhere a unit can walk to. For
+		// someone last seen in a checkpoint's scan chamber that is the side its gate let them out by: a unit sent up
+		// the lobby lift for someone who had emagged their way through searched the lobby.
 		var/sector = sector_of(search_start(top?.last_seen_turf) || get_turf(suspect))
 		if(sector == POLICE_SECTOR_OUTSIDE && suspect)
 			sector = sector_of(suspect)
