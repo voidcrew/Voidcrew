@@ -64,6 +64,18 @@
 	)
 	destruction_sleep_duration = 20
 
+/obj/vehicle/sealed/mecha/gygax/dark/decrepid
+desc = "A lightweight exosuit, painted in a dark scheme. This model's armor has been upgraded with a cutting-edge armor composite, resulting in greater protection and performance at the cost of modularity. This one has suffered Major irreparable damage and its functions and integrity are compromised"
+	name = "\improper Decrepid Dark Gygax"
+	ui_theme = "syndicate"
+	icon_state = "darkgygax"
+	base_icon_state = "darkgygax"
+	max_integrity = 150
+	armor_type = /datum/armor/mecha_gygax
+	force = 25
+	wreckage = /obj/structure/mecha_wreckage/gygax/dark
+	mecha_flags = ID_LOCK_ON | CAN_STRAFE | IS_ENCLOSED | HAS_LIGHTS | MMI_COMPATIBLE | AI_COMPATIBLE
+
 /datum/armor/gygax_dark
 	melee = 70
 	bullet = 50
@@ -83,15 +95,3 @@
 	capacitor = new /obj/item/stock_parts/capacitor/quadratic(src)
 	servo = new /obj/item/stock_parts/servo/femto(src)
 	update_part_values()
-
-/obj/vehicle/sealed/mecha/gygax/dark/decrepid
-desc = "A lightweight exosuit, painted in a dark scheme. This model's armor has been upgraded with a cutting-edge armor composite, resulting in greater protection and performance at the cost of modularity. This one has suffered Major irreparable damage and its functions and integrity are compromised"
-	name = "\improper Decrepid Dark Gygax"
-	ui_theme = "syndicate"
-	icon_state = "darkgygax"
-	base_icon_state = "darkgygax"
-	max_integrity = 150
-	armor_type = /datum/armor/mecha_gygax
-	force = 25
-	wreckage = /obj/structure/mecha_wreckage/gygax/dark
-	mecha_flags = ID_LOCK_ON | CAN_STRAFE | IS_ENCLOSED | HAS_LIGHTS | MMI_COMPATIBLE | AI_COMPATIBLE
