@@ -326,9 +326,13 @@
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/proc/police_caught_cold()
 	return police_onto_at && world.time - police_onto_at <= OUTPOST_POLICE_STANDOFF_COLD
 
-// Only for the outpost's own people (its residents, staff and officers): not a pet or a stranger brought in to hide behind
+/**
+ * Only for the outpost's own people (its residents, staff and officers), awake: not a pet or a stranger brought in to
+ * hide behind, and not a body. Someone awake struggles and gets loose in the end (ambient_escape); someone out cold
+ * never would, and a wanted person could walk out behind them past every officer (abuse review, decision 68).
+ */
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_standoff_with(mob/living/holder, mob/living/hostage)
-	if(!istype(hostage, /mob/living/carbon/human/npc/ambient_npc/outpost))
+	if(!istype(hostage, /mob/living/carbon/human/npc/ambient_npc/outpost) || hostage.stat != CONSCIOUS)
 		return FALSE
 	return ..()
 

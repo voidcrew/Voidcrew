@@ -1244,3 +1244,9 @@
 	// Not for a stranger, whoever they stand with
 	var/mob/living/carbon/human/stranger = person_at(13, 5, FALSE)
 	TEST_ASSERT(!brain.stealth_standoff_with(holder, stranger), "An officer would hold fire for a stranger")
+
+	// Nor for someone out cold: they would never get loose
+	TEST_ASSERT(brain.stealth_standoff_with(holder, local), "Fixture: the officer no longer stands off for the resident")
+	local.Unconscious(30 SECONDS)
+	TEST_ASSERT(local.stat != CONSCIOUS, "Fixture: the resident is still awake")
+	TEST_ASSERT(!brain.stealth_standoff_with(holder, local), "An officer would hold fire for someone out cold")

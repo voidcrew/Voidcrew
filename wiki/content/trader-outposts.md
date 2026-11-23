@@ -257,7 +257,7 @@ More officers arrive through the staff lifts as your stars rise, and they keep c
 
 **Heavy weapons.** At 5 stars two heavy weapons officers come up with the rest, carrying an ion rifle, a rocket launcher or a grenade launcher. Those are for mechs. Anyone on foot gets their pistol like any other officer.
 
-**Hostages.** Hold one of the outpost's people by the neck with a gun in your other hand, and every officer who can see it holds fire and keeps their distance. Tell them out loud to back off and they will. Tell them to drop it, and an officer who walked in on it puts their weapon away; one who was already after you, or already looking for you, keeps it. The hostage struggles, and once they get loose or you let go the officers carry on. Hurt the hostage or attack an officer, and the officers who saw it never hold fire for you again. They do not hold fire for a hostage who is not one of the outpost's own.
+**Hostages.** Hold one of the outpost's people by the neck with a gun in your other hand, and every officer who can see it holds fire and keeps their distance. Tell them out loud to back off and they will. Tell them to drop it, and an officer who walked in on it puts their weapon away; one who was already after you, or already looking for you, keeps it. The hostage struggles, and once they get loose or you let go the officers carry on. Hurt the hostage or attack an officer, and the officers who saw it never hold fire for you again. They do not hold fire for a hostage who is not one of the outpost's own, or for one who is out cold.
 
 At Halcyon and Quartermain a downed suspect is cuffed, never shot, at any stars. Nobody fires on someone who is cuffed and being taken in, or who is in a cell. Get away from them and you are fair game again.
 
