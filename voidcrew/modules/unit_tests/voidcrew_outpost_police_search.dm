@@ -372,6 +372,9 @@
 		// No place behind the police's own doors that a visitor cannot get into: the lifts are not searched
 		for(var/turf/lift as anything in police.lift_turfs)
 			TEST_ASSERT(!(lift in floor.places), "[outpost_type]: the police lift at [lift.x - low.x + 1],[lift.y - low.y + 1] is a place the search looks at")
+		// And none in an exit gate, which walks whoever steps into it on through
+		for(var/turf/place as anything in floor.places)
+			TEST_ASSERT(!(locate(/obj/structure/outpost_exit_gate) in place), "[outpost_type]: the exit gate at [place.x - low.x + 1],[place.y - low.y + 1] is a place the search stands on")
 		// From the lobby lift the lobby's places are a walk, and the rest are through the checkpoint
 		var/list/from_lobby = police_search_walk(list(outpost.lobby_alcove_turfs[1]), low, high, officer, officer.get_access())
 		var/lobby_places = 0
@@ -503,7 +506,7 @@
 	TEST_ASSERT_EQUAL(place, last, "Fixture: the search did not start over from where they were last seen")
 	police.search_looked(warrant, first, null)
 	TEST_ASSERT_NOTEQUAL(police.search_place(warrant, first), last, "An officer was sent again to a place it could not get to")
-	police.search_looked(warrant, second, second_place)
+	police.search_looked(warrant, second, null)
 	TEST_ASSERT_EQUAL(police.search_place(warrant, second), last, "A place one officer could not get to was counted as looked at")
 
 	// A new sighting: from there

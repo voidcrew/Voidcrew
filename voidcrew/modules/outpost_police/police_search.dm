@@ -387,7 +387,7 @@
 
 /**
  * The places a search stops at so that every tile of `public` is in sight of one, each of them a tile of
- * `walkable`: the beat's own `stops` where they show enough that is new (the mappers already have officers stand
+ * `walkable` (where an officer can stand): the beat's own `stops` where they show enough that is new (the mappers already have officers stand
  * there), then one for every tile still out of sight, on the tile itself or, where no officer can stand on it (a
  * shop's far side of the counter), the nearest tile that sees it.
  */
@@ -610,7 +610,13 @@
 			public -= tile
 		public -= get_turf(post.inner_door)
 		public -= get_turf(post.outer_door)
-	floor.places = outpost_police_cover(public, floor.walkable, stops, yields)
+	// Nobody stands in an exit gate, a visitor or an officer: it walks them on through (outpost_checkpoint.dm)
+	var/list/stands = floor.walkable.Copy()
+	for(var/turf/tile as anything in floor.walkable)
+		if(locate(/obj/structure/outpost_exit_gate) in tile)
+			stands -= tile
+			public -= tile
+	floor.places = outpost_police_cover(public, stands, stops, yields)
 	if(QDELETED(src))
 		qdel(floor)
 		return null
