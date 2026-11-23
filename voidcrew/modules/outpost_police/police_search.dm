@@ -9,11 +9,11 @@
  * so the arresting officer never left its lift and the lift unit searched its own alcove. With a tile they could
  * reach they would still only ever have looked within five tiles of it.
  *
- * - The floor (/datum/outpost_police_floor): what an officer can walk to with no key (outpost_police_flood(), the
- *   pathfinder's own rules), and the places a search stops at to look about, chosen so that every tile a visitor
- *   can get to is in sight of one (outpost_police_cover()). Read for the outpost's own floor, concourse and lobby
- *   together, and for a hangar once a search gets that far; read again after POLICE_SEARCH_REREAD, as doors and
- *   crates move.
+ * - The floor (/datum/outpost_police_floor): what an officer can walk to (outpost_police_flood(), the pathfinder's
+ *   own rules), and the places a search stops at to look about, chosen so that every tile a visitor can get to is
+ *   in sight of one (outpost_police_cover()). So no place is in a room only the police can enter, unless a visitor
+ *   can climb into it. Read for the outpost's own floor, concourse and lobby together, and for a hangar once a
+ *   search gets that far; read again after POLICE_SEARCH_REREAD, as doors and crates move.
  * - The start (search_start()): the last-seen tile, or the nearest tile an officer can stand on when that one
  *   cannot be walked to or stood beside (a locked room, a ship's deck). For a checkpoint's scan chamber it is the
  *   side they can have left by: the concourse with the gate down or forced, the lobby with it working.
@@ -93,7 +93,7 @@
 /datum/outpost_police_floor
 	/// Weakref to the hangar's berth; null for the outpost's own floor
 	var/datum/weakref/berth_ref
-	/// Tiles an officer can walk to with no key: turf -> TRUE
+	/// Tiles an officer can walk to: turf -> TRUE
 	var/list/walkable = list()
 	/// Where a search of it stops to look about
 	var/list/turf/places = list()
@@ -322,8 +322,8 @@
 
 /**
  * Every tile that can be walked to from `seeds` without leaving `box`, by the pathfinder's own rules for `walker`
- * carrying `access` (none: only what the public can open). A null walker is a visitor: someone who works the
- * checkpoint's doors as a player does and climbs over a counter. `skip` (turf -> TRUE) is never entered.
+ * carrying `access`. A null walker is a visitor: someone with no keys who works the checkpoint's doors as a
+ * player does and climbs over a counter. `skip` (turf -> TRUE) is never entered.
  * Returns turf -> TRUE in the order found, `limit` tiles at most.
  */
 /proc/outpost_police_flood(list/turf/seeds, list/box, mob/living/walker, list/access, list/skip, limit = INFINITY)
@@ -515,7 +515,7 @@
 	var/datum/outpost_police_floor/floor = new
 	floor.berth_ref = berth ? WEAKREF(berth) : null
 	floor.read_at = world.time
-	floor.walkable = outpost_police_flood(seeds, box, walker, null, skip)
+	floor.walkable = outpost_police_flood(seeds, box, walker, walker.get_access(), skip)
 	var/list/turf/alcove = berth ? berth.alcove_turfs : outpost.lobby_alcove_turfs
 	for(var/turf/tile as anything in alcove)
 		if(floor.walkable[tile])

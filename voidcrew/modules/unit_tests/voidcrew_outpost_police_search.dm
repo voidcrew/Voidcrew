@@ -362,11 +362,14 @@
 			TEST_ASSERT(!length(missed), "[outpost_type]: from the police lift at [lift.x - low.x + 1],[lift.y - low.y + 1] an officer cannot walk to the search places at [missed.Join(" ")]")
 			for(var/turf/stop as anything in police.stop_activities)
 				TEST_ASSERT(reach[stop], "[outpost_type]: from the police lift at [lift.x - low.x + 1],[lift.y - low.y + 1] an officer cannot walk to the beat stop at [stop.x - low.x + 1],[stop.y - low.y + 1]")
-		// And from any stop of the beat, with no keys at all
+		// And from any stop of the beat
 		var/turf/a_stop = police.stop_activities[1]
-		var/list/from_beat = police_search_walk(list(a_stop), low, high, officer, null)
+		var/list/from_beat = police_search_walk(list(a_stop), low, high, officer, officer.get_access())
 		for(var/turf/place as anything in floor.places)
 			TEST_ASSERT(from_beat[place], "[outpost_type]: from the beat an officer cannot walk to the search place at [place.x - low.x + 1],[place.y - low.y + 1]")
+		// No place behind the police's own doors that a visitor cannot get into: the lifts are not searched
+		for(var/turf/lift as anything in police.lift_turfs)
+			TEST_ASSERT(!(lift in floor.places), "[outpost_type]: the police lift at [lift.x - low.x + 1],[lift.y - low.y + 1] is a place the search looks at")
 		// From the lobby lift the lobby's places are a walk, and the rest are through the checkpoint
 		var/list/from_lobby = police_search_walk(list(outpost.lobby_alcove_turfs[1]), low, high, officer, officer.get_access())
 		var/lobby_places = 0
