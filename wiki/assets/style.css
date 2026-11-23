@@ -152,6 +152,8 @@ article h2 {
 }
 article h3 { margin-top: 1.6rem; font-size: 1.12rem; color: var(--accent); }
 article img { max-width: 100%; height: auto; border: 1px solid var(--border); border-radius: 8px; image-rendering: pixelated; }
+/* Screenshots of an editor or a UI are scaled smoothly; sprites and map renders stay pixelated. */
+article img.screenshot { image-rendering: auto; }
 article code {
   font-family: var(--mono);
   font-size: 0.88em;
