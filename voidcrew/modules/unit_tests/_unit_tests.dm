@@ -222,6 +222,7 @@
 #include "voidcrew_outpost_police_cell.dm"
 #include "voidcrew_outpost_police_crit_medic.dm"
 #include "voidcrew_outpost_police_dispatch.dm"
+#include "voidcrew_outpost_police_down.dm"
 #include "voidcrew_outpost_police_heavy.dm"
 #include "voidcrew_outpost_police_helpers.dm"
 #include "voidcrew_outpost_police_hud.dm"

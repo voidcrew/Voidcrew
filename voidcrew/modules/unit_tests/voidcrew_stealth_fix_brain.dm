@@ -123,6 +123,41 @@
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "suspicious", "A guard didn't react to a friend on the floor")
 	qdel(block)
 
+/// A friend awake on the floor is asked after, not called in as a body; out cold it is a body. Lines are written out: "stealth_helpless", "stealth_body".
+/datum/unit_test/voidcrew_stealth_fix_brain_helpless_friend
+
+/datum/unit_test/voidcrew_stealth_fix_brain_helpless_friend/Run()
+	var/datum/turf_reservation/block = stealth_block(12, 5)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, stealth_at(block, 6, 4))
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 2, 2)
+	var/mob/living/carbon/human/npc/friend = stealth_guard(block, 5, 2)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/friend_ai = stealth_ai(friend)
+	stealth_ai.stealth_setup()
+	friend_ai.stealth_setup()
+	// Knocked to the floor, awake
+	friend.Knockdown(20 SECONDS)
+	TEST_ASSERT(friend.body_position == LYING_DOWN && friend.stat == CONSCIOUS, "Test fixture: the friend isn't awake on the floor")
+	stealth_ai.next_body_scan = 0
+	stealth_ai.stealth_check_bodies()
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "suspicious", "A guard didn't react to a friend knocked to the floor")
+	TEST_ASSERT(!stealth_ai.bark_ready_at["stealth_body"], "A guard called a friend who is awake on the floor a body")
+	TEST_ASSERT(stealth_ai.bark_ready_at["stealth_helpless"] > world.time, "A guard had no word for a friend awake on the floor")
+	// Back on its feet, then out cold
+	friend.SetKnockdown(0)
+	stealth_ai.stealth_go_unaware()
+	stealth_ai.next_body_scan = 0
+	stealth_ai.stealth_check_bodies()
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "A friend back on its feet set a guard off")
+	friend.Unconscious(20 SECONDS)
+	TEST_ASSERT(friend.stat != CONSCIOUS, "Test fixture: the friend isn't out cold")
+	stealth_ai.next_body_scan = 0
+	stealth_ai.stealth_check_bodies()
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "suspicious", "A guard didn't react to a friend out cold")
+	TEST_ASSERT(stealth_ai.bark_ready_at["stealth_body"] > world.time, "A guard had no word for a friend out cold")
+	qdel(block)
+
 /// Health slipping away with nobody to blame sends a guard looking, but it shouts and radios nothing; a blow it feels does.
 /datum/unit_test/voidcrew_stealth_fix_brain_bleeding_quiet
 
