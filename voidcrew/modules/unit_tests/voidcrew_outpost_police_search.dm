@@ -617,3 +617,67 @@
 	case.process_case()
 	TEST_ASSERT_EQUAL(get_turf(case.goal), at(30, 2), "With a colleague's eyes on the suspect the arresting officer does not go to where they are seen")
 	police.close_case(suspect.mind)
+
+/**
+ * The hangars: once the outpost's own floor has been looked at, a response unit is dealt the places of a hangar, and
+ * a beat officer, who is never taken to one, starts the floor again. A beat officer is no part of the response to
+ * someone last seen in a hangar: dispatch leaves it on its beat and sends the units the hangar is due.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/search_hangar
+
+/datum/unit_test/voidcrew_stealth_live/police/search_hangar/Run()
+	TEST_ASSERT(police_room(14, 7), "No room for the test")
+	var/datum/turf_reservation/claimed = SSmapping.request_turf_block_reservation(9, 9, 1, requester = "police search hangar test")
+	TEST_ASSERT_NOTNULL(claimed, "Could not reserve a hangar")
+	var/datum/outpost_berth/berth = new(outpost, 1, null)
+	berth.reservation = claimed
+	for(var/turf/tile as anything in berth.get_block())
+		tile.ChangeTurf(/turf/open/floor/iron)
+	var/turf/hangar_corner = berth.get_bottom_left()
+	berth.alcove_turfs = list(hangar_corner, get_step(hangar_corner, EAST))
+	var/list/old_berths = outpost.berths
+	outpost.berths = list(berth)
+
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/unit = officer_at(3, 3, EAST, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat = officer_at(5, 3)
+	var/mob/living/carbon/human/suspect = unseen_suspect(2, 3, 12, 5)
+	var/datum/outpost_warrant/warrant = police.get_warrant(suspect.mind)
+	var/datum/outpost_police_floor/floor = police.search_floor(warrant.last_seen_turf, unit)
+	TEST_ASSERT_NOTNULL(floor, "The room's floor was not read")
+
+	// The response unit works through the room, then is sent to the hangar
+	var/turf/place
+	var/in_hangar = FALSE
+	for(var/i in 1 to length(floor.places) + 3)
+		place = police.search_place(warrant, unit)
+		TEST_ASSERT_NOTNULL(place, "The response unit was sent nowhere")
+		if(berth.contains_turf(place))
+			in_hangar = TRUE
+			break
+		unit.forceMove(place)
+		police.search_looked(warrant, unit, place)
+	TEST_ASSERT(in_hangar, "With the outpost's own floor looked at, a response unit was not sent to the hangar")
+	// The beat officer never is
+	for(var/i in 1 to length(floor.places) + 3)
+		place = police.search_place(warrant, beat)
+		TEST_ASSERT_NOTNULL(place, "The beat officer was sent nowhere")
+		TEST_ASSERT(!berth.contains_turf(place), "A beat officer was sent to look in a hangar")
+		beat.forceMove(place)
+		police.search_looked(warrant, beat, place)
+
+	// Last seen in the hangar: the beat is no part of that response
+	warrant.last_seen_turf = locate(hangar_corner.x + 4, hangar_corner.y + 4, hangar_corner.z)
+	warrant.last_seen_at = world.time + 1
+	TEST_ASSERT(police.dispatch_out_of_reach(beat, warrant), "A beat officer counts as part of the response to a hangar it is never taken to")
+	TEST_ASSERT(!police.dispatch_out_of_reach(unit, warrant), "A response unit is not part of the response to a hangar")
+	beat.resume_routine()
+	unit.resume_routine()
+	suspect.forceMove(warrant.last_seen_turf)
+	police.dispatch_next_wave = world.time + 1 MINUTES
+	police.dispatch_respond(police.alert_level())
+	TEST_ASSERT(!beat.dispatch_responding(), "Dispatch sent a beat officer after someone last seen in a hangar")
+	TEST_ASSERT(unit.dispatch_responding(), "Dispatch did not send the response unit after someone last seen in a hangar")
+	TEST_ASSERT_EQUAL(police.search_place(warrant, unit), warrant.last_seen_turf, "The response unit is not sent to where they were last seen in the hangar")
+
+	qdel(berth)
+	outpost.berths = old_berths
