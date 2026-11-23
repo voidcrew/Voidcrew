@@ -30,6 +30,8 @@
 #define CELL_UNCUFF_WAIT (10 SECONDS)
 /// How long after someone works a cell door an opening is still put down to them (a pry with jaws takes 5 seconds)
 #define CELL_OPENER_WINDOW (6 SECONDS)
+/// An officer struck by a prisoner takes this long to swing back (the blow that struck it lands first)
+#define CELL_HIT_BACK_DELAY (0.4 SECONDS)
 
 // =========================================================================
 // THE CELL
@@ -324,6 +326,7 @@
 /datum/outpost_police_cell/proc/hit_back(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/prisoner)
 	. = FALSE
 	var/datum/weakref/officer_ref = WEAKREF(officer)
+	sleep(CELL_HIT_BACK_DELAY)
 	for(var/attempt in 1 to 25)
 		if(QDELETED(src) || QDELETED(officer) || QDELETED(prisoner) || !istype(officer) || officer.stat != CONSCIOUS || officer.client || officer.mind)
 			break
@@ -1506,3 +1509,4 @@
 #undef CELL_UNCUFF_TIME
 #undef CELL_UNCUFF_WAIT
 #undef CELL_OPENER_WINDOW
+#undef CELL_HIT_BACK_DELAY

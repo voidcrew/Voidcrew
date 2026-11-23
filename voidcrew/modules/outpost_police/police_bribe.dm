@@ -96,7 +96,7 @@
  */
 /datum/outpost_police/proc/tick_bribes()
 	for(var/datum/outpost_police_cell/cell as anything in cells)
-		for(var/datum/mind/prisoner as anything in cell.visit_due)
+		for(var/datum/mind/prisoner in cell.visit_due)
 			if(world.time < cell.visit_due[prisoner])
 				continue
 			var/mob/living/body = cell.body_of(prisoner)

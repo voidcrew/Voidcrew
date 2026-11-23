@@ -47,13 +47,11 @@
 	TEST_ASSERT(police.in_custody(prisoner), "Fixture: a prisoner in the cell is not in custody")
 	police.stealth_tick_squad()
 
-	// The shove, tg's own: the warden has the cell wall at his back
+	// The shove, tg's own (a right click with an empty hand): the warden has the cell wall at his back
 	prisoner.setDir(SOUTH)
-	prisoner.disarm(warden)
+	warden.attack_hand(prisoner, list(RIGHT_CLICK = TRUE))
 	TEST_ASSERT_EQUAL(warden.body_position, LYING_DOWN, "Fixture: the shove against the wall did not knock the warden down")
-	TEST_ASSERT(prisoner.getStaminaLoss() > 0, "The warden did not hit back at a prisoner who shoved him in the cell")
-	TEST_ASSERT_EQUAL(warden_brain.stealth_state(), "unaware", "The warden went [warden_brain.stealth_state()] over his own prisoner")
-	TEST_ASSERT(!warden_brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET), "The warden took his own prisoner for a target")
+	TEST_ASSERT_EQUAL(length(police.pending_reports), 1, "Fixture: the shove was not reported")
 
 	// The officer with the cell in view: no body found, no search, no alarm
 	watcher_brain.stealth_check_bodies()
@@ -61,8 +59,14 @@
 	TEST_ASSERT_NULL(watcher_brain.pending_call, "An officer is calling in the warden knocked down in an occupied cell")
 	TEST_ASSERT(!watcher_brain.blackboard["stealth_wary"], "An officer is on edge over the warden knocked down in an occupied cell")
 
+	// The warden's answer, from the floor: his baton, a moment after the shove landed
+	sleep(1 SECONDS)
+	TEST_ASSERT(prisoner.getStaminaLoss() > 0, "The warden did not hit back at a prisoner who shoved him in the cell")
+	TEST_ASSERT_EQUAL(warden_brain.stealth_state(), "unaware", "The warden went [warden_brain.stealth_state()] over his own prisoner")
+	TEST_ASSERT(!warden_brain.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET), "The warden took his own prisoner for a target")
+
 	// The charge is passed on quietly, counts, and starts the term over as a jail term at three stars
-	TEST_ASSERT_EQUAL(length(police.pending_reports), 1, "The shove was not reported")
+	TEST_ASSERT_EQUAL(length(police.pending_reports), 1, "The report of the shove did not wait to be passed on")
 	police.tick_warrants()
 	var/datum/outpost_pending_report/report = police.pending_reports[1]
 	TEST_ASSERT(report.relay_since, "The warden is not passing the report on")
@@ -158,6 +162,12 @@
 
 /// A crime counted while the booking is still running is given its term when the booking ends
 /datum/unit_test/voidcrew_outpost_police_cell_crime_while_booked
+	/// Set once book() has come back
+	var/book_done = FALSE
+
+/datum/unit_test/voidcrew_outpost_police_cell_crime_while_booked/proc/run_book(datum/outpost_police/police, mob/living/carbon/suspect, mob/living/officer)
+	police.book(suspect, officer)
+	book_done = TRUE
 
 /datum/unit_test/voidcrew_outpost_police_cell_crime_while_booked/Run()
 	var/datum/outpost_police/cell_test/police = police_cells_fixture()
@@ -169,7 +179,7 @@
 	var/datum/mind/mind = suspect.mind
 	police_pin_warrant(police, mind, 30)
 	TEST_ASSERT_NOTNULL(police_cell_cuff(suspect, officer), "Setup: the suspect did not get cuffed")
-	INVOKE_ASYNC(police, TYPE_PROC_REF(/datum/outpost_police, book), suspect, officer)
+	INVOKE_ASYNC(src, PROC_REF(run_book), police, suspect, officer)
 	// The cuffs take two seconds to come off (CELL_UNCUFF_TIME): the booking is running
 	var/deadline = world.time + 10 SECONDS
 	UNTIL(!isnull(cell.booking[mind]) || world.time > deadline)
@@ -177,9 +187,9 @@
 	police.pinned_stars = 3
 	cell.crime_inside(mind)
 	TEST_ASSERT(!cell.jailed[mind], "A crime during the booking set the term before the booking was over")
-	deadline = world.time + 20 SECONDS
-	UNTIL(isnull(cell.booking[mind]) || world.time > deadline)
-	TEST_ASSERT(isnull(cell.booking[mind]), "Setup: the booking never ended")
+	deadline = world.time + 30 SECONDS
+	UNTIL(book_done || world.time > deadline)
+	TEST_ASSERT(book_done && isnull(cell.booking[mind]), "Setup: the booking never ended")
 	TEST_ASSERT(mind in cell.prisoners, "Setup: the booking did not hold the suspect")
 	TEST_ASSERT(cell.jailed[mind], "A fined prisoner who committed a crime while being booked is on a paid hold")
 	TEST_ASSERT(cell.prisoners[mind] >= world.time + 4 MINUTES - 5 SECONDS, "A crime during the booking did not set three stars' time") // OUTPOST_POLICE_JAIL[3]
@@ -291,6 +301,9 @@
 		var/datum/outpost_police/police = outpost.police
 		TEST_ASSERT_NOTNULL(police.desk_turf, "[outpost_type] has no police desk")
 		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant/warden = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant, police.desk_turf)
+		// Nobody is at the outpost in a test: he stands as he does with someone there
+		warden.resume_routine()
+		TEST_ASSERT(warden.police_can_speak(), "[outpost_type]: the warden at his desk cannot speak")
 		var/list/way_access = warden.wear_id?.GetAccess()
 		for(var/datum/outpost_police_cell/cell as anything in police.cells)
 			var/mob/living/carbon/human/prisoner = police_cell_person(cell.tiles[1])
@@ -306,7 +319,8 @@
 					cell.door.try_to_activate_door(prisoner)
 				else
 					prisoner.say("Warden!")
-				TEST_ASSERT(LAZYACCESS(warden.reaction_cooldowns, "cell reply") > world.time, "[outpost_type]: the warden at his desk did not hear [cell.cell_id]'s prisoner ([way])")
+				var/datum/ai_controller/basic_controller/human_npc/stealth/warden_brain = warden.ai_controller
+				TEST_ASSERT(LAZYACCESS(warden.reaction_cooldowns, "cell reply") > world.time, "[outpost_type]: the warden at his desk did not hear [cell.cell_id]'s prisoner ([way]): can speak [warden.police_can_speak()], [warden_brain.stealth_state()], [get_dist(warden, cell.outside_turf)] tiles from the door, prisoner [cell.prisoner_of(prisoner) ? "held" : "not held"] [(get_turf(prisoner) in cell.tiles) ? "inside" : "outside"]")
 				warden.life_answer_cell(WEAKREF(prisoner))
 				var/datum/ambient_activity/warden_bribe/visit = warden.activity
 				TEST_ASSERT(istype(visit), "[outpost_type]: the warden did not set off for [cell.cell_id] ([way]); he is [warden.activity?.type || "doing nothing"]")
