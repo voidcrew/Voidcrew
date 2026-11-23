@@ -394,9 +394,10 @@
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/spare = officer_at(11, 5, SOUTH)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/spare_brain = spare.ai_controller
 	spare_brain.stealth_setup()
-	TEST_ASSERT_NULL(spare_brain.route_id, "A beat officer off its routes claimed one where it stood")
-	police.stealth_tick_officer(spare)
+	// At its first thought, not at the police's next tick: the tick sleeps while nobody is wanted (owner playtest 4)
 	TEST_ASSERT_EQUAL(spare_brain.route_id, "b", "A spare beat officer did not take the free route")
+	police.stealth_tick_officer(spare)
+	TEST_ASSERT_EQUAL(spare_brain.route_id, "b", "A spare beat officer lost its route at the police's tick")
 	TEST_ASSERT_EQUAL(spare_brain.home_turf, at(16, 2), "A spare beat officer does not head for its route's first stop")
 
 	// Stars at 0: back to unaware and its beat
