@@ -577,7 +577,28 @@
 	if(police_busy())
 		next_body_scan = world.time + STEALTH_BODY_SCAN_INTERVAL
 		return
+	police_know_cell_fallen()
 	return ..()
+
+/**
+ * A colleague down on the floor or in the doorway of a cell that holds someone is no mystery: whoever did it is
+ * locked in there. It is known to it, so it is not found as a body, searched over or called in (owner decision 58:
+ * nobody goes on alert over someone in hand). The officer struck answers for itself (police_cell.dm struck_officer()).
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/proc/police_know_cell_fallen()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	var/list/seen = blackboard[BB_STEALTH_BODIES_SEEN]
+	if(isnull(group) || !islist(seen) || !istype(officer) || !length(officer.police?.cells))
+		return
+	for(var/mob/living/member as anything in group.living_members())
+		if(member == officer || !isturf(member.loc))
+			continue
+		var/datum/outpost_police_cell/cell = officer.police.cell_at(member.loc)
+		if(!cell || !length(cell.prisoners))
+			continue
+		var/key = REF(member)
+		seen |= key
+		group.reported_bodies |= key
 
 /// The fallen of trouble that is over are known to it: it does not find them afresh and search for whoever did it
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/proc/police_know_fallen()

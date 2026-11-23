@@ -317,6 +317,9 @@
 	crime_during_ban(warrant)
 	if(new_stars != old_stars)
 		stars_changed(warrant, old_stars, new_stars)
+	// Counted against someone held in a cell: their term starts over (police_cell.dm)
+	if(crime != OUTPOST_CRIME_ACCOMPLICE)
+		cell_holding(mind)?.crime_inside(mind)
 	wake()
 	return new_stars
 
@@ -621,6 +624,10 @@
 	crime_during_ban(warrant)
 	if(new_stars != old_stars)
 		stars_changed(warrant, old_stars, new_stars)
+	// Counted against someone held in a cell: their term starts over (police_cell.dm). An accomplice's charge is
+	// their crew's doing, not their own.
+	if(crime != OUTPOST_CRIME_ACCOMPLICE)
+		cell_holding(mind)?.crime_inside(mind)
 	wake()
 	return new_stars
 
@@ -1220,6 +1227,8 @@
 	else
 		return
 	report_crime(hitter, crime, officer, crime == OUTPOST_CRIME_ASSAULT_OFFICER ? source : null)
+	// A prisoner in a cell who goes for an officer is answered there, by that officer (police_cell.dm)
+	cell_holding(hitter.mind)?.struck_officer(officer, hitter)
 
 /// Someone tried to cuff an officer: ASSAULT_OFFICER (abuse M3)
 /datum/outpost_police/proc/officer_cuff_attempt(mob/living/officer, mob/living/user)
