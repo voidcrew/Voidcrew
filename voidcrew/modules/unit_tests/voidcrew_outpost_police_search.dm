@@ -493,6 +493,14 @@
 	TEST_ASSERT(place in visited, "With every place looked at the search did not start over")
 	TEST_ASSERT(widest >= 24, "The search never got further than [widest] tiles from where it started in a 40-tile room")
 
+	// A place an officer could not get to (shut in, a crate across the way) is not looked at: it is not that
+	// officer's again, and the next officer is sent there
+	TEST_ASSERT_EQUAL(place, last, "Fixture: the search did not start over from where they were last seen")
+	police.search_looked(warrant, first, null)
+	TEST_ASSERT_NOTEQUAL(police.search_place(warrant, first), last, "An officer was sent again to a place it could not get to")
+	police.search_looked(warrant, second, second_place)
+	TEST_ASSERT_EQUAL(police.search_place(warrant, second), last, "A place one officer could not get to was counted as looked at")
+
 	// A new sighting: from there
 	warrant.last_seen_turf = at(20, 7)
 	warrant.last_seen_at = world.time + 1
