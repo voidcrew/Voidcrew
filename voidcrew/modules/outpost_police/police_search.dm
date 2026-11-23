@@ -204,8 +204,9 @@
 /**
  * The place `officer` looks at next: the one it has, until it has looked there; else the start, then the places
  * of the floor the search started on, the shortest walk for it first and those nearer the start before those
- * further out; then the other floors (a hangar only for a response unit, which is all that rides to one). With
- * every place it could be given looked at, the search starts over. Null when there is nowhere to send it at all.
+ * further out; then the other floors (a hangar only for a response unit or an officer on an arrest, who are all
+ * that ride to one). With every place it could be given looked at, the search starts over. Null when there is
+ * nowhere to send it at all.
  */
 /datum/outpost_police_search/proc/deal(datum/outpost_police/police, mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
 	var/turf/mine = officer.search_claim
@@ -242,13 +243,15 @@
 	var/turf/here = get_turf(officer)
 	if(!here || !start)
 		return null
-	var/rides = police.dispatch_is_response_unit(officer)
+	// Who is taken to a hangar: a response unit (police_stealth.dm stealth_walk()), and anyone on an arrest, whose
+	// walk rides the lift whatever they are (police_arrest.dm route_to())
+	var/rides = police.dispatch_is_response_unit(officer) || !isnull(officer.case)
 	var/datum/outpost_police_floor/first = police.search_floor(start, officer)
 	var/datum/outpost_police_floor/own = police.search_floor(here, officer)
 	var/here_sector = police.sector_of(here)
 	var/start_sector = police.sector_of(start)
 	for(var/datum/outpost_police_floor/floor as anything in police.search_floors(first, officer, rides))
-		// A hangar is for a unit that rides to one, or one that stands in it already
+		// A hangar is for an officer that rides to one, or one that stands in it already
 		if(floor.berth_ref && !rides && floor != own)
 			continue
 		// Nobody has looked where they were last seen yet: that comes first
@@ -467,8 +470,8 @@
 
 /**
  * The floors a search goes through, in order: `first` (the one it started on), the outpost's own floor, then, for
- * `rider` (a response unit: nobody else rides to a hangar), each hangar with ground under it. A hangar is first
- * read when a search asks for it here.
+ * a `rider` (an officer who is taken to hangars), each hangar with ground under it. A hangar is first read when a
+ * search asks for it here.
  */
 /datum/outpost_police/proc/search_floors(datum/outpost_police_floor/first, mob/living/walker, rider = FALSE)
 	. = list()

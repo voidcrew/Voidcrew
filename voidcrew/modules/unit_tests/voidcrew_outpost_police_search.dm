@@ -679,5 +679,13 @@
 	TEST_ASSERT(unit.dispatch_responding(), "Dispatch did not send the response unit after someone last seen in a hangar")
 	TEST_ASSERT_EQUAL(police.search_place(warrant, unit), warrant.last_seen_turf, "The response unit is not sent to where they were last seen in the hangar")
 
+	// On an arrest a beat officer rides to a hangar like anyone (police_arrest.dm route_to()): it is sent there
+	qdel(unit)
+	var/datum/outpost_police_case/case = police.open_case(warrant)
+	TEST_ASSERT_NOTNULL(case, "Fixture: no arrest opened at two stars")
+	TEST_ASSERT_EQUAL(case.arresting(), beat, "Fixture: the beat officer is not the arresting officer")
+	TEST_ASSERT_EQUAL(police.search_place(warrant, beat), warrant.last_seen_turf, "The arresting officer is not sent to where the suspect was last seen in a hangar")
+	police.close_case(suspect.mind)
+
 	qdel(berth)
 	outpost.berths = old_berths
