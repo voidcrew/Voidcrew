@@ -496,7 +496,13 @@
 	brain.stealth_setup()
 	TEST_ASSERT_NULL(brain.route_id, "A sergeant took beat route [brain.route_id]")
 	TEST_ASSERT_EQUAL(brain.home_turf, police.desk_turf, "A sergeant who came in away from the desk does not head for it")
-	TEST_ASSERT_EQUAL(police.free_route(brain.group), "a", "A sergeant kept the beat off its route")
+	var/list/group_report = list()
+	for(var/route in brain.group.routes)
+		group_report += "route [route] ([length(brain.group.routes[route])] stops)"
+	for(var/mob/living/member as anything in brain.group.living_members())
+		var/datum/ai_controller/basic_controller/human_npc/stealth/member_brain = member.ai_controller
+		group_report += "[member.type] at [member.x],[member.y],[member.z] on [istype(member_brain) ? (member_brain.route_id || "no route") : "no brain"]"
+	TEST_ASSERT_EQUAL(police.free_route(brain.group), "a", "A sergeant kept the beat off its route (group [brain.group.id], home [brain.group.home?.x],[brain.group.home?.y],[brain.group.home?.z]; sergeant at [sergeant.x],[sergeant.y],[sergeant.z]: [group_report.Join("; ")])")
 
 	// At the desk, with the coffee machine two tiles off
 	var/obj/machinery/vending/coffee/machine = allocate(/obj/machinery/vending/coffee, at(16, 4))
