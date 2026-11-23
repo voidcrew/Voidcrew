@@ -2359,6 +2359,11 @@
 /obj/machinery/light/floor,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
+"yh" = (
+/obj/structure/sign/poster/contraband/smoke/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost/checkpoint)
 "yl" = (
 /obj/effect/turf_decal/trimline/dark_red/filled/line{
 	dir = 5
@@ -5087,7 +5092,7 @@ Ha
 aa
 bw
 bK
-bK
+bS
 aa
 "}
 (28,1,1) = {"
@@ -5153,7 +5158,7 @@ aa
 bo
 aa
 aa
-iK
+yh
 bN
 bS
 aa
