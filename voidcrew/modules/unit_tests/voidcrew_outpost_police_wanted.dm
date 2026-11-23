@@ -1015,7 +1015,7 @@
 	police.close_case(suspect.mind)
 	TEST_ASSERT_EQUAL(police.warrants[meddler.mind]?.heat, 10, "A player in an officer's body interfering with an arrest was excused") // OUTPOST_CRIME_RESIST: one star at once
 
-	// officer_killed_by() extends active embargoes without reviving an already-expired custom ship embargo
+	// A crime of the crew starts the embargo over on the ships still under it, without reviving an already-expired custom ship embargo
 	var/mob/living/carbon/human/leader = wanted_person(wanted_spot(3, 0))
 	var/obj/structure/overmap/ship/active_ship = wanted_ship(leader)
 	var/datum/voidcrew_crew_record/crew = leader.mind.get_reputation_crew()
@@ -1023,10 +1023,17 @@
 	var/datum/outpost_warrant/leader_warrant = police_pin_warrant(police, leader.mind, 100) // four stars
 	leader_warrant.crew = crew
 	police.tick_warrants()
+	var/datum/outpost_incident/running = police.incidents[crew]
+	TEST_ASSERT_NOTNULL(running, "Fixture: four stars made no incident")
+	running.ends_at = world.time + 5 MINUTES
+	outpost.embargoed_ships[active_ship] = running.ends_at
 	outpost.embargoed_ships[expired_ship] = world.time - 1 // lapsed custom embargo not yet lazily pruned
+	police.count_crime(leader, "unarmed") // OUTPOST_CRIME_ASSAULT_UNARMED
+	TEST_ASSERT_EQUAL(outpost.embargoed_ships[active_ship], world.time + 15 MINUTES, "A crime of the crew did not start the active ship embargo over") // OUTPOST_POLICE_EMBARGO
+	TEST_ASSERT(!outpost.is_ship_embargoed(expired_ship), "A crime of the crew resurrected an already-expired ship embargo")
+	// A dead officer adds nothing of its own (owner decision 72)
 	police.officer_killed_by(leader_warrant)
-	TEST_ASSERT_EQUAL(outpost.embargoed_ships[active_ship], world.time + 20 MINUTES, "Killing an officer did not extend the active ship embargo")
-	TEST_ASSERT(!outpost.is_ship_embargoed(expired_ship), "Killing an officer resurrected an already-expired ship embargo")
+	TEST_ASSERT_EQUAL(outpost.embargoed_ships[active_ship], world.time + 15 MINUTES, "A dead officer added time to the embargo")
 	wanted_cleanup(list(active_ship, expired_ship))
 
 /// Admin lift and admin star adjustments purge queued pending reports, clear arrest holds, and cleanly downgrade peak, bar, fine cache, and crew incidents
