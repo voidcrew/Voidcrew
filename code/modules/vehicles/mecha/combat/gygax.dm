@@ -93,7 +93,6 @@ desc = "A lightweight exosuit, painted in a dark scheme. This model's armor has 
 	max_integrity = 150
 	armor_type = /datum/armor/mecha_gygax
 	force = 25
-	accesses = list(ACCESS_MECH_SCIENCE, ACCESS_MECH_SECURITY)
 	wreckage = /obj/structure/mecha_wreckage/gygax/dark
 	mecha_flags = ID_LOCK_ON | CAN_STRAFE | IS_ENCLOSED | HAS_LIGHTS | MMI_COMPATIBLE | AI_COMPATIBLE
 	max_equip_by_category = list(
