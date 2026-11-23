@@ -245,7 +245,8 @@
 /// Why the guard names no price: the ban is not the police's own to lift, or a crewmate is still wanted for it
 #define OUTPOST_POLICE_PAYOFF_NOT_OURS "not_ours"
 #define OUTPOST_POLICE_PAYOFF_CREW_WANTED "crew_wanted"
-// The guard's lines for it (JSON contexts in AMBIENT_STRINGS_POLICE; %TIME% is how long is left, %PRICE% the price)
+// The guard's lines for it (JSON contexts in AMBIENT_STRINGS_POLICE): the offer has %TIME% (how long is left) and %PRICE%,
+// the time and crew lines %TIME%, the rest are plain
 #define POLICE_LINE_PAYOFF_OFFER "payoff_offer"
 #define POLICE_LINE_PAYOFF_TIME "payoff_time"
 #define POLICE_LINE_PAYOFF_CREW "payoff_crew"

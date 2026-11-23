@@ -39,7 +39,7 @@
 	var/list/kinds = list(
 		"payoff_offer" = list("%TIME%", "%PRICE%"),
 		"payoff_time" = list("%TIME%"),
-		"payoff_crew" = list(),
+		"payoff_crew" = list("%TIME%"),
 		"payoff_taken" = list(),
 		"payoff_short" = list(),
 	)
@@ -257,7 +257,7 @@
 
 // ===== THE REFUSALS =====
 
-/// Nothing for the wanted, a stranger, an empty account, a crew with a member still at four stars, an admin's embargo, or with the guard down, away or played
+/// Nothing for the wanted or a stranger; no money taken from an empty account, a crew with a member still at four stars (they are told how long), or with the guard down, away or played
 /datum/unit_test/voidcrew_trader_checkpoint/payoff_refused/Run()
 	TEST_ASSERT(fixture(), "Could not prepare the checkpoint")
 	var/datum/outpost_police/police = host.police
@@ -312,7 +312,11 @@
 	payoff_fresh(police, guard)
 	warrant.heat = 100
 	TEST_ASSERT_EQUAL(police.payoff_ask(guard, payer), "", "A price was named with a crewmate still at four stars")
-	TEST_ASSERT(guard.payoff_last_line in crew_lines, "The guard did not say a crewmate is still wanted: '[guard.payoff_last_line]'")
+	var/said_crew = FALSE
+	for(var/line in crew_lines)
+		if(guard.payoff_last_line == replacetext(line, "%TIME%", "a quarter of an hour"))
+			said_crew = TRUE
+	TEST_ASSERT(said_crew, "The guard did not say how long is left and that a crewmate is still wanted: '[guard.payoff_last_line]'")
 	TEST_ASSERT_EQUAL(length(police.payoff_offers), 0, "An offer was made with a crewmate still at four stars")
 	TEST_ASSERT(!police.payoff_take(guard, payer, 2000, "ban"), "The ban was paid off with a crewmate still at four stars")
 	warrant.heat = 0

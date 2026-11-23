@@ -305,7 +305,7 @@ At 4 stars and up, while you are free and alive at the outpost, every crewmate o
 
 At 4 stars every ship of your crew is banned from that outpost: no shops, no checkpoint, no trade. It lasts 15 minutes, 30 at 5 stars. Any crime there by anyone on your crew while it runs starts it over from the beginning. Crewmates who walk in anyway are arrested on sight. It only covers the outpost where it happened; the other two still trade with you.
 
-**How long is left.** Ask the checkpoint guard at the booth, the same way you would buy a permit. He tells anyone who is banned or barred roughly how long they have left, and what it costs to clear it now.
+**How long is left.** Ask the checkpoint guard at the booth, the same way you would buy a permit. He tells anyone who is banned or barred roughly how long they have left, and what it costs to clear it now. He has nothing to say to anyone with stars.
 
 **Paying it off.** The guard lifts a ban for 2,000 credits if it is a 15 minute one and 4,000 if it is a 30 minute one. That is the price at Halcyon; it is half as much again at Quartermain and double at the Undertow. It is paid from your crew's ship accounts together, in full or not at all. It clears every ship of your crew, and your own 15 minute bar with it. If you are only barred yourself, clearing that costs 1,000.
 

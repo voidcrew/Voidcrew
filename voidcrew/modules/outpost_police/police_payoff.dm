@@ -10,8 +10,8 @@
  *
  * Nothing is told or sold to someone with stars: they are refused as before, and arrested. Nothing happens while the
  * guard is not serving at his desk (shop.is_open(): dead, out cold, away from it, held up, or a player in his body).
- * The time and no price: an embargo the police did not lay (an admin's), which is not theirs to sell. Neither: a
- * crewmate still at four stars or more here, whose stars would lay the ban again on the next tick (tick_warrants()).
+ * The time and no price: an embargo the police did not lay (an admin's), which is not theirs to sell; and a crewmate
+ * still at four stars or more here, whose stars would lay the ban again on the next tick (tick_warrants()).
  *
  * Each pay-off a crew makes at one outpost doubles its next one there, OUTPOST_POLICE_PAYOFF_DOUBLINGS times at the
  * most (payoff_paid: by the crew's id, and by the ckeys on the crew when it paid, so leaving and coming back or
@@ -113,12 +113,10 @@
 	payoff_wait[who] = world.time + OUTPOST_POLICE_PAYOFF_WAIT
 	if(!guard.buckled)
 		guard.face_atom(user)
-	if(quote["why"] == OUTPOST_POLICE_PAYOFF_CREW_WANTED)
-		guard.payoff_say(POLICE_LINE_PAYOFF_CREW)
-		return ""
 	var/time = outpost_police_wait_text(quote["left"])
 	if(!quote["price"])
-		guard.payoff_say(POLICE_LINE_PAYOFF_TIME, list("time" = time))
+		// How long, and (a crewmate still wanted) why no money will do
+		guard.payoff_say(quote["why"] == OUTPOST_POLICE_PAYOFF_CREW_WANTED ? POLICE_LINE_PAYOFF_CREW : POLICE_LINE_PAYOFF_TIME, list("time" = time))
 		return ""
 	var/text = guard.payoff_say(POLICE_LINE_PAYOFF_OFFER, list("time" = time, "price" = outpost_police_price_text(quote["price"])))
 	if(!text)

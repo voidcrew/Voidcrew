@@ -335,10 +335,10 @@
 			"You've %TIME% left to wait, I'm afraid."
 		],
 		"payoff_crew": [
-			"Not while one of your crew is still wanted here. Sorry.",
-			"One of yours still has business with security. Come back after.",
-			"I can't clear you while your crewmate's on our list.",
-			"Settle your friend's trouble first, please."
+			"It's %TIME% yet, and I can't waive it while one of your crew is wanted here.",
+			"You've %TIME% to wait. No fee will do while your crewmate's on our list.",
+			"Come back in %TIME%. I can't clear you sooner with one of yours still wanted.",
+			"Not for %TIME%, I'm afraid, and not for money while your friend's wanted."
 		],
 		"payoff_taken": [
 			"Thank you. You're clear to come in.",
@@ -973,10 +973,10 @@
 			"You've got %TIME% to wait. Go wait."
 		],
 		"payoff_crew": [
-			"Not while one of yours is still wanted in here.",
-			"Your mate's still on the list. No.",
-			"Sort your crewmate out first.",
-			"One of your lot still owes us. Come back after."
+			"You're out for %TIME% yet. No buying in while one of yours is wanted.",
+			"Gate's shut to you for %TIME%. Your mate's still on the list, so no deal.",
+			"Come back in %TIME%. Can't sell you in with your crewmate wanted.",
+			"You've got %TIME% to wait. No fee while one of your lot's on the list."
 		],
 		"payoff_taken": [
 			"Paid. Go on through.",
@@ -1611,10 +1611,10 @@
 			"Not for %TIME%. Walk."
 		],
 		"payoff_crew": [
-			"Not while one of yours is still wanted in there.",
-			"Your friend's still on the list. No deal.",
-			"Deal with your crewmate first.",
-			"One of your people still owes the house."
+			"You're out for %TIME%. No deal while one of yours is wanted in there.",
+			"Door's shut to you for %TIME%. Your friend's still on the list.",
+			"Try me again in %TIME%. Can't be bought while your crewmate's wanted.",
+			"Not for %TIME%. And no deal with one of your people on the list."
 		],
 		"payoff_taken": [
 			"In.",
