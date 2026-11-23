@@ -572,10 +572,19 @@
 /datum/ai_planning_subtree/outpost_police_cover
 
 /datum/ai_planning_subtree/outpost_police_cover/SelectBehaviors(datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/controller, seconds_per_tick)
-	if(!istype(controller) || isnull(controller.police_cover_ref))
+	if(!istype(controller))
 		return
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = controller.pawn
 	if(!istype(officer) || officer.stat != CONSCIOUS || !officer.police)
+		return
+	// Whoever it was fighting has just gone down: what its next scan would do about that (stealth_keep_target()), now,
+	// before the force subtree finds it with nobody to fight and puts its weapon away
+	if(isnull(controller.police_cover_ref) && !officer.case && controller.stealth_state() == STEALTH_ALERT && controller.stealth_scanning())
+		var/atom/remembered = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET] || controller.blackboard[BB_STEALTH_FOCUS]
+		var/mob/living/person = QDELETED(remembered) ? null : officer.police_mech_suspect(remembered)
+		if(isliving(person) && person.mind && person.stat != DEAD && police_suspect_down(person) && !officer.police.finishes_downed(person, officer))
+			controller.stealth_keep_target()
+	if(isnull(controller.police_cover_ref))
 		return
 	var/mob/living/who = controller.police_covered()
 	if(isnull(who))

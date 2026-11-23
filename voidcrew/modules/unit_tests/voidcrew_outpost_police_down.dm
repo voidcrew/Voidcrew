@@ -154,11 +154,16 @@
 	TEST_ASSERT_EQUAL(watcher_brain.stealth_state(), "alert", "An officer who stood over a downed suspect is [watcher_brain.stealth_state()] when they get up before the cuffs")
 	TEST_ASSERT_EQUAL(watcher_brain.blackboard[BB_BASIC_MOB_CURRENT_TARGET], suspect, "An officer who stood over a downed suspect is not on them when they get up before the cuffs")
 
-	// Down again. The arrest: the cover officer on its feet takes it from the one on the floor
+	// Down again: at its next thought, before any scan, it is standing over them with its weapon still out
+	var/force_before = watcher.force
+	TEST_ASSERT(force_before >= 2, "Fixture: the officer fighting a two-star suspect is not at stun force ([force_before])") // POLICE_FORCE_STUN
 	suspect.adjustStaminaLoss(200)
 	TEST_ASSERT(HAS_TRAIT(suspect, TRAIT_INCAPACITATED), "Fixture: the suspect did not go down again")
-	watcher_brain.stealth_keep_target()
+	watcher_brain.SelectBehaviors(1)
 	TEST_ASSERT_EQUAL(watcher_brain.police_covered(), suspect, "An officer fighting a suspect left them when they went down again")
+	TEST_ASSERT_NULL(watcher_brain.blackboard[BB_BASIC_MOB_CURRENT_TARGET], "An officer kept a suspect who went down again as its target")
+	TEST_ASSERT_EQUAL(watcher.force, force_before, "An officer standing over a downed suspect put its weapon away")
+	// The arrest: the cover officer on its feet takes it from the one on the floor
 	case.process_case()
 	TEST_ASSERT(!QDELETED(case), "The arrest ended with the suspect down")
 	TEST_ASSERT_EQUAL(case.arresting(), cover, "The cover officer did not take the arrest from an arresting officer on the floor")
