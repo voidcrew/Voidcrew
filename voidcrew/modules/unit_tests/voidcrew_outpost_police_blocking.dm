@@ -19,7 +19,7 @@
 	officer.start_pulling(prisoner)
 	return prisoner
 
-/// Two walking officers head-on trade places; an officer paused forming up in a doorway is passed too; one riding the lift is not
+/// With room, a walking officer walks round another; one paused forming up in a doorway is passed by trading places; one riding the lift is not
 /datum/unit_test/voidcrew_outpost_police_blocking_swap
 
 /datum/unit_test/voidcrew_outpost_police_blocking_swap/Run()
@@ -32,10 +32,10 @@
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/other = police_blocking_officer(east)
 	TEST_ASSERT_EQUAL(walker.move_intent, MOVE_INTENT_WALK, "Setup: the officer is not walking")
 
-	// Head-on
+	// Head-on with open floor either side: round them, and they stay where they are
 	walker.Move(east, EAST)
-	TEST_ASSERT_EQUAL(get_turf(walker), east, "A walking officer did not get past another officer head-on")
-	TEST_ASSERT_EQUAL(get_turf(other), west, "The officer met head-on did not trade places")
+	TEST_ASSERT_EQUAL(get_turf(other), east, "With room to walk round, the officer met head-on was moved")
+	TEST_ASSERT(get_turf(walker) != west && get_dist(walker, other) == 1 && walker.x == east.x, "A walking officer did not walk round another officer met head-on (at [AREACOORD(walker)])")
 
 	// Paused in a doorway, forming up for the lift
 	other.forceMove(east)

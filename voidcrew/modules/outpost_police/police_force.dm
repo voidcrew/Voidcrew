@@ -327,7 +327,8 @@
 			return SUBTREE_RETURN_FINISH_PLANNING
 		var/keep_away = controller.blackboard[BB_HUMAN_NPC_KEEP_AWAY]
 		if(keep_away && get_dist(officer, target) < keep_away)
-			controller.queue_behavior(/datum/ai_behavior/step_away, BB_BASIC_MOB_CURRENT_TARGET)
+			// Onto a free tile only, never back into a colleague (police_movement.dm)
+			controller.queue_behavior(/datum/ai_behavior/outpost_police_step_back, BB_BASIC_MOB_CURRENT_TARGET)
 		controller.queue_behavior(/datum/ai_behavior/human_npc_shoot/outpost_police, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
 	else
 		controller.queue_behavior(/datum/ai_behavior/human_npc_close_in, BB_BASIC_MOB_CURRENT_TARGET, fire_range)
