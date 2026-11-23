@@ -157,6 +157,8 @@
 	var/turf/bar = map_tile(outpost, 43, 57)
 	TEST_ASSERT(outpost.is_secured_turf(bar) && !bar.is_blocked_turf(exclude_mobs = TRUE), "Fixture: 43,57 of Halcyon is not open floor behind the north wing's bar")
 	var/mob/living/carbon/human/suspect = wanted_at(outpost, bar, scanner, 40)
+	// The gate is down, as the emag left it (OUTPOST_CHECKPOINT_EMAG_TIME)
+	post.disabled_until = world.time + 3 MINUTES
 	police.wake()
 
 	var/started = world.time
@@ -328,7 +330,9 @@
 		TEST_ASSERT(length(outpost.lobby_alcove_turfs), "[outpost_type] has no lobby lift")
 		TEST_ASSERT(length(police.stop_activities), "[outpost_type] has no beat")
 		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, police.lift_turfs[1])
+		var/read_from = TICK_USAGE_REAL
 		var/datum/outpost_police_floor/floor = police.search_floor(police.desk_turf, officer)
+		var/read_ms = TICK_DELTA_TO_MS(TICK_USAGE_REAL - read_from)
 		TEST_ASSERT_NOTNULL(floor, "[outpost_type]: the police could not read their own floor")
 		TEST_ASSERT(length(floor.places), "[outpost_type]: a search has no places to look at")
 
@@ -392,8 +396,15 @@
 		var/turf/start = police.search_start(scanner, officer)
 		TEST_ASSERT(start && floor.walkable[start], "[outpost_type]: someone last seen in the scan chamber is looked for from a tile no officer can stand on")
 		TEST_ASSERT(get_dist(start, scanner) <= 3, "[outpost_type]: someone last seen in the scan chamber is looked for [get_dist(start, scanner)] tiles away")
-		TEST_ASSERT_EQUAL(police.sector_of(start), "concourse", "[outpost_type]: someone last seen in the scan chamber is looked for on the lobby side of it")
-		log_test("[outpost_type]: [length(floor.places)] search places for [length(public)] public tiles ([length(floor.walkable)] an officer can walk to)")
+		TEST_ASSERT_EQUAL(police.sector_of(start), "lobby", "[outpost_type]: with the gate working, someone last seen in the scan chamber is looked for past the inner door that never opened for them")
+		// The gate down (an emag on its scanner): they are through it
+		lobby_post.disabled_until = world.time + 1 MINUTES
+		start = police.search_start(scanner, officer)
+		TEST_ASSERT(start && floor.walkable[start], "[outpost_type]: with the gate down, someone last seen in the scan chamber is looked for from a tile no officer can stand on")
+		TEST_ASSERT(get_dist(start, scanner) <= 3, "[outpost_type]: with the gate down, someone last seen in the scan chamber is looked for [get_dist(start, scanner)] tiles away")
+		TEST_ASSERT_EQUAL(police.sector_of(start), "concourse", "[outpost_type]: with the gate down, someone last seen in the scan chamber is looked for on the lobby side of it")
+		lobby_post.disabled_until = 0
+		log_test("[outpost_type]: [length(floor.places)] search places for [length(public)] public tiles ([length(floor.walkable)] an officer can walk to), read in [read_ms] ms")
 		dispatch_clear(police)
 
 // ===== DEALING THE PLACES =====

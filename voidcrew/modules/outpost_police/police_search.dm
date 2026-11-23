@@ -14,8 +14,9 @@
  *   can get to is in sight of one (outpost_police_cover()). Read for the outpost's own floor, concourse and lobby
  *   together, and for a hangar once a search gets that far; read again after POLICE_SEARCH_REREAD, as doors and
  *   crates move.
- * - The start (reach()): the last-seen tile, or the nearest tile an officer can stand on when that one cannot be
- *   walked to or stood beside: a scan chamber, a locked room, a ship's deck.
+ * - The start (search_start()): the last-seen tile, or the nearest tile an officer can stand on when that one
+ *   cannot be walked to or stood beside (a locked room, a ship's deck). For a checkpoint's scan chamber it is the
+ *   side they can have left by: the concourse with the gate down or forced, the lobby with it working.
  * - The search (/datum/outpost_police_search): one for each wanted person, from their last sighting. Officers are
  *   dealt its places one each, the ring nearest the start first; a place looked at is done, and with every place
  *   done it starts over. A new sighting starts a new search.
@@ -153,6 +154,8 @@
 	var/list/done = list()
 	/// Places dealt and not yet looked at: turf -> list(weakref to the officer, world.time it last asked)
 	var/list/claims = list()
+	/// Places an officer was dealt and could not get to: turf -> list of weakrefs to those officers. Not theirs again, and not looked at.
+	var/list/refused = list()
 
 /datum/outpost_police_search/New(new_stamp, turf/new_start)
 	. = ..()
@@ -163,11 +166,15 @@
 	start = null
 	done = null
 	claims = null
+	refused = null
 	return ..()
 
 /// Whether `place` is free for `officer`: not looked at, and nobody else on their way to it
 /datum/outpost_police_search/proc/open_to(turf/place, mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
 	if(done[place])
+		return FALSE
+	var/list/gave_up = refused[place]
+	if(gave_up && (WEAKREF(officer) in gave_up))
 		return FALSE
 	var/list/claim = claims[place]
 	if(!claim)
@@ -182,7 +189,7 @@
 	return FALSE
 
 /// `officer` has `place` from now
-/datum/outpost_police_search/proc/claim(turf/place, mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+/datum/outpost_police_search/proc/take(turf/place, mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
 	var/turf/old = officer.search_claim
 	if(old && old != place)
 		var/list/old_claim = claims[old]
@@ -210,11 +217,23 @@
 	for(var/pass in 1 to 2)
 		var/turf/found = pick_place(police, officer)
 		if(found)
-			return claim(found, officer)
+			return take(found, officer)
+		// Nothing left but places it could not get to (it is shut in somewhere): they are its own to try again, and
+		// what the others have looked at stays looked at
+		var/datum/weakref/own_ref = WEAKREF(officer)
+		var/gave_up_any = FALSE
+		for(var/turf/place as anything in refused)
+			var/list/gave_up = refused[place]
+			if(own_ref in gave_up)
+				gave_up -= own_ref
+				gave_up_any = TRUE
+		if(gave_up_any)
+			break
 		// Everywhere it could go has been looked at: again from the start
 		if(!length(done))
 			break
 		done.Cut()
+		refused.Cut()
 	return null
 
 /// One pass of deal() over the floors, in the order a search takes them
@@ -268,7 +287,11 @@
 			return best
 	return null
 
-/// `officer` has looked about at `center`: the place it was dealt is done, and so is any place that near
+/**
+ * `officer` is finished with the place it was dealt, having looked about from `center` (null: it never got anywhere).
+ * From the place or right by it, the place is done, and so is any other that near `center`. From further off (no way
+ * there), the place is not done: it goes to another officer.
+ */
 /datum/outpost_police_search/proc/looked(datum/outpost_police/police, mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, turf/center)
 	var/turf/mine = officer?.search_claim
 	if(mine)
@@ -276,7 +299,14 @@
 		var/datum/weakref/holder_ref = claim?[1]
 		if(holder_ref?.resolve() == officer)
 			claims -= mine
-			done[mine] = TRUE
+			if(center && center.z == mine.z && get_dist(center, mine) <= POLICE_SEARCH_NEAR)
+				done[mine] = TRUE
+			else
+				var/list/gave_up = refused[mine]
+				if(!gave_up)
+					gave_up = list()
+					refused[mine] = gave_up
+				gave_up |= WEAKREF(officer)
 		officer.search_claim = null
 	if(!center)
 		return
@@ -511,12 +541,32 @@
 // THE API
 // =========================================================================
 
-/// Where a search for someone last seen at `last` starts (/datum/outpost_police_floor/proc/reach()); `last` itself where the floor is not known
+/**
+ * Where a search for someone last seen at `last` starts: `last`, or the nearest tile an officer can stand on
+ * (/datum/outpost_police_floor/proc/reach()). In a checkpoint's scan chamber or one of its doorways, which no NPC
+ * walks into, it is the side they can have left by: with the gate down or forced that is the concourse, where a
+ * gate-crasher is headed; with it working the inner door never opened for someone wanted, so it is the lobby.
+ * `last` itself where the floor is not known.
+ */
 /datum/outpost_police/proc/search_start(turf/last, mob/living/officer)
 	if(!last)
 		return null
 	var/datum/outpost_police_floor/floor = search_floor(last, officer)
-	return floor?.reach(last) || last
+	if(!floor)
+		return last
+	if(!floor.berth_ref && !floor.walkable[last])
+		for(var/checkpoint_id in outpost?.checkpoints)
+			var/datum/outpost_checkpoint/post = outpost.checkpoints[checkpoint_id]
+			if(QDELETED(post) || QDELETED(post.inner_door) || QDELETED(post.outer_door))
+				continue
+			if(!(last in post.chamber_turfs) && last != get_turf(post.inner_door) && last != get_turf(post.outer_door))
+				continue
+			var/through = post.is_disabled() || post.state == CHECKPOINT_FORCED || !post.inner_door.density
+			for(var/turf/side as anything in (through ? list(post.secured_turf, post.lobby_turf) : list(post.lobby_turf, post.secured_turf)))
+				if(side && floor.walkable[side])
+					return side
+			break
+	return floor.reach(last) || last
 
 /**
  * Where `officer` goes to look for `warrant`'s holder now. With someone's eyes on them this moment (an officer, a
@@ -527,21 +577,21 @@
 	var/turf/last = warrant?.last_seen_turf
 	if(!last)
 		return null
-	var/datum/outpost_police_floor/floor = search_floor(last, officer)
 	// Off every floor the police know (carried away aboard a ship): the tile itself
-	if(!floor)
+	if(!search_floor(last, officer))
 		return last
-	var/turf/start = floor.reach(last) || last
+	var/turf/start = search_start(last, officer)
 	// Someone has eyes on them now: straight to where they are seen
 	if(!warrant.unseen_since || !istype(officer) || !warrant.mind)
 		return start
 	var/datum/outpost_police_search/search = searches[warrant.mind]
 	if(!search || search.stamp != warrant.last_seen_at || search.start != start)
+		search_prune()
 		if(search)
+			searches -= warrant.mind
 			qdel(search)
 		search = new(warrant.last_seen_at, start)
 		searches[warrant.mind] = search
-		search_prune()
 	return search.deal(src, officer) || start
 
 /// `officer` has looked about at `center` for `warrant`'s holder and not found them
@@ -554,7 +604,7 @@
 
 /// Drops the searches for people no longer wanted here
 /datum/outpost_police/proc/search_prune()
-	for(var/datum/mind/mind as anything in searches)
+	for(var/datum/mind/mind as anything in searches.Copy())
 		if(mind && get_stars(mind) >= 1)
 			continue
 		var/datum/outpost_police_search/search = searches[mind]

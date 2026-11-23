@@ -1303,7 +1303,8 @@
 	if(!warrant?.last_seen_turf)
 		return
 	if(brain.police_looked)
-		search_looked(warrant, officer, brain.search_center)
+		// From where it stood to look: a place it could not get to was not looked round
+		search_looked(warrant, officer, get_turf(officer))
 		officer.police_search_for(sought)
 		return
 	if(warrant.last_seen_at > brain.police_search_stamp && world.time >= brain.police_redirect_at)
