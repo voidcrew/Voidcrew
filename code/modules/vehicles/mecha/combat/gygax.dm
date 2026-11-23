@@ -95,10 +95,3 @@ desc = "A lightweight exosuit, painted in a dark scheme. This model's armor has 
 	force = 25
 	wreckage = /obj/structure/mecha_wreckage/gygax/dark
 	mecha_flags = ID_LOCK_ON | CAN_STRAFE | IS_ENCLOSED | HAS_LIGHTS | MMI_COMPATIBLE | AI_COMPATIBLE
-	max_equip_by_category = list(
-		MECHA_L_ARM = 1,
-		MECHA_R_ARM = 1,
-		MECHA_UTILITY = 2,
-		MECHA_POWER = 1,
-		MECHA_ARMOR = 1
-	)
