@@ -339,22 +339,33 @@
 		if(run.held("[name]|[REF(officer)]", work && HAS_TRAIT(officer, TRAIT_AI_PAUSED)) > limit)
 			run.breach(src, REF(officer), "[run.who(officer)] has been held still (paused by [jointext(GET_TRAIT_SOURCES(officer, TRAIT_AI_PAUSED), ", ")]) at [run.where(officer)] for over [limit]s with someone wanted at large", list(officer))
 
-/// An officer with somewhere to walk to that has not moved
+/// An officer with somewhere to walk to that does not move: a walk it cannot make
 /datum/police_soak_invariant/frozen_walk
 	name = "frozen_walk"
 	rank = 3
-	/// Seconds an officer may stand on one tile while its AI has a walk to somewhere more than `far` tiles off
+	/// Seconds an officer may stand on one tile while it has a walk to somewhere more than `far` tiles off (the walk's target may blink off between plans, so the seconds need not be in a row)
 	var/limit = 15
 	var/far = 2
 
 /datum/police_soak_invariant/frozen_walk/check(datum/police_soak/run)
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer as anything in run.officers_up())
 		var/datum/police_soak_track/found = run.tracks[officer]
+		if(!found)
+			continue
+		var/turf/here = get_turf(officer)
+		if(here != found.stuck_turf)
+			found.stuck_turf = here
+			found.stuck_ticks = 0
 		var/datum/ai_controller/brain = officer.ai_controller
-		var/turf/goal = get_turf(brain?.current_movement_target)
-		var/stuck = found && goal && goal.z == officer.z && get_dist(officer, goal) > far && !HAS_TRAIT(officer, TRAIT_AI_PAUSED) && !officer.case?.acting && isturf(officer.loc) && !officer.buckled
-		if(run.held("[name]|[REF(officer)]|[run.where(officer)]", stuck) > limit)
-			run.breach(src, REF(officer), "[run.who(officer)] has stood at [run.where(officer)] for over [limit]s with a walk to [run.where(goal)] ([get_dist(officer, goal)] tiles off)", list(officer))
+		var/datum/outpost_police_case/case = officer.case
+		// Where its AI is walking it, or where its arrest wants it
+		var/turf/goal = get_turf(brain?.current_movement_target) || get_turf(case?.goal)
+		if(!goal || goal.z != officer.z || get_dist(officer, goal) <= far || HAS_TRAIT(officer, TRAIT_AI_PAUSED) || case?.acting || !isturf(officer.loc) || officer.buckled)
+			continue
+		found.stuck_ticks++
+		if(found.stuck_ticks > limit)
+			// The officer making an arrest that stands still is the arrest not happening: worse than a stalled beat
+			run.breach(src, "[REF(officer)]|[run.where(here)]", "[run.who(officer)] has stood at [run.where(officer)] for over [limit]s with a walk to [run.where(goal)] ([get_dist(officer, goal)] tiles off)[case ? ", on the arrest of [run.who(case.get_suspect())] (step \"[case.step]\")" : ""]", list(officer), case ? 2 : null)
 
 /// An officer walking a cuffed suspect in keeps losing hold of them, though the suspect only stands where they are put
 /datum/police_soak_invariant/escort_lets_go
@@ -372,4 +383,22 @@
 	if(recent > limit)
 		var/datum/outpost_police_case/case = run.police.cases[run.suspect?.mind]
 		run.breach(src, "[run.hold_losses[1]]", "the officer walking [run.who(run.suspect)] in lost hold of them [recent] times in [window]s though they never took a step (arrest step \"[case?.step]\", pull breaks counted by the case: [case?.pull_breaks])", case?.arresting() ? list(case.arresting()) : null)
+
+/// A wanted person who stands still on the spot where the police last saw them, and is still not in hand
+/datum/police_soak_invariant/standing_suspect_not_taken
+	name = "standing_suspect_not_taken"
+	rank = 1
+	/// Seconds a wanted person may stand on one tile, known to the police, before the cuffs are on or they have been put down (a walk across the biggest outpost is about 20 s)
+	var/limit = 45
+	/// Tiles between where they stand and where the police last saw them within which the police know where they are
+	var/known = 2
+
+/datum/police_soak_invariant/standing_suspect_not_taken/check(datum/police_soak/run)
+	for(var/mob/living/body as anything in run.at_large())
+		var/turf/scene = run.police.get_warrant(body.mind)?.last_seen_turf
+		// Holding a hostage they are stood off from on purpose, for up to OUTPOST_POLICE_STANDOFF_MAX (a minute)
+		var/waiting = scene && body.z == scene.z && get_dist(body, scene) <= known && length(run.officers_up()) && !stealth_hostage_of(body)
+		if(run.held("[name]|[REF(body)]|[run.where(body)]", waiting) > limit)
+			var/datum/outpost_police_case/case = run.police.cases[body.mind]
+			run.breach(src, REF(body), "[run.who(body)] ([run.police.get_stars(body.mind)] stars) has stood at [run.where(body)], where the police last saw them, for over [limit]s and nobody has them (arrest: [case ? "\"[case.step]\", [case.resets] resets" : "none open"])", run.officers_up())
 

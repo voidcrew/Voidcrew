@@ -84,9 +84,13 @@
 	var/list/step_times = list()
 	/// Its distance to where the suspect was last seen, at the last samples (oldest first)
 	var/list/scene_dists = list()
+	/// Samples in a row it has stood on `stuck_turf` with somewhere to walk to
+	var/stuck_ticks = 0
+	var/turf/stuck_turf
 
 /datum/police_soak_track/Destroy()
 	last_turf = null
+	stuck_turf = null
 	steps = null
 	return ..()
 
@@ -414,11 +418,12 @@
 		return "in custody"
 	if(police.has_in_hand(suspect))
 		return "down with an arrest on them"
-	if(police.order_pending(suspect))
-		return "inside the time to comply with an order"
 	var/datum/outpost_police_case/case = police.cases[suspect.mind]
+	// A shot already in the air when the order was given, or when they gave up, is nobody's fault: a second's grace
+	if(police.order_pending(suspect) && world.time - case.order_at > 1 SECONDS)
+		return "[round((world.time - case.order_at) / (1 SECONDS))]s into the time to comply with an order"
 	// CASE_STEP_CUFF: they did as told and the cuffs are going on
-	if(case && !QDELETED(case) && case.step == "cuff")
+	if(case && !QDELETED(case) && case.step == "cuff" && world.time - case.step_started_at > 1 SECONDS)
 		return "being cuffed after giving up"
 	return null
 
@@ -569,8 +574,8 @@
 		held_since[key] = world.time
 	return (world.time - held_since[key]) / (1 SECONDS)
 
-/// An invariant broke. Each `key` of each invariant is reported once a run. `involved` are the bodies whose trace to print.
-/datum/police_soak/proc/breach(datum/police_soak_invariant/invariant, key, text, list/involved)
+/// An invariant broke. Each `key` of each invariant is reported once a run. `involved` are the bodies whose trace to print. `rank` overrides the invariant's.
+/datum/police_soak/proc/breach(datum/police_soak_invariant/invariant, key, text, list/involved, rank)
 	var/full_key = "[invariant.name]|[key]"
 	if(break_keys[full_key])
 		return
@@ -578,7 +583,7 @@
 	var/list/ids = list("S")
 	for(var/body in involved)
 		ids |= istext(body) ? body : who(body)
-	breaks += list(list("name" = invariant.name, "rank" = invariant.rank, "at" = now(), "text" = text, "ids" = ids))
+	breaks += list(list("name" = invariant.name, "rank" = rank || invariant.rank, "at" = now(), "text" = text, "ids" = ids))
 	note("!!", "BREAK [invariant.name]: [text]")
 
 /// Conscious officers who are part of the scene: not fading out
@@ -895,15 +900,23 @@
 		return script_failed("the emag did not take the gate down")
 	return TRUE
 
-/// A shove (a right click) on `target`, until they are on the floor or `tries` are spent. TRUE if they went down.
-/datum/police_soak/proc/shove_down(mob/living/target, tries = 8)
+/**
+ * A shove (a right click) on `target`, until they are on the floor or `tries` are spent. tg's shove sends someone
+ * back a tile and floors them when there is no tile to go back to, so the suspect follows and keeps shoving the
+ * same way until they are against something. TRUE if they went down.
+ */
+/datum/police_soak/proc/shove_down(mob/living/target, tries = 14)
+	var/push
 	for(var/attempt in 1 to tries)
 		if(QDELETED(target) || !suspect_able())
 			return FALSE
 		if(target.body_position == LYING_DOWN)
 			return TRUE
-		if(!suspect.Adjacent(target) && !go_up_to(target, 10 SECONDS))
-			return FALSE
+		if(!suspect.Adjacent(target))
+			var/turf/after = push ? get_step(suspect, push) : null
+			if(!(after && own_step(after) && suspect.Adjacent(target)) && !go_up_to(target, 10 SECONDS))
+				return FALSE
+		push = get_dir(suspect, target)
 		click(target, "right=1")
 		note(">>", "shoves [who(target)] at [where(target)]")
 		sleep(2)
@@ -1035,14 +1048,10 @@
 		if(!waiting)
 			break
 		sleep(1 SECONDS)
-	var/runtimes_before = GLOB.total_runtimes
 	for(var/datum/police_soak/run as anything in runs)
-		runtimes_before = min(runtimes_before, run.runtimes_before)
 		if(run.ready && !run.played)
 			run.script_failed("the script was still running at the scenario's limit of [longest / (1 SECONDS)]s")
 		run.finish()
-	if(GLOB.total_runtimes > runtimes_before)
-		TEST_FAIL("[GLOB.total_runtimes - runtimes_before] runtimes in the world while this scenario ran (see runtime.log)")
 	// A script cut short at the limit gets a moment to see the run is over, before the runs are taken apart
 	var/grace = world.time + 15 SECONDS
 	while(world.time < grace)

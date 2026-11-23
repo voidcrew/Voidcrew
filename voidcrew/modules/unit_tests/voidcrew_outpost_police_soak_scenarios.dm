@@ -77,6 +77,34 @@ POLICE_SOAK_SCENARIO(crime_then_hide)
 	run.note(">>", "stands at [run.where(run.suspect)], [get_dist(run.suspect, run.police.get_warrant(run.suspect.mind)?.last_seen_turf)] tiles from where the police last saw them")
 	run.stand(90 SECONDS)
 
+// ----- the owner's first minute: the gate emag, then stay in the scanner room -----
+
+POLICE_SOAK_SCENARIO(gate_emag_stay)
+
+/datum/police_soak_scenario/gate_emag_stay/start_turf(datum/police_soak/run, datum/outpost_checkpoint/post)
+	return run.scanner_room_tile(post)
+
+/datum/police_soak_scenario/gate_emag_stay/play(datum/police_soak/run)
+	if(!run.emag_gate())
+		return
+	run.stand(100 SECONDS)
+
+// ----- the gate emag, then through the open gate and stand just inside the concourse -----
+
+POLICE_SOAK_SCENARIO(gate_emag_step_in)
+
+/datum/police_soak_scenario/gate_emag_step_in/start_turf(datum/police_soak/run, datum/outpost_checkpoint/post)
+	return run.scanner_room_tile(post)
+
+/datum/police_soak_scenario/gate_emag_step_in/play(datum/police_soak/run)
+	if(!run.emag_gate())
+		return
+	run.stand(5 SECONDS)
+	var/datum/outpost_checkpoint/post = run.outpost.lobby_checkpoint(null)
+	if(!run.go_to(post.secured_turf, 0, 30 SECONDS))
+		run.script_failed("could not walk through the open gate to [run.where(post.secured_turf)] (got to [run.where(run.suspect)])")
+	run.stand(95 SECONDS)
+
 // ----- shove an officer down, then another -----
 
 POLICE_SOAK_SCENARIO(shove_officers)
@@ -164,7 +192,14 @@ POLICE_SOAK_SCENARIO(hostage)
 		run.script_failed("could not walk up to [local] at [run.where(local)]")
 		return
 	// tg's neck grab with a gun in hand is the hold (stealth_hostage_of())
-	if(!run.grab(local, GRAB_NECK, 45 SECONDS) || stealth_hostage_of(run.suspect) != local)
+	var/got_hold = run.grab(local, GRAB_NECK, 45 SECONDS)
+	// tg brings someone held by the neck onto the holder's tile as the holder moves: a step or two
+	for(var/shuffle in 1 to 4)
+		if(!got_hold || stealth_hostage_of(run.suspect) == local)
+			break
+		run.fidget()
+		sleep(5)
+	if(!got_hold || stealth_hostage_of(run.suspect) != local)
 		run.script_failed("could not get [run.who(local)] by the neck with tg's grab in 45s (grab state [run.suspect.grab_state], holding [run.who(run.suspect.pulling)])")
 		run.stand(30 SECONDS)
 		return
