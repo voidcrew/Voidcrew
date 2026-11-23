@@ -407,6 +407,13 @@
 	if(!is_outpost_police_npc(by) || QDELETED(suspect) || finished)
 		return
 	var/state = held_state()
+	// A prisoner who strikes an officer in the cell is struck back once by that officer (police_cell.dm struck_officer()):
+	// the one use of force on someone held that is meant
+	var/datum/outpost_police_cell/cell = police.cell_holding(suspect.mind)
+	if(cell?.hitting_back[WEAKREF(by)])
+		note(">>", "is hit back by [who(by)]'s [what_with], having struck it in the cell")
+		force_events += list(list(world.time, by, what_with, null))
+		return
 	note(">>", "is hit by [who(by)]'s [what_with][state ? " while [state]" : ""]")
 	force_events += list(list(world.time, by, what_with, state))
 
