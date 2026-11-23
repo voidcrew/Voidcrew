@@ -1117,9 +1117,21 @@
 	if(!far)
 		return
 	for(var/turf/spot as anything in block(corner, far))
+		// The map's box has corners the outpost does not fill. A patrol point lying out there on bare space was left by
+		// whatever stood in this ground before (clearing reserved ground spares landmarks): it is no stop of this beat.
+		if(isspaceturf(spot))
+			continue
 		var/obj/effect/landmark/stealth_patrol/police/point = locate() in spot
 		if(point)
 			stop_activities[spot] = point.police_activity || ""
+
+/// The police go with their outpost, and so do their beat's stops: left behind, the points would outlive the ground
+/// being cleared and turn up in whatever is built there next
+/datum/outpost_police/Destroy()
+	for(var/turf/spot as anything in stop_activities)
+		for(var/obj/effect/landmark/stealth_patrol/police/point in spot)
+			qdel(point)
+	return ..()
 
 /// The police_activity tag of the stop at `spot`, or null
 /datum/outpost_police/proc/stop_tag(turf/spot)
