@@ -41,6 +41,8 @@
 	dispatch_clear(police)
 	police.dispatch_build_now = TRUE
 	police.perception.test_plain = FALSE
+	// As in a round: the floor is read over the ticks after it is first asked for, and whoever needs it waits
+	police.search_read_now = FALSE
 	var/turf/corner = outpost.template_bottom_left
 	var/turf/far_corner = locate(corner.x + outpost.outpost_template.width - 1, corner.y + outpost.outpost_template.height - 1, corner.z)
 	for(var/turf/tile as anything in block(corner, far_corner))
@@ -423,7 +425,10 @@
 		TEST_ASSERT(get_dist(start, scanner) <= 3, "[outpost_type]: with the gate down, someone last seen in the scan chamber is looked for [get_dist(start, scanner)] tiles away")
 		TEST_ASSERT_EQUAL(police.sector_of(start), "concourse", "[outpost_type]: with the gate down, someone last seen in the scan chamber is looked for on the lobby side of it")
 		lobby_post.disabled_until = 0
-		log_test("[outpost_type]: [length(floor.places)] search places for [length(public)] public tiles ([length(floor.walkable)] an officer can walk to), read in [read_ms] ms")
+		var/list/place_list = list()
+		for(var/turf/place as anything in floor.places)
+			place_list += "[place.x - low.x + 1],[place.y - low.y + 1]"
+		log_test("[outpost_type]: [length(floor.places)] search places for [length(public)] public tiles ([length(floor.walkable)] an officer can walk to), read in [read_ms] ms: [place_list.Join(" ")]")
 		dispatch_clear(police)
 
 // ===== DEALING THE PLACES =====

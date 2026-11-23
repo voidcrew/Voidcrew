@@ -639,7 +639,9 @@
 				on_scene += pick
 	// New units by lift
 	var/short = wanted - length(on_scene) - length(dispatch_orders)
-	if(short > 0 && world.time >= dispatch_next_wave)
+	// With the floor still being read (police_search.dm search_pending(): the first second of the first hunt) the
+	// wave waits for it, to come up in the right sector
+	if(short > 0 && world.time >= dispatch_next_wave && !search_pending(dispatch_top_suspect(suspects)?.last_seen_turf))
 		var/datum/outpost_warrant/top = dispatch_top_suspect(suspects)
 		var/mob/living/suspect = top?.mind?.current
 		// Where the search for them starts (police_search.dm search_start()): somewhere a unit can walk to. For

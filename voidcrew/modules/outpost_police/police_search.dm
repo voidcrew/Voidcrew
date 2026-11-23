@@ -12,8 +12,10 @@
  * - The floor (/datum/outpost_police_floor): what an officer can walk to (outpost_police_flood(), the pathfinder's
  *   own rules), and the places a search stops at to look about, chosen so that every tile a visitor can get to is
  *   in sight of one (outpost_police_cover()). So no place is in a room only the police can enter, unless a visitor
- *   can climb into it. Read for the outpost's own floor, concourse and lobby together, and for a hangar once a
- *   search gets that far; read again after POLICE_SEARCH_REREAD, as doors and crates move.
+ *   can climb into it. Read for the outpost's own floor, concourse and lobby together, and for each hangar; read
+ *   again after POLICE_SEARCH_REREAD, as doors and crates move. Reading a floor walks every tile of it, so it is
+ *   done over the next ticks (search_read_all()) and whoever needs a floor not read yet waits the moment it takes
+ *   (search_pending()).
  * - The start (search_start()): the last-seen tile, or the nearest tile an officer can stand on when that one
  *   cannot be walked to or stood beside (a locked room, a ship's deck). For a checkpoint's scan chamber it is the
  *   side they can have left by: the concourse with the gate down or forced, the lobby with it working.
@@ -67,6 +69,15 @@
 	var/list/datum/outpost_police_floor/search_hangars = list()
 	/// The searches going on: mind -> /datum/outpost_police_search
 	var/list/searches = list()
+	/// Whether the floors are being read now (search_read_all())
+	var/search_reading = FALSE
+#ifdef UNIT_TESTS
+	/// Whether a floor is read on the spot when it is asked for. On in tests, which do not wait; the live search tests turn it off.
+	var/search_read_now = TRUE
+#else
+	/// Whether a floor is read on the spot when it is asked for. On in tests, which do not wait; the live search tests turn it off.
+	var/search_read_now = FALSE
+#endif
 
 // Chains with police_core.dm's Destroy()
 /datum/outpost_police/Destroy()
@@ -332,9 +343,10 @@
  * Every tile that can be walked to from `seeds` without leaving `box`, by the pathfinder's own rules for `walker`
  * carrying `access`. A null walker is a visitor: someone with no keys who works the checkpoint's doors as a
  * player does and climbs over a counter. `skip` (turf -> TRUE) is never entered.
- * Returns turf -> TRUE in the order found, `limit` tiles at most.
+ * Returns turf -> TRUE in the order found, `limit` tiles at most. `yields`: it gives way when the tick is used up
+ * (only from a proc that may sleep), and returns null if `walker` is gone by the time it is back.
  */
-/proc/outpost_police_flood(list/turf/seeds, list/box, mob/living/walker, list/access, list/skip, limit = INFINITY)
+/proc/outpost_police_flood(list/turf/seeds, list/box, mob/living/walker, list/access, list/skip, limit = INFINITY, yields = FALSE)
 	var/list/found = list()
 	if(length(box) < 5)
 		return found
@@ -349,6 +361,11 @@
 		frontier += seed
 	var/at = 1
 	while(at <= length(frontier) && length(frontier) < limit)
+		if(yields)
+			CHECK_TICK
+			// The checkpoint's doors tell an NPC by the walker itself: without it the rest would be a visitor's floor
+			if(walker && QDELETED(walker))
+				return null
 		var/turf/here = frontier[at]
 		at++
 		for(var/direction in GLOB.cardinals)
@@ -374,10 +391,12 @@
  * there), then one for every tile still out of sight, on the tile itself or, where no officer can stand on it (a
  * shop's far side of the counter), the nearest tile that sees it.
  */
-/proc/outpost_police_cover(list/public, list/walkable, list/turf/stops)
+/proc/outpost_police_cover(list/public, list/walkable, list/turf/stops, yields = FALSE)
 	var/list/turf/places = list()
 	var/list/covered = list()
 	for(var/turf/stop as anything in stops)
+		if(yields)
+			CHECK_TICK
 		if(!walkable[stop])
 			continue
 		var/list/turf/shown = outpost_police_in_sight(stop, public, covered)
@@ -389,6 +408,8 @@
 	for(var/turf/tile as anything in public)
 		if(covered[tile])
 			continue
+		if(yields)
+			CHECK_TICK
 		covered[tile] = TRUE
 		var/turf/stand = walkable[tile] ? tile : null
 		if(!stand)
@@ -460,18 +481,66 @@
 	if(floor && world.time - floor.read_at < POLICE_SEARCH_REREAD)
 		return floor
 	var/mob/living/walker = search_walker(officer)
-	var/datum/outpost_police_floor/fresh = walker ? search_read(berth, walker) : null
-	if(!fresh)
+	if(!walker)
 		return floor
+	if(search_read_now)
+		var/datum/outpost_police_floor/fresh = search_read(berth, walker)
+		if(fresh)
+			search_keep(berth, fresh)
+		return fresh || floor
+	// Over the next ticks: the one read before serves meanwhile, and with none yet the asker waits (search_pending())
+	if(!search_reading)
+		search_reading = TRUE
+		INVOKE_ASYNC(src, PROC_REF(search_read_all), walker)
+	return floor
+
+/// `fresh` is the floor of `berth`'s hangar (null: the outpost's own) from now
+/datum/outpost_police/proc/search_keep(datum/outpost_berth/berth, datum/outpost_police_floor/fresh)
+	var/datum/outpost_police_floor/old = berth ? search_hangar(berth) : search_main
 	if(berth)
-		if(floor)
-			search_hangars -= floor
+		if(old)
+			search_hangars -= old
 		search_hangars += fresh
 	else
 		search_main = fresh
-	if(floor)
-		qdel(floor)
-	return fresh
+	if(old && old != fresh)
+		qdel(old)
+
+/**
+ * Reads every floor that is due, the outpost's own first and then each hangar with ground under it, giving way
+ * between tiles so no tick pays for it. Hangars are read with the rest so that one is ready by the time a search
+ * has worked through the concourse to it. Sleeps.
+ */
+/datum/outpost_police/proc/search_read_all(mob/living/walker)
+	var/list/berths = list(null)
+	for(var/datum/outpost_berth/berth as anything in outpost?.berths)
+		if(berth?.get_bottom_left() && length(berth.alcove_turfs))
+			berths += berth
+	for(var/datum/outpost_berth/berth as anything in berths)
+		if(QDELETED(walker))
+			break
+		if(berth && (QDELETED(berth) || !(berth in outpost?.berths)))
+			continue
+		var/datum/outpost_police_floor/old = berth ? search_hangar(berth) : search_main
+		if(old && world.time - old.read_at < POLICE_SEARCH_REREAD)
+			continue
+		var/datum/outpost_police_floor/fresh = search_read(berth, walker, TRUE)
+		if(QDELETED(src))
+			if(fresh)
+				qdel(fresh)
+			return
+		if(fresh)
+			search_keep(berth, fresh)
+	search_reading = FALSE
+
+/**
+ * Whether the floor `where` is on has never been read and is being read now: whoever needs it waits the moment that
+ * takes. Asking starts the reading.
+ */
+/datum/outpost_police/proc/search_pending(turf/where, mob/living/officer)
+	if(!where || search_floor(where, officer))
+		return FALSE
+	return search_reading
 
 /**
  * The floors a search goes through, in order: `first` (the one it started on), the outpost's own floor, then, for
@@ -493,8 +562,8 @@
 			continue
 		. += berth
 
-/// Reads the outpost's own floor (`berth` null) or `berth`'s hangar for `walker`. Null if it has no ground.
-/datum/outpost_police/proc/search_read(datum/outpost_berth/berth, mob/living/walker)
+/// Reads the outpost's own floor (`berth` null) or `berth`'s hangar for `walker`. Null if it has no ground, or (`yields`: it gives way between tiles, and sleeps) if the walker or the police went meanwhile.
+/datum/outpost_police/proc/search_read(datum/outpost_berth/berth, mob/living/walker, yields = FALSE)
 	var/list/box = search_box(berth)
 	if(!box || !walker)
 		return null
@@ -521,13 +590,16 @@
 	var/datum/outpost_police_floor/floor = new
 	floor.berth_ref = berth ? WEAKREF(berth) : null
 	floor.read_at = world.time
-	floor.walkable = outpost_police_flood(seeds, box, walker, walker.get_access(), skip)
+	floor.walkable = outpost_police_flood(seeds, box, walker, walker.get_access(), skip, INFINITY, yields)
+	var/list/public = floor.walkable ? outpost_police_flood(seeds, box, null, null, skip, INFINITY, yields) : null
+	if(!public || QDELETED(src) || QDELETED(walker) || !outpost || (berth && QDELETED(berth)))
+		qdel(floor)
+		return null
 	var/list/turf/alcove = berth ? berth.alcove_turfs : outpost.lobby_alcove_turfs
 	for(var/turf/tile as anything in alcove)
 		if(floor.walkable[tile])
 			floor.entry = tile
 			break
-	var/list/public = outpost_police_flood(seeds, box, null, null, skip)
 	// Whoever stands in a scan chamber is seen by its scanner (police_perception.dm scanned())
 	for(var/checkpoint_id in outpost.checkpoints)
 		var/datum/outpost_checkpoint/post = outpost.checkpoints[checkpoint_id]
@@ -537,7 +609,10 @@
 			public -= tile
 		public -= get_turf(post.inner_door)
 		public -= get_turf(post.outer_door)
-	floor.places = outpost_police_cover(public, floor.walkable, stops)
+	floor.places = outpost_police_cover(public, floor.walkable, stops, yields)
+	if(QDELETED(src))
+		qdel(floor)
+		return null
 	return floor
 
 // =========================================================================
@@ -642,6 +717,10 @@
  * next one. It used to walk to the last-seen tile and wait there for the step to time out.
  */
 /datum/outpost_police_case/proc/respond_unseen(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/carbon/suspect)
+	// The floor is still being read (the first second of the first hunt): a moment
+	if(police.search_pending(warrant.last_seen_turf, officer))
+		set_goal(null)
+		return
 	var/turf/place = police.search_place(warrant, officer)
 	if(!place)
 		// No sighting to start from (an accomplice nobody saw): as it was

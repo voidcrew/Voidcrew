@@ -860,6 +860,9 @@
 	if(!istype(brain) || !mind || stat != CONSCIOUS || client || case || npc_exit)
 		return FALSE
 	var/datum/outpost_warrant/warrant = police?.get_warrant(mind)
+	// The floor is still being read (the first second of the first hunt): asked again at the police's next tick
+	if(police?.search_pending(warrant?.last_seen_turf, src))
+		return FALSE
 	// Only from where the police last saw them, or were told they were: never where they are now (owner decision 52).
 	// From there the search works outward, a place to each officer (police_search.dm).
 	var/turf/where = police?.search_place(warrant, src)
