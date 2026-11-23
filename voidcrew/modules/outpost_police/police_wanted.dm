@@ -115,10 +115,8 @@
 	var/datum/voidcrew_crew_record/crew
 	/// Highest tier applied: 4 or 5 stars
 	var/stars = 0
-	var/started_at = 0
 	/// world.time the embargo ends
 	var/ends_at = 0
-	var/officers_killed = 0
 	/// Weakrefs to the crew's ships this incident has embargoed, so a ship the crew gets later is embargoed once and an
 	/// admin's lift on one sticks
 	var/list/datum/weakref/ships_embargoed = list()
@@ -1187,16 +1185,12 @@
 	if(is_ours)
 		SEND_SIGNAL(src, COMSIG_OUTPOST_POLICE_OFFICER_DOWN, dead, killer)
 
-/// `warrant`'s holder killed an officer: the embargo of their crew runs longer
+/**
+ * `warrant`'s holder killed an officer: counted for the round's numbers. It adds no time to a ban on their crew
+ * (owner decision 72): the killing is a crime like any other, and counting it starts a running ban over (crime_during_ban()).
+ */
 /datum/outpost_police/proc/officer_killed_by(datum/outpost_warrant/warrant)
 	record_metric(METRIC_COMBAT, "police_officer_killed", actor = warrant.mind?.current, quantity = 1)
-	var/datum/voidcrew_crew_record/crew = current_warrant_crew(warrant)
-	var/datum/outpost_incident/incident = crew ? incidents[crew] : null
-	if(!incident)
-		return
-	incident.officers_killed++
-	incident.ends_at = min(incident.ends_at + OUTPOST_POLICE_EMBARGO_PER_KILL, world.time + OUTPOST_POLICE_EMBARGO_MAX)
-	move_ship_bans(incident)
 
 // =========================================================================
 // OFFICERS STRUCK (abuse M3; called from the officer's body, police_units.dm)
@@ -1343,8 +1337,6 @@
 	if(!incident)
 		incident = new
 		incident.crew = crew
-		incident.started_at = world.time
-		incident.officers_killed = warrant.officers_killed
 		incidents[crew] = incident
 		watch_crew(crew)
 	if(stars <= incident.stars)
@@ -1357,11 +1349,10 @@
 	sync_incident(incident)
 	record_metric(METRIC_COMBAT, "police_embargo", actor = warrant.mind?.current, points = stars, quantity = round((incident.ends_at - world.time) / (1 MINUTES)))
 
-/// How long `incident`'s embargo runs from its start, or from the crew's latest crime here: by its stars, longer per officer killed
+/// How long `incident`'s embargo runs from its start, or from the crew's latest crime here: a flat time by its stars
 /datum/outpost_police/proc/incident_length(datum/outpost_incident/incident)
 	var/list/lengths = OUTPOST_POLICE_EMBARGO
-	var/by_stars = lengths[clamp(incident.stars - 3, 1, length(lengths))]
-	return min(by_stars + incident.officers_killed * OUTPOST_POLICE_EMBARGO_PER_KILL, OUTPOST_POLICE_EMBARGO_MAX)
+	return lengths[clamp(incident.stars - 3, 1, length(lengths))]
 
 /// `incident`'s crew committed another crime here while its embargo runs: it runs its whole length again from now
 /datum/outpost_police/proc/renew_incident(datum/outpost_incident/incident)

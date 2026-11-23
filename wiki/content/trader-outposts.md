@@ -303,7 +303,7 @@ At 4 stars and up, while you are free and alive at the outpost, every crewmate o
 
 ### The ban
 
-At 4 stars every ship of your crew is banned from that outpost: no shops, no checkpoint, no trade. It lasts 15 minutes, 30 at 5 stars, and each officer you kill adds 5 more, up to two hours. Any crime there by anyone on your crew while it runs starts it over from the beginning. Crewmates who walk in anyway are arrested on sight. It only covers the outpost where it happened; the other two still trade with you. There is no paying it off.
+At 4 stars every ship of your crew is banned from that outpost: no shops, no checkpoint, no trade. It lasts 15 minutes, 30 at 5 stars. Any crime there by anyone on your crew while it runs starts it over from the beginning. Crewmates who walk in anyway are arrested on sight. It only covers the outpost where it happened; the other two still trade with you. There is no paying it off.
 
 !!! danger "The ban covers your whole crew"
     One person losing their temper bars every ship of the crew, including people who were still shopping.

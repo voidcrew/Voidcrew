@@ -403,7 +403,7 @@
 
 // ===== THE RECORD OF A CREW: ACCOMPLICES AND THE EMBARGO =====
 
-/// Four stars puts the crew's ships under embargo here and makes the crewmates at the outpost accomplices; five stars lengthens it but never spreads it to other outposts; a dead officer lengthens it; it lapses on its own
+/// Four stars puts the crew's ships under embargo here and makes the crewmates at the outpost accomplices; five stars lengthens it but never spreads it to other outposts; a further crime of the crew, a dead officer included, starts it over and adds nothing; it lapses on its own
 /datum/unit_test/voidcrew_outpost_police_incident
 	/// What COMSIG_OUTPOST_POLICE_OFFICER_DOWN told us
 	var/list/down_log = list()
@@ -447,32 +447,34 @@
 	TEST_ASSERT(!other.is_ship_embargoed(ship), "Five stars spread the embargo to another outpost")
 	TEST_ASSERT_EQUAL(incident.ends_at, world.time + 30 MINUTES, "The five-star embargo is not 30 minutes")
 
-	// An officer killed by the leader: five minutes more, announced
+	// An officer killed by the leader, announced: the embargo starts over at its flat 30 minutes, with nothing added
+	incident.ends_at = world.time + 10 MINUTES
+	outpost.embargoed_ships[ship] = incident.ends_at
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = wanted_officer(outpost, wanted_spot(3, 3))
 	police.record_victim(warrant, officer)
 	police.on_wanted_death(null, officer, FALSE)
 	TEST_ASSERT_EQUAL(warrant.officers_killed, 1, "A dead officer was not counted against their killer")
-	TEST_ASSERT_EQUAL(incident.ends_at, world.time + 35 MINUTES, "A dead officer did not add 5 minutes") // OUTPOST_POLICE_EMBARGO_PER_KILL
-	TEST_ASSERT_EQUAL(outpost.embargoed_ships[ship], incident.ends_at, "The longer embargo did not reach the ship here")
+	TEST_ASSERT_EQUAL(incident.ends_at, world.time + 30 MINUTES, "A dead officer did not start the embargo over at its flat 30 minutes")
+	TEST_ASSERT_EQUAL(outpost.embargoed_ships[ship], incident.ends_at, "The embargo started over did not reach the ship here")
 	TEST_ASSERT(!other.is_ship_embargoed(ship), "A dead officer spread the embargo to another outpost")
 	TEST_ASSERT_EQUAL(warrant.heat, 160, "Killing an officer did not add its heat") // OUTPOST_CRIME_KILL_OFFICER: 10 points
 	TEST_ASSERT_EQUAL(length(down_log), 1, "The officer's death was not announced once")
 	TEST_ASSERT_EQUAL(down_log[1][2], leader, "The announcement did not name the killer")
 
-	// Another crime of the crew here while it runs: it runs its whole length again (5 stars and one officer: 35 minutes)
+	// Another crime of the crew here while it runs: it runs its whole length again (5 stars: 30 minutes)
 	incident.ends_at = world.time + 2 MINUTES
 	outpost.embargoed_ships[ship] = incident.ends_at
 	var/mob/living/carbon/human/bystander = wanted_person(wanted_spot(4, 0))
 	police.count_crime(bystander, "unarmed") // OUTPOST_CRIME_ASSAULT_UNARMED
 	TEST_ASSERT_EQUAL(incident.ends_at, world.time + 2 MINUTES, "Someone else's crime started the crew's embargo over")
 	police.count_crime(mate, "unarmed")
-	TEST_ASSERT_EQUAL(incident.ends_at, world.time + 35 MINUTES, "A crewmate's crime during the embargo did not start it over")
-	TEST_ASSERT_EQUAL(outpost.embargoed_ships[ship], incident.ends_at, "The embargo started over did not reach the ship here")
+	TEST_ASSERT_EQUAL(incident.ends_at, world.time + 30 MINUTES, "A crewmate's crime during the embargo did not start it over")
+	TEST_ASSERT_EQUAL(outpost.embargoed_ships[ship], incident.ends_at, "A crewmate's crime started the embargo over, but not for the ship here")
 	// Never shortened by it
 	incident.ends_at = world.time + 50 MINUTES
 	police.count_crime(mate, "unarmed")
 	TEST_ASSERT_EQUAL(incident.ends_at, world.time + 50 MINUTES, "A crime shortened the crew's embargo")
-	incident.ends_at = world.time + 35 MINUTES
+	incident.ends_at = world.time + 30 MINUTES
 	outpost.embargoed_ships[ship] = incident.ends_at
 
 	// It runs out on its own: the next tick after its end forgets the incident, and the embargo has lapsed
@@ -910,7 +912,7 @@
 	police.remove_warrant(police.warrants[killer.mind])
 	police.recent_reports.Cut()
 
-	// Killing an officer while the officer assault is still pending counts officers_killed and extends the crew's embargo
+	// Killing an officer while the officer assault is still pending counts officers_killed
 	var/mob/living/carbon/human/cop_killer = wanted_person(wanted_spot(0, 1))
 	var/obj/structure/overmap/ship/ship = wanted_ship(cop_killer)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = wanted_officer(outpost, wanted_spot(2, 1))
@@ -924,11 +926,11 @@
 	var/datum/outpost_warrant/cop_warrant = police.warrants[cop_killer.mind]
 	TEST_ASSERT_EQUAL(cop_warrant?.heat, 60, "A pending officer kill did not come to 60 heat") // 50 + 10
 	TEST_ASSERT_EQUAL(cop_warrant?.officers_killed, 1, "A pending officer kill did not increment officers_killed")
-	// One officer dead is three stars: no ban yet (owner decision 63). When the fourth star comes, the ban counts them.
+	// One officer dead is three stars: no ban yet (owner decision 63). The fourth star brings the flat 15 minutes (decision 72).
 	TEST_ASSERT_NULL(outpost.embargoed_ships[ship], "One dead officer banned the crew before four stars")
 	cop_warrant.heat = 90
 	police.tick_warrants()
-	TEST_ASSERT_EQUAL(outpost.embargoed_ships[ship], world.time + 20 MINUTES, "An officer killed before the ban did not add 5 minutes to the 15-minute embargo")
+	TEST_ASSERT_EQUAL(outpost.embargoed_ships[ship], world.time + 15 MINUTES, "An officer killed before the ban changed the length of the 15-minute embargo")
 	wanted_cleanup(list(ship))
 
 /// A new ship acquired by an embargoed crew during an active incident is embargoed on the next tick, and wanted HUD alerts follow mind transfers

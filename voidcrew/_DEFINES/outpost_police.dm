@@ -226,13 +226,9 @@
 
 // ===== FOUR AND FIVE STARS =====
 
-/// Embargo length at four and five stars, at the outpost where it happened. It starts over at each further crime of
-/// the crew there while it runs (owner decision 71)
+/// Embargo length at four and five stars, at the outpost where it happened: a flat time, nothing added to it. It starts
+/// over at each further crime of the crew there while it runs (owner decisions 71 and 72)
 #define OUTPOST_POLICE_EMBARGO list(15 MINUTES, 30 MINUTES)
-/// Added to the embargo per officer killed
-#define OUTPOST_POLICE_EMBARGO_PER_KILL (5 MINUTES)
-/// The embargo never has longer than this left to run
-#define OUTPOST_POLICE_EMBARGO_MAX (120 MINUTES)
 
 // ===== LIFTS AND AI =====
 
