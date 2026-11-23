@@ -1,0 +1,18 @@
+{
+ "hulls": {
+  "gemogee_industrial_cracker": {
+   "height": 19,
+   "png": "ship_gemogee_industrial_cracker.png",
+   "slots": {
+    "cargo_load": [
+     6,
+     7
+    ]
+   },
+   "src_md5": "b1b15b2f5c48c4b350c6ac33a2750408",
+   "width": 20
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}

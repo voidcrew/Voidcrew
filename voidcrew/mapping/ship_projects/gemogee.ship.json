@@ -1,0 +1,63 @@
+{
+  "Version": 1,
+  "ID": "gemogee",
+  "Description": "",
+  "Hull": {
+    "Type": "/datum/map_template/shuttle/voidcrew/gemogee",
+    "Name": "Gemogee",
+    "Prefix": "_maps/voidcrew/ships/",
+    "Port": "ship",
+    "Suffix": "gemogee_bounty_hunter_black",
+    "Slots": [
+      "cargo_load"
+    ],
+    "Themes": [
+      {
+        "ID": "standard",
+        "Name": "Bounty Hunter Black",
+        "Suffix": "gemogee_bounty_hunter_black",
+        "Description": "The standard variation of the ship. \nYou often see this in the hands of \nwell off pirates and bounty hunters",
+        "Slots": [],
+        "Default": true
+      },
+      {
+        "ID": "medical_runner",
+        "Name": "Medical Runner",
+        "Suffix": "gemogee_medical_runner",
+        "Description": "A variation of the original Gemogee, created to save lives, instead of destroying them. Though yet, it feels eerily the same...",
+        "Slots": [],
+        "Default": false
+      },
+      {
+        "ID": "industrial_cracker",
+        "Name": "Industrial Cracker",
+        "Suffix": "gemogee_industrial_cracker",
+        "Description": "A converted Gemogee, designed to assist in salvaging, mining and industrial work. Also a great disguise for bounty hunters!",
+        "Slots": [
+          "cargo_load"
+        ],
+        "Default": false
+      }
+    ],
+    "Modules": [
+      {
+        "ID": "cargo_load_basic",
+        "Name": "cargo load",
+        "Slot": "cargo_load",
+        "File": "gemogee/cargo_load_basic.dmm",
+        "Themes": [
+          "industrial_cracker"
+        ],
+        "Default": true
+      }
+    ]
+  },
+  "Crew": 4,
+  "Hidden": false,
+  "Cost": 0,
+  "PartCosts": {
+    "theme/industrial_cracker": {},
+    "theme/medical_runner": {}
+  },
+  "PortDirection": 2
+}
