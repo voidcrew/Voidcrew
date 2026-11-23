@@ -348,33 +348,29 @@
 	uniform = /obj/item/clothing/under/syndicate
 	head = /obj/item/clothing/head/soft/black
 
-// ----- wardens (code name: sergeant), who keep the cells: tg's warden pieces in the zone's colours (decision 65) -----
+// ----- wardens (code name: sergeant), who keep the cells: tg's own Warden, the red one, at every outpost (decision 65) -----
 
+/// What a Warden wears on a tg station (/datum/outfit/job/warden): the red security suit, the red armoured jacket, the
+/// red warden's hat, the sunglasses, black gloves and jackboots. The radio, the belt and the cell card are the police's.
 /datum/outfit/outpost_police/sergeant
 	name = "Outpost Police: warden"
-	head = /obj/item/clothing/head/hats/warden
+	uniform = /obj/item/clothing/under/rank/security/warden
+	suit = /obj/item/clothing/suit/armor/vest/warden/alt
+	head = /obj/item/clothing/head/hats/warden/red
+	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
+	gloves = /obj/item/clothing/gloves/color/black/security
+	shoes = /obj/item/clothing/shoes/jackboots/sec
 	id = /obj/item/card/id/advanced/outpost_sergeant
 	id_trim = /datum/id_trim/outpost_police/sergeant
 
-/// Halcyon's navy: the warden's formal uniform under a braided officer's jacket (no armour: only response units wear it),
-/// and the peaked police hat
 /datum/outfit/outpost_police/sergeant/halcyon
 	name = "Outpost Police: Halcyon warden"
-	uniform = /obj/item/clothing/under/rank/security/warden/formal
-	suit = /obj/item/clothing/suit/jacket/officer/blue
 
-/// Quartermain's grey: the old grey warden's suit with its red trim, and the red warden's hat
 /datum/outfit/outpost_police/sergeant/quartermain
 	name = "Outpost Police: Quartermain warden"
-	uniform = /obj/item/clothing/under/rank/security/warden/grey
-	head = /obj/item/clothing/head/hats/warden/red
 
-/// The Undertow's black: the officers' black fatigues under a leather jacket, and the red warden's hat
 /datum/outfit/outpost_police/sergeant/undertow
 	name = "Outpost Police: Undertow warden"
-	uniform = /obj/item/clothing/under/syndicate
-	suit = /obj/item/clothing/suit/jacket/leather
-	head = /obj/item/clothing/head/hats/warden/red
 
 // ----- response officers: a vest, a helmet and sunglasses (abuse M5) -----
 
