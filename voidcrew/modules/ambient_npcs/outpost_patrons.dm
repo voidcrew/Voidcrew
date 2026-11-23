@@ -114,6 +114,9 @@
 		return FALSE
 	if(!leash_ok(tile))
 		return FALSE
+	// Never a doorway, whatever sends them there (taking cover, a body to see to): outpost_doorways.dm
+	if(tile != loc && outpost_doorway_of(tile))
+		return FALSE
 	if(ignore_floor)
 		return TRUE
 	if(place && !place.spot_allowed(tile, src))
