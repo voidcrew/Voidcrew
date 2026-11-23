@@ -18,8 +18,9 @@
  *   cannot be walked to or stood beside (a locked room, a ship's deck). For a checkpoint's scan chamber it is the
  *   side they can have left by: the concourse with the gate down or forced, the lobby with it working.
  * - The search (/datum/outpost_police_search): one for each wanted person, from their last sighting. Officers are
- *   dealt its places one each, the ring nearest the start first; a place looked at is done, and with every place
- *   done it starts over. A new sighting starts a new search.
+ *   dealt its places one each: the start first, then whichever is the shortest walk for that officer, the ones
+ *   nearer the start before the ones further out. A place looked at is done, and with every place done it starts
+ *   over. A new sighting starts a new search.
  * - Who asks: an officer sent to look (police_stealth.dm police_search_for()), the arresting officer of a case
  *   that has not found its suspect (respond_unseen() below), and dispatch, for the sector a wave comes up in
  *   (search_start()) and whether a unit still in its lift is shut in (search_shut_in()).
@@ -27,8 +28,8 @@
 
 /// Every tile a visitor can get to is within this many tiles, in a clear line, of a place the search stops at
 #define POLICE_SEARCH_SIGHT 6
-/// Places are dealt in rings this wide round where the search starts, the nearest ring first
-#define POLICE_SEARCH_RING 8
+/// How much a place's distance from where the search starts counts against it, beside the officer's own walk there
+#define POLICE_SEARCH_SPREAD 0.5
 /// A place this near one just looked at was looked at with it
 #define POLICE_SEARCH_NEAR 2
 /// A stop of the beat is one of the places when this many tiles are in its sight that no place before it has
@@ -202,9 +203,9 @@
 
 /**
  * The place `officer` looks at next: the one it has, until it has looked there; else the start, then the places
- * of the floor the search started on, the nearest ring to the start first and the nearest to the officer within
- * it; then the other floors (a hangar only for a response unit, which is all that rides to one). With every place
- * it could be given looked at, the search starts over. Null when there is nowhere to send it at all.
+ * of the floor the search started on, the shortest walk for it first and those nearer the start before those
+ * further out; then the other floors (a hangar only for a response unit, which is all that rides to one). With
+ * every place it could be given looked at, the search starts over. Null when there is nowhere to send it at all.
  */
 /datum/outpost_police_search/proc/deal(datum/outpost_police/police, mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
 	var/turf/mine = officer.search_claim
@@ -250,39 +251,35 @@
 		// A hangar is for a unit that rides to one, or one that stands in it already
 		if(floor.berth_ref && !rides && floor != own)
 			continue
-		var/turf/anchor = start
-		var/anchor_sector = start_sector
-		var/list/turf/spots = floor.places
-		if(floor == first)
-			spots = list(start) + spots
-		else
-			anchor = floor.entry
-			anchor_sector = anchor ? police.sector_of(anchor) : null
+		// Nobody has looked where they were last seen yet: that comes first
+		if(floor == first && open_to(start, officer))
+			return start
+		var/turf/anchor = floor == first ? start : floor.entry
+		var/anchor_sector = floor == first ? start_sector : (anchor ? police.sector_of(anchor) : null)
 		var/turf/best
-		var/best_ring = INFINITY
-		var/best_cost = INFINITY
-		for(var/turf/place as anything in spots)
+		var/best_score = INFINITY
+		for(var/turf/place as anything in floor.places)
 			if(!open_to(place, officer))
 				continue
 			var/place_sector = floor.berth_ref ? null : police.sector_of(place)
-			// How far the search has to spread to get there: on foot, so the lobby is a long way from the concourse
-			var/spread = anchor ? get_dist(anchor, place) : 0
-			if(!floor.berth_ref && anchor && place_sector != anchor_sector)
-				spread += POLICE_SEARCH_CROSSING
-			var/ring = (place == start) ? -1 : round(spread / POLICE_SEARCH_RING)
-			if(ring > best_ring)
-				continue
-			var/cost
+			// The walk there for this officer...
+			var/score
 			if(floor != own)
-				cost = POLICE_SEARCH_RIDE + (floor.entry ? get_dist(floor.entry, place) : 0)
+				score = POLICE_SEARCH_RIDE + (floor.entry ? get_dist(floor.entry, place) : 0)
 			else
-				cost = get_dist(here, place)
+				score = get_dist(here, place)
 				if(!floor.berth_ref && place_sector != here_sector)
-					cost += POLICE_SEARCH_CROSSING
-			if(ring < best_ring || cost < best_cost)
+					score += POLICE_SEARCH_CROSSING
+			// ...and, at half weight, how far the search has spread to get there: outward from the start, on foot, so
+			// the lobby is a long way from the concourse
+			if(anchor)
+				var/spread = get_dist(anchor, place)
+				if(!floor.berth_ref && place_sector != anchor_sector)
+					spread += POLICE_SEARCH_CROSSING
+				score += spread * POLICE_SEARCH_SPREAD
+			if(score < best_score)
 				best = place
-				best_ring = ring
-				best_cost = cost
+				best_score = score
 		if(best)
 			return best
 	return null
@@ -680,7 +677,7 @@
 		search_at = null
 
 #undef POLICE_SEARCH_SIGHT
-#undef POLICE_SEARCH_RING
+#undef POLICE_SEARCH_SPREAD
 #undef POLICE_SEARCH_NEAR
 #undef POLICE_SEARCH_STOP_WORTH
 #undef POLICE_SEARCH_REREAD

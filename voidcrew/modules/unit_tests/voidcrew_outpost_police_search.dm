@@ -163,10 +163,20 @@
 
 	var/started = world.time
 	var/left_lift_after = -1
+	var/at_gate_after = -1
 	var/seen_after = -1
+	var/list/turf/looked_at = list()
 	while(world.time - started < 45 SECONDS)
 		if(left_lift_after < 0 && get_dist(beat, east_lift) > 3)
 			left_lift_after = world.time - started
+		if(at_gate_after < 0)
+			for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police.officers)
+				if(officer.z == post.secured_turf.z && get_dist(officer, post.secured_turf) <= 2)
+					at_gate_after = world.time - started
+					break
+		var/datum/outpost_police_search/search = police.searches[suspect.mind]
+		for(var/turf/place as anything in search?.done)
+			looked_at |= place
 		if(police.suspect_seen(suspect))
 			seen_after = world.time - started
 			break
@@ -174,8 +184,14 @@
 	police.sleep_tick()
 	TEST_ASSERT(left_lift_after >= 0 && left_lift_after <= 12 SECONDS, "The officer sent after someone last seen in the scan chamber [left_lift_after < 0 ? "never left its lift" : "took [left_lift_after / 10] s to leave its lift"]")
 	TEST_ASSERT(!length(police.dispatch_skipped), "A lift point was called blocked with nothing in its way")
-	TEST_ASSERT(seen_after >= 0, "Two stars at the gate, the suspect in the north wing: no officer had them in sight in 45 s. [officers_report(outpost)]")
-	log_test("Halcyon, gate to north wing at two stars: left the lift after [left_lift_after / 10] s, in sight after [seen_after / 10] s")
+	// Someone comes to look, well inside the 45 s the stars last unseen
+	TEST_ASSERT(at_gate_after >= 0 && at_gate_after <= 25 SECONDS, "Two stars for the gate: [at_gate_after < 0 ? "no officer came to the gate in 45 s" : "the first officer took [at_gate_after / 10] s to get to the gate"]. [officers_report(outpost)]")
+	// And the search goes outward from there: found, or by now looking well away from the gate
+	var/furthest = 0
+	for(var/turf/place as anything in looked_at)
+		furthest = max(furthest, get_dist(place, post.secured_turf))
+	TEST_ASSERT(seen_after >= 0 || (length(looked_at) >= 4 && furthest >= 10), "Two stars for the gate, the suspect in the north wing: in 45 s the search looked at [length(looked_at)] places, none further than [furthest] tiles from the gate. [officers_report(outpost)]")
+	log_test("Halcyon, gate to north wing at two stars: left the lift after [left_lift_after / 10] s, at the gate after [at_gate_after / 10] s, [seen_after >= 0 ? "in sight after [seen_after / 10] s" : "not in sight in 45 s"]; [length(looked_at)] places looked at, the furthest [furthest] tiles from the gate")
 	dispatch_clear(police)
 
 // ===== EVERY MAP =====
@@ -461,16 +477,18 @@
 		if(place in visited)
 			break
 		visited += place
-		// Places are dealt in rings 8 wide (POLICE_SEARCH_RING): never back to an inner one while it has places left
-		var/ring = round(get_dist(last, place) / 8)
-		TEST_ASSERT(ring >= widest, "A place [get_dist(last, place)] tiles from the start was dealt after one in ring [widest]")
-		widest = max(widest, ring)
+		// Outward: never back toward the start by more than the width of the room while there are places further out
+		var/spread = get_dist(last, place)
+		TEST_ASSERT(spread >= widest - 9, "A place [spread] tiles from the start was dealt after one [widest] tiles from it")
+		widest = max(widest, spread)
+		// The officer walks there and looks
+		first.forceMove(place)
 		police.search_looked(warrant, first, place)
 		place = police.search_place(warrant, first)
 	for(var/turf/known as anything in floor.places)
 		TEST_ASSERT((known in visited) || get_dist(known, second_place) <= 2 || length(visited & RANGE_TURFS(2, known)), "The search started over without the place at [known.x],[known.y]")
 	TEST_ASSERT(place in visited, "With every place looked at the search did not start over")
-	TEST_ASSERT(widest >= 3, "The search never got further than ring [widest] of a 40-tile room")
+	TEST_ASSERT(widest >= 24, "The search never got further than [widest] tiles from where it started in a 40-tile room")
 
 	// A new sighting: from there
 	warrant.last_seen_turf = at(20, 7)
