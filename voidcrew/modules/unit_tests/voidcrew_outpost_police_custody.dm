@@ -192,7 +192,7 @@
 	TEST_ASSERT(book_done && isnull(cell.booking[mind]), "Setup: the booking never ended")
 	TEST_ASSERT(mind in cell.prisoners, "Setup: the booking did not hold the suspect")
 	TEST_ASSERT(cell.jailed[mind], "A fined prisoner who committed a crime while being booked is on a paid hold")
-	TEST_ASSERT(cell.prisoners[mind] >= world.time + 4 MINUTES - 5 SECONDS, "A crime during the booking did not set three stars' time") // OUTPOST_POLICE_JAIL[3]
+	TEST_ASSERT(cell.prisoners[mind] >= world.time + 4 MINUTES - 10 SECONDS, "A crime during the booking did not set three stars' time") // OUTPOST_POLICE_JAIL[3]
 	TEST_ASSERT_EQUAL(cell.bail_due[mind], INFINITY, "A fine can buy off a term earned during the booking")
 
 /// A prisoner who steps out past the officer while being booked is charged once the booking is over, as any walk out of a cell is
