@@ -189,6 +189,8 @@ The trader raises the alarm when you leave their sight or half a minute after ha
 
 When the shooting stops, the port sends crews up by the staff lifts a few minutes later: **morgue workers**, **janitors** and **medics**. Morgue workers bag the dead and drag them off. The bodies of locals go down the lift. Visitors who died, yours included, are taken to the **morgue** and slid into a tray there, and you can collect them from it. Nothing is taken from a body. Janitors mop up blood and pick up spent casings and litter. Medics patch up the outpost's own people who are down but alive; they do not treat visitors. The crews are people and they talk to each other and call things in by radio, and hurting them is a crime like any other.
 
+Hiding at the outpost does not hold the crews off. A minute after the officers last saw anyone wanted, the wait for the crews starts as if you had left. Show yourself and no more crews are called until it is quiet again.
+
 Once the dead are cleared and the floors are clean, new traders, guards and officers walk in from the lifts, each shop opens when its trader reaches the counter, and the regulars drift back. A shop is usually shut for ten to fifteen minutes. If crews keep getting killed, the next one is slower to come and brings more escort, and after four in a row the port sends nobody for a quarter of an hour.
 
 If nobody is at the outpost, its hangars and the ships docked there for ten minutes, and nobody wanted is holding things up, the whole cleanup is done at once while you are away. Come back sooner and you find the crews where they stood.
@@ -254,6 +256,8 @@ A report that hasn't gone out yet can be stopped. It is dropped if every witness
 More officers arrive through the staff lifts as your stars rise, and they keep coming.
 
 **Heavy weapons.** At 5 stars two heavy weapons officers come up with the rest, carrying an ion rifle, a rocket launcher or a grenade launcher. Those are for mechs. Anyone on foot gets their pistol like any other officer.
+
+**Hostages.** Hold one of the outpost's people by the neck with a gun in your other hand, and every officer who can see it holds fire and keeps their distance. Tell them out loud to back off and they will. Tell them to drop it, and an officer who walked in on it puts their weapon away; one who was already after you, or already looking for you, keeps it. The hostage struggles, and once they get loose or you let go the officers carry on. Hurt the hostage or attack an officer, and the officers who saw it never hold fire for you again. They do not hold fire for a hostage who is not one of the outpost's own.
 
 At Halcyon and Quartermain a downed suspect is cuffed, never shot, at any stars. Nobody fires on someone who is cuffed and being taken in, or who is in a cell. Get away from them and you are fair game again.
 
