@@ -1193,8 +1193,8 @@
 			return
 		route_to(officer, suspect, 1)
 		return
-	// Out of sight: to where they were last seen, and look about there (the step times out if they never turn up)
-	route_to(officer, warrant.last_seen_turf || get_turf(suspect), 1)
+	// Out of sight: to where they were last seen, a look about there, and outward from it (police_search.dm)
+	respond_unseen(officer, suspect)
 
 /// Order: the order, then the zone's time to comply. Complied: the cuffs. Not: the baton.
 /datum/outpost_police_case/proc/step_order()

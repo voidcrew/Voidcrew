@@ -394,9 +394,10 @@
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/spare = officer_at(11, 5, SOUTH)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/spare_brain = spare.ai_controller
 	spare_brain.stealth_setup()
-	TEST_ASSERT_NULL(spare_brain.route_id, "A beat officer off its routes claimed one where it stood")
-	police.stealth_tick_officer(spare)
+	// At its first thought, not at the police's next tick: the tick sleeps while nobody is wanted (owner playtest 4)
 	TEST_ASSERT_EQUAL(spare_brain.route_id, "b", "A spare beat officer did not take the free route")
+	police.stealth_tick_officer(spare)
+	TEST_ASSERT_EQUAL(spare_brain.route_id, "b", "A spare beat officer lost its route at the police's tick")
 	TEST_ASSERT_EQUAL(spare_brain.home_turf, at(16, 2), "A spare beat officer does not head for its route's first stop")
 
 	// Stars at 0: back to unaware and its beat
@@ -495,7 +496,13 @@
 	brain.stealth_setup()
 	TEST_ASSERT_NULL(brain.route_id, "A sergeant took beat route [brain.route_id]")
 	TEST_ASSERT_EQUAL(brain.home_turf, police.desk_turf, "A sergeant who came in away from the desk does not head for it")
-	TEST_ASSERT_EQUAL(police.free_route(brain.group), "a", "A sergeant kept the beat off its route")
+	var/list/group_report = list()
+	for(var/route in brain.group.routes)
+		group_report += "route [route] ([length(brain.group.routes[route])] stops)"
+	for(var/mob/living/member as anything in brain.group.living_members())
+		var/datum/ai_controller/basic_controller/human_npc/stealth/member_brain = member.ai_controller
+		group_report += "[member.type] at [member.x],[member.y],[member.z] on [istype(member_brain) ? (member_brain.route_id || "no route") : "no brain"]"
+	TEST_ASSERT_EQUAL(police.free_route(brain.group), "a", "A sergeant kept the beat off its route (group [brain.group.id], home [brain.group.home?.x],[brain.group.home?.y],[brain.group.home?.z]; sergeant at [sergeant.x],[sergeant.y],[sergeant.z]: [group_report.Join("; ")])")
 
 	// At the desk, with the coffee machine two tiles off
 	var/obj/machinery/vending/coffee/machine = allocate(/obj/machinery/vending/coffee, at(16, 4))

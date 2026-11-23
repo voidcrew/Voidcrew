@@ -502,6 +502,10 @@
 		var/mob/living/suspect = mind?.current
 		if(!isliving(suspect) || get_dist(suspect, wave.point) <= 2)
 			continue
+		// Still there with a way out (nowhere it could be sent yet, somewhere it could not walk to) is not a blocked
+		// lift: only a unit that cannot get out of it is (police_search.dm)
+		if(!search_shut_in(member))
+			continue
 		stuck += member
 	if(!length(stuck))
 		return
@@ -509,6 +513,9 @@
 	log_game("OUTPOST POLICE: [outpost] lift point [AREACOORD(wave.point)] is blocked; skipped for a while.")
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/member as anything in stuck)
 		if(human_npc_watched(member))
+			// Watched through its own door: it takes the lift back down, and is no longer counted as on the scene, so
+			// the next wave comes up somewhere else. Left standing there it held its place in the response for good.
+			dispatch_send_home(member)
 			continue
 		var/turf/other = lift_point(wave.sector)
 		if(other && other != get_turf(member) && !dispatch_tile_watched(other))
@@ -597,7 +604,7 @@
 			continue
 		// Responding still: to whichever suspect is nearest now
 		var/datum/outpost_warrant/nearest = dispatch_nearest_suspect(officer, suspects)
-		if(!nearest)
+		if(!nearest || dispatch_out_of_reach(officer, nearest))
 			officer.dispatch_mind = null
 			continue
 		if(nearest.mind != mind)
@@ -623,7 +630,7 @@
 				var/mob/living/carbon/human/npc/ambient_npc/outpost/police/pick = dispatch_closest_to_suspects(pool, suspects)
 				pool -= pick
 				var/datum/outpost_warrant/nearest = dispatch_nearest_suspect(pick, suspects)
-				if(!nearest)
+				if(!nearest || dispatch_out_of_reach(pick, nearest))
 					continue
 				if(pick.npc_exit)
 					pick.npc_stop_leaving()
@@ -632,10 +639,15 @@
 				on_scene += pick
 	// New units by lift
 	var/short = wanted - length(on_scene) - length(dispatch_orders)
-	if(short > 0 && world.time >= dispatch_next_wave)
+	// With the floor still being read (police_search.dm search_pending(): the first second of the first hunt) the
+	// wave waits for it, to come up in the right sector
+	if(short > 0 && world.time >= dispatch_next_wave && !search_pending(dispatch_top_suspect(suspects)?.last_seen_turf))
 		var/datum/outpost_warrant/top = dispatch_top_suspect(suspects)
 		var/mob/living/suspect = top?.mind?.current
-		var/sector = sector_of(top?.last_seen_turf || get_turf(suspect))
+		// Where the search for them starts (police_search.dm search_start()): somewhere a unit can walk to. For
+		// someone last seen in a checkpoint's scan chamber that is the side its gate let them out by: a unit sent up
+		// the lobby lift for someone who had emagged their way through searched the lobby.
+		var/sector = sector_of(search_start(top?.last_seen_turf) || get_turf(suspect))
 		if(sector == POLICE_SECTOR_OUTSIDE && suspect)
 			sector = sector_of(suspect)
 		if(sector != POLICE_SECTOR_OUTSIDE)
@@ -1087,6 +1099,17 @@
 			best = warrant
 			best_distance = distance
 	return best
+
+/**
+ * Whether `officer` is never taken to where `warrant`'s holder is thought to be: a hangar, for anyone but a response
+ * unit (police_stealth.dm stealth_walk() ends that walk at once). Such an officer is no part of the response to them:
+ * counted as on the scene, the beat stood on the concourse in place of the units a hangar was due.
+ */
+/datum/outpost_police/proc/dispatch_out_of_reach(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, datum/outpost_warrant/warrant)
+	if(dispatch_is_response_unit(officer))
+		return FALSE
+	var/sector = sector_of(dispatch_suspect_turf(warrant))
+	return istype(sector, /datum/outpost_berth) && sector_of(officer) != sector
 
 /// Of `candidates`, the officer nearest any of `suspects`
 /datum/outpost_police/proc/dispatch_closest_to_suspects(list/candidates, list/datum/outpost_warrant/suspects)
