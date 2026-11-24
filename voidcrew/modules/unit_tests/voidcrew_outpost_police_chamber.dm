@@ -478,3 +478,36 @@
 	var/datum/outpost_police_floor/floor = police.search_floor(lobby, first)
 	TEST_ASSERT_NOTNULL(floor, "The floor was not read")
 	TEST_ASSERT(!floor.walkable[chamber[1]] && !floor.walkable[chamber[2]] && !floor.walkable[get_turf(outer)], "The scan chamber was read as part of the floor officers walk")
+
+/**
+ * A close of a door left over from an earlier cycle (a retry queued while the door was shutting) that lands as the
+ * outer door opens again took the door, still solid partway through opening, for shut: the checkpoint went idle and
+ * dropped the timer that would have shut it, and the outer door stood open for good (pass 3: chamber/halcyon_down and
+ * chamber/halcyon_working, now and then). Here the leftover call is made by hand at that moment, so it happens every
+ * time: the outer door still shuts after its hold, and nobody inside is scanned with it open.
+ */
+/datum/unit_test/voidcrew_trader_checkpoint/stale_close
+
+/datum/unit_test/voidcrew_trader_checkpoint/stale_close/Run()
+	TEST_ASSERT(fixture(FALSE), "Could not prepare the checkpoint")
+	var/mob/living/carbon/human/walker = visitor(lobby)
+	// The outer door's own leftover close
+	TEST_ASSERT(checkpoint.request_outer(walker), "Fixture: the outer door would not open")
+	TEST_ASSERT(outer.density && outer.operating, "Fixture: the outer door is not partway open")
+	checkpoint.close_door(outer)
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(!outer.density, "Fixture: the outer door did not open")
+	TEST_ASSERT(wait_shut(outer, 8 SECONDS), "A leftover close landing as the outer door opened left it open (checkpoint [checkpoint.state])")
+	TEST_ASSERT_EQUAL(checkpoint.state, "idle", "The checkpoint is not idle after the outer door shut") // CHECKPOINT_IDLE
+	settle()
+	// The inner door's leftover close, someone in the chamber
+	var/mob/living/carbon/human/inside = visitor(chamber[2])
+	TEST_ASSERT(checkpoint.request_outer(walker), "Fixture: the outer door would not open a second time")
+	TEST_ASSERT(outer.density && outer.operating, "Fixture: the outer door is not partway open the second time")
+	checkpoint.close_door(inner)
+	TEST_ASSERT_EQUAL(checkpoint.state, "idle", "The chamber scanned with its outer door opening") // CHECKPOINT_IDLE
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(!outer.density, "Fixture: the outer door did not open the second time")
+	TEST_ASSERT(wait_shut(outer, 8 SECONDS), "A leftover close of the inner door landing as the outer door opened left it open (checkpoint [checkpoint.state])")
+	TEST_ASSERT_NOTNULL(inside, "The visitor in the chamber went missing")
+

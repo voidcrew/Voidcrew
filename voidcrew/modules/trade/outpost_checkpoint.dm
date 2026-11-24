@@ -394,7 +394,11 @@
 	if(QDELETED(door) || QDELETED(src))
 		return
 	if(door.density)
-		on_door_closed(door)
+		// Moving, it is not shut: a door partway open has whoever opened it to close it, and one partway shut has
+		// finish_close(). A call left over from an earlier close that lands as the door opens again would otherwise
+		// take it for shut, and the checkpoint would drop the timer meant to close it (it stood open for good)
+		if(!door.operating)
+			on_door_closed(door)
 		return
 	// The police at work in the chamber are never shut in: the outer door, their way back to the desk, waits for them
 	if(door.operating || doorway_blocked(door) || (door == outer_door && work_inside()))
@@ -420,10 +424,11 @@
 		// A hatch that sent someone refused back to the concourse (reject()): whoever is left in there is scanned
 		if(state == CHECKPOINT_REJECTING)
 			set_state(CHECKPOINT_IDLE)
-			if(!is_disabled() && outer_door?.density && length(chamber_people()))
+			if(!is_disabled() && outer_door?.density && !outer_door.operating && length(chamber_people()))
 				start_scan()
 			return
-		if(state == CHECKPOINT_IDLE && !is_disabled() && outer_door?.density)
+		// Not while the outer door is opening: a scan would drop the timer that shuts it again
+		if(state == CHECKPOINT_IDLE && !is_disabled() && outer_door?.density && !outer_door.operating)
 			var/requested = scan_when_closed
 			scan_when_closed = FALSE
 			if(requested || length(chamber_people()))
@@ -549,9 +554,11 @@
 	phase_timer = null
 	if(state != CHECKPOINT_SCANNING)
 		return
-	// Something opened mid-scan: nothing to decide about
+	// Something opened mid-scan: nothing to decide about, and the outer door shuts again once its doorway is clear
 	if(!outer_door.density || !inner_door.density)
 		set_state(CHECKPOINT_IDLE)
+		if(!outer_door.density)
+			close_door(outer_door)
 		return
 	var/list/refused = inspect_chamber()
 	var/list/people = chamber_people()
