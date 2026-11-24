@@ -288,7 +288,7 @@ A warden guards the cells, and he can be paid to let you out early. Say anything
 
 A crime in the cell starts your time over, at the length for the stars you have by then, and after that no fine gets you out. Hit an officer in there and they hit back.
 
-If you are booked in a bad way, or go down in a cell, security sends a medic up to patch you where you lie, and your time stops until you can stand. If no medic can come, the door opens so your crew can get to you; once you can walk again you have 20 seconds to get back in, or it counts as a breakout. Dying ends the term.
+If you are booked in a bad way, or go down in a cell, security sends a medic up to patch you where you lie. Your time keeps running while you are down. If no medic can come, the door opens so your crew can get to you. If you are carried out, you have 20 seconds to get back in once you can walk, or it counts as a breakout. Dying ends the term.
 
 ### Your things
 

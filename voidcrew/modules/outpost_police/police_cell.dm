@@ -75,6 +75,8 @@
 	var/list/carry_reported = list()
 	/// Prisoner mind -> TRUE: a medic was called for this spell in crit (police_cell_medic.dm)
 	var/list/medic_called = list()
+	/// Prisoner mind -> TRUE: down in crit, and a medic was called or the door held for them (crit_prisoner())
+	var/list/crit_spell = list()
 	/// Prisoners with a crime counted while this cell held them: mind -> TRUE. Their term is a jail term no fine buys off (crime_inside())
 	var/list/crimes_inside = list()
 	/// Jailed prisoners the warden has yet to come to of his own accord: mind -> world.time he may (police_bribe.dm tick_bribes())
@@ -118,6 +120,7 @@
 	medic_bodies.Cut()
 	carry_reported.Cut()
 	medic_called.Cut()
+	crit_spell.Cut()
 	crimes_inside.Cut()
 	visit_due.Cut()
 	hitting_back.Cut()
@@ -226,6 +229,7 @@
 	shoved_by -= prisoner
 	carry_reported -= prisoner
 	medic_called -= prisoner
+	crit_spell -= prisoner
 	crimes_inside -= prisoner
 	visit_due -= prisoner
 
@@ -301,7 +305,7 @@
 		visit_due[prisoner] = world.time + OUTPOST_POLICE_BRIBE_FIRST
 	bail_due[prisoner] = INFINITY
 	if(prisoner in return_by)
-		// Out of the cell (carried off, in crit): the clock is stopped, and starts over when they are back in
+		// Out of the cell (carried off): the clock is stopped, and starts over when they are back in
 		time_left[prisoner] = max(time_left[prisoner] || 0, term)
 	else
 		prisoners[prisoner] = max(prisoners[prisoner], world.time + term)
@@ -584,8 +588,8 @@
 		if(body.stat == DEAD)
 			down_prisoner(prisoner, body)
 			continue
-		if(HAS_TRAIT(body, TRAIT_CRITICAL_CONDITION))
-			crit_prisoner(prisoner, body)
+		var/in_crit = HAS_TRAIT(body, TRAIT_CRITICAL_CONDITION)
+		if(in_crit && crit_prisoner(prisoner, body))
 			continue
 		var/started = booking[prisoner]
 		if(!isnull(started))
@@ -601,12 +605,8 @@
 		var/inside = (get_turf(body) in tiles)
 		if(prisoner in return_by)
 			if(inside)
-				prisoners[prisoner] = world.time + (time_left[prisoner] || 0)
-				return_by -= prisoner
-				time_left -= prisoner
-				carried_by -= prisoner
-				walked_out -= prisoner
-				carry_reported -= prisoner
+				back_inside(prisoner)
+				crit_spell -= prisoner
 				medic_called -= prisoner
 				end_medic_hold(body)
 			else if(!can_walk_back(body, prisoner))
@@ -618,6 +618,11 @@
 		if(!inside)
 			left_cell(prisoner, body)
 			continue
+		if(!in_crit && crit_spell[prisoner])
+			// Up again in the cell: the door no longer waits for a medic
+			crit_spell -= prisoner
+			medic_called -= prisoner
+			end_medic_hold(body)
 		if(world.time >= prisoners[prisoner])
 			release(prisoner, body, POLICE_LINE_RELEASE)
 			continue
@@ -660,22 +665,42 @@
 	SEND_SIGNAL(police, COMSIG_OUTPOST_POLICE_RELEASED, body)
 	police.cell_station_say(line)
 	open_door(OUTPOST_POLICE_CELL_OPEN)
+	// Let out still in crit (owner decision 104): the door stays open while they lie there, and a medic on the job
+	// for them finishes (police_cell_medic.dm cell_patient_ok())
+	if(HAS_TRAIT(body, TRAIT_CRITICAL_CONDITION) && (get_turf(body) in tiles))
+		start_medic_hold(body, quiet = TRUE)
+
+/// `prisoner`, out of the cell, is back on its floor: their term runs again from what was left of it
+/datum/outpost_police_cell/proc/back_inside(datum/mind/prisoner)
+	prisoners[prisoner] = world.time + (time_left[prisoner] || 0)
+	return_by -= prisoner
+	time_left -= prisoner
+	carried_by -= prisoner
+	walked_out -= prisoner
+	carry_reported -= prisoner
 
 /**
- * `prisoner` is in crit: the term stops, not ends (abuse review 3 SF1), and the time left is kept, as for a prisoner
- * carried out: once they can walk again they have OUTPOST_POLICE_CELL_RETURN to be back inside, or it is a
- * jailbreak. Whoever takes them out of the cell meanwhile answers for it. A medic is called to the cell
- * (police_cell_medic.dm, owner decision 60) and the door stays shut for them; with no medic to be had, or once the
- * one called is not coming after all, the door opens and is held for the prisoner's own people (the medic hold).
+ * `prisoner` is in crit. A medic is called to the cell (police_cell_medic.dm, owner decision 60) and the door stays
+ * shut for them; with no medic to be had, or once the one called is not coming after all, the door opens and is held
+ * for the prisoner's own people (the medic hold).
+ *
+ * On the cell floor the term runs as for anyone else (owner decision 104, which replaced the crit pause of abuse
+ * review 3 SF1): FALSE, and tick_cell() goes on to the clock, so a term that runs out in crit lets them out. A
+ * prisoner carried back in while still in crit is back inside at once. Off the cell floor the term stops, and the
+ * time left is kept, as for a prisoner carried out: once they can walk again they have OUTPOST_POLICE_CELL_RETURN to
+ * be back inside, or it is a jailbreak, and whoever took them out answers for it. TRUE: the tick is done with them.
  */
 /datum/outpost_police_cell/proc/crit_prisoner(datum/mind/prisoner, mob/living/body)
 	var/started = booking[prisoner]
 	if(!isnull(started) && world.time - started < CELL_BOOKING_STALE)
-		return // book_in() is still working on them; their term is set when it is done
-	if(!(prisoner in return_by))
-		booking -= prisoner
-		time_left[prisoner] = max(prisoners[prisoner] - world.time, 0)
-		if((get_turf(body) in tiles) && police.call_cell_medic(body))
+		return TRUE // book_in() is still working on them; their term is set when it is done
+	var/inside = (get_turf(body) in tiles)
+	if(inside && (prisoner in return_by))
+		back_inside(prisoner)
+		crit_spell -= prisoner // called for again in here
+	if(!crit_spell[prisoner] && !(prisoner in return_by))
+		crit_spell[prisoner] = TRUE
+		if(inside && police.call_cell_medic(body))
 			medic_called[prisoner] = TRUE
 		else
 			start_medic_hold(body)
@@ -683,13 +708,19 @@
 		// The medic is not coming after all (killed, blocked, out of kit, gave up): the door opens for their own people
 		medic_called -= prisoner
 		start_medic_hold(body, quiet = TRUE)
+	if(inside)
+		return FALSE
+	if(!(prisoner in return_by))
+		booking -= prisoner
+		time_left[prisoner] = max(prisoners[prisoner] - world.time, 0)
 	return_by[prisoner] = max(return_by[prisoner], world.time + OUTPOST_POLICE_CELL_RETURN)
-	if(!(get_turf(body) in tiles) && !carry_reported[prisoner])
+	if(!carry_reported[prisoner])
 		var/datum/weakref/ref = carried_by[prisoner]
 		var/mob/living/mover = ref?.resolve() || mover_now(body)
 		if(mover && mover != body && mover.mind && !is_outpost_police_npc(mover))
 			carry_reported[prisoner] = TRUE
 			police.report_crime(mover, OUTPOST_CRIME_JAILBREAK)
+	return TRUE
 
 /// The door opens and is held OUTPOST_POLICE_CELL_MEDIC_OPEN so someone can get to `body`; the station calls for a medic unless `quiet`
 /datum/outpost_police_cell/proc/start_medic_hold(mob/living/body, quiet = FALSE)
@@ -1154,7 +1185,7 @@
  * processing (paid) or the jail strip and a term (not paid), the cuffs off, the officer out. Sleeps. TRUE once
  * the suspect is held (or, in an outpost with no cell, fined and let go); FALSE, with nothing taken, if they
  * cannot be booked: no warrant, dead, or already held. Someone in crit is booked like anyone else (owner decision
- * 60); their term stands still while they are in crit (crit_prisoner()) and the cell calls them a medic.
+ * 60); their term runs in crit as out of it (owner decision 104) and the cell calls them a medic (crit_prisoner()).
  */
 /datum/outpost_police/proc/book(mob/living/carbon/suspect, mob/living/officer)
 	if(QDELETED(src) || !iscarbon(suspect) || QDELETED(suspect) || !suspect.mind || QDELETED(officer))

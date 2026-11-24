@@ -25,14 +25,32 @@
 	/// Prisoner body weakref -> weakref to the medic called for them: one medic per prisoner in crit
 	var/list/cell_medics = list()
 
-/// Whether `patient` is someone a cell medic may treat: alive, in crit or bleeding, held in one of our cells and on its floor
-/datum/outpost_police/proc/cell_patient_ok(mob/living/carbon/patient)
+/**
+ * Whether `patient` is someone a cell medic may treat: alive, in crit or bleeding, held in one of our cells and on its
+ * floor. `treating_in`, the cell a medic is already on the job in: their patient may also be one whose term ran out
+ * while they lay there (owner decision 104), as long as they are still on that cell's floor.
+ */
+/datum/outpost_police/proc/cell_patient_ok(mob/living/carbon/patient, datum/outpost_police_cell/treating_in)
 	if(!iscarbon(patient) || QDELETED(patient) || !patient.mind || patient.stat == DEAD)
 		return FALSE
 	if(!recovery_in_crit(patient) && !patient.is_bleeding())
 		return FALSE
 	var/datum/outpost_police_cell/cell = cell_holding(patient.mind)
+	if(treating_in)
+		if(QDELETED(treating_in) || (cell && cell != treating_in))
+			return FALSE
+		cell = treating_in
 	return !!cell && (get_turf(patient) in cell.tiles)
+
+/// The cell `patient` is held in, or failing that the one whose floor they lie on (let out there while a medic is on the way)
+/datum/outpost_police/proc/cell_of_patient(mob/living/patient)
+	if(!patient)
+		return null
+	var/datum/outpost_police_cell/cell = patient.mind && cell_holding(patient.mind)
+	if(cell)
+		return cell
+	cell = cell_at(get_turf(patient))
+	return (cell && (get_turf(patient) in cell.tiles)) ? cell : null
 
 /// The cell whose floor or doorway `where` is, or null
 /datum/outpost_police/proc/cell_at(turf/where)
@@ -231,7 +249,7 @@
 	var/inside = police?.cell_at(get_turf(src))
 	if(!visit_over || inside)
 		var/mob/living/patient = cell_patient()
-		var/datum/outpost_police_cell/cell = patient?.mind && police?.cell_holding(patient.mind)
+		var/datum/outpost_police_cell/cell = police?.cell_of_patient(patient)
 		if(!inside && cell?.outside_turf && needs_checkpoint_cross(cell.outside_turf))
 			var/datum/ambient_activity/cross = start_activity(new /datum/ambient_activity/cross_checkpoint(src))
 			if(cross)
@@ -315,10 +333,10 @@
 	if(medic.visit_over)
 		return FALSE
 	var/mob/living/carbon/patient = medic.cell_patient()
-	if(!police.cell_patient_ok(patient))
+	cell = police.cell_of_patient(patient)
+	if(!police.cell_patient_ok(patient, cell))
 		medic.end_visit()
 		return FALSE
-	cell = police.cell_holding(patient.mind)
 	if(!cell?.usable())
 		medic.end_visit()
 		return FALSE
@@ -345,7 +363,7 @@
 	if(!istype(medic) || medic.visit_over || QDELETED(cell))
 		return FALSE
 	var/datum/outpost_police/police = medic.cell_police()
-	if(!police?.cell_patient_ok(patient) || police.cell_holding(patient.mind) != cell)
+	if(!police?.cell_patient_ok(patient, cell))
 		return FALSE
 	return world.time - medic.called_at < OUTPOST_POLICE_CELL_MEDIC_LIMIT
 
