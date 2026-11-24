@@ -57,3 +57,39 @@
 	case.plan_for(officer.ai_controller, officer)
 	sleep(1)
 	TEST_ASSERT(case.strikes >= 1, "The arresting officer threw no blow at a suspect up and fighting on the subdue step")
+
+/**
+ * The desk step's walk to the evidence locker takes the suspect along, as the escort does: a hold that slipped is
+ * taken again first. It used to walk on to the locker alone, leaving the suspect standing in the cuffs; their next
+ * steps counted as a bolt and two officers batoned them "in custody" (soak shove_officers, Undertow).
+ */
+/datum/unit_test/voidcrew_outpost_police_desk_keeps_hold
+
+/datum/unit_test/voidcrew_outpost_police_desk_keeps_hold/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/list/parts = police_arrest_setup(outpost)
+	if(!parts)
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = parts[1]
+	var/mob/living/carbon/human/suspect = parts[2]
+	var/datum/outpost_police_case/case = parts[3]
+
+	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
+	suspect.equip_to_slot(cuffs, ITEM_SLOT_HANDCUFFED)
+	case.step_cuff()
+	TEST_ASSERT_EQUAL(case.step, "search", "Cuffs on did not lead to the search")
+	case.searched = TRUE
+
+	// Carrying evidence for the locker, on the desk step, with no hold on the suspect beside it
+	var/obj/item/evidence = allocate(/obj/item/outpost_sealed_case/evidence)
+	evidence.forceMove(officer)
+	var/obj/structure/closet/secure_closet/outpost_evidence/locker = police_evidence_locker(outpost)
+	TEST_ASSERT_NOTNULL(locker, "The outpost has no evidence locker")
+	case.set_step("desk")
+	TEST_ASSERT_NOTNULL(case.evidence_spot(officer), "The officer has no evidence to put away")
+	officer.stop_pulling()
+	TEST_ASSERT(officer.Adjacent(suspect), "The officer is not beside the suspect")
+	case.step_desk()
+	TEST_ASSERT_EQUAL(officer.pulling, suspect, "On the way to the evidence locker the officer left the cuffed suspect standing alone")
