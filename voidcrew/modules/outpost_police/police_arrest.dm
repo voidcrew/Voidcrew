@@ -2173,6 +2173,7 @@
 	if(here.z == there.z && get_dist(here, there) <= CASE_COVER_LONG_WALK && police?.sector_of(here) == police?.sector_of(there))
 		if(brain.goto_dest)
 			brain.stealth_drop_walk()
+		police?.clear_checkpoint_crossing(officer)
 		return queue_walk(controller, officer, follow, CASE_COVER_DISTANCE)
 	if(officer.dispatch_riding)
 		return FALSE

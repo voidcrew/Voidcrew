@@ -271,6 +271,8 @@ When an officer gives the order you have a few seconds to stand still with empty
 
 If you go down before the cuffs are on, you are cuffed and searched where you lie. Then an officer takes you to the security desk and books you into a cell, on your feet or dragged.
 
+The officer keeps a hand on you while the cuffs go on, and a firm grip if the baton put you on the floor. Walking or crawling away means breaking that grip first, and it gets you the baton again.
+
 - **What they take.** Every weapon or tool you used in a crime goes into the **evidence locker** at the security desk. Implants, cyberware, ship keys and mission items are never taken. Anything you stole from a prisoner's locker goes back to that locker.
 - **The fine** (1-2 stars). 300 credits at 1 star and 800 at 2 at Halcyon, half as much again at Quartermain and double at the Undertow. It is paid from your crew's ship accounts together, in full or not at all.
 - **If it is paid.** You wait in a cell, about half a minute at 1 star and a minute at 2, then the door opens onto the lobby.
