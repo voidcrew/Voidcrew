@@ -144,8 +144,12 @@
  */
 /datum/police_soak_scenario/combat/proc/fight(datum/police_soak/run, limit, done)
 	var/until = world.time + limit
-	while(!run.finished && world.time < until && run.suspect_able() && !run.suspect.handcuffed && !HAS_TRAIT(run.suspect, TRAIT_RESTRAINED))
+	while(!run.finished && world.time < until && !QDELETED(run.suspect) && run.suspect.stat == CONSCIOUS && !run.suspect.handcuffed && !HAS_TRAIT(run.suspect, TRAIT_RESTRAINED) && !run.police.in_custody(run.suspect))
 		count_fallen(run)
+		// Stunned for a moment: they fight on once they can
+		if(!run.suspect_able())
+			sleep(5)
+			continue
 		if(done && call(src, done)(run))
 			return TRUE
 		if(!stimmed && run.suspect.health < 75)
@@ -288,7 +292,8 @@
 	body.swap_hand()
 	var/obj/item/card/emag/card = new(get_turf(body))
 	body.put_in_active_hand(card)
-	if(!body.Adjacent(cell.door))
+	// Beside the door square on: a diagonal click on a door set in a wall does not reach it
+	if(!(get_dist(body, cell.door) == 1 && (get_dir(body, cell.door) in GLOB.cardinals)))
 		var/turf/beside
 		for(var/turf/tile as anything in cell.tiles)
 			if(get_dist(tile, cell.door) == 1 && (get_dir(tile, cell.door) in GLOB.cardinals) && !tile.is_blocked_turf(TRUE))
