@@ -926,11 +926,13 @@
 	var/datum/outpost_warrant/cop_warrant = police.warrants[cop_killer.mind]
 	TEST_ASSERT_EQUAL(cop_warrant?.heat, 60, "A pending officer kill did not come to 60 heat") // 50 + 10
 	TEST_ASSERT_EQUAL(cop_warrant?.officers_killed, 1, "A pending officer kill did not increment officers_killed")
-	// One officer dead is three stars: no ban yet (owner decision 63). The fourth star brings the flat 15 minutes (decision 72).
-	TEST_ASSERT_NULL(outpost.embargoed_ships[ship], "One dead officer banned the crew before four stars")
+	// One officer dead is three stars, and a killing bans the crew at once for the flat 15 minutes (owner decision 102,
+	// reversing 63). The fourth star changes neither (decision 72).
+	TEST_ASSERT_EQUAL(police.get_stars(cop_killer.mind), 3, "One dead officer is not three stars")
+	TEST_ASSERT_EQUAL(outpost.embargoed_ships[ship], world.time + 15 MINUTES, "One dead officer did not ban the crew for 15 minutes")
 	cop_warrant.heat = 90
 	police.tick_warrants()
-	TEST_ASSERT_EQUAL(outpost.embargoed_ships[ship], world.time + 15 MINUTES, "An officer killed before the ban changed the length of the 15-minute embargo")
+	TEST_ASSERT_EQUAL(outpost.embargoed_ships[ship], world.time + 15 MINUTES, "The fourth star changed the length of the 15-minute ban")
 	wanted_cleanup(list(ship))
 
 /// A new ship acquired by an embargoed crew during an active incident is embargoed on the next tick, and wanted HUD alerts follow mind transfers
@@ -1087,3 +1089,83 @@
 	TEST_ASSERT_NULL(police.incidents[crew], "admin_lift() on the sole four-star crewmate left the crew incident active")
 	wanted_cleanup(list(first_ship, later_ship))
 
+/// A perception whose checkpoint scan sees everyone (suspect_seen())
+/datum/outpost_police_perception/test_scans_all
+
+/datum/outpost_police_perception/test_scans_all/scanned(mob/living/target)
+	return TRUE
+
+/**
+ * Owner decision 102: a killing counted against a crew member bans the crew at once for 15 minutes at three stars.
+ * A crewmate already inside is not arrested for being there (no accomplice sweep below four stars); one who leaves
+ * and walks back in is. A killer with no crew bans nobody.
+ */
+/datum/unit_test/voidcrew_outpost_police_killing_bans_crew
+	var/turf/secured_tile
+	var/area/original_area
+	var/area/voidcrew/trader_outpost/test_area
+
+/datum/unit_test/voidcrew_outpost_police_killing_bans_crew/Destroy()
+	if(secured_tile && original_area)
+		secured_tile.change_area(get_area(secured_tile), original_area)
+	QDEL_NULL(test_area)
+	secured_tile = null
+	original_area = null
+	return ..()
+
+/datum/unit_test/voidcrew_outpost_police_killing_bans_crew/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = wanted_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/killer = wanted_person(wanted_spot(0, 0))
+	var/mob/living/carbon/human/victim = wanted_person(wanted_spot(1, 0))
+	var/obj/structure/overmap/ship/ship = wanted_ship(killer)
+	var/datum/voidcrew_crew_record/crew = killer.mind.get_reputation_crew()
+	TEST_ASSERT_NOTNULL(crew, "Setup: the killer has no crew")
+	// A crewmate shopping on secured outpost floor
+	secured_tile = wanted_spot(3, 0)
+	original_area = get_area(secured_tile)
+	test_area = new /area/voidcrew/trader_outpost()
+	secured_tile.change_area(original_area, test_area)
+	TEST_ASSERT(outpost.is_secured_turf(secured_tile), "Setup: the crewmate's tile is not secured outpost floor")
+	var/mob/living/carbon/human/mate = wanted_person(secured_tile)
+	ship.ship_team.join_member(mate.mind)
+	TEST_ASSERT_EQUAL(mate.mind.get_reputation_crew(), crew, "Setup: the crewmate is not on the killer's crew")
+
+	TEST_ASSERT_NOTNULL(police.report_crime(killer, "shot", victim), "Setup: the shot was not counted") // OUTPOST_CRIME_ASSAULT_SHOT
+	victim.death()
+	TEST_ASSERT_EQUAL(police.get_stars(killer.mind), 3, "A killing is not three stars")
+	TEST_ASSERT_EQUAL(outpost.embargoed_ships[ship], world.time + 15 MINUTES, "A killing at three stars did not ban the crew for 15 minutes") // OUTPOST_POLICE_EMBARGO[1]
+	var/datum/outpost_incident/incident = police.incidents[crew]
+	TEST_ASSERT_NOTNULL(incident, "A killing laid no ban on the crew")
+	TEST_ASSERT_EQUAL(incident.stars, 4, "A killing's ban is not priced as the 15 minute one")
+	TEST_ASSERT_EQUAL(police.get_stars(killer.mind), 3, "The ban changed the killer's stars")
+
+	// The crewmate who was only shopping is banned, not arrested
+	qdel(police.perception)
+	police.perception = new /datum/outpost_police_perception/test_scans_all(police)
+	police.tick_warrants()
+	TEST_ASSERT_NULL(police.warrants[mate.mind], "A crewmate inside when the killing happened was arrested at three stars")
+	TEST_ASSERT(outpost.is_ship_embargoed(ship), "The ban did not hold on the tick")
+	// Gone and back in: a trespass, as under any ban
+	mate.moveToNullspace()
+	police.tick_warrants()
+	mate.forceMove(secured_tile)
+	police.tick_warrants()
+	TEST_ASSERT_NOTNULL(police.warrants[mate.mind], "A crewmate who walked back in past the ban was not arrested")
+
+	// A second killing while the ban runs starts it over, and does not lengthen it past 15 minutes
+	var/mob/living/carbon/human/second_victim = wanted_person(wanted_spot(1, 1))
+	police.recent_reports.Cut()
+	police.report_crime(killer, "shot", second_victim)
+	second_victim.death()
+	TEST_ASSERT_EQUAL(outpost.embargoed_ships[ship], world.time + 15 MINUTES, "A second killing did not start the 15 minute ban over")
+
+	// Nobody to ban: a killer with no crew
+	var/incidents_before = length(police.incidents)
+	var/mob/living/carbon/human/loner = wanted_person(wanted_spot(0, 2))
+	var/mob/living/carbon/human/loner_victim = wanted_person(wanted_spot(1, 2))
+	TEST_ASSERT_NOTNULL(police.report_crime(loner, "shot", loner_victim), "Setup: the loner's shot was not counted")
+	loner_victim.death()
+	TEST_ASSERT_EQUAL(police.get_stars(loner.mind), 3, "The loner's killing is not three stars")
+	TEST_ASSERT_EQUAL(length(police.incidents), incidents_before, "A killer with no crew laid a ban")
+	wanted_cleanup(list(ship))

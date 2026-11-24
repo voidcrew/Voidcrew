@@ -110,20 +110,24 @@
 	told = null
 	return ..()
 
-/// One four or five star incident of one crew at this outpost: the embargo here (decision 25: this outpost only)
+/// One crew's ban at this outpost, laid at four or five stars or by a killing: the embargo here (decision 25: this outpost only)
 /datum/outpost_incident
 	var/datum/voidcrew_crew_record/crew
-	/// Highest tier applied: 4 or 5 stars
+	/// Highest tier applied: 4 or 5 stars (a killing lays it at 4)
 	var/stars = 0
 	/// world.time the embargo ends
 	var/ends_at = 0
 	/// Weakrefs to the crew's ships this incident has embargoed, so a ship the crew gets later is embargoed once and an
 	/// admin's lift on one sticks
 	var/list/datum/weakref/ships_embargoed = list()
+	/// Weakrefs to the minds of crewmates already at the outpost when a killing laid this ban: they are not arrested
+	/// for being there until they leave (killing_bans_crew())
+	var/list/datum/weakref/inside_at_start
 
 /datum/outpost_incident/Destroy()
 	crew = null
 	ships_embargoed = null
+	inside_at_start = null
 	return ..()
 
 // =========================================================================
@@ -317,6 +321,8 @@
 	if(new_stars >= 3)
 		warrant.barred_until = max(warrant.barred_until, world.time + OUTPOST_POLICE_BAR_TIME)
 	crime_during_ban(warrant)
+	if(outpost_police_is_killing(crime))
+		killing_bans_crew(warrant)
 	if(new_stars != old_stars)
 		stars_changed(warrant, old_stars, new_stars)
 	// Counted against someone held in a cell: their term starts over (police_cell.dm)
@@ -624,6 +630,8 @@
 	if(new_stars >= 3)
 		warrant.barred_until = max(warrant.barred_until, world.time + OUTPOST_POLICE_BAR_TIME)
 	crime_during_ban(warrant)
+	if(outpost_police_is_killing(crime))
+		killing_bans_crew(warrant)
 	if(new_stars != old_stars)
 		stars_changed(warrant, old_stars, new_stars)
 	// Counted against someone held in a cell: their term starts over (police_cell.dm). An accomplice's charge is
@@ -1365,6 +1373,39 @@
 	var/list/lengths = OUTPOST_POLICE_EMBARGO
 	return lengths[clamp(incident.stars - 3, 1, length(lengths))]
 
+/// Whether `crime` is a killing: a visitor, a townsperson, a trader or an officer dead at someone's hand
+/proc/outpost_police_is_killing(crime)
+	switch(crime)
+		if(OUTPOST_CRIME_MURDER, OUTPOST_CRIME_KILL_CIVILIAN, OUTPOST_CRIME_KILL_STAFF, OUTPOST_CRIME_KILL_OFFICER)
+			return TRUE
+	return FALSE
+
+/**
+ * `warrant`'s holder had a killing here counted as their crime: their crew's ban starts now, at its 15 minute
+ * length, whatever their stars (owner decision 102). The ban is laid as a four star one: it then runs by
+ * the usual rules (30 minutes at 5 stars, started over by each crime of the crew here, the guard's price for a
+ * 15 minute ban). Stars do not change, and the accomplice sweep stays at four stars (tick_warrants()). A ban
+ * already running was started over by crime_during_ban(). Nobody's, with no crew.
+ */
+/datum/outpost_police/proc/killing_bans_crew(datum/outpost_warrant/warrant)
+	var/datum/voidcrew_crew_record/crew = current_warrant_crew(warrant)
+	if(QDELETED(crew))
+		return
+	var/datum/outpost_incident/incident = incidents[crew]
+	if(incident && world.time >= incident.ends_at)
+		end_incident(incident)
+		incident = null
+	if(!incident)
+		incident = new
+		incident.crew = crew
+		incidents[crew] = incident
+		watch_crew(crew)
+		// Crewmates who were only shopping are banned, not arrested for standing where they already were
+		for(var/datum/mind/mate in crew.minds)
+			if(mate != warrant.mind && holder_at_outpost(mate.current))
+				LAZYADD(incident.inside_at_start, WEAKREF(mate))
+	escalate_incident(warrant, 4)
+
 /// `incident`'s crew committed another crime here while its embargo runs: it runs its whole length again from now
 /datum/outpost_police/proc/renew_incident(datum/outpost_incident/incident)
 	var/ends_at = world.time + incident_length(incident)
@@ -1400,6 +1441,13 @@
 	// Crewmates who walked in past the embargo are barred from secured turf: an arrest
 	for(var/datum/mind/mate as anything in incident.crew.minds)
 		var/mob/living/body = mate.current
+		// Inside already when a killing laid the ban: not a trespass until they have left and come back
+		if(incident.inside_at_start)
+			var/datum/weakref/mate_ref = WEAKREF(mate)
+			if(mate_ref in incident.inside_at_start)
+				if(isliving(body) && body.stat != DEAD && holder_at_outpost(body))
+					continue
+				LAZYREMOVE(incident.inside_at_start, mate_ref)
 		if(!isliving(body) || body.stat == DEAD || warrants[mate] || !holder_at_outpost(body))
 			continue
 		if(outpost.is_secured_turf(get_turf(body)) && barred_by_record(body) && suspect_seen(body))

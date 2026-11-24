@@ -277,7 +277,7 @@ The officer keeps a hand on you while the cuffs go on, and a firm grip if the ba
 
 - **What they take.** Every weapon or tool you used in a crime goes into the **evidence locker** at the security desk. Implants, cyberware, ship keys and mission items are never taken. Anything you stole from a prisoner's locker goes back to that locker.
 - **The fine** (1-2 stars). 300 credits at 1 star and 800 at 2 at Halcyon, half as much again at Quartermain and double at the Undertow. It is paid from your crew's ship accounts together, in full or not at all.
-- **If it is paid.** You wait in a cell, about half a minute at 1 star and a minute at 2, then the door opens onto the lobby.
+- **If it is paid.** You wait in a cell, about half a minute at 1 star and a minute at 2, then the door opens onto the lobby. Your guns wait in a **property locker** outside the cells; you keep everything else.
 - **If it is not.** You go to jail, one minute at 1 star and two at 2. The fine is tried again every half minute, and paying it ends the term. There is no debt afterwards.
 - **At 3 stars and up.** There is no fine. You go straight to jail: 4 minutes at 3 stars, 7 at 4 and 10 at 5.
 
@@ -311,14 +311,14 @@ At 4 stars and up, while you are free and alive at the outpost, every crewmate o
 
 ### The ban
 
-At 4 stars every ship of your crew is banned from that outpost: no shops, no checkpoint, no trade. It lasts 15 minutes, 30 at 5 stars. Any crime there by anyone on your crew while it runs starts it over from the beginning. Crewmates who walk in anyway are arrested on sight. It only covers the outpost where it happened; the other two still trade with you.
+A killing there by anyone on your crew bans every ship of your crew from that outpost, and so does reaching 4 stars: no shops, no checkpoint, no trade. It lasts 15 minutes, 30 at 5 stars. Any crime there by anyone on your crew while it runs starts it over from the beginning. Crewmates who walk in anyway are arrested on sight; crewmates who were already inside are left alone until they leave. It only covers the outpost where it happened; the other two still trade with you.
 
 **How long is left.** Ask the checkpoint guard at the booth, the same way you would buy a permit. He tells anyone who is banned or barred roughly how long they have left, and what it costs to clear it now. He has nothing to say to anyone with stars.
 
 **Paying it off.** The guard lifts a ban for 2,000 credits if it is a 15 minute one and 4,000 if it is a 30 minute one. That is the price at Halcyon; it is half as much again at Quartermain and double at the Undertow. It is paid from your crew's ship accounts together, in full or not at all. It clears every ship of your crew, and your own 15 minute bar with it. If you are only barred yourself, clearing that costs 1,000.
 
 - Every time your crew pays at an outpost, the next time there costs double.
-- No refunds. A crime afterwards is treated like any other, and 4 stars bans the crew again.
+- No refunds. A crime afterwards is treated like any other, and a killing or 4 stars bans the crew again.
 - Paying clears the bar of the person who paid. A crewmate with a bar of their own waits it out or pays for it.
 - The guard takes nothing from anyone with stars, or while one of your crew still has 4 or more there.
 - If the guard is dead, out cold or away from the booth, there is nobody to pay.
