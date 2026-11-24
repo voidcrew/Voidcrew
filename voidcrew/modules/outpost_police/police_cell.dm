@@ -970,6 +970,8 @@
 	var/paid = no_fine ? FALSE : police.charge_fine(warrant)
 	if(paid)
 		police.say_fine_paid(officer)
+		// Their weapons wait in a property locker for the hold; everything else stays on them
+		police.store_hold_weapons(suspect, officer)
 	else
 		// Gear into a locker before the cuffs come off (abuse M25); never uncuff or book an unstripped prisoner
 		if(!police.cell_strip_prisoner(suspect, officer))

@@ -756,6 +756,60 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 	outpost_police_salvage(thing, floor)
 	return thing
 
+/**
+ * The weapons on `prisoner` for a paid hold: everything the checkpoint would stop at the door
+ * (outpost_checkpoint_weapon()), worn, held or in a bag, outermost first. Nothing inside an implant, an organ or a
+ * limb, nothing stuck to them, nothing holding a live mob.
+ */
+/datum/outpost_police/proc/hold_weapons_on(mob/living/carbon/prisoner)
+	. = list()
+	for(var/obj/item/thing as anything in prisoner.get_all_contents_type(/obj/item))
+		if(QDELETED(thing) || !outpost_checkpoint_weapon(thing) || outpost_police_untouchable(thing) || outpost_police_holds_mob(thing))
+			continue
+		var/sealed = FALSE
+		for(var/atom/holder = thing.loc; holder && holder != prisoner; holder = holder.loc)
+			if(outpost_police_protected_part(holder) || (holder in .))
+				sealed = TRUE
+				break
+		if(!sealed)
+			. += thing
+
+/**
+ * A paid hold (owner decision 99): only `prisoner`'s weapons come off, into a property locker of theirs on the
+ * same terms as a jailed prisoner's gear (their own in person, or the ID they hold). Clothes, tools and everything
+ * else stay on. Returns how many were stored; 0 with nothing to take or no locker free.
+ */
+/datum/outpost_police/proc/store_hold_weapons(mob/living/carbon/prisoner, mob/living/officer)
+	if(QDELETED(prisoner) || !prisoner.mind)
+		return 0
+	var/list/weapons = hold_weapons_on(prisoner)
+	if(!length(weapons))
+		return 0
+	var/obj/structure/closet/secure_closet/personal/outpost_police/locker = property_locker_for(prisoner, must_shut = TRUE)
+	if(!locker || !locker.reserve_for(prisoner))
+		log_game("OUTPOST POLICE: [key_name(prisoner)] kept [length(weapons)] weapons on a paid hold at [outpost]: no property locker free.")
+		return 0
+	var/stored = 0
+	for(var/obj/item/thing as anything in weapons)
+		if(QDELETED(thing) || get_atom_on_turf(thing) != prisoner)
+			continue
+		if(thing.loc == prisoner)
+			if(!prisoner.transferItemToLoc(thing, locker, FALSE, TRUE, FALSE))
+				continue
+		else
+			thing.forceMove(locker)
+		property_return_stolen(thing)
+		if(property_locker_holding(thing))
+			continue
+		locker.record(thing)
+		stored++
+	var/obj/item/card/id/card = prisoner.get_idcard(FALSE) || prisoner.get_idcard(TRUE)
+	locker.finish_assignment(card)
+	if(stored && !QDELETED(officer))
+		officer.visible_message(span_notice("[officer] takes [prisoner]'s weapons and locks them away."))
+	log_game("OUTPOST POLICE: [key_name(prisoner)] is on a paid hold at [outpost]: [stored] weapons to a property locker.")
+	return stored
+
 /// Stores a non-disposable restraint removed right after `store_property()` so it never stays loose on the cell floor
 /datum/outpost_police/proc/store_extra_property(mob/living/carbon/prisoner, obj/item/thing)
 	if(QDELETED(prisoner) || !prisoner.mind || QDELETED(thing) || outpost_police_untouchable(thing))
