@@ -2111,7 +2111,7 @@
  * nobody has eyes on them. It used only to walk behind the arresting officer, so one star's two officers searched as one.
  */
 /datum/outpost_police_case/proc/cover_looks(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
-	if(step != CASE_STEP_RESPOND || cuffed || suspect_lost || acting || !warrant?.mind || !police)
+	if(step != CASE_STEP_RESPOND || cuffed || suspect_lost || !warrant?.mind || !police)
 		return FALSE
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/lead = arresting()
 	if(isnull(lead) || lead == officer || officer.case != src)
