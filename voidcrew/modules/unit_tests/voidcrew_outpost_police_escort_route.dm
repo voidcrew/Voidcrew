@@ -107,6 +107,86 @@
 	return list(walked, steps, end_step)
 
 /**
+ * The whole arrest, as the owner had it: an officer of the outpost's own (the desk sergeant, when it is the one sent)
+ * comes to a suspect down at map-local `at`, cuffs and searches them and walks them in. Returns list(tiles walked on
+ * the walk in, the trace, the case's step at the end).
+ */
+/datum/unit_test/voidcrew_outpost_police_escort_route/proc/whole_arrest(obj/structure/overmap/trader_outpost/outpost, list/at, limit = 120 SECONDS)
+	var/datum/outpost_police/police = outpost.police
+	var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(outpost)
+	var/turf/spot = local(outpost, at[1], at[2])
+	var/has_sergeant = FALSE
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/someone in police.officers)
+		if(someone.unit_kind == "sergeant" && someone.stat == CONSCIOUS)
+			has_sergeant = TRUE
+	if(!has_sergeant)
+		police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant, police.desk_turf)
+	var/mob/living/carbon/human/suspect = police_arrest_person(spot)
+	listed_z = spot.z
+	SSmobs.clients_by_zlevel[listed_z] |= suspect
+	suspect.adjustBruteLoss(110)
+	suspect.updatehealth()
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 12)
+	police.note_seen(suspect.mind, spot)
+	var/datum/outpost_police_case/case = police.open_case(warrant)
+	police.sleep_tick()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = case?.arresting()
+	if(!officer)
+		TEST_FAIL("Fixture: no arrest opened")
+		return null
+	police_arrest_kit(officer)
+	police_evidence_locker(outpost)
+	SSambient_npcs.wake_outpost(place)
+	officer.ai_controller.reset_ai_status()
+	var/started = world.time
+	var/list/steps = list("[officer.unit_kind] [case.step]@[local_text(outpost, get_turf(officer))]")
+	var/turf/last = get_turf(officer)
+	var/turf/last_avoid
+	var/turf/last_target
+	var/last_step = case.step
+	var/walked = 0
+	var/end = world.time + limit
+	var/next_tick = world.time
+	while(world.time < end && !QDELETED(case) && case.step != "book")
+		if(world.time >= next_tick)
+			next_tick = world.time + 1 SECONDS
+			SSambient_npcs.update_outpost(place, 1)
+			for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in place.npcs)
+				npc.ai_controller?.reset_ai_status()
+			case.process_case()
+		sleep(world.tick_lag)
+		if(QDELETED(case))
+			break
+		if(case.arresting() != officer)
+			steps += "OFFICER-CHANGED"
+			break
+		if(case.step != last_step)
+			last_step = case.step
+			steps += "STEP:[case.step]@[round((world.time - started) / 10)]s"
+			if(case.step == "escort" && !case.evidence_ref)
+				var/obj/item/outpost_sealed_case/evidence/box = allocate(/obj/item/outpost_sealed_case/evidence)
+				officer.put_in_hands(box)
+				case.evidence_ref = WEAKREF(box)
+		var/turf/here = get_turf(officer)
+		var/datum/move_loop/has_target/jps/loop = GLOB.move_manager.processing_on(officer, SSai_movement)
+		if(istype(loop) && loop.avoid != last_avoid)
+			last_avoid = loop.avoid
+			steps += "AVOID[local_text(outpost, last_avoid)]"
+		if(istype(loop) && get_turf(loop.target) != last_target)
+			last_target = get_turf(loop.target)
+			steps += "TO[local_text(outpost, last_target)]"
+		if(here != last)
+			if(case.step == "escort" || case.step == "desk")
+				walked++
+			steps += local_text(outpost, here)
+			last = here
+	steps += "END@[round((world.time - started) / 10)]s"
+	var/end_step = QDELETED(case) ? "closed" : case.step
+	police.close_case(suspect.mind)
+	officer.stop_pulling()
+	return list(walked, steps, end_step)
+
+/**
  * Quartermain, the owner's arrest (round 2026-11-24 19:40): the officer took a prisoner from beside the crate stacks
  * at (19,15) to the desk at (16,3). The short way is down past the crates and through the exit gate at (15,12), about
  * fifteen tiles; the officer went right, up and round the balcony and down into the jail instead.
@@ -120,9 +200,9 @@
 	for(var/pass in 1 to 30)
 		if(!SSambient_npcs.update_outpost(place, 0, null, 40))
 			break
-	for(var/trial in 1 to 3)
-		var/list/result = walk_in(outpost, list(19, 15), list(19, 16), TRUE, TRUE)
+	for(var/trial in 1 to 2)
+		var/list/result = whole_arrest(outpost, list(19, 15))
 		if(!result)
 			return
 		var/list/steps = result[2]
-		TEST_FAIL("Quartermain crowd trial [trial]: [result[1]] tiles, ended on [result[3]]: [steps.Join(" ")]")
+		TEST_FAIL("Quartermain whole arrest [trial]: [result[1]] tiles walking in, ended on [result[3]]: [steps.Join(" ")]")
