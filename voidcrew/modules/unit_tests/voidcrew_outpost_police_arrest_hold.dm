@@ -364,6 +364,37 @@
 	TEST_ASSERT(suspect.handcuffed, "The officer never got past the colleague in front of it to the suspect (officer at [officer.x - at(0, 0).x],[officer.y - at(0, 0).y], colleague at [colleague.x - at(0, 0).x],[colleague.y - at(0, 0).y], arrest on \"[case.step]\")")
 
 /**
+ * Someone wanted who stands in a pond (Halcyon has one) is waded in after. Water is not ground to the outpost's
+ * people, whose own steps never go into it; the pathfinder plans through it all the same, so the arresting officer
+ * stood on the pier with a walk it could not make, and the pond was a place nobody could be arrested in. An officer
+ * on an arrest wades; any other officer still keeps to dry ground.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/crowd/wade
+
+/datum/unit_test/voidcrew_stealth_live/police/crowd/wade/Run()
+	TEST_ASSERT(police_room(9, 7), "No room for the test")
+	open_place()
+	for(var/dx in 2 to 6)
+		for(var/dy in 1 to 3)
+			var/turf/pond_spot = at(dx, dy)
+			pond_spot.ChangeTurf(/turf/open/water)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = squad_officer(4, 4, SOUTH)
+	var/datum/outpost_police_case/case = arrest_at(4, 2)
+	if(!case)
+		return
+	TEST_ASSERT_EQUAL(case.arresting(), officer, "Fixture: the officer is not the arresting officer")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/bystander = officer_at(7, 4, WEST)
+	case.drop_officer(bystander)
+	TEST_ASSERT(!bystander.case, "Fixture: the second officer is on the arrest")
+	TEST_ASSERT(!bystander.Move(at(7, 3), SOUTH) || !istype(bystander.loc, /turf/open/water), "Fixture: an officer with no arrest should keep out of the water")
+	bystander.forceMove(at(7, 4))
+	bystander.Move(at(6, 3), SOUTHWEST)
+	TEST_ASSERT(!istype(bystander.loc, /turf/open/water), "An officer with no arrest to make walked into the pond")
+	TEST_ASSERT(officer.Move(at(4, 3), SOUTH), "An officer making an arrest would not step into the pond after its suspect")
+	TEST_ASSERT(officer.Adjacent(suspect), "Fixture: the officer in the pond is not beside the suspect")
+	police.close_case(suspect.mind)
+
+/**
  * A cover taken from the lobby (the desk warden, when nobody else is free) goes to the concourse by the checkpoint,
  * the way an officer on any other errand does. Its plain walk at the arresting officer had no way through the gate.
  */
