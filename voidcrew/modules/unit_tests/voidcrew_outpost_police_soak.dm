@@ -145,6 +145,10 @@
 	var/list/force_events = list()
 	/// How many of them the force invariant has looked at
 	var/force_checked = 0
+	/// Every time an officer's shot or blow landed on anyone tracked but the suspect: list(world.time, officer, who was hit, what with)
+	var/list/stray_events = list()
+	/// How many of them the friendly fire invariant has looked at
+	var/stray_checked = 0
 	/// world.time of the suspect's last step of their own (own_step())
 	var/own_step_at = 0
 	/// Whether an officer had hold of the suspect at the last sample
@@ -175,7 +179,7 @@
 		UnregisterSignal(suspect, list(COMSIG_ATOM_BULLET_ACT, COMSIG_ATOM_AFTER_ATTACKEDBY))
 	for(var/mob/living/body as anything in tracks)
 		if(!QDELETED(body))
-			UnregisterSignal(body, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_SAY, COMSIG_QDELETING))
+			UnregisterSignal(body, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_SAY, COMSIG_QDELETING, COMSIG_ATOM_BULLET_ACT, COMSIG_ATOM_AFTER_ATTACKEDBY))
 	QDEL_LIST_ASSOC_VAL(tracks)
 	if(berths_swapped && !QDELETED(outpost))
 		outpost.berths = old_berths
@@ -325,6 +329,8 @@
 	RegisterSignal(body, COMSIG_MOVABLE_MOVED, PROC_REF(on_tracked_moved))
 	RegisterSignal(body, COMSIG_MOB_SAY, PROC_REF(on_tracked_said))
 	RegisterSignal(body, COMSIG_QDELETING, PROC_REF(on_tracked_deleted))
+	RegisterSignal(body, COMSIG_ATOM_BULLET_ACT, PROC_REF(on_tracked_shot))
+	RegisterSignal(body, COMSIG_ATOM_AFTER_ATTACKEDBY, PROC_REF(on_tracked_struck))
 	var/datum/ai_controller/brain = body.ai_controller
 	if(brain?.can_idle)
 		brain.can_idle = FALSE
@@ -391,6 +397,23 @@
 	var/pair = found.id < other.id ? "[found.id]|[other.id]" : "[other.id]|[found.id]"
 	LAZYADD(swaps[pair], world.time)
 	rows += list(list(now(), found.id, "<> trades tiles with [other.id] at [where(from)]/[where(to_turf)]"))
+
+// ----- force on anyone else -----
+
+/datum/police_soak/proc/on_tracked_shot(mob/living/source, obj/projectile/shot, def_zone, piercing_hit, blocked)
+	SIGNAL_HANDLER
+	stray_force(shot.firer, source, shot.name)
+
+/datum/police_soak/proc/on_tracked_struck(mob/living/source, obj/item/weapon, mob/user, list/modifiers)
+	SIGNAL_HANDLER
+	stray_force(user, source, weapon.name)
+
+/// An officer's shot or blow landed on one of the outpost's people or another officer: written to the trace
+/datum/police_soak/proc/stray_force(atom/by, mob/living/victim, what_with)
+	if(!is_outpost_police_npc(by) || by == victim || victim == suspect || finished)
+		return
+	note(">>", "[who(by)]'s [what_with] hits [who(victim)] ([victim.real_name]) at [where(victim)]")
+	stray_events += list(list(world.time, by, victim, what_with))
 
 // ----- force on the suspect -----
 
