@@ -119,6 +119,15 @@
 #define POLICE_ROLE_LETHAL "lethal"
 /// One in this many responders carries stun gear, at three, four and five stars (at least one in a squad of two or more)
 #define OUTPOST_POLICE_STUN_SHARE list(2, 3, 4)
+/// How long someone of two stars must have stayed where they are, with empty hands, going for nobody, before officers
+/// take it they have given up and hold their fire (police_force.dm gives_up())
+#define OUTPOST_POLICE_YIELD_TIME (2 SECONDS)
+/// What officers saw of someone goes stale with nobody looking at them for this long: the next look starts afresh
+#define OUTPOST_POLICE_STANCE_STALE (2 SECONDS)
+/// ...and is forgotten after this long
+#define OUTPOST_POLICE_STANCE_KEEP (1 MINUTES)
+/// An officer holding its fire tells them to stay where they are no more often than this
+#define OUTPOST_POLICE_HOLD_LINE_GAP (20 SECONDS)
 
 // ===== UNITS AND SECTORS =====
 

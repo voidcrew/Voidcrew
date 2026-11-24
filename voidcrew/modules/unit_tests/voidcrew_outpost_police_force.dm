@@ -6,7 +6,8 @@
  * Nothing sleeps: the scan, the case and the force subtree are stepped by hand, and what puts someone on the floor is
  * tg's own knockdown. Fork defines are included after the tests, so values are written out: states "unaware",
  * "suspicious", "alert"; arrest steps "respond", "order", "subdue", "cuff"; the crime "resist"; the line kind
- * "stealth_suspicious"; heat 25 is two stars and 55 three (OUTPOST_POLICE_STAR_HEAT).
+ * "stealth_suspicious"; heat 25 is two stars and 55 three (OUTPOST_POLICE_STAR_HEAT); OUTPOST_POLICE_YIELD_TIME and
+ * OUTPOST_POLICE_STANCE_STALE are 2 s, OUTPOST_POLICE_COVER_RANGE 3 tiles.
  */
 
 /// A two-star suspect at (6, 4) with the arrest's two officers beside them and a third officer, alert on them and not on the arrest, four tiles off. Returns list(suspect, case, arresting, cover, watcher).
@@ -103,17 +104,38 @@
 	TEST_ASSERT_EQUAL(case.step, "cuff", "Fixture: the arrest did not go for the cuffs with the suspect on the floor")
 	TEST_ASSERT(!police.has_in_hand(suspect), "Fixture: a suspect who is only knocked down counts as in hand")
 	TEST_ASSERT(!police_plans_shot(watcher, suspect), "An officer off the arrest plans a shot at a two-star suspect who is knocked down with the arresting officer going for the cuffs")
+
+	// Crawling off from the cuffs is getting away: fair game again, until they have lain still a while
+	var/datum/outpost_police_stance/stance = police.stance_of(suspect)
+	suspect.forceMove(at(8, 6))
+	TEST_ASSERT_EQUAL(case.step, "cuff", "Fixture: the arrest left the cuffs")
+	TEST_ASSERT(police_plans_shot(watcher, suspect), "An officer off the arrest plans no shot at a two-star suspect crawling off from the cuffs")
+	stance.moved_at -= 2 SECONDS // OUTPOST_POLICE_YIELD_TIME
+	TEST_ASSERT(!police_plans_shot(watcher, suspect), "An officer off the arrest plans a shot at a suspect who has lain still again")
+	// So is a kick at the arresting officer from the floor (a blow on an officer is the crime "resist")
+	police.report_crime(suspect, "resist", scene[3]) // OUTPOST_CRIME_RESIST
+	TEST_ASSERT_EQUAL(stance.fought_at, world.time, "A blow on an officer was not marked against the suspect who gave it")
+	TEST_ASSERT(police_plans_shot(watcher, suspect), "An officer off the arrest plans no shot at a two-star suspect who kicked the arresting officer from the floor")
+	stance.fought_at -= 2 SECONDS // OUTPOST_POLICE_YIELD_TIME
+	TEST_ASSERT(!police_plans_shot(watcher, suspect), "An officer off the arrest still plans a shot at a suspect who has lain still since the kick")
 	police.close_case(suspect.mind)
+	// Back where they were, and a while later
+	suspect.forceMove(at(6, 4))
+	police.gives_up(suspect)
+	stance.moved_at = 0
 
 	// The arrest's cover fires while they are to be subdued, but not at someone who is staying where they are
 	var/datum/outpost_police_case/second = police.open_case(police.get_warrant(suspect.mind))
 	TEST_ASSERT_NOTNULL(second, "Fixture: no second arrest opened")
 	suspect.SetKnockdown(0)
-	suspect.set_resting(FALSE, silent = TRUE, instant = TRUE)
+	suspect.get_up(TRUE)
 	TEST_ASSERT_EQUAL(suspect.body_position, STANDING_UP, "Fixture: the suspect did not get back up")
 	second.set_step("subdue")
 	TEST_ASSERT_EQUAL(second.cover(), cover, "Fixture: the second officer is not the cover")
 	TEST_ASSERT(!police_plans_shot(cover, suspect), "The arrest's cover plans a shot at a two-star suspect who stands still while the arresting officer subdues them")
+	// Off and running, the cover fires
+	suspect.forceMove(at(9, 6))
+	TEST_ASSERT(police_plans_shot(cover, suspect), "The arrest's cover plans no shot at a two-star suspect who makes off while they are being subdued")
 	police.close_case(suspect.mind)
 
 /// A two-star person who has given up and stands in an officer's line of fire at someone else is not shot through
@@ -237,3 +259,97 @@
 	var/list/stages = notice_stages(officer)
 	TEST_ASSERT("suspicious" in stages, "An officer went straight at someone the police are not yet after ([stages.Join(", ")])")
 	TEST_ASSERT_EQUAL(brain.stealth_state(), "alert", "An officer never went alert on a two-star suspect in front of it ([stages.Join(", ")])")
+
+/**
+ * What giving up is, to the officers: staying where they are with empty hands and going for nobody, for two seconds.
+ * A step to the next tile is not walking off; further is. A weapon in hand, or a blow, is not giving up. The moment
+ * the cuffs come out, what they did before is past. Nobody having looked at them for a while, they are seen afresh.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/giving_up
+
+/datum/unit_test/voidcrew_stealth_live/police/giving_up/Run()
+	var/list/scene = force_scene()
+	if(!scene)
+		return
+	var/mob/living/carbon/human/suspect = scene[1]
+	var/datum/outpost_police_case/case = scene[2]
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/watcher = scene[5]
+	TEST_ASSERT(police.gives_up(suspect), "Someone first seen standing there is not taken as giving up")
+	TEST_ASSERT(watcher.police_holds_fire(suspect), "An officer does not hold its fire for a two-star suspect who is giving up")
+	var/datum/outpost_police_stance/stance = police.stance_of(suspect)
+
+	// A step aside, then off across the room
+	suspect.forceMove(at(7, 5))
+	TEST_ASSERT(police.gives_up(suspect), "A step to the next tile was taken as walking off")
+	suspect.forceMove(at(8, 6))
+	TEST_ASSERT(!police.gives_up(suspect), "Someone two tiles from where they stood is still taken as staying put")
+	TEST_ASSERT(police_plans_shot(watcher, suspect), "An officer plans no shot at a two-star suspect who walks off")
+	stance.moved_at -= 1 SECONDS
+	TEST_ASSERT(!police.gives_up(suspect), "Someone who stopped a second ago is already taken as giving up")
+	stance.moved_at -= 1 SECONDS // OUTPOST_POLICE_YIELD_TIME in all
+	TEST_ASSERT(police.gives_up(suspect), "Someone who has stood still for two seconds is not taken as giving up")
+
+	// A weapon in their hand, then put down
+	var/obj/item/knife/kitchen/knife = allocate(/obj/item/knife/kitchen)
+	suspect.put_in_active_hand(knife, forced = TRUE)
+	TEST_ASSERT(!police.gives_up(suspect), "Someone with a knife in their hand is taken as giving up")
+	TEST_ASSERT(police_plans_shot(watcher, suspect), "An officer plans no shot at a two-star suspect with a knife out")
+	suspect.dropItemToGround(knife, TRUE)
+	TEST_ASSERT(!police.gives_up(suspect), "Someone who dropped their knife this instant is already taken as giving up")
+	stance.fought_at -= 2 SECONDS // OUTPOST_POLICE_YIELD_TIME
+	TEST_ASSERT(police.gives_up(suspect), "Someone who dropped their knife two seconds ago is not taken as giving up")
+
+	// A blow
+	police.note_fought(suspect)
+	TEST_ASSERT(!police.gives_up(suspect), "Someone who just hit out is taken as giving up")
+	// The cuffs come out (they are on the floor): what came before is past, and where they lie is where they are
+	stance.moved_at = world.time
+	suspect.Knockdown(5 SECONDS)
+	case.set_step("subdue")
+	case.step_subdue()
+	TEST_ASSERT(police.arrest_cuffing(suspect), "Fixture: the arrest is not going for the cuffs")
+	TEST_ASSERT(police.gives_up(suspect), "With the cuffs coming, a suspect on the floor is still held to what they did before")
+	TEST_ASSERT(!stance.fought_at && !stance.moved_at, "The cuffs coming out did not put what came before behind them")
+
+	// Nobody looked for a while: seen afresh where they are
+	stance.looked_at -= 5 SECONDS // past OUTPOST_POLICE_STANCE_STALE
+	suspect.forceMove(at(12, 6))
+	TEST_ASSERT(police.gives_up(suspect), "Someone nobody had looked at for five seconds was held to where they stood then")
+
+	// Three stars: no holding fire, whatever they do
+	police_pin_warrant(police, suspect.mind, 55) // three stars
+	TEST_ASSERT(!watcher.police_holds_fire(suspect), "An officer holds its fire for a three-star suspect who stands still")
+	police_pin_warrant(police, suspect.mind, 25)
+	police.close_case(suspect.mind)
+
+/// An officer holding its fire keeps its weapon out, tells them to stay where they are, and closes to three tiles in sight of them
+/datum/unit_test/voidcrew_stealth_live/police/holds_its_aim
+
+/datum/unit_test/voidcrew_stealth_live/police/holds_its_aim/Run()
+	var/list/scene = force_scene()
+	if(!scene)
+		return
+	var/mob/living/carbon/human/suspect = scene[1]
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/watcher = scene[5]
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = watcher.ai_controller
+	var/datum/ai_planning_subtree/outpost_police_force/force_tree = locate() in brain.planning_subtrees
+	brain.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, suspect)
+	brain.planned_behaviors.Cut()
+	TEST_ASSERT_EQUAL(force_tree.SelectBehaviors(brain, 1), SUBTREE_RETURN_FINISH_PLANNING, "An officer holding its fire went on to the shooting and melee subtrees")
+	TEST_ASSERT_EQUAL(watcher.force, 2, "An officer holding its fire on a two-star suspect is at force [watcher.force]") // POLICE_FORCE_STUN
+	TEST_ASSERT_NOTNULL(watcher.police_loaded_gun_for(2), "An officer holding its fire has no disabler in its hand")
+	TEST_ASSERT(locate(/datum/ai_behavior/human_npc_close_in) in brain.planned_behaviors, "An officer holding its fire four tiles off did not close in")
+	TEST_ASSERT(!(locate(/datum/ai_behavior/human_npc_shoot) in brain.planned_behaviors) && !(locate(/datum/ai_behavior/basic_melee_attack) in brain.planned_behaviors), "An officer holding its fire planned a shot or a blow")
+	var/datum/outpost_police_stance/stance = police.stance_of(suspect)
+	TEST_ASSERT_EQUAL(stance.told_at, world.time, "The first officer to hold its fire on someone nobody has spoken to yet said nothing")
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "alert", "An officer holding its fire is [brain.stealth_state()]")
+
+	// Three tiles off and in sight: it stands and watches
+	watcher.forceMove(at(9, 4))
+	brain.planned_behaviors.Cut()
+	force_tree.SelectBehaviors(brain, 1)
+	TEST_ASSERT(locate(/datum/ai_behavior/outpost_police_watch) in brain.planned_behaviors, "An officer holding its fire three tiles off does not stand and watch")
+	TEST_ASSERT(!(locate(/datum/ai_behavior/human_npc_close_in) in brain.planned_behaviors), "An officer holding its fire three tiles off went on closing in")
+	brain.planned_behaviors.Cut()
+	brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+	police.close_case(suspect.mind)

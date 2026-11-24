@@ -544,6 +544,8 @@
 	TEST_ASSERT_EQUAL(tactical.police_loaded_gun_for(2), sidearm, "At stun force a tactical officer picked [tactical.police_loaded_gun_for(2)] instead of its stun sidearm")
 	TEST_ASSERT(!outpost_police_mode_lethal(sidearm), "At stun force the sidearm was left on lethal")
 	sidearm.cell.charge = 0
+	// Someone who stands still with empty hands is not gone at (police_force.dm gives_up()): this one has just hit out
+	police.note_fought(runaway)
 	var/datum/ai_controller/tac_brain = tactical.ai_controller
 	var/datum/ai_planning_subtree/outpost_police_force/force_tree = locate() in tac_brain.planning_subtrees
 	tac_brain.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, runaway)

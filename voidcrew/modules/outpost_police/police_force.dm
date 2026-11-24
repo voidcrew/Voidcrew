@@ -16,6 +16,10 @@
  *   with no case on that person stands and watches them: the arrest is the case's job. The officer shoots
  *   through the human NPC base's shot (the real gun), but holds fire while anyone they would not shoot stands
  *   in the line (abuse M10), stepping aside instead.
+ * - Giving up (gives_up(), police_holds_fire()): at STUN force is for someone who fights or gets away. Nobody fires on
+ *   or strikes someone who stays where they are with empty hands and goes for nobody, before the order, in the time to
+ *   comply, or with the cuffs coming: every officer but the arresting one keeps its aim on them from close by, and is
+ *   on them again the moment they run, draw or hit out. The arresting officer's baton is the arrest's (police_arrest.dm).
  * - Body-blocking (M11): a person who stands in the line within 2 tiles of an officer firing to kill for
  *   OUTPOST_POLICE_BLOCK_TIME, or pulls an officer (police_dispatch.dm), resists, again every 5 seconds.
  * - Looking for someone is stealth's searching state (stealth_ai.dm); dispatch sends officers to search
@@ -204,8 +208,9 @@
 	var/other_force = force_for(other)
 	if(other_force < POLICE_FORCE_STUN)
 		return FALSE
+	// Given the order, or giving up: nobody shoots them, and nobody shoots through them at someone else
 	var/mob/living/person = other
-	if(isliving(person) && police?.order_pending(person))
+	if(isliving(person) && police_holds_fire(person))
 		return FALSE
 	if(shot_force >= POLICE_FORCE_LETHAL && other_force < POLICE_FORCE_LETHAL)
 		return FALSE
@@ -269,13 +274,133 @@
 		police?.report_crime(blocker, OUTPOST_CRIME_RESIST, src)
 
 // =========================================================================
+// GIVING UP (two stars: force is for someone who fights or gets away)
+// =========================================================================
+
+/datum/outpost_police
+	/// What the officers have seen of the people they may stun: the mind's weakref -> /datum/outpost_police_stance
+	var/list/stances
+
+/// What the officers have seen of someone they may stun, a moment ago
+/datum/outpost_police_stance
+	/// Where they stand: a step to the next tile is not walking off
+	var/turf/spot
+	/// world.time they were last seen further than that from it, or 0
+	var/moved_at = 0
+	/// world.time they last went for someone, fired a gun or had a weapon in their hands, or 0
+	var/fought_at = 0
+	/// world.time an officer last looked
+	var/looked_at = 0
+	/// Whether their arrest was going for the cuffs at that look
+	var/cuffing = FALSE
+	/// world.time an officer holding its fire last told them to stay where they are
+	var/told_at = 0
+
+/**
+ * One look at `person`: where they are against where they stood, and whether their arrest has come to the cuffs.
+ * Returns what is known of them. With nobody having looked for OUTPOST_POLICE_STANCE_STALE, where they are is where
+ * they stand. The moment the cuffs come out the same holds, and what they did before is past: from then on it is
+ * getting away from the cuffs, a weapon or a blow that counts.
+ */
+/datum/outpost_police/proc/stance_of(mob/living/person)
+	var/datum/weakref/key = WEAKREF(person.mind)
+	var/datum/outpost_police_stance/stance = LAZYACCESS(stances, key)
+	if(!stance)
+		stance = new
+		LAZYSET(stances, key, stance)
+	var/turf/here = get_turf(person)
+	var/cuffing = arrest_cuffing(person)
+	var/cuffs_out = cuffing && !stance.cuffing
+	if(isnull(stance.spot) || cuffs_out || world.time - stance.looked_at > OUTPOST_POLICE_STANCE_STALE)
+		stance.spot = here
+		stance.moved_at = 0
+		if(cuffs_out)
+			stance.fought_at = 0
+	else if(here && (here.z != stance.spot.z || get_dist(here, stance.spot) > 1))
+		stance.spot = here
+		// Walked along by an officer, they are going nowhere of their own
+		if(!is_outpost_police_npc(person.pulledby))
+			stance.moved_at = world.time
+	stance.cuffing = cuffing
+	stance.looked_at = world.time
+	return stance
+
+/**
+ * Whether `person` is giving up, as the officers see it: for OUTPOST_POLICE_YIELD_TIME they have stayed where they
+ * are (a step to the next tile aside), on their feet or on the floor, with no gun or weapon in their hands, and gone
+ * for nobody. Someone first seen standing there is taken to be. Hands up or fists up is the arresting officer's to
+ * judge (police_arrest.dm suspect_complied()); what everyone else sees is whether they fight or get away.
+ */
+/datum/outpost_police/proc/gives_up(mob/living/person)
+	if(!isliving(person) || !person.mind || person.stat == DEAD || !isturf(person.loc))
+		return FALSE
+	var/datum/outpost_police_stance/stance = stance_of(person)
+	if(outpost_police_armed(person))
+		stance.fought_at = world.time
+	if(stance.fought_at && world.time - stance.fought_at < OUTPOST_POLICE_YIELD_TIME)
+		return FALSE
+	return !stance.moved_at || world.time - stance.moved_at >= OUTPOST_POLICE_YIELD_TIME
+
+/// `person` went for someone, or fired a gun (police_wanted.dm report_crime(), seen or not): they have not given up
+/datum/outpost_police/proc/note_fought(mob/living/person)
+	if(!isliving(person) || !person.mind)
+		return
+	var/datum/outpost_police_stance/stance = stance_of(person)
+	stance.fought_at = world.time
+
+/// Forgets what was seen of anyone nobody has looked at for OUTPOST_POLICE_STANCE_KEEP (once a second, police_stealth.dm stealth_tick_squad())
+/datum/outpost_police/proc/prune_stances()
+	if(!length(stances))
+		return
+	for(var/datum/weakref/key as anything in stances.Copy())
+		var/datum/outpost_police_stance/stance = stances[key]
+		if(!key.resolve() || world.time - max(stance.looked_at, stance.fought_at) > OUTPOST_POLICE_STANCE_KEEP)
+			LAZYREMOVE(stances, key)
+
+/// Whether `person` has a gun or a melee weapon in their hands
+/proc/outpost_police_armed(mob/living/person)
+	for(var/obj/item/held in person.held_items)
+		if(isgun(held) || human_npc_is_melee_weapon(held))
+			return TRUE
+	return FALSE
+
+/**
+ * Whether this officer holds its fire, and its baton, for `person`: someone of two stars (as it knows them) who has
+ * been given an arrest's order and is in the time to comply, or who is giving up (gives_up()). At three stars and up
+ * only someone down is taken alive (owner decision 37); at one star nobody is fought in the first place.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_holds_fire(mob/living/person)
+	if(!police || !isliving(person) || !person.mind)
+		return FALSE
+	if(police.force_level(person, src) != POLICE_FORCE_STUN)
+		return FALSE
+	return police.order_pending(person) || police.gives_up(person)
+
+/**
+ * Holds its aim on `target` without firing: weapon out, facing them, within OUTPOST_POLICE_COVER_RANGE and in sight of
+ * them. The first officer to do so before the arrest has spoken to them tells them to stay where they are.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_hold_aim(datum/ai_controller/controller, atom/target, mob/living/person)
+	if(!HAS_TRAIT(src, TRAIT_HANDS_BLOCKED) && !LAZYLEN(do_afters) && isturf(loc))
+		face_atom(target)
+	if(!case && !police.order_pending(person) && !police.arrest_cuffing(person))
+		var/datum/outpost_police_stance/stance = police.stance_of(person)
+		if((!stance.told_at || world.time - stance.told_at >= OUTPOST_POLICE_HOLD_LINE_GAP) && police_say(POLICE_LINE_WARN))
+			stance.told_at = world.time
+	if(get_dist(src, target) > OUTPOST_POLICE_COVER_RANGE || !can_see(src, target, OUTPOST_POLICE_COVER_RANGE))
+		controller.queue_behavior(/datum/ai_behavior/human_npc_close_in, BB_BASIC_MOB_CURRENT_TARGET, OUTPOST_POLICE_COVER_RANGE)
+	else
+		controller.queue_behavior(/datum/ai_behavior/outpost_police_watch)
+
+// =========================================================================
 // FORCE
 // =========================================================================
 
 /**
  * The weapon mode for the current target, then the shot with fire discipline. With nothing to fight the weapons go
  * away. A person of one star is the arrest's job: an officer with no case on them, baton out, stands and watches
- * (spec-stealth 1.3). With no loaded gun it leaves the target to the base's arm and melee subtrees (the baton).
+ * (spec-stealth 1.3). A person of two stars who is doing as told is watched over its sights, never fired on
+ * (police_holds_fire()). With no loaded gun it leaves the target to the base's arm and melee subtrees (the baton).
  */
 /datum/ai_planning_subtree/outpost_police_force
 
@@ -298,12 +423,12 @@
 			officer.face_atom(target)
 		controller.queue_behavior(/datum/ai_behavior/outpost_police_watch)
 		return SUBTREE_RETURN_FINISH_PLANNING
-	// An arrest has just given them the order: everyone holds fire and watches while they make up their mind
+	// Two stars and doing as told (in the time to comply with an arrest's order, or staying put with empty hands):
+	// nobody fires on them or goes at them with a baton. The arresting officer has them; everyone else, the arrest's
+	// cover included, keeps its aim on them from close by.
 	var/mob/living/person = officer.police_mech_suspect(target)
-	if(level == POLICE_FORCE_STUN && !officer.case && isliving(person) && officer.police.order_pending(person))
-		if(!HAS_TRAIT(officer, TRAIT_HANDS_BLOCKED) && !LAZYLEN(officer.do_afters))
-			officer.face_atom(target)
-		controller.queue_behavior(/datum/ai_behavior/outpost_police_watch)
+	if(level == POLICE_FORCE_STUN && isliving(person) && officer.police_holds_fire(person))
+		officer.police_hold_aim(controller, target, person)
 		return SUBTREE_RETURN_FINISH_PLANNING
 	if(level < POLICE_FORCE_STUN || HAS_TRAIT(officer, TRAIT_HANDS_BLOCKED) || LAZYLEN(officer.do_afters))
 		return SUBTREE_RETURN_FINISH_PLANNING
@@ -343,6 +468,10 @@
 	if(!istype(officer) || QDELETED(target))
 		return ..()
 	if(isliving(target) && stealth_closet_of(target))
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
+	// Given the order, or given up, since this shot was planned: it is not taken
+	var/mob/living/person = officer.police_mech_suspect(target)
+	if(isliving(person) && officer.police_holds_fire(person))
 		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
 	var/obj/item/gun/wanted_gun = officer.police_loaded_gun_for(officer.force)
 	if(isnull(wanted_gun))
