@@ -438,3 +438,54 @@
 			"'TIS BUT A SCRATCH! The Black Knight challenges thee!",
 		),
 	)
+
+// Bounty ship parts by faction (spawn_bounty_loot() in bounty.dm).
+/obj/structure/overmap/ship/npc/pirate/silverscale/bounty_part_weights()
+	var/static/list/weights = list(
+		/obj/item/ship_parts/trade = 70,
+		/obj/item/ship_parts/misc = 30,
+	)
+	return weights
+
+/obj/structure/overmap/ship/npc/pirate/skeleton/bounty_part_weights()
+	var/static/list/weights = list(
+		/obj/item/ship_parts/combat = 70,
+		/obj/item/ship_parts/misc = 30,
+	)
+	return weights
+
+/obj/structure/overmap/ship/npc/pirate/grey/bounty_part_weights()
+	var/static/list/weights = list(
+		/obj/item/ship_parts/misc = 60,
+		/obj/item/ship_parts/trade = 20,
+		/obj/item/ship_parts/combat = 20,
+	)
+	return weights
+
+/obj/structure/overmap/ship/npc/pirate/lustrous/bounty_part_weights()
+	var/static/list/weights = list(
+		/obj/item/ship_parts/science = 70,
+		/obj/item/ship_parts/misc = 30,
+	)
+	return weights
+
+/obj/structure/overmap/ship/npc/pirate/interdyne/bounty_part_weights()
+	var/static/list/weights = list(
+		/obj/item/ship_parts/science = 70,
+		/obj/item/ship_parts/misc = 30,
+	)
+	return weights
+
+/obj/structure/overmap/ship/npc/pirate/irs/bounty_part_weights()
+	var/static/list/weights = list(
+		/obj/item/ship_parts/trade = 70,
+		/obj/item/ship_parts/misc = 30,
+	)
+	return weights
+
+/obj/structure/overmap/ship/npc/pirate/medieval/bounty_part_weights()
+	var/static/list/weights = list(
+		/obj/item/ship_parts/combat = 70,
+		/obj/item/ship_parts/misc = 30,
+	)
+	return weights

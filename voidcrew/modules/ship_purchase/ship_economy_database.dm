@@ -27,6 +27,43 @@ GLOBAL_LIST_INIT(ship_part_classes, list(
 	PART_CLASS_MISC
 ))
 
+// What one banked part of each class is worth at a shipyard exchange. Taken from what live saves spent against
+// supply (2026-11-24, FREE_SHIPS on); revisit if FREE_SHIPS is turned off.
+GLOBAL_LIST_INIT(ship_part_exchange_values, list(
+	PART_CLASS_COMBAT = 2,
+	PART_CLASS_SCIENCE = 6,
+	PART_CLASS_TRADE = 2,
+	PART_CLASS_MISC = 3,
+))
+
+/// The terms for trading one class for another, list(pay, get), or null for a pair that can't trade.
+/proc/ship_part_exchange_terms(from_class, to_class)
+	if(!istext(from_class) || !istext(to_class))
+		return null
+	var/value_from = GLOB.ship_part_exchange_values[from_class]
+	var/value_to = GLOB.ship_part_exchange_values[to_class]
+	if(!value_from || !value_to || from_class == to_class)
+		return null
+	var/need = value_to * SHIP_PART_EXCHANGE_SPREAD
+	// The small nudges keep a ratio that should be whole from landing a hair off it.
+	if(need >= value_from)
+		return list(max(CEILING(need / value_from - 0.0001, 1), 1), 1)
+	return list(1, max(FLOOR(value_from / need + 0.0001, 1), 1))
+
+/// Every pair's terms, from -> to -> list(pay, get), for the console's screen.
+/proc/ship_part_exchange_table()
+	var/static/list/table
+	if(!table)
+		table = list()
+		for(var/from_class in GLOB.ship_part_classes)
+			var/list/row = list()
+			for(var/to_class in GLOB.ship_part_classes)
+				var/list/terms = ship_part_exchange_terms(from_class, to_class)
+				if(terms)
+					row[to_class] = terms
+			table[from_class] = row
+	return table
+
 // Singleton database access layer - initialized automatically on first access
 GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 
@@ -49,6 +86,8 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 	var/list/cache_times = list()
 	/// Cache validity duration in deciseconds (5 minutes)
 	var/cache_duration = 3000
+	/// ckey -> TRUE while that player's parts exchange is between its queries
+	var/list/exchange_locks = list()
 
 /**
  * Initialize the singleton instance
@@ -347,6 +386,40 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 		log_game("SHIP_ECONOMY: [ckey] LOST [plan[part_class]] [part_class] parts: the refund failed")
 		message_admins("Ship parts refund failed for [ckey]: [plan[part_class]] [part_class] parts were taken but not returned. Check the game log.")
 		. = FALSE
+
+/**
+ * Trades banked parts of one class for another, on ship_part_exchange_terms(). Sleeps.
+ * Returns an error for the player, or null on success. One trade per player at a time, from any console.
+ */
+/datum/ship_economy_db/proc/exchange_parts(ckey, from_class, to_class)
+	ckey = ckey(ckey)
+	if(!ckey || !(from_class in GLOB.ship_part_classes) || !(to_class in GLOB.ship_part_classes) || from_class == to_class)
+		return "Pick two different parts."
+	if(!is_available())
+		return "Shipyard records are offline."
+	if(exchange_locks[ckey])
+		return "Already under way."
+	exchange_locks[ckey] = TRUE
+	var/list/terms = ship_part_exchange_terms(from_class, to_class)
+	. = exchange_claimed_parts(ckey, from_class, to_class, terms[1], terms[2])
+	exchange_locks -= ckey
+	invalidate_cache(ckey, "parts")
+
+/datum/ship_economy_db/proc/exchange_claimed_parts(ckey, from_class, to_class, pay, get)
+	PRIVATE_PROC(TRUE)
+	// A runtime below ends this proc with this answer, not with a null that reads as success.
+	. = "Shipyard records are offline."
+	if(!deduct_part_class(ckey, from_class, pay))
+		return "You need [pay] [from_class] part[pay == 1 ? "" : "s"]."
+	if(!add_part(ckey, to_class, get, "exchange"))
+		var/list/taken = list()
+		taken[from_class] = pay
+		refund_parts(ckey, taken)
+		return "The exchange failed."
+	log_game("SHIP_ECONOMY: [ckey] exchanged [pay] [from_class] part(s) for [get] [to_class] part(s)")
+	for(var/i in 1 to get)
+		log_extraction(ckey, to_class, "exchange")
+	return null
 
 /// Parts held by class, from the cache alone so it never sleeps. Null until something has loaded them.
 /datum/ship_economy_db/proc/cached_parts(ckey)
