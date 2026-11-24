@@ -93,7 +93,10 @@ type Data = {
     parts: Record<PartClass, number> | null;
     banked: Record<PartClass, number> | null;
     carried_spent: number;
-    exchange_rate: number;
+    /** from -> to -> [pay, get] */
+    exchange_terms: Partial<
+      Record<PartClass, Partial<Record<PartClass, [number, number]>>>
+    >;
     part_credits: number;
     funds_per_part: number;
     slots: number;
@@ -839,7 +842,7 @@ const ClassPicker = (props: {
 
 const ExchangeTab = () => {
   const { data, act } = useBackend<Data>();
-  const { banked, exchange_rate } = data.saved_ships;
+  const { banked, exchange_terms } = data.saved_ships;
   const [from, setFrom] = useState<PartClass>('misc');
   const [to, setTo] = useState<PartClass>('science');
   if (!banked) {
@@ -861,8 +864,14 @@ const ExchangeTab = () => {
     }
     setTo(id);
   };
-  const short = exchange_rate - banked[from];
-  const denial = short > 0 ? `Short ${short} ${from}.` : null;
+  const terms = exchange_terms?.[from]?.[to];
+  const [pay, get] = terms || [0, 0];
+  const short = pay - banked[from];
+  const denial = !terms
+    ? 'Shipyard records are offline.'
+    : short > 0
+      ? `Short ${short} ${from}.`
+      : null;
   return (
     <>
       <Section title="Banked parts">
@@ -886,7 +895,7 @@ const ExchangeTab = () => {
             tooltip={denial}
             onClick={() => act('ship_parts_exchange', { from, to })}
           >
-            {`${exchange_rate} ${from} → 1 ${to}`}
+            {terms ? `${pay} ${from} → ${get} ${to}` : '—'}
           </Button>
         </Box>
       </Section>

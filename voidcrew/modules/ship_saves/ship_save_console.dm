@@ -300,7 +300,8 @@ GLOBAL_LIST_EMPTY(ship_save_carried_used)
 	error = failure
 	if(failure)
 		return FALSE
-	notice = "Traded [SHIP_PART_EXCHANGE_RATE] [from_class] parts for 1 [to_class] part."
+	var/list/terms = ship_part_exchange_terms(from_class, to_class)
+	notice = "Traded [terms[1]] [from_class] part[terms[1] == 1 ? "" : "s"] for [terms[2]] [to_class] part[terms[2] == 1 ? "" : "s"]."
 	return TRUE
 
 /// What the Saved Ships tab shows. Reads only caches; ui_data must not touch the database.
@@ -329,7 +330,7 @@ GLOBAL_LIST_EMPTY(ship_save_carried_used)
 		"parts" = ship_save_add_counts(banked, carried),
 		"banked" = banked,
 		"carried_spent" = carried_spent,
-		"exchange_rate" = SHIP_PART_EXCHANGE_RATE,
+		"exchange_terms" = ship_part_exchange_table(),
 		"part_credits" = SHIP_SAVE_CREDITS_PER_PART,
 		"funds_per_part" = SHIP_SAVE_FUNDS_PER_TRADE_PART,
 		"slots" = SHIP_SAVE_SLOTS,
