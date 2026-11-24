@@ -77,8 +77,12 @@
 	SSmobs.clients_by_zlevel[listed_z] |= suspect
 	var/obj/item/gun/ballistic/automatic/pistol/gun = allocate(/obj/item/gun/ballistic/automatic/pistol)
 	suspect.put_in_hands(gun)
-	suspect.adjustBruteLoss(110)
+	suspect.adjustBruteLoss(60)
+	suspect.adjustOxyLoss(55)
 	suspect.updatehealth()
+	if(!HAS_TRAIT(suspect, TRAIT_CRITICAL_CONDITION))
+		TEST_FAIL("Fixture: the suspect is not in crit (stat [suspect.stat], health [suspect.health])")
+		return null
 	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 104)
 	LAZYADD(warrant.evidence, WEAKREF(gun))
 	police.note_seen(suspect.mind, spot)
