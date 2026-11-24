@@ -259,8 +259,11 @@
 
 /// Adds `tile` to `by_distance` (a list of lists, index distance + 1 from `from`), once
 /proc/ambient_add_by_distance(list/by_distance, turf/from, turf/tile)
-	var/index = get_dist(from, tile) + 1
-	if(!tile || index > length(by_distance))
+	if(!tile || !from)
+		return
+	// In BYOND get_dist() of a turf with itself is -1: the tile they stand on is distance 0
+	var/index = (tile == from ? 0 : get_dist(from, tile)) + 1
+	if(index < 1 || index > length(by_distance))
 		return
 	var/list/ring = by_distance[index]
 	if(!ring)

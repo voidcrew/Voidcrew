@@ -27,3 +27,15 @@
 	escort.stop_pulling()
 	escort.forceMove(at(7, 0))
 	TEST_ASSERT(officer.Move(in_the_way, get_dir(stepped_to, in_the_way)), "The officer was still kept off the tile after the escort had gone")
+
+/// A janitor's mess list takes the tile they stand on as the nearest (get_dist() of a turf with itself is -1 in BYOND)
+/datum/unit_test/voidcrew_ambient_add_by_distance
+
+/datum/unit_test/voidcrew_ambient_add_by_distance/Run()
+	var/turf/here = run_loc_floor_bottom_left
+	var/turf/near = get_step(here, NORTH)
+	var/list/by_distance = new /list(3)
+	ambient_add_by_distance(by_distance, here, here)
+	ambient_add_by_distance(by_distance, here, near)
+	TEST_ASSERT(here in by_distance[1], "The tile underfoot is not first in the mess list")
+	TEST_ASSERT(near in by_distance[2], "The tile a step away is not second in the mess list")
