@@ -1,3 +1,72 @@
+/// ckey -> TRUE for each player whose carried ship parts have paid for a save this round. After that only
+/// their banked parts count, so a crew can't pool its finds into a save for every member.
+GLOBAL_LIST_EMPTY(ship_save_carried_used)
+
+/// The ship parts a player carries that can still pay for a save: anywhere on them, including in a locked
+/// case, as extraction reaches. None once their carried parts have paid for one this round. Never sleeps.
+/proc/ship_save_carried_parts(mob/living/user)
+	if(!user?.ckey || GLOB.ship_save_carried_used[ckey(user.ckey)])
+		return list()
+	return user.get_all_contents_type(/obj/item/ship_parts)
+
+/// Parts by class, every class present.
+/proc/ship_save_count_parts(list/parts)
+	var/list/counts = list()
+	for(var/part_class in GLOB.ship_part_classes)
+		counts[part_class] = 0
+	for(var/obj/item/ship_parts/part as anything in parts)
+		if(!QDELETED(part) && (part.part_class in counts))
+			counts[part.part_class]++
+	return counts
+
+/// Banked and carried parts together, or null while the banked parts aren't known.
+/proc/ship_save_add_counts(list/banked, list/carried)
+	if(!banked)
+		return null
+	var/list/total = banked.Copy()
+	for(var/part_class in carried)
+		total[part_class] = (total[part_class] || 0) + carried[part_class]
+	return total
+
+/**
+ * The carried parts that pay a payment's parts, carried first, up to what was counted when the captain
+ * was asked. Null if they no longer carry those parts. Never sleeps.
+ */
+/proc/ship_save_pick_carried(mob/living/user, list/parts_due, list/carried_counts)
+	var/list/available = ship_save_carried_parts(user)
+	var/list/picked = list()
+	for(var/part_class in parts_due)
+		var/wanted = min(parts_due[part_class], carried_counts?[part_class] || 0)
+		for(var/obj/item/ship_parts/part as anything in available)
+			if(wanted <= 0)
+				break
+			if(QDELETED(part) || part.part_class != part_class)
+				continue
+			picked += part
+			wanted--
+		if(wanted > 0)
+			return null
+	return picked
+
+/// Takes carried parts off the captain, out of the world, while a save is written.
+/proc/ship_save_hold_parts(mob/living/user, list/parts)
+	for(var/obj/item/ship_parts/part as anything in parts)
+		if(part.loc == user)
+			user.temporarilyRemoveItemFromInventory(part, force = TRUE)
+		part.moveToNullspace()
+
+/// Gives held parts back after a failed save: into the captain's hands, or at their feet.
+/proc/ship_save_return_parts(mob/living/user, list/parts, turf/fallback)
+	for(var/obj/item/ship_parts/part as anything in parts)
+		if(QDELETED(part))
+			continue
+		if(!QDELETED(user) && user.loc)
+			user.put_in_hands(part)
+		else if(fallback)
+			part.forceMove(fallback)
+		else
+			qdel(part)
+
 /// Why this user can't save the ship in this bay to any slot, or null. Only checks caches, so ui_data can use it.
 /datum/ship_checkpoint_ui/proc/saved_ship_bay_denial(mob/living/user, datum/outpost_berth/bay)
 	if(QDELETED(src) || ui_status(user, GLOB.always_state) != UI_INTERACTIVE)
@@ -62,12 +131,18 @@
 	var/old_name
 	var/old_round
 	var/list/options
+	var/list/carried_counts
+	var/list/carried_parts
+	var/turf/fallback = get_turf(user)
 	if(!failure)
 		old_row = GLOB.ship_saves.saved_row(player_ckey, slot)
 		old_name = old_row?["ship_name"]
 		old_round = old_row?["saved_round"]
 		GLOB.ship_economy_db.invalidate_cache(player_ckey, "parts")
-		var/list/held = GLOB.ship_economy_db.get_parts(player_ckey)
+		var/list/banked = GLOB.ship_economy_db.get_parts(player_ckey)
+		// Counted after the read, which sleeps. They are counted again once the captain answers.
+		carried_counts = ship_save_count_parts(ship_save_carried_parts(user))
+		var/list/held = ship_save_add_counts(banked, carried_counts)
 		var/funds = funds_parts * SHIP_SAVE_FUNDS_PER_TRADE_PART
 		var/balance_left = (account?.account_balance || 0) - funds
 		options = balance_left >= 0 ? ship_save_payment_options(survey["cost"], held, balance_left) : list()
@@ -77,6 +152,10 @@
 			failure = "You need [ship_save_credits_text(funds)]."
 		else if(!length(options))
 			failure = ship_save_payment_denial(survey["cost"], held)
+			if(GLOB.ship_save_carried_used[player_ckey])
+				var/list/with_carried = ship_save_add_counts(held, ship_save_count_parts(user.get_all_contents_type(/obj/item/ship_parts)))
+				if(length(ship_save_payment_options(survey["cost"], with_carried, balance_left)))
+					failure = "Carried parts already used this round."
 		else
 			for(var/label in options)
 				var/list/option = options[label]
@@ -104,8 +183,35 @@
 			var/list/new_row = GLOB.ship_saves.saved_row(player_ckey, slot)
 			if(new_row?["ship_name"] != old_name || new_row?["saved_round"] != old_round)
 				failure = "That slot changed. Try again."
+		// Parts dropped or handed off while the box was open can't pay.
+		if(!failure)
+			carried_parts = ship_save_pick_carried(user, payment["parts"], carried_counts)
+			if(isnull(carried_parts))
+				failure = "Your parts changed. Try again."
+			else if(length(carried_parts))
+				var/list/banked_due = payment["parts"]
+				banked_due = banked_due.Copy()
+				for(var/obj/item/ship_parts/part as anything in carried_parts)
+					banked_due[part.part_class] -= 1
+					if(banked_due[part.part_class] <= 0)
+						banked_due -= part.part_class
+				payment = payment.Copy()
+				payment["parts"] = banked_due
+				// Claimed before anything sleeps, so a second console can't spend other carried parts too.
+				GLOB.ship_save_carried_used[player_ckey] = TRUE
+				ship_save_hold_parts(user, carried_parts)
 	if(!failure)
 		failure = GLOB.ship_saves.commit_save(player_ckey, snapshot, user, slot, survey, payment, account)
+	if(length(carried_parts))
+		if(failure)
+			GLOB.ship_save_carried_used -= player_ckey
+			ship_save_return_parts(user, carried_parts, fallback)
+		else
+			var/carried_total = length(carried_parts)
+			log_game("[key_name(user)] paid [ship_save_cost_text(ship_save_count_parts(carried_parts))] they carried toward saving [ship_name].")
+			QDEL_LIST(carried_parts)
+			if(!QDELETED(user))
+				to_chat(user, span_notice("The yard takes the [carried_total] ship part[carried_total == 1 ? "" : "s"] you carry."))
 	qdel(snapshot)
 	if(QDELETED(src))
 		return !failure
@@ -179,6 +285,24 @@
 			error = job.error || "Construction failed. [job.unspent_note()]"
 	return started
 
+/// Trades banked parts for this player at the console. Needs no ship. Sleeps.
+/datum/ship_checkpoint_ui/proc/exchange_parts(mob/living/user, from_class, to_class)
+	if(working)
+		return FALSE
+	working = TRUE
+	notice = null
+	var/player_ckey = user.ckey
+	var/failure = GLOB.ship_economy_db.exchange_parts(player_ckey, from_class, to_class)
+	GLOB.ship_saves.refresh(player_ckey)
+	if(QDELETED(src))
+		return !failure
+	working = FALSE
+	error = failure
+	if(failure)
+		return FALSE
+	notice = "Traded [SHIP_PART_EXCHANGE_RATE] [from_class] parts for 1 [to_class] part."
+	return TRUE
+
 /// What the Saved Ships tab shows. Reads only caches; ui_data must not touch the database.
 /datum/ship_checkpoint_ui/proc/saved_ships_data(mob/user)
 	var/list/saves = list()
@@ -196,9 +320,16 @@
 			"denial" = saved_ship_bay_denial(user, bay),
 			"balance" = ship.ship_account?.account_balance || 0,
 		), ship.save_survey()))
+	var/list/banked = GLOB.ship_economy_db.cached_parts(user.ckey)
+	var/list/carried = ship_save_count_parts(ship_save_carried_parts(user))
+	// Parts the captain carries that no longer count, so a short bill can say why.
+	var/carried_spent = GLOB.ship_save_carried_used[ckey(user.ckey)] ? length(user.get_all_contents_type(/obj/item/ship_parts)) : 0
 	return list(
 		"online" = !!GLOB.ship_save_store.online(),
-		"parts" = GLOB.ship_economy_db.cached_parts(user.ckey),
+		"parts" = ship_save_add_counts(banked, carried),
+		"banked" = banked,
+		"carried_spent" = carried_spent,
+		"exchange_rate" = SHIP_PART_EXCHANGE_RATE,
 		"part_credits" = SHIP_SAVE_CREDITS_PER_PART,
 		"funds_per_part" = SHIP_SAVE_FUNDS_PER_TRADE_PART,
 		"slots" = SHIP_SAVE_SLOTS,
