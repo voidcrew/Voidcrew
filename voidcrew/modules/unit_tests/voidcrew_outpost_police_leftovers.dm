@@ -39,3 +39,56 @@
 	ambient_add_by_distance(by_distance, here, near)
 	TEST_ASSERT(here in by_distance[1], "The tile underfoot is not first in the mess list")
 	TEST_ASSERT(near in by_distance[2], "The tile a step away is not second in the mess list")
+
+/// Two townspeople head-on in a one-tile hall trade places; either side of a door, one goes into it; a player in the way is waited for
+/datum/unit_test/voidcrew_stealth_live/police/townspeople_head_on
+
+/datum/unit_test/voidcrew_stealth_live/police/townspeople_head_on/Run()
+	TEST_ASSERT(police_room(7, 3), "No room for the test")
+	// A hall one tile wide along the middle row
+	for(var/dx in 0 to 6)
+		for(var/dy in list(0, 2))
+			var/turf/side = at(dx, dy)
+			side.ChangeTurf(/turf/closed/wall)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/west = local_at(1, 1)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/east = local_at(2, 1)
+	for(var/mob/living/local as anything in list(west, east))
+		local.ai_controller?.set_ai_status(AI_STATUS_OFF)
+		if(local.move_intent == MOVE_INTENT_RUN)
+			local.toggle_move_intent()
+	var/datum/move_loop/has_target/jps/west_loop = GLOB.move_manager.jps_move(west, at(6, 1), 10, repath_delay = 5 SECONDS, subsystem = SSai_movement)
+	var/datum/move_loop/has_target/jps/east_loop = GLOB.move_manager.jps_move(east, at(0, 1), 10, repath_delay = 5 SECONDS, subsystem = SSai_movement)
+	TEST_ASSERT(west_loop && east_loop, "Setup: no path loops started")
+
+	// Head-on: they trade places
+	west_loop.movement_path = list(at(2, 1))
+	east_loop.movement_path = list(at(1, 1))
+	west.Move(at(2, 1), EAST)
+	TEST_ASSERT_EQUAL(get_turf(west), at(2, 1), "Two townspeople head-on in a narrow hall did not pass")
+	TEST_ASSERT_EQUAL(get_turf(east), at(1, 1), "Head-on in a narrow hall, only one of the two moved")
+
+	// One walking the same way, or standing about, is not traded with
+	COOLDOWN_RESET(west, head_on_cooldown)
+	COOLDOWN_RESET(east, head_on_cooldown)
+	west.forceMove(at(1, 1))
+	east.forceMove(at(2, 1))
+	west_loop.movement_path = list(at(2, 1))
+	east_loop.movement_path = list(at(3, 1))
+	west.Move(at(2, 1), EAST)
+	TEST_ASSERT_EQUAL(get_turf(west), at(1, 1), "A townsperson traded places with one walking the same way")
+
+	// Either side of a door: a townsperson coming through the other way does not keep them out of the doorway, a player does
+	var/turf/door_tile = at(3, 1)
+	allocate(/obj/machinery/door/airlock/public/glass, door_tile)
+	west.forceMove(at(2, 1))
+	east.forceMove(at(4, 1))
+	east_loop.movement_path = list(door_tile)
+	TEST_ASSERT(west.doorway_step_ok(door_tile), "A townsperson waited outside a door for one waiting to come through it the other way")
+	east_loop.movement_path = list(at(5, 1))
+	TEST_ASSERT(!west.doorway_step_ok(door_tile), "A townsperson stepped into a doorway with someone standing beyond it")
+	east.forceMove(at(5, 1))
+	person_at(4, 1, FALSE)
+	TEST_ASSERT(!west.doorway_step_ok(door_tile), "A townsperson stepped into a doorway with a player beyond it")
+
+	GLOB.move_manager.stop_looping(west, SSai_movement)
+	GLOB.move_manager.stop_looping(east, SSai_movement)
