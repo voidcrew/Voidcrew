@@ -31,6 +31,10 @@
  * - The outpost's officers have a key, for police business in the chamber only: someone to look for, arrest or walk
  *   out of it (outpost_checkpoint_npcs.dm, "the police's key"). It opens the outer door; the inner door only while the
  *   gate is down. While they are at work in there the chamber scans nobody and its outer door stays open behind them.
+ *   The outpost's medics and morgue crew have the same key for a patient or a body lying in there.
+ * - A hatch (a checkpoint whose outer door opens onto space) does not let anyone wanted by the police out: it does not
+ *   cycle outward for them, and its outer door does not open while one of them is in the chamber. Coming in always
+ *   works. On a hatch the key is for the inner door instead, while nothing unscanned can be in the chamber.
  *
  * The parts are mapped (doors, a chamber marker on every chamber tile, one wall scanner, the exit gate
  * and lockers) and tied together by checkpoint_id when the outpost links its interior
@@ -129,6 +133,8 @@
 	var/scan_when_closed = FALSE
 	/// The current cycle was asked for from the concourse side
 	var/exit_request = FALSE
+	/// The outer door has opened since the chamber last let anyone through clean: what is in there may be unscanned
+	var/outer_opened = FALSE
 	/// The last line the checkpoint said, and when
 	var/last_line
 	var/last_line_at = 0
@@ -391,7 +397,7 @@
 		on_door_closed(door)
 		return
 	// The police at work in the chamber are never shut in: the outer door, their way back to the desk, waits for them
-	if(door.operating || doorway_blocked(door) || (door == outer_door && police_at_work()))
+	if(door.operating || doorway_blocked(door) || (door == outer_door && work_inside()))
 		addtimer(CALLBACK(src, PROC_REF(close_door), door), OUTPOST_CHECKPOINT_DOORWAY_WAIT, TIMER_UNIQUE | TIMER_DELETE_ME)
 		return
 	INVOKE_ASYNC(src, PROC_REF(finish_close), door)
@@ -410,6 +416,12 @@
 		inner_door.set_breached(FALSE)
 		if(state == CHECKPOINT_PASSING || state == CHECKPOINT_FORCED)
 			set_state(CHECKPOINT_IDLE)
+			return
+		// A hatch that sent someone refused back to the concourse (reject()): whoever is left in there is scanned
+		if(state == CHECKPOINT_REJECTING)
+			set_state(CHECKPOINT_IDLE)
+			if(!is_disabled() && outer_door?.density && length(chamber_people()))
+				start_scan()
 			return
 		if(state == CHECKPOINT_IDLE && !is_disabled() && outer_door?.density)
 			var/requested = scan_when_closed
@@ -454,7 +466,7 @@
 /// Someone walks into or clicks the outer door. Returns TRUE if it opens.
 /datum/outpost_checkpoint/proc/request_outer(mob/user)
 	// The police are at work in there: none of the outpost's people asks the door to open on them
-	if(!outpost_checkpoint_door_user(user) && !police_key_holder(user) && police_at_work())
+	if(!outpost_checkpoint_door_user(user) && !key_holder(user) && work_inside())
 		return FALSE
 	// The gate is down (an emag on its scanner): a plain airlock
 	if(is_disabled() && !QDELETED(outer_door) && !QDELETED(inner_door))
@@ -467,6 +479,9 @@
 			deltimer(phase_timer)
 			phase_timer = null
 			close_door(outer_door)
+		return FALSE
+	// A hatch does not open onto space on anyone wanted standing in it (outpost_checkpoint_npcs.dm, "the hatches")
+	if(hatch_holds_wanted())
 		return FALSE
 	switch(state)
 		if(CHECKPOINT_IDLE)
@@ -491,7 +506,7 @@
 	if(!inner_door.density || inner_door.operating || outer_door.operating)
 		return FALSE
 	// The police are at work in here: no scan until they are done, unless it is an officer who asks
-	if(police_at_work() && !duty_officer(user))
+	if(work_inside() && !duty_officer(user))
 		return FALSE
 	if(state == CHECKPOINT_REJECTING)
 		// Held open for something refused: nothing more until it has been taken back out
@@ -502,6 +517,9 @@
 	var/leaving = !(get_turf(user) in chamber_turfs)
 	// A guarded checkpoint has its own way out (the exit gate); only the exterior hatches cycle outward
 	if(leaving && guard)
+		return FALSE
+	// Nor does a hatch cycle outward for anyone wanted
+	if(leaving && is_hatch() && police_wants(user))
 		return FALSE
 	exit_request = leaving
 	if(!outer_door.density)
@@ -519,7 +537,7 @@
 		return
 	// The police are at work in here: nobody is scanned until they are done (an officer going through may still ask),
 	// and then whoever is left shut in is
-	if(police_at_work() && !duty_officer(asker))
+	if(work_inside() && !duty_officer(asker))
 		addtimer(CALLBACK(src, PROC_REF(scan_after_police)), OUTPOST_CHECKPOINT_REJECT_RECHECK, TIMER_UNIQUE | TIMER_DELETE_ME)
 		return
 	set_state(CHECKPOINT_SCANNING)
@@ -551,6 +569,7 @@
 	reject(barred, people)
 
 /datum/outpost_checkpoint/proc/pass(list/people)
+	outer_opened = FALSE
 	set_state(CHECKPOINT_PASSING)
 	wash_chamber(CHECKPOINT_PASS_COLOR)
 	sound_at_chamber('sound/machines/ping.ogg', 30)
@@ -559,7 +578,11 @@
 	open_door(inner_door)
 	phase_timer = addtimer(CALLBACK(src, PROC_REF(close_door), inner_door), OUTPOST_CHECKPOINT_PASS_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
-/// The inner door stays shut, the checkpoint says why, and the outer door opens for whoever it refused to walk back out
+/**
+ * The inner door stays shut, the checkpoint says why, and the outer door opens for whoever it refused to walk back out.
+ * At a hatch whose outer door has not opened since the last clean pass, everyone in there came from the concourse:
+ * the inner door opens instead, back the way they came, so nobody refused is let out onto space or shut in.
+ */
 /datum/outpost_checkpoint/proc/reject(barred, list/people)
 	var/leaving = exit_request
 	set_state(CHECKPOINT_REJECTING)
@@ -567,7 +590,7 @@
 	sound_at_chamber('sound/machines/scanner/scanbuzz.ogg', 40)
 	if(includes_player(people) || leaving)
 		announce(barred ? CHECKPOINT_LINE_BARRED : CHECKPOINT_LINE_ARMED, urgent = TRUE)
-	open_door(outer_door)
+	open_door(is_hatch() && !outer_opened ? inner_door : outer_door)
 	phase_timer = addtimer(CALLBACK(src, PROC_REF(check_refused)), OUTPOST_CHECKPOINT_REJECT_HOLD, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
 /// The outer door stays open until whatever was refused is gone from the chamber, then shuts (scanning anyone still inside)
@@ -579,7 +602,8 @@
 	if(length(inspect_chamber()))
 		phase_timer = addtimer(CALLBACK(src, PROC_REF(check_refused)), OUTPOST_CHECKPOINT_REJECT_RECHECK, TIMER_STOPPABLE | TIMER_DELETE_ME)
 		return
-	close_door(outer_door)
+	// The door the refusal opened: the inner one at a hatch that sent them back to the concourse
+	close_door(inner_door.density ? outer_door : inner_door)
 
 // ----- the gate emag (R7) -----
 
@@ -808,6 +832,8 @@
 	if(!opening_permitted)
 		return FALSE
 	opening_permitted = FALSE
+	if(checkpoint && checkpoint.outer_door == src)
+		checkpoint.outer_opened = TRUE
 	return ..()
 
 // Checkpoint permission bypasses the opening checks without selecting the pry sound for an ordinary cycle.
@@ -881,7 +907,7 @@
 	if(operating || !density)
 		return
 	if(!outpost_checkpoint_door_user(user))
-		// An officer's key opens this door only while the gate is down
+		// An officer's key opens this door only while the gate is down, or at a hatch
 		checkpoint?.police_key(src, user)
 		return
 	if(!checkpoint?.request_cycle(user))
