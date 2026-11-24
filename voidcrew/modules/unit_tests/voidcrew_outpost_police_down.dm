@@ -335,6 +335,13 @@
 	person_at(19, 8)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/watcher = ready_officer(10, 4, WEST)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/colleague = ready_officer(8, 5, WEST)
+	// Two stun officers beside the suspect make the arrest; the watcher only stands over them
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/stunner = ready_officer(7, 3, WEST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/second = ready_officer(5, 5, EAST)
+	watcher.police_role = "lethal" // POLICE_ROLE_LETHAL
+	colleague.police_role = "lethal"
+	stunner.police_role = "stun" // POLICE_ROLE_STUN
+	second.police_role = "stun"
 	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/watcher_brain = watcher.ai_controller
 	var/mob/living/carbon/human/suspect = visitor_at(6, 4)
 	police_pin_warrant(police, suspect.mind, 100) // four stars
@@ -346,6 +353,7 @@
 	TEST_ASSERT_EQUAL(suspect.stat, SOFT_CRIT, "Fixture: the suspect is not in soft crit")
 	watcher_brain.stealth_keep_target()
 	TEST_ASSERT(police.arrest_on(suspect), "No arrest opened on a four-star suspect shot into crit in front of an officer")
+	TEST_ASSERT(isnull(watcher.case) && isnull(colleague.case), "Fixture: the stun officers beside the suspect did not take the arrest")
 	TEST_ASSERT_EQUAL(watcher_brain.police_covered(), suspect, "The officer who shot a suspect into crit does not stand over them")
 	watcher_brain.stealth_drop_call()
 

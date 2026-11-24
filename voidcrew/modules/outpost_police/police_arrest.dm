@@ -188,13 +188,19 @@
 		barker.case.drop_officer(barker)
 	// Not in the middle of something on the body (the cuffs, the search), and not once they are in cuffs: whoever has
 	// them in hand sees it through
-	if(istype(barker) && lead != barker && !barker.case && !case.acting && !case.cuffed && case.officer_fit(barker))
+	// The arrest's cover may be the one who put them down: it can take the cuffs over as well as anyone free
+	if(istype(barker) && lead != barker && (!barker.case || barker.case == case) && !case.acting && !case.cuffed && case.officer_fit(barker))
 		// A stun officer further off than it is, or out of sight of them, is no better: the officer who put them down cuffs them
 		var/lead_away = lead && (lead.z != fallen.z || (get_dist(lead, fallen) > get_dist(barker, fallen) && !perception?.sees(lead, fallen)))
 		if(!lead || lead_away || (get_stars(fallen.mind) >= 3 && role_of(lead) != POLICE_ROLE_STUN))
 			if(lead)
 				case.drop_officer(lead)
-			case.take_officer(barker)
+			if(barker.case == case)
+				for(var/datum/weakref/ref as anything in case.officers.Copy())
+					if(ref?.resolve() == barker)
+						case.officers -= ref
+			else
+				case.take_officer(barker)
 			case.officers.Insert(1, WEAKREF(barker))
 			case.staff()
 	return TRUE
