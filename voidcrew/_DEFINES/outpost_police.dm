@@ -128,6 +128,8 @@
 #define OUTPOST_POLICE_STANCE_KEEP (1 MINUTES)
 /// An officer holding its fire tells them to stay where they are no more often than this
 #define OUTPOST_POLICE_HOLD_LINE_GAP (20 SECONDS)
+/// Someone wanted who went for somebody this recently gets no second look from an officer who sees them (police_stealth.dm)
+#define OUTPOST_POLICE_FRESH_FIGHT (5 SECONDS)
 
 // ===== UNITS AND SECTORS =====
 

@@ -359,6 +359,13 @@
 	var/datum/outpost_police_stance/stance = stance_of(person)
 	stance.fought_at = world.time
 
+/// Whether `person` went for someone, fired a gun or was seen with a weapon out within the last `within`
+/datum/outpost_police/proc/fought_within(mob/living/person, within)
+	if(!isliving(person) || !person.mind)
+		return FALSE
+	var/datum/outpost_police_stance/stance = LAZYACCESS(stances, WEAKREF(person.mind))
+	return !!stance?.fought_at && world.time - stance.fought_at <= within
+
 /// Forgets what was seen of anyone nobody has looked at for OUTPOST_POLICE_STANCE_KEEP (once a second, police_stealth.dm stealth_tick_squad())
 /datum/outpost_police/proc/prune_stances()
 	if(!length(stances))

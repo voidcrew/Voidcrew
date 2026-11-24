@@ -379,3 +379,20 @@
 	brain.planned_behaviors.Cut()
 	brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
 	police.close_case(suspect.mind)
+
+/// Someone wanted who hit somebody a moment ago gets no second look either, arrest or no arrest: a crime in front of an officer is answered at once
+/datum/unit_test/voidcrew_stealth_live/police/fresh_fight_seen_at_once
+
+/datum/unit_test/voidcrew_stealth_live/police/fresh_fight_seen_at_once/Run()
+	var/list/scene = notice_scene()
+	if(!scene)
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = scene[1]
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	var/mob/living/carbon/human/suspect = scene[2]
+	TEST_ASSERT(!police.is_after(suspect), "Fixture: the police are already after the suspect")
+	police.note_fought(suspect)
+	var/list/stages = notice_stages(officer)
+	TEST_ASSERT(!("suspicious" in stages), "An officer took a second look at a wanted person who had just hit somebody ([stages.Join(", ")])")
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "alert", "An officer who sees a wanted person fresh from a fight is [brain.stealth_state()] ([stages.Join(", ")])")
+	TEST_ASSERT(!brain.bark_ready_at["stealth_suspicious"], "An officer said its \"what's that\" line to a wanted person who had just hit somebody")

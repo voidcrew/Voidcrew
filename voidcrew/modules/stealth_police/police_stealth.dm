@@ -27,9 +27,10 @@
  *   or in a cell (has_secured(), stealth_all_clear()).
  * - A colleague awake on the floor is nobody's body (stealth_fallen()): what put them there is a crime against an
  *   officer, and the police answer that.
- * - Someone the police are already after (an arrest open on them, or units sent after them: is_after()) gets no
- *   second look: an officer that takes notice of them in plain view is on them at once, with no "what's that"
- *   (police_knows_on_sight()). Getting past an officer unnoticed is as it was, and so is everyone else's second look.
+ * - Someone the police are already after (an arrest open on them, or units sent after them: is_after()), or wanted
+ *   and fresh from going for somebody, gets no second look: an officer that takes notice of them in plain view is on
+ *   them at once, with no "what's that" (police_knows_on_sight()). Getting past an officer unnoticed is as it was,
+ *   and so is everyone else's second look.
  * - One of the outpost's people held at gunpoint: every officer that sees it holds fire and stands off, as stealth's
  *   guards do (stealth_hostage.dm), ahead of the arrest and the use of force. Told to drop it, only an officer caught
  *   cold puts its weapon down: one already on a hunt or a search keeps it (owner decision 68). They hold fire for
@@ -466,13 +467,16 @@
 	return FALSE
 
 /**
- * Whether `seen` is someone it goes for on sight: the police are already after them, it has taken notice of them (the
- * same notice a second look would have started on), and it sees them plainly now: in its cone, in light it can use,
+ * Whether `seen` is someone it goes for on sight: the police are already after them, or they are wanted and went for
+ * somebody a moment ago (a colleague, a townsperson: OUTPOST_POLICE_FRESH_FIGHT); it has taken notice of them (the
+ * same notice a second look would have started on); and it sees them plainly now: in its cone, in light it can use,
  * and not keeping still in cover.
  */
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/proc/police_knows_on_sight(mob/living/seen)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
-	if(!istype(officer) || !isliving(seen) || QDELETED(seen) || !officer.police?.is_after(seen))
+	if(!istype(officer) || !isliving(seen) || QDELETED(seen) || !officer.police)
+		return FALSE
+	if(!officer.police.is_after(seen) && !officer.police.fought_within(seen, OUTPOST_POLICE_FRESH_FIGHT))
 		return FALSE
 	var/list/entry = notice_map[REF(seen)]
 	if(isnull(entry) || entry[STEALTH_ENTRY_NOTICE] < STEALTH_SUSPICIOUS_AT)
