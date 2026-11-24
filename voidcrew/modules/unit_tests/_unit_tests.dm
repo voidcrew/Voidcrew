@@ -228,6 +228,7 @@
 #include "voidcrew_outpost_police_custody.dm"
 #include "voidcrew_outpost_police_dispatch.dm"
 #include "voidcrew_outpost_police_down.dm"
+#include "voidcrew_outpost_police_escort_detour.dm"
 #include "voidcrew_outpost_police_escort_route.dm"
 #include "voidcrew_outpost_police_force.dm"
 #include "voidcrew_outpost_police_hatch.dm"
