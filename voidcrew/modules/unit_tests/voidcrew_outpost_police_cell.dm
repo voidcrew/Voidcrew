@@ -470,6 +470,119 @@
 		TEST_ASSERT("fine_paid" in police.lines, "Nobody told the prisoner their fine was paid") // POLICE_LINE_FINE_PAID
 		police.lines.Cut()
 
+/// A paid hold: the prisoner's guns, in hand or in a bag, go to a property locker of theirs; clothes, bag and tools stay on
+/datum/unit_test/voidcrew_outpost_police_cell_book_paid_weapons
+
+/datum/unit_test/voidcrew_outpost_police_cell_book_paid_weapons/Run()
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	var/obj/structure/closet/secure_closet/personal/outpost_police/locker = allocate(/obj/structure/closet/secure_closet/personal/outpost_police, run_loc_floor_top_right)
+	police.lockers += locker
+	locker.police_ref = WEAKREF(police) // build_property() would log the fixture's missing lockers as a mapping error
+	police.pinned_stars = 1
+	police.fine_result = TRUE
+	var/datum/outpost_police_cell/cell = police.cell_best()
+	TEST_ASSERT_NOTNULL(cell, "No cell to book into")
+	var/mob/living/carbon/human/suspect = police_cell_person(cell.outside_turf)
+	var/mob/living/carbon/human/officer = police_cell_person(get_step(cell.outside_turf, NORTH))
+	var/obj/item/clothing/under/color/grey/suit = allocate(/obj/item/clothing/under/color/grey)
+	suspect.equip_to_slot_if_possible(suit, ITEM_SLOT_ICLOTHING, disable_warning = TRUE)
+	var/obj/item/storage/backpack/bag = allocate(/obj/item/storage/backpack)
+	suspect.equip_to_slot_if_possible(bag, ITEM_SLOT_BACK, disable_warning = TRUE)
+	var/obj/item/card/id/card = allocate(/obj/item/card/id)
+	suspect.equip_to_slot_if_possible(card, ITEM_SLOT_ID, disable_warning = TRUE)
+	var/obj/item/gun/ballistic/automatic/pistol/pistol = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	TEST_ASSERT(bag.atom_storage.attempt_insert(pistol, suspect, TRUE), "Setup: the pistol did not go in the bag")
+	var/obj/item/gun/energy/e_gun/mini/minigun = allocate(/obj/item/gun/energy/e_gun/mini)
+	TEST_ASSERT(suspect.equip_to_slot_if_possible(minigun, ITEM_SLOT_LPOCKET, disable_warning = TRUE), "Setup: the small gun did not go in a pocket")
+	var/obj/item/crowbar/crowbar = allocate(/obj/item/crowbar)
+	TEST_ASSERT(bag.atom_storage.attempt_insert(crowbar, suspect, TRUE), "Setup: the crowbar did not go in the bag")
+	police_pin_warrant(police, suspect.mind, 12)
+	TEST_ASSERT_NOTNULL(police_cell_cuff(suspect, officer), "Setup: the suspect did not get cuffed")
+	TEST_ASSERT(police.book(suspect, officer), "book() did not take a cuffed suspect with a warrant")
+	TEST_ASSERT(suspect.mind in cell.prisoners, "The suspect is not a prisoner of the cell")
+	TEST_ASSERT(!(suspect.mind in cell.jailed), "A paid fine is a jail term")
+	TEST_ASSERT_EQUAL(police.store_calls, 0, "A paid fine stripped the suspect")
+	for(var/obj/item/gun/gun as anything in list(pistol, minigun))
+		TEST_ASSERT_EQUAL(gun.loc, locker, "[gun] stayed with the prisoner on a paid hold (it is in [gun.loc])")
+		TEST_ASSERT(locker.holds(gun), "[gun] is not listed in the locker")
+	TEST_ASSERT_EQUAL(suspect.w_uniform, suit, "A paid hold took the prisoner's clothes")
+	TEST_ASSERT_EQUAL(suspect.back, bag, "A paid hold took the prisoner's bag")
+	TEST_ASSERT_EQUAL(crowbar.loc, bag, "A paid hold took a tool")
+	TEST_ASSERT_EQUAL(suspect.wear_id, card, "A paid hold took the ID")
+	TEST_ASSERT(locker.locked, "The locker is open after the hold began")
+	TEST_ASSERT_EQUAL(locker.owner(), suspect.mind, "The locker is not the prisoner's")
+	TEST_ASSERT_EQUAL(locker.id_card?.resolve(), card, "The locker is not registered to the prisoner's card")
+	TEST_ASSERT(locker.is_authorised(suspect), "The prisoner cannot open their own locker")
+	TEST_ASSERT(!locker.is_authorised(officer), "Someone else can open the prisoner's locker")
+
+/**
+ * A body in an occupied cell: the prisoner shut in with it does not keep the morgue crew from it, the cell lets the
+ * crew in by its door as it does a medic, and they bring the bag out with the door shut behind them and the prisoner
+ * still held.
+ */
+/datum/unit_test/voidcrew_outpost_police_cell_body_recovery
+	var/obj/structure/overmap/trader_outpost/outpost
+	var/datum/outpost_police/old_police
+
+/datum/unit_test/voidcrew_outpost_police_cell_body_recovery/Destroy()
+	if(outpost)
+		outpost.police?.outpost = null
+		outpost.police = old_police
+	outpost = null
+	old_police = null
+	return ..()
+
+/datum/unit_test/voidcrew_outpost_police_cell_body_recovery/Run()
+	outpost = wanted_outpost()
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	old_police = outpost.police
+	outpost.police = police
+	police.outpost = outpost
+	var/datum/outpost_recovery/recovery = allocate(/datum/outpost_recovery, outpost)
+	var/datum/outpost_police_cell/cell = police_cell_named(police, "a")
+	TEST_ASSERT_NOTNULL(cell, "Cell a missing")
+	var/turf/entry = cell.cell_entry_tile()
+	var/turf/corpse_tile
+	var/turf/prisoner_tile
+	for(var/turf/tile as anything in cell.tiles)
+		if(tile == entry)
+			continue
+		if(!corpse_tile)
+			corpse_tile = tile
+		else if(!prisoner_tile && get_dist(tile, corpse_tile) == 1)
+			prisoner_tile = tile
+	TEST_ASSERT(corpse_tile && prisoner_tile, "Setup: no tiles for the body and the prisoner")
+	var/mob/living/carbon/human/prisoner = police_cell_person(prisoner_tile)
+	cell.admit(prisoner, world.time + 10 MINUTES)
+	var/mob/living/carbon/human/corpse = police_cell_person(corpse_tile)
+	corpse.death()
+	cell.shut_door(TRUE)
+	TEST_ASSERT(cell.door.density, "Setup: the cell door is open")
+	TEST_ASSERT_EQUAL(morgue_cell_of(outpost, corpse_tile), cell, "The morgue crew do not see the body is in a cell")
+
+	// The prisoner shut in with it does not keep the crew away
+	TEST_ASSERT(recovery.body_free(corpse), "A prisoner beside a body in their cell keeps the morgue crew from it")
+
+	// In by the cell's door, as a medic
+	var/mob/living/carbon/human/worker = police_cell_person(cell.outside_turf)
+	TEST_ASSERT(cell.medic_walk_in(worker, corpse), "The morgue crew were not let in to the body")
+	TEST_ASSERT(get_turf(worker) in cell.tiles, "The worker is not on the cell floor")
+	TEST_ASSERT(cell.door.density, "The cell door was left open behind the worker")
+
+	// Out with the bag
+	var/obj/structure/closet/body_bag/outpost_morgue/bag = allocate(/obj/structure/closet/body_bag/outpost_morgue, corpse_tile)
+	corpse.forceMove(bag)
+	worker.start_pulling(bag, supress_message = TRUE)
+	TEST_ASSERT_EQUAL(worker.pulling, bag, "Setup: the worker could not pull the bag")
+	TEST_ASSERT(cell.body_walk_out(worker, bag), "The morgue crew did not bring the bag out of the cell")
+	var/turf/bag_turf = get_turf(bag)
+	TEST_ASSERT(!(bag_turf in cell.tiles) && bag_turf != get_turf(cell.door), "The bag is still in the cell or its doorway")
+	TEST_ASSERT(!(get_turf(worker) in cell.tiles), "The worker is still in the cell")
+	TEST_ASSERT(cell.door.density, "The cell door was left open after the bag came out")
+	TEST_ASSERT(get_turf(prisoner) in cell.tiles, "The prisoner left the cell")
+	TEST_ASSERT(prisoner.mind in cell.prisoners, "The prisoner is no longer held")
+	TEST_ASSERT_EQUAL(length(police.crimes), 0, "Bringing a body out was counted as a crime")
+
 /// An unpaid fine strips the suspect before the cuffs come off, and holds them 1 min at one star and 2 at two
 /datum/unit_test/voidcrew_outpost_police_cell_book_jail
 

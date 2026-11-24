@@ -312,6 +312,11 @@
 // =========================================================================
 
 /// Whether `someone` is a person at the keyboard (or a disconnected one), not an NPC
+/// The police cell whose floor `where` is at `outpost`, or null
+/proc/morgue_cell_of(obj/structure/overmap/trader_outpost/outpost, turf/where)
+	var/datum/outpost_police_cell/cell = outpost?.police?.cell_at(where)
+	return (cell && (where in cell.tiles)) ? cell : null
+
 /proc/morgue_is_player(mob/living/someone)
 	return !!(someone.client || someone.ckey || someone.mock_client)
 
@@ -424,8 +429,12 @@
 		return FALSE
 	if(get_ship_from_atom(where))
 		return FALSE
+	// A body on a police cell's floor: the prisoners shut in with it do not keep the crew from it (body_in_cell())
+	var/datum/outpost_police_cell/body_cell = morgue_cell_of(outpost, where)
 	for(var/mob/living/someone in range(OUTPOST_RECOVERY_FREE_RANGE, where))
 		if(someone.stat == CONSCIOUS && morgue_is_player(someone))
+			if(body_cell && someone.mind && (someone.mind in body_cell.prisoners) && (get_turf(someone) in body_cell.tiles))
+				continue
 			return FALSE
 	for(var/datum/outpost_berth/berth as anything in outpost.berths)
 		if(berth?.contains_turf(where))
@@ -548,6 +557,8 @@
 	var/ride_tries = 0
 	/// Hangar berth or lobby sector being ridden to via the hangar elevator
 	var/ride_sector
+	/// The police cell the body lies in, while the crew go in for it or bring it out (enter_cell(), leave_cell())
+	var/datum/weakref/cell_ref
 
 /datum/ambient_activity/recover_body/setup()
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue/worker = doer
@@ -571,11 +582,11 @@
 		bag_ref = WEAKREF(crew_bag)
 		stage = MORGUE_STAGE_HAUL
 		if(!berth_jump)
-			go_to(get_turf(crew_bag), 1)
+			go_toward_body(crew_bag)
 	else
 		doer.set_held(/obj/item/bodybag/outpost_morgue)
 		if(!berth_jump)
-			go_to(get_turf(body), 1)
+			go_toward_body(body)
 	speak_of(body)
 	return TRUE
 
@@ -648,6 +659,10 @@
 	release()
 	stage = MORGUE_STAGE_DONE
 	go_to(null)
+	// Never left shut in a police cell: out by its door, as an officer steps out
+	var/datum/outpost_police_cell/cell = QDELETED(doer) ? null : morgue_cell_of(recovery?.outpost, get_turf(doer))
+	if(cell)
+		INVOKE_ASYNC(cell, TYPE_PROC_REF(/datum/outpost_police_cell, cell_walk_out), doer)
 
 /// Runs `action` (a proc of this activity that may sleep) on its own; act() waits for it
 /datum/ambient_activity/recover_body/proc/begin_action(action)
@@ -706,6 +721,9 @@
 	if(istype(worker) && worker.needs_checkpoint_cross(target))
 		give_up(FALSE)
 		return AMBIENT_STEP_DONE
+	var/cell_step = cell_entry_step(target)
+	if(!isnull(cell_step))
+		return cell_step
 	if(!doer.Adjacent(target))
 		if(++approach_tries > MORGUE_APPROACH_TRIES)
 			give_up(TRUE)
@@ -718,6 +736,56 @@
 		return AMBIENT_STEP_MOVE
 	begin_action(PROC_REF(bag_body))
 	return AMBIENT_STEP_CONTINUE
+
+/**
+ * `target` (a body or its bag) lies in a police cell and `doer` is not in it: nobody plans a path through a cell
+ * door, so they walk to the lobby tile outside and the cell lets them in as it does a medic. The step to return, or
+ * null when `target` is not shut in a cell away from them.
+ */
+/datum/ambient_activity/recover_body/proc/cell_entry_step(atom/target)
+	var/datum/outpost_police_cell/cell = morgue_cell_of(recovery?.outpost, get_turf(target))
+	if(!cell || (get_turf(doer) in cell.tiles))
+		return null
+	var/turf/door_turf = get_turf(cell.door)
+	if(!door_turf || !cell.outside_turf)
+		give_up(TRUE)
+		return AMBIENT_STEP_DONE
+	if(get_dist(doer, door_turf) > 1)
+		go_to(cell.outside_turf)
+		return AMBIENT_STEP_MOVE
+	cell_ref = WEAKREF(cell)
+	begin_action(PROC_REF(enter_cell))
+	return AMBIENT_STEP_CONTINUE
+
+/// Walks toward `target`, or to the lobby tile outside the police cell it lies in (no path goes through a cell door)
+/datum/ambient_activity/recover_body/proc/go_toward_body(atom/target)
+	var/datum/outpost_police_cell/cell = morgue_cell_of(recovery?.outpost, get_turf(target))
+	if(cell?.outside_turf)
+		go_to(cell.outside_turf)
+		return
+	go_to(get_turf(target), 1)
+
+/// Goes in through the door of the cell the body lies in (police_cell_medic.dm medic_walk_in()). Sleeps.
+/datum/ambient_activity/recover_body/proc/enter_cell()
+	var/datum/outpost_police_cell/cell = cell_ref?.resolve()
+	var/mob/living/body = body()
+	if(QDELETED(cell) || !body || !cell.medic_walk_in(doer, morgue_bag_target(body)))
+		if(!QDELETED(src))
+			give_up(TRUE)
+		return FALSE
+	return TRUE
+
+/// Brings the bag out through the door of the cell it was bagged in (police_cell_medic.dm body_walk_out()). Sleeps.
+/datum/ambient_activity/recover_body/proc/leave_cell()
+	var/datum/outpost_police_cell/cell = cell_ref?.resolve()
+	var/obj/structure/closet/body_bag/outpost_morgue/bag = bag()
+	if(QDELETED(cell) || !bag || !cell.body_walk_out(doer, bag))
+		if(!QDELETED(src))
+			give_up(TRUE)
+		return FALSE
+	cell_ref = null
+	goal = null
+	return TRUE
 
 /// Rides the hangar elevator between the lobby alcove and a hangar berth to reach a body there. Sleeps.
 /datum/ambient_activity/recover_body/proc/ride_for_body()
@@ -858,6 +926,9 @@
 			give_up(TRUE)
 			return AMBIENT_STEP_DONE
 	if(doer.pulling != bag)
+		var/cell_step = cell_entry_step(bag)
+		if(!isnull(cell_step))
+			return cell_step
 		if(get_dist(doer, bag) > 1 || !doer.Adjacent(bag))
 			go_to(get_turf(bag), 1)
 			return AMBIENT_STEP_MOVE
@@ -865,6 +936,11 @@
 		if(doer.pulling != bag)
 			give_up(TRUE)
 			return AMBIENT_STEP_DONE
+	var/datum/outpost_police_cell/bag_cell = morgue_cell_of(recovery?.outpost, get_turf(bag))
+	if(bag_cell)
+		cell_ref = WEAKREF(bag_cell)
+		begin_action(PROC_REF(leave_cell))
+		return AMBIENT_STEP_CONTINUE
 	if(!goal || !goal_still_good())
 		if(!pick_goal(body))
 			give_up(TRUE)

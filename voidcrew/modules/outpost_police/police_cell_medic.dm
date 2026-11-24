@@ -148,6 +148,61 @@
 	if(. && !doorway_blocked())
 		shut_door(TRUE)
 
+/**
+ * The morgue crew's way out with a body bag (`hauled`, pulled by `worker`): the cell opens its own door as it does
+ * for a medic (the crew come in by medic_walk_in()), `worker` walks out by real moves with the bag following, one
+ * tile past the lobby tile so the doorway is clear, and the door shuts behind them. Nobody plans a path through a
+ * cell door (CanAStarPass()), so this is the only way a body leaves a shut cell. Sleeps. TRUE if the bag is out.
+ */
+/datum/outpost_police_cell/proc/body_walk_out(mob/living/worker, atom/movable/hauled)
+	var/turf/door_turf = get_turf(door)
+	var/turf/entry_tile = cell_entry_tile()
+	if(!door_turf || !entry_tile || !outside_turf || QDELETED(worker) || QDELETED(hauled) || worker.pulling != hauled)
+		return FALSE
+	if(!(get_turf(worker) in tiles) && get_turf(worker) != door_turf)
+		return FALSE
+	if(!open_door(OUTPOST_POLICE_CELL_OPEN, TRUE))
+		return FALSE
+	// Past the lobby tile, away from the door, so the bag ends on the lobby tile and out of the doorway
+	var/turf/beyond = get_step(outside_turf, get_dir(door_turf, outside_turf))
+	if(!beyond || beyond.is_blocked_turf(exclude_mobs = TRUE) || (beyond in tiles))
+		beyond = null
+		for(var/direction in GLOB.cardinals)
+			var/turf/candidate = get_step(outside_turf, direction)
+			if(candidate && candidate != door_turf && !(candidate in tiles) && !candidate.is_blocked_turf(exclude_mobs = TRUE))
+				beyond = candidate
+				break
+	var/pause = cell_step_pause()
+	for(var/step_try in 1 to 8)
+		if(QDELETED(src) || QDELETED(worker) || QDELETED(hauled) || worker.stat != CONSCIOUS || HAS_TRAIT(worker, TRAIT_INCAPACITATED) || worker.pulling != hauled)
+			break
+		var/turf/here = get_turf(worker)
+		var/turf/bag_turf = get_turf(hauled)
+		if(bag_turf != door_turf && !(bag_turf in tiles))
+			break
+		var/turf/next
+		if(here == outside_turf)
+			next = beyond
+		else if(here == door_turf)
+			next = outside_turf
+		else if(here == entry_tile)
+			next = door_turf
+		else if(here in tiles)
+			next = get_step_towards(worker, entry_tile)
+			if(!(next in tiles))
+				next = entry_tile
+		if(!next)
+			break
+		cell_clear_step(worker, next)
+		worker.Move(next, get_dir(worker, next))
+		sleep(pause)
+	if(QDELETED(src) || QDELETED(hauled))
+		return FALSE
+	var/turf/bag_turf = get_turf(hauled)
+	. = bag_turf != door_turf && !(bag_turf in tiles)
+	if(. && !doorway_blocked())
+		shut_door(TRUE)
+
 // =========================================================================
 // THE MEDIC
 // =========================================================================
