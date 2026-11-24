@@ -629,7 +629,7 @@
 
 /**
  * A suspect in crit is booked like anyone else (owner decision 60): walked in, stripped, uncuffed and held, and the
- * term stands still while they are in crit. The fixture has no outpost, so no medic can come: the door hold opens.
+ * term runs in crit (owner decision 104). The fixture has no outpost, so no medic can come: the door hold opens, once.
  */
 /datum/unit_test/voidcrew_outpost_police_cell_book_crit
 
@@ -655,12 +655,51 @@
 	TEST_ASSERT(cell.jailed[suspect.mind], "An unpaid fine in crit is not a jail term")
 	police.tick_cells()
 	TEST_ASSERT(suspect.mind in cell.prisoners, "A prisoner booked in crit is not held")
-	TEST_ASSERT(cell.time_left[suspect.mind] > 0, "A prisoner booked in crit has no term kept")
+	TEST_ASSERT(!(suspect.mind in cell.return_by), "A prisoner booked in crit is waited for as if out of the cell")
+	TEST_ASSERT(cell.prisoners[suspect.mind] > world.time, "A prisoner booked in crit has no term running")
 	TEST_ASSERT("medic" in police.lines, "Nobody called a medic") // POLICE_LINE_MEDIC
 	TEST_ASSERT(cell.medic_until > world.time, "With no medic to be had the door is not held open")
-	cell.prisoners[suspect.mind] = world.time - 1
+	var/lines_before = length(police.lines)
 	police.tick_cells()
-	TEST_ASSERT(suspect.mind in cell.prisoners, "The term ran out while the prisoner was in crit")
+	TEST_ASSERT_EQUAL(length(police.lines), lines_before, "The station called for a medic again on the next tick in crit")
+
+/**
+ * Owner decision 104: the term runs from the moment a prisoner is in the cell, in crit or not. Booked in crit with
+ * real damage, the term ends on time while they are still in crit: let out, warrant closed, the door open and held
+ * while they lie there.
+ */
+/datum/unit_test/voidcrew_outpost_police_cell_crit_term_runs
+
+/datum/unit_test/voidcrew_outpost_police_cell_crit_term_runs/Run()
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	police.pinned_stars = 1
+	police.fine_result = FALSE
+	var/datum/outpost_police_cell/cell = police.cell_best()
+	TEST_ASSERT_NOTNULL(cell, "No cell to book into")
+	var/mob/living/carbon/human/suspect = police_cell_person(cell.outside_turf)
+	var/mob/living/carbon/human/officer = police_cell_person(get_step(cell.outside_turf, NORTH))
+	police_pin_warrant(police, suspect.mind, 12)
+	TEST_ASSERT_NOTNULL(police_cell_cuff(suspect, officer), "Setup: the suspect did not get cuffed")
+	suspect.apply_damage(70, BRUTE, BODY_ZONE_CHEST)
+	suspect.apply_damage(50, BRUTE, BODY_ZONE_HEAD)
+	suspect.updatehealth()
+	TEST_ASSERT(suspect.stat != DEAD && recovery_in_crit(suspect), "Setup: the suspect is not in crit (health [suspect.health])")
+	TEST_ASSERT(police.book(suspect, officer), "book() refused a suspect in crit")
+	TEST_ASSERT(suspect.mind in cell.prisoners, "A prisoner booked in crit is not held")
+	// A short term, so the test sees it run out on the real clock
+	cell.prisoners[suspect.mind] = world.time + 3 SECONDS
+	police.tick_cells()
+	TEST_ASSERT(suspect.mind in cell.prisoners, "A prisoner in crit was let out before their time")
+	sleep(4 SECONDS)
+	TEST_ASSERT(recovery_in_crit(suspect) && suspect.stat != DEAD, "Setup: the prisoner came out of crit (health [suspect.health])")
+	police.tick_cells()
+	TEST_ASSERT(!(suspect.mind in cell.prisoners), "The term did not run out while the prisoner was in crit in the cell")
+	TEST_ASSERT(suspect in police.released, "A prisoner whose term ran out in crit was not let out")
+	TEST_ASSERT_EQUAL(length(police.closed), 1, "A term served in crit did not close the warrant")
+	TEST_ASSERT(cell.medic_until > world.time, "The door is not held open for someone let out in crit")
+	sleep(2 SECONDS)
+	cell.close_check()
+	TEST_ASSERT(!cell.door.density, "The door shut on someone let out in crit")
 
 /// An outpost with no cell tries the fine on the spot, takes the cuffs off and lets the suspect go
 /datum/unit_test/voidcrew_outpost_police_cell_no_cell
@@ -868,9 +907,9 @@
 	TEST_ASSERT(!(prisoner.mind in cell.prisoners), "A prisoner who never walked back is still held")
 
 /**
- * A prisoner in crit: the door opens at once and is held for a medic, and the term stops but stands (abuse review 3
- * SF1). Up again in the cell, the clock runs on; up again outside, they have the time to walk back or it is a
- * jailbreak. Dead: the term is over and the warrant closed.
+ * A prisoner in crit: the door opens at once and is held for a medic, and the term runs on in the cell (owner
+ * decision 104). Up again in the cell, the door shuts; taken out in crit and up again outside, they have the time
+ * to walk back or it is a jailbreak. Dead: the term is over and the warrant closed.
  */
 /datum/unit_test/voidcrew_outpost_police_cell_downed
 
@@ -886,22 +925,24 @@
 	TEST_ASSERT_EQUAL(length(police.closed), 0, "Going into crit closed a prisoner's warrant")
 	TEST_ASSERT(!(prisoner in police.released), "A prisoner in crit was let out")
 	TEST_ASSERT(police.in_custody(prisoner), "A prisoner in crit is out of custody")
-	TEST_ASSERT(cell.time_left[prisoner.mind] > 1700, "A prisoner in crit lost the time left on their term ([cell.time_left[prisoner.mind]])")
+	TEST_ASSERT(!(prisoner.mind in cell.return_by), "A prisoner in crit in the cell is waited for as if out of it")
+	var/release_at = cell.prisoners[prisoner.mind]
+	TEST_ASSERT(release_at > world.time + 1700, "A prisoner in crit lost time off their term ([(release_at - world.time) / 10] s left)")
 	TEST_ASSERT("medic" in police.lines, "Nobody called a medic") // POLICE_LINE_MEDIC
 	TEST_ASSERT(cell.medic_until >= world.time + 1100, "The door is not held open for about two minutes") // OUTPOST_POLICE_CELL_MEDIC_OPEN, 2 MINUTES
 	sleep(2 SECONDS)
 	TEST_ASSERT(!cell.door.density, "The door did not open for a prisoner in crit")
 	cell.close_check()
 	TEST_ASSERT(!cell.door.density, "The door shut on a body still in the cell")
-	// A long while in crit: the term does not run meanwhile
+	// A while in crit: the term runs on, and its end stays where it was
 	police.tick_cells()
-	TEST_ASSERT(cell.time_left[prisoner.mind] > 1700, "The term ran on while the prisoner was in crit")
+	TEST_ASSERT_EQUAL(cell.prisoners[prisoner.mind], release_at, "The term's end moved while the prisoner was in crit in the cell")
 
-	// Up again in the cell: the clock runs from where it stopped, and the door shuts
+	// Up again in the cell: the term runs on, and the door shuts
 	REMOVE_TRAIT(prisoner, TRAIT_CRITICAL_CONDITION, "outpost_police_test")
 	police.tick_cells()
 	TEST_ASSERT(!(prisoner.mind in cell.return_by), "A prisoner up again in the cell is still waited for")
-	TEST_ASSERT(cell.prisoners[prisoner.mind] - world.time > 1600, "A prisoner up again in the cell has [(cell.prisoners[prisoner.mind] - world.time) / 10] seconds left")
+	TEST_ASSERT_EQUAL(cell.prisoners[prisoner.mind], release_at, "The term's end moved once the prisoner was up again")
 	cell.close_check()
 	TEST_ASSERT(cell.door.density, "The door stayed open once the prisoner was up")
 
@@ -911,6 +952,15 @@
 	prisoner.forceMove(cell.outside_turf) // the medics take them out
 	police.tick_cells()
 	TEST_ASSERT(prisoner.mind in cell.prisoners, "A prisoner taken out in crit is not held")
+	TEST_ASSERT(prisoner.mind in cell.return_by, "A prisoner taken out in crit is not waited for")
+	// Carried back in, still in crit: the term runs again at once
+	prisoner.forceMove(cell.tiles[1])
+	police.tick_cells()
+	TEST_ASSERT(!(prisoner.mind in cell.return_by), "A prisoner carried back in crit is still waited for")
+	TEST_ASSERT(cell.prisoners[prisoner.mind] > world.time + 1500, "A prisoner carried back in crit has no term running")
+	prisoner.forceMove(cell.outside_turf)
+	police.tick_cells()
+	TEST_ASSERT(prisoner.mind in cell.return_by, "A prisoner taken out in crit a second time is not waited for")
 	REMOVE_TRAIT(prisoner, TRAIT_CRITICAL_CONDITION, "outpost_police_test")
 	prisoner.mind.key = null
 	cell.return_by[prisoner.mind] = world.time - 1

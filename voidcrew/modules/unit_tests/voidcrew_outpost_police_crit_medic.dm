@@ -92,16 +92,21 @@
 	TEST_ASSERT_EQUAL(police.cell_medic_count(), 1, "A second call for the same prisoner sent another medic")
 	TEST_ASSERT_EQUAL(police.cell_medic_for(suspect), medic, "A second call replaced the medic on the way")
 
-	// The cell waits for the medic with its door shut, and the term stands still
+	// The cell waits for the medic with its door shut, and the term runs (owner decision 104)
 	police.tick_cells()
 	TEST_ASSERT(cell.medic_called[suspect.mind], "The cell does not know a medic is coming")
 	TEST_ASSERT_EQUAL(cell.medic_until, 0, "The door was held open with a medic on the way")
-	var/held_for = cell.time_left[suspect.mind]
-	TEST_ASSERT(held_for > 0, "A prisoner in crit has no term kept ([held_for])")
+	TEST_ASSERT(!(suspect.mind in cell.return_by), "A prisoner in crit in the cell is waited for as if out of it")
+	TEST_ASSERT(cell.prisoners[suspect.mind] > world.time, "A prisoner in crit has no term running")
+	// The term runs out while they are still in crit: let out, and the medic called for them still comes
 	cell.prisoners[suspect.mind] = world.time - 1
 	police.tick_cells()
-	TEST_ASSERT(suspect.mind in cell.prisoners, "The term ran out while the prisoner was in crit")
-	TEST_ASSERT_EQUAL(cell.time_left[suspect.mind], held_for, "The term ran while the prisoner was in crit")
+	TEST_ASSERT(!(suspect.mind in cell.prisoners), "A term that ran out in crit did not let the prisoner out")
+	TEST_ASSERT(!police.in_custody(suspect), "A prisoner let out in crit is still in custody")
+	TEST_ASSERT(recovery_in_crit(suspect), "Setup: the prisoner came out of crit before the medic")
+	TEST_ASSERT_EQUAL(police.cell_medic_for(suspect), medic, "The medic's claim lapsed when the prisoner was let out")
+	TEST_ASSERT(police.cell_patient_ok(suspect, cell), "Someone let out in crit on the cell floor is not the medic's patient")
+	TEST_ASSERT(!police.cell_patient_ok(suspect), "Someone let out is a patient for a newly called medic")
 
 	// The medic at the door: let in, the kit, out again. The test drives the job; their own AI is paused.
 	var/obj/item/reagent_containers/hypospray/medipen/pen = locate() in medic.belt?.contents
@@ -133,12 +138,8 @@
 	TEST_ASSERT_NULL(police.cell_medic_for(suspect), "The medic's claim stands after they are done")
 	sleep(3 SECONDS)
 	cell.close_check()
-	TEST_ASSERT(cell.door.density, "The cell door did not shut after the medic left")
-
-	// Out of crit in the cell: the term runs on from where it stopped
-	police.tick_cells()
-	TEST_ASSERT(!(suspect.mind in cell.return_by), "A prisoner out of crit in the cell is still waited for")
-	TEST_ASSERT(cell.prisoners[suspect.mind] > world.time, "The term did not start again once the prisoner was out of crit")
+	TEST_ASSERT(!cell.door.density, "The cell door shut on someone let out while the medic was at work")
+	TEST_ASSERT_NULL(police.cell_holding(suspect.mind), "Someone let out is held again after the medic")
 
 	// Never a free player
 	var/mob/living/carbon/human/free = police_arrest_person(police_floor(outpost))
