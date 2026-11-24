@@ -477,10 +477,6 @@
 	unregister_order(suspect)
 	lift_goal = null
 	set_step(CASE_STEP_RESPOND)
-	// The officer who got nowhere stands back and its cover has a go, unless it carries the evidence
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/second = cover()
-	if(officer && second && (!searched || disposed_at) && officer_fit(second) && !HAS_TRAIT(second, TRAIT_INCAPACITATED))
-		officers.Swap(1, 2)
 
 // ----- officers -----
 
