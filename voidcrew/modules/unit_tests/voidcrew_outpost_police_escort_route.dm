@@ -27,20 +27,20 @@
 	return "([tile.x - corner.x + 1],[tile.y - corner.y + 1])"
 
 /**
- * The whole arrest, as the owner had it: an officer of the outpost's own (the desk sergeant, when it is the one sent)
- * comes to a suspect down at map-local `at`, cuffs and searches them and walks them in. Returns list(tiles walked on
- * the walk in, the trace, the case's step at the end).
+ * An arrest on a suspect down at map-local `at`, an officer of the beat beside them and the outpost's own people about:
+ * the order, the cuffs and the search, then the walk in, all by the police's own code and the officer's own brain.
+ * Returns list(tiles walked to the evidence locker, the trace, the case's step at the end, the shortest way there).
  */
 /datum/unit_test/voidcrew_outpost_police_escort_route/proc/whole_arrest(obj/structure/overmap/trader_outpost/outpost, list/at, limit = 120 SECONDS)
 	var/datum/outpost_police/police = outpost.police
 	var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(outpost)
 	var/turf/spot = local(outpost, at[1], at[2])
-	var/has_sergeant = FALSE
-	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/someone in police.officers)
-		if(someone.unit_kind == "sergeant" && someone.stat == CONSCIOUS)
-			has_sergeant = TRUE
-	if(!has_sergeant)
-		police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant, police.desk_turf)
+	// An officer of the beat beside them: the arrest is theirs, and the walk to the desk starts on the concourse
+	var/turf/beside = police_arrest_beside(spot)
+	if(!beside)
+		TEST_FAIL("Fixture: no floor beside [local_text(outpost, spot)]")
+		return null
+	police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, beside)
 	var/mob/living/carbon/human/suspect = police_arrest_person(spot)
 	listed_z = spot.z
 	SSmobs.clients_by_zlevel[listed_z] |= suspect
@@ -108,12 +108,14 @@
 	var/end_step = QDELETED(case) ? "closed" : case.step
 	police.close_case(suspect.mind)
 	officer.stop_pulling()
+	// Out of the way of the next arrest (left at the cell door, they stood in the next escort's way)
+	qdel(suspect)
 	return list(walked, steps, end_step, shortest)
 
 /**
- * Quartermain, the owner's arrest (round 2026-11-24 19:40): the officer took a prisoner from beside the crate stacks
- * at (19,15) to the desk at (16,3). The short way is down past the crates and through the exit gate at (15,12), about
- * fifteen tiles; the officer went right, up and round the balcony and down into the jail instead.
+ * The walk in takes the short way to the desk. Quartermain, the owner's arrest (round 2026-11-24 19:44): a suspect
+ * cuffed beside the crate stacks at (19,15) was walked right, up round the balcony and down into the jail, where the
+ * short way is down past the crates and through the exit gate at (15,12). The same from other spots on each concourse.
  */
 /datum/unit_test/voidcrew_outpost_police_escort_route/Run()
 	// Map-local spots on each concourse: the owner's at Quartermain, and the far ends of each
