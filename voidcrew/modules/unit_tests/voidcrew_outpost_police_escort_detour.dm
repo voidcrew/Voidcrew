@@ -82,7 +82,7 @@
 	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 104)
 	LAZYADD(warrant.evidence, WEAKREF(gun))
 	police.note_seen(suspect.mind, spot)
-	var/datum/outpost_police_case/case = police.open_case(warrant)
+	var/datum/outpost_police_case/case = police.open_case(warrant, TRUE)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = case?.arresting()
 	if(!officer)
 		TEST_FAIL("Fixture: no arrest opened")
