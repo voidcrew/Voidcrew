@@ -539,7 +539,9 @@
 		return
 	playsound(door, 'sound/machines/warning-buzzer.ogg', 60, FALSE, MEDIUM_RANGE_SOUND_EXTRARANGE)
 	police?.cell_station_say(POLICE_LINE_CELL_ALARM)
-	if(opener && !QDELETED(opener) && !prisoner_of(opener))
+	// A prisoner who breaks their own door is charged too: on the cell floor that is a crime inside, and their term
+	// starts over (crime_inside()); they stay held there, and stepping out is the jailbreak of escaped()
+	if(opener && !QDELETED(opener))
 		police?.report_crime(opener, OUTPOST_CRIME_JAILBREAK, null, QDELETED(evidence) ? null : evidence)
 
 // ----- the wall clock -----
@@ -1066,6 +1068,9 @@
 	if(crimes_inside[prisoner])
 		crime_inside(prisoner)
 	shut_door(TRUE)
+	// The door takes its moment to shut: an outpost unloaded meanwhile has no police left to tell
+	if(QDELETED(src) || QDELETED(police))
+		return FALSE
 	update_sign()
 	SEND_SIGNAL(police, COMSIG_OUTPOST_POLICE_BOOKED, suspect, !paid)
 	return TRUE
