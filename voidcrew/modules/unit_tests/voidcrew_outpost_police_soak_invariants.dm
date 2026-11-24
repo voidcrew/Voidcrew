@@ -141,10 +141,17 @@
 		var/turf/here = get_turf(body)
 		var/obj/machinery/door/airlock/door = (here && body.stat == CONSCIOUS && isturf(body.loc)) ? (locate(/obj/machinery/door/airlock) in here) : null
 		// An officer in a doorway of the scan chamber the police are at work in (someone wanted or held is in it) is
-		// at that work: in a chamber one tile wide the doorway is the only place beside the suspect to cuff them from
+		// at that work: in a chamber one tile wide the doorway is the only place beside the suspect to cuff them from.
+		// So is the officer making an arrest from a checkpoint's doorway with its suspect beside it or in its hand:
+		// someone who steps out of the chamber past it is ordered, cuffed and searched from where it stands
 		var/obj/machinery/door/airlock/outpost/checkpoint/gate_door = door
-		if(istype(gate_door) && is_outpost_police_npc(body) && gate_door.checkpoint?.police_at_work())
-			continue
+		if(istype(gate_door) && is_outpost_police_npc(body))
+			if(gate_door.checkpoint?.police_at_work())
+				continue
+			var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = body
+			var/mob/living/suspect = QDELETED(officer.case) ? null : officer.case.get_suspect()
+			if(suspect && officer.case.arresting() == officer && (officer.pulling == suspect || officer.Adjacent(suspect)))
+				continue
 		if(door && world.time - found.moved_at > limit SECONDS)
 			run.breach(src, REF(body), "[found.id] ([body.real_name]) has stood still in the doorway of [door] at [run.where(here)] for over [limit]s", list(body))
 
