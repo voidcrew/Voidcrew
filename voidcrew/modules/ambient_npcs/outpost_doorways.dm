@@ -60,7 +60,8 @@
 	if(!beyond)
 		return TRUE
 	for(var/mob/living/someone in beyond)
-		if(someone != src && someone.density && doorway_waits_for(someone))
+		// One of the townspeople waiting to come through this door the other way is passed in it (outpost_head_on_pass())
+		if(someone != src && someone.density && doorway_waits_for(someone) && !(outpost_townsperson(someone) && outpost_npc_path_next(someone) == newloc))
 			return FALSE
 	return TRUE
 
@@ -161,4 +162,59 @@
 				break
 	watch_doorway()
 
+// =========================================================================
+// TWO OF THEM HEAD-ON
+// =========================================================================
+
+/**
+ * Two of the townspeople walking into each other head-on, each one's next step the other's tile, trade places as two
+ * people on help intent do in tg. tg's bump does nothing at a walk, and in a one-tile gap each stood until its walk had
+ * failed three times (about 25 seconds). Either side of a door, each waited for the other to clear the tile beyond it
+ * (doorway_step_ok()); now one steps into the doorway and they pass there. Officers keep their own rules
+ * (police_movement.dm), and nobody played is ever moved.
+ */
+
+/// Least time between two head-on trades of places by the same townsperson
+#define OUTPOST_HEAD_ON_GAP (2 SECONDS)
+
+/mob/living/carbon/human/npc/ambient_npc/outpost
+	COOLDOWN_DECLARE(head_on_cooldown)
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/MobBump(mob/M)
+	if(outpost_head_on_pass(M))
+		return TRUE
+	return ..()
+
+/// Whether `who` is one of the townspeople: the outpost's own, not an officer, nobody playing them
+/proc/outpost_townsperson(mob/living/who)
+	return istype(who, /mob/living/carbon/human/npc/ambient_npc/outpost) && !istype(who, /mob/living/carbon/human/npc/ambient_npc/outpost/police) && !who.client && !who.mind
+
+/**
+ * The tile `walker`'s own walk takes them onto next, held up or not: the next tile of the path they follow, or null
+ * when they follow none. (outpost_npc_next_step() counts someone held up as not walking.)
+ */
+/proc/outpost_npc_path_next(mob/living/walker)
+	var/datum/move_loop/has_target/jps/loop = GLOB.move_manager.processing_on(walker, SSai_movement)
+	if(!istype(loop) || !(loop.status & MOVELOOP_STATUS_RUNNING) || (loop.status & MOVELOOP_STATUS_PAUSED))
+		return null
+	return length(loop.movement_path) ? loop.movement_path[1] : null
+
+/// They walked into `other`, another townsperson walking into them: the two trade places. TRUE if they did.
+/mob/living/carbon/human/npc/ambient_npc/outpost/proc/outpost_head_on_pass(mob/living/other)
+	if(!outpost_townsperson(src) || !outpost_townsperson(other) || stat != CONSCIOUS || move_intent != MOVE_INTENT_WALK)
+		return FALSE
+	if(!outpost_npc_can_make_room(src) || !outpost_npc_can_make_room(other) || pulling || other.pulling || moving_diagonally || now_pushing)
+		return FALSE
+	if(LAZYLEN(do_afters) || LAZYLEN(other.do_afters) || !COOLDOWN_FINISHED(src, head_on_cooldown))
+		return FALSE
+	var/turf/here = get_turf(src)
+	var/turf/there = get_turf(other)
+	if(!here || !there || get_dist(here, there) != 1 || outpost_npc_path_next(src) != there || outpost_npc_path_next(other) != here)
+		return FALSE
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/them = other
+	COOLDOWN_START(src, head_on_cooldown, OUTPOST_HEAD_ON_GAP)
+	COOLDOWN_START(them, head_on_cooldown, OUTPOST_HEAD_ON_GAP)
+	return pirate_crew_swap_places(src, other)
+
+#undef OUTPOST_HEAD_ON_GAP
 #undef OUTPOST_DOORWAY_LINGER

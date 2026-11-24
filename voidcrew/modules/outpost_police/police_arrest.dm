@@ -1685,7 +1685,7 @@
 			best_score = score
 	if(!best)
 		return FALSE
-	return blocker.Move(best, get_dir(from, best)) && get_turf(blocker) == best
+	return blocker.Move(best, get_dir(from, best)) && get_turf(blocker) == best && outpost_npc_gave_way(blocker, walker, from)
 
 /**
  * Where the evidence goes: the evidence locker, or the desk when the station has none or the locker can't be got to,
