@@ -334,7 +334,7 @@
 	allocate(/obj/effect/landmark/stealth_group, at(0, 8))
 	person_at(19, 8)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/watcher = ready_officer(10, 4, WEST)
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/colleague = ready_officer(9, 6, WEST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/colleague = ready_officer(8, 5, WEST)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/watcher_brain = watcher.ai_controller
 	var/mob/living/carbon/human/suspect = visitor_at(6, 4)
 	police_pin_warrant(police, suspect.mind, 100) // four stars
@@ -352,6 +352,7 @@
 	// A colleague goes down beside it
 	colleague.adjustToxLoss(colleague.maxHealth - colleague.crit_threshold + 10)
 	TEST_ASSERT(colleague.stat != CONSCIOUS, "Fixture: the colleague is not down")
+	TEST_ASSERT(police.perception.sees(watcher, colleague), "Fixture: the officer does not see its fallen colleague")
 	watcher_brain.next_body_scan = 0
 	watcher_brain.stealth_check_bodies()
 	TEST_ASSERT_EQUAL(watcher_brain.stealth_state(), "unaware", "An officer standing over a downed suspect went [watcher_brain.stealth_state()] over a fallen colleague")

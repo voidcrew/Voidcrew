@@ -440,6 +440,8 @@ POLICE_SOAK_SCENARIO(shot_down_crawl)
 	// The officer nearest them is hurt from it too, and the suspect shoots back at it: in the round an officer went
 	// down beside them a second before they did.
 	run.suspect.adjustBruteLoss(95)
+	// Hopped up: a disabler barely slows them (tg's own stamina multiplier, as a stimulant gives), so it is the fire that drops them
+	run.suspect.physiology.stamina_mod = 0.2
 	run.suspect.set_combat_mode(TRUE)
 	var/obj/item/gun/ballistic/automatic/pistol/pistol = new(run.suspect.loc)
 	run.suspect.put_in_hands(pistol)
