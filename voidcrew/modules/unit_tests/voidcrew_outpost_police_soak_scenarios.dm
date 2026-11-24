@@ -436,15 +436,26 @@ POLICE_SOAK_SCENARIO(shot_down_crawl)
 		run.script_failed("no officer saw three punches in a row")
 		return
 	pin(run)
-	// Hurt already from the fight before, so the officers' own fire takes them into crit rather than out of stamina
+	// Hurt already from the fight before, so the officers' own fire takes them into crit rather than out of stamina.
+	// The officer nearest them is hurt from it too, and the suspect shoots back at it: in the round an officer went
+	// down beside them a second before they did.
 	run.suspect.adjustBruteLoss(80)
 	run.suspect.set_combat_mode(TRUE)
-	run.note(">>", "is at [run.police.get_stars(run.suspect.mind)] stars and hurt; keeps stepping about with fists up")
+	var/obj/item/gun/ballistic/automatic/pistol/pistol = new(run.suspect.loc)
+	run.suspect.put_in_hands(pistol)
+	var/mob/living/shot_at = run.nearest_officer()
+	shot_at?.adjustBruteLoss(85)
+	run.note(">>", "is at [run.police.get_stars(run.suspect.mind)] stars and hurt; shoots at [run.who(shot_at)] (hurt too) and steps about")
 	var/until = world.time + 90 SECONDS
 	while(world.time < until && !run.finished && !QDELETED(run.suspect) && run.suspect.stat == CONSCIOUS && !run.is_now("cuffed"))
 		pin(run)
-		run.fidget()
+		if(shot_at && shot_at.stat == CONSCIOUS && !QDELETED(pistol) && run.suspect.is_holding(pistol) && run.police.perception.sees(shot_at, run.suspect))
+			run.click(shot_at)
+		else
+			run.fidget()
 		sleep(1 SECONDS)
+	if(shot_at)
+		run.note(">>", "[run.who(shot_at)] is [shot_at.stat == CONSCIOUS ? "still up" : "down"] as the suspect goes down")
 	if(run.finished || QDELETED(run.suspect))
 		return
 	var/finished_off = run.police.finishes_downed(run.suspect, null)

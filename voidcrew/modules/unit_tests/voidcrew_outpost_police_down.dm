@@ -272,3 +272,91 @@
 	guard.SetKnockdown(0)
 	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "An officer put on the floor after a stranger's hand on it took it for the prisoner's doing")
 	police.close_case(prisoner.mind)
+
+/**
+ * The owner's playtest: officers searching for an officer-killer found the colleagues they had shot, and the whole
+ * squad gathered at the bodies. An officer with a wanted person to look for calls a fallen colleague in, once, and
+ * keeps to the place it was dealt; the medics see to the fallen. One with nobody to look for goes and sees to them.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/search_past_fallen
+
+/datum/unit_test/voidcrew_stealth_live/police/search_past_fallen/Run()
+	TEST_ASSERT(police_room(40, 9), "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, at(0, 8))
+	person_at(39, 8)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = ready_officer(4, 4, EAST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/colleague = ready_officer(7, 4, WEST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/idle = ready_officer(4, 6, EAST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/idle_brain = idle.ai_controller
+	TEST_ASSERT_EQUAL(brain.group, idle_brain.group, "Fixture: the officers are not one patrol group")
+	var/mob/living/carbon/human/suspect = unseen_suspect(30, 4, 38, 7)
+	officer.dispatch_mind = WEAKREF(suspect.mind)
+	police.stealth_tick_officer(officer)
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "Fixture: an officer sent after someone nobody sees is not searching")
+	var/turf/center = brain.search_center
+	TEST_ASSERT(get_dist(center, officer) > 10, "Fixture: the place the officer was dealt is beside it")
+	brain.stealth_drop_call()
+
+	// Its colleague falls in front of it
+	colleague.death()
+	brain.next_body_scan = 0
+	brain.stealth_check_bodies()
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "An officer looking for a wanted person gave its search up over a fallen colleague")
+	TEST_ASSERT_EQUAL(brain.search_center, center, "An officer looking for a wanted person was pulled to a fallen colleague")
+	TEST_ASSERT(!brain.search_for_body, "An officer looking for a wanted person searched round a fallen colleague")
+	TEST_ASSERT(brain.bark_ready_at["stealth_body"] > world.time, "An officer did not call in a fallen colleague") // STEALTH_BARK_BODY
+	TEST_ASSERT_NULL(brain.pending_call, "An officer looking for a wanted person called the squad to a fallen colleague")
+	police.stealth_tick_officer(officer)
+	TEST_ASSERT_EQUAL(brain.search_center, center, "An officer looking for a wanted person left its place for a fallen colleague")
+	// Found again on the next look: nothing more
+	brain.bark_ready_at["stealth_body"] = 0
+	brain.next_body_scan = 0
+	brain.stealth_check_bodies()
+	TEST_ASSERT(!brain.bark_ready_at["stealth_body"], "An officer called in the same fallen colleague twice")
+
+	// With nobody to look for: it goes and sees to them, as before
+	idle_brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+	idle_brain.stealth_go_unaware()
+	idle_brain.next_body_scan = 0
+	idle_brain.stealth_check_bodies()
+	TEST_ASSERT(idle_brain.stealth_state() != "unaware", "An officer with nobody to look for walked past a fallen colleague")
+
+/**
+ * The owner's playtest: the officers who shot an officer-killer into crit stood over them, then found a colleague the
+ * suspect had shot and went to search round them, leaving the suspect to crawl past. An officer standing over someone
+ * down with the cuffs to come calls a fallen colleague in and stays where it is.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/cover_past_fallen
+
+/datum/unit_test/voidcrew_stealth_live/police/cover_past_fallen/Run()
+	TEST_ASSERT(police_room(20, 9), "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, at(0, 8))
+	person_at(19, 8)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/watcher = ready_officer(10, 4, WEST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/colleague = ready_officer(9, 6, WEST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/watcher_brain = watcher.ai_controller
+	var/mob/living/carbon/human/suspect = visitor_at(6, 4)
+	police_pin_warrant(police, suspect.mind, 100) // four stars
+	watcher_brain.stealth_go_alert(suspect)
+	TEST_ASSERT_EQUAL(watcher_brain.stealth_state(), "alert", "Fixture: the officer is not alert on a four-star suspect")
+
+	// Shot into soft crit in front of it
+	suspect.adjustBruteLoss(110)
+	TEST_ASSERT_EQUAL(suspect.stat, SOFT_CRIT, "Fixture: the suspect is not in soft crit")
+	watcher_brain.stealth_keep_target()
+	TEST_ASSERT(police.arrest_on(suspect), "No arrest opened on a four-star suspect shot into crit in front of an officer")
+	TEST_ASSERT_EQUAL(watcher_brain.police_covered(), suspect, "The officer who shot a suspect into crit does not stand over them")
+	watcher_brain.stealth_drop_call()
+
+	// A colleague goes down beside it
+	colleague.adjustBruteLoss(110)
+	TEST_ASSERT(colleague.stat != CONSCIOUS, "Fixture: the colleague is not down")
+	watcher_brain.next_body_scan = 0
+	watcher_brain.stealth_check_bodies()
+	TEST_ASSERT_EQUAL(watcher_brain.stealth_state(), "unaware", "An officer standing over a downed suspect went [watcher_brain.stealth_state()] over a fallen colleague")
+	TEST_ASSERT(watcher_brain.bark_ready_at["stealth_body"] > world.time, "An officer did not call in a fallen colleague") // STEALTH_BARK_BODY
+	TEST_ASSERT_NULL(watcher_brain.pending_call, "An officer standing over a downed suspect called the squad to a fallen colleague")
+	watcher_brain.SelectBehaviors(1)
+	TEST_ASSERT_EQUAL(watcher_brain.police_covered(), suspect, "An officer standing over a downed suspect left them for a fallen colleague")
+	police.close_case(suspect.mind)
