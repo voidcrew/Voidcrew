@@ -2265,6 +2265,26 @@
 /datum/ai_behavior/outpost_police_case_walk/near
 	required_distance = CASE_COVER_DISTANCE
 
+// =========================================================================
+// FOR THE OFFICERS NOT ON THE ARREST (police_force.dm)
+// =========================================================================
+
+/// Whether an arrest is going for the cuffs on `target` now: they did as told, or are on the floor. Read only: the
+/// officers not on the arrest hold their fire from that moment (police_force.dm stance_of()).
+/datum/outpost_police/proc/arrest_cuffing(mob/living/target)
+	if(!isliving(target) || !target.mind)
+		return FALSE
+	var/datum/outpost_police_case/case = cases[target.mind]
+	return !QDELETED(case) && case.step == CASE_STEP_CUFF && case.get_suspect() == target
+
+/// Whether `target`, with the cuffs coming, has taken a step of their own since: they are pulling away from the cuffs
+/// (on_suspect_moved(): a push, a pull or a throw is no step of theirs). Read only, for the same officers.
+/datum/outpost_police/proc/arrest_pulled_away(mob/living/target)
+	if(!arrest_cuffing(target))
+		return FALSE
+	var/datum/outpost_police_case/case = cases[target.mind]
+	return case.suspect_moved
+
 #undef CASE_STEP_RESPOND
 #undef CASE_STEP_ORDER
 #undef CASE_STEP_SUBDUE

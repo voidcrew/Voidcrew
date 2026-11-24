@@ -27,6 +27,10 @@
  *   or in a cell (has_secured(), stealth_all_clear()).
  * - A colleague awake on the floor is nobody's body (stealth_fallen()): what put them there is a crime against an
  *   officer, and the police answer that.
+ * - Someone the police are already after (an arrest open on them, or units sent after them: is_after()), or wanted
+ *   and fresh from going for somebody, gets no second look: an officer that takes notice of them in plain view is on
+ *   them at once, with no "what's that" (police_knows_on_sight()). Getting past an officer unnoticed is as it was,
+ *   and so is everyone else's second look.
  * - One of the outpost's people held at gunpoint: every officer that sees it holds fire and stands off, as stealth's
  *   guards do (stealth_hostage.dm), ahead of the arrest and the use of force. Told to drop it, only an officer caught
  *   cold puts its weapon down: one already on a hunt or a search keeps it (owner decision 68). They hold fire for
@@ -447,6 +451,61 @@
 		return ..()
 	stealth_bark(POLICE_LINE_HOSTAGE_REFUSE)
 
+// ----- no second look at someone the police are after (owner playtest 5) -----
+// Stealth's guards take a second look at a stranger ("?", and a line for it) before they go for them. An officer said
+// "Just a moment. What's that?" to someone it then batoned a second later: someone two stars up, who was shoving its
+// colleague in front of it.
+
+/// Whether the police are already after `person`: an arrest is open on them, or units have been sent after them
+/datum/outpost_police/proc/is_after(mob/living/person)
+	if(!isliving(person) || !person.mind)
+		return FALSE
+	if(arrest_on(person))
+		return TRUE
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)
+		if(officer.stat != DEAD && officer.dispatch_mind?.resolve() == person.mind)
+			return TRUE
+	return FALSE
+
+/**
+ * Whether `seen` is someone it goes for on sight: the police are already after them, or they are wanted and went for
+ * somebody a moment ago (a colleague, a townsperson: OUTPOST_POLICE_FRESH_FIGHT); it has taken notice of them (the
+ * same notice a second look would have started on); and it sees them plainly now: in its cone, in light it can use,
+ * and not keeping still in cover.
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/proc/police_knows_on_sight(mob/living/seen)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	if(!istype(officer) || !isliving(seen) || QDELETED(seen) || !officer.police)
+		return FALSE
+	if(!officer.police.is_after(seen) && !officer.police.fought_within(seen, OUTPOST_POLICE_FRESH_FIGHT))
+		return FALSE
+	var/list/entry = notice_map[REF(seen)]
+	if(isnull(entry) || entry[STEALTH_ENTRY_NOTICE] < STEALTH_SUSPICIOUS_AT)
+		return FALSE
+	var/turf/where = seen.loc
+	return isturf(where) && stealth_sees(seen) && !stealth_covered(seen, where, get_dist(officer, where))
+
+// The second look at a sighting: not for someone the police are after. A noise, a light on its back, a door or a
+// body is looked into as before.
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_go_suspicious(turf/where, purpose = STEALTH_GOTO_INVESTIGATE, line = null)
+	if(purpose == STEALTH_GOTO_INVESTIGATE && isnull(line))
+		var/mob/living/seen = blackboard[BB_STEALTH_FOCUS]
+		if(isliving(seen) && get_turf(seen) == where && police_knows_on_sight(seen))
+			stealth_go_alert(seen)
+			if(stealth_state() == STEALTH_ALERT)
+				return
+	return ..()
+
+// Already looking into something (a noise, a glimpse) when someone the police are after comes into plain view: on
+// them, without waiting for the second look to fill
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_look()
+	. = ..()
+	if(stealth_state() != STEALTH_SUSPICIOUS)
+		return
+	var/mob/living/seen = blackboard[BB_STEALTH_FOCUS]
+	if(police_knows_on_sight(seen))
+		stealth_go_alert(seen)
+
 // Alert on a wanted person: that is who it is hunting until the police stand it down. Never on someone in hand.
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_go_alert(atom/target, named = TRUE)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
@@ -660,6 +719,8 @@
 		controller.queue_behavior(/datum/ai_behavior/human_npc_close_in, BB_OUTPOST_POLICE_COVER, OUTPOST_POLICE_COVER_RANGE)
 		return SUBTREE_RETURN_FINISH_PLANNING
 	controller.stealth_drop_walk()
+	// The officer with the cuffs goes first (police_force.dm)
+	officer.police_let_arrest_past(who)
 	if(!HAS_TRAIT(officer, TRAIT_HANDS_BLOCKED) && !LAZYLEN(officer.do_afters) && isturf(officer.loc))
 		officer.face_atom(who)
 	return SUBTREE_RETURN_FINISH_PLANNING
@@ -1437,6 +1498,7 @@
 /// Once a second, before the officers (police_dispatch.dm tick_dispatch()): the tick the last wanted person at the
 /// outpost is held (in cuffs or a cell), dead, gone or faded is the all clear
 /datum/outpost_police/proc/stealth_tick_squad()
+	prune_stances()
 	var/trouble = stealth_anyone_at_large()
 	if(stealth_trouble && !trouble)
 		stealth_all_clear()

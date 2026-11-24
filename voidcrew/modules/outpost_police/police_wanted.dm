@@ -146,6 +146,8 @@
 	// Seen or not, an attack or a shot is trouble to the recovery crews' clock (recovery_core.dm death_is_trouble())
 	if(isliving(victim) || crime == OUTPOST_CRIME_GUNFIRE)
 		outpost?.recovery?.note_violence()
+		// ...and whoever did it has not given up: no officer holds its fire for them (police_force.dm)
+		note_fought(offender)
 	switch(crime)
 		if(OUTPOST_CRIME_WEAPON_DRAWN, OUTPOST_CRIME_GUNFIRE, OUTPOST_CRIME_VANDALISM)
 			// A hunter in the kingpin's shootout is excused strays from that fight (abuse M16)
