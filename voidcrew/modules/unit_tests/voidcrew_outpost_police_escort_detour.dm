@@ -96,6 +96,10 @@
 	officer.ai_controller.reset_ai_status()
 	// The police's own tick runs the case once a second, as it does in a round
 	police.wake()
+	// The owner had emagged the lobby scanner: the gate was down through the walk in
+	for(var/checkpoint_id in outpost.checkpoints)
+		var/datum/outpost_checkpoint/post = outpost.checkpoints[checkpoint_id]
+		post.disable(null, null)
 	var/started = world.time
 	var/list/steps = list("[officer.unit_kind] [case.step]@[local_text(outpost, get_turf(officer))]")
 	var/turf/last = get_turf(officer)
@@ -115,6 +119,7 @@
 				npc.ai_controller?.reset_ai_status()
 		sleep(world.tick_lag)
 		if(QDELETED(case))
+			steps += "CLOSED: suspect stat [suspect.stat] crit [HAS_TRAIT(suspect, TRAIT_CRITICAL_CONDITION)] cuffed [!!suspect.handcuffed] stars [police.get_stars(suspect.mind)] warrant [!!police.get_warrant(suspect.mind)] force [police.force_level(suspect, officer)] at [local_text(outpost, get_turf(suspect))]"
 			break
 		if(case.arresting() != officer)
 			steps += "OFFICER-CHANGED"
