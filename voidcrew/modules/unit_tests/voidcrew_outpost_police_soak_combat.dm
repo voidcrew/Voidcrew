@@ -146,8 +146,8 @@
 	var/until = world.time + limit
 	while(!run.finished && world.time < until && !QDELETED(run.suspect) && run.suspect.stat == CONSCIOUS && !run.suspect.handcuffed && !HAS_TRAIT(run.suspect, TRAIT_RESTRAINED) && !(run.police.in_custody(run.suspect) && !run.police.cell_holding(run.suspect.mind)))
 		count_fallen(run)
-		// Stunned for a moment: they fight on once they can
-		if(!run.suspect_able())
+		// Stunned for a moment, or carried: they fight on once they can
+		if(!run.suspect_able() || !isturf(run.suspect.loc))
 			sleep(5)
 			continue
 		if(done && call(src, done)(run))
