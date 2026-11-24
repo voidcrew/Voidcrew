@@ -1400,6 +1400,8 @@
 		incident.crew = crew
 		incidents[crew] = incident
 		watch_crew(crew)
+		// Running from now, so escalate_incident() takes this one and lays its length rather than ending it
+		incident.ends_at = world.time + 1
 		// Crewmates who were only shopping are banned, not arrested for standing where they already were
 		for(var/datum/mind/mate in crew.minds)
 			if(mate != warrant.mind && holder_at_outpost(mate.current))
