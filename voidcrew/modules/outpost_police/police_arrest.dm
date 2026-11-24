@@ -2016,6 +2016,13 @@
 			// Nothing taken, or nothing carried any more: straight on
 			disposed_at = world.time
 		else
+			// The suspect comes along to the desk, as on the escort: a hold that slipped is taken again before the walk
+			// goes on. Walked off from, they stood there alone in the cuffs, and the steps they took were a bolt.
+			if(!suspect_lost)
+				var/mob/living/carbon/led = get_suspect()
+				if(!led || !keep_pulling(officer, led, TRUE))
+					return
+				make_way(officer, led)
 			if(route_to(officer, desk, 1))
 				set_goal(null)
 				begin_action(CASE_ACT_DISPOSING)
