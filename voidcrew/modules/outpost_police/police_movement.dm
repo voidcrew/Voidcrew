@@ -71,6 +71,13 @@
 			police_note_blocked(M)
 			police_diagonal_blocked(M)
 		return TRUE
+	// The person it leads by the arm is in its own way (a lane one tile wide, rails either side): it steps past them,
+	// trading places, as tg lets anyone do with whoever they pull. tg's bump does nothing at a walk, and an officer
+	// walking its prisoner out of the Undertow's queue lane stood facing them for good.
+	if(pulling == M && !moving_diagonally && COOLDOWN_FINISHED(src, police_swap_cooldown) && !LAZYLEN(do_afters))
+		COOLDOWN_START(src, police_swap_cooldown, POLICE_SWAP_COOLDOWN)
+		if(pirate_crew_swap_places(src, M))
+			return TRUE
 	// Someone with an arrest on them and not yet held is never traded places with or pushed along: the officer comes
 	// to a stop by them, or finds a way round. (tg's bump has a running NPC swap with anyone not in combat mode, which
 	// walked the arresting officer through the person it was coming to cuff.)
