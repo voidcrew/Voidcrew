@@ -400,4 +400,128 @@ POLICE_SOAK_SCENARIO(give_up_then_bolt)
 	run.note(">>", "stops at [run.where(run.suspect)]")
 	run.stand(75 SECONDS)
 
+// ----- four stars, shot into soft crit by the officers in front of them, then crawl off -----
+// The owner's playtest: an officer-killer at four stars, shot down at their feet, crawled past the officers who shot
+// them while they searched the room, and was cuffed only a minute later by an officer they crawled into. Wherever the
+// downed are taken alive, the officers who put them down stay on them and one of them cuffs them; nobody searches for
+// someone lying in front of them. The Undertow finishes the downed at three stars and up.
+
+POLICE_SOAK_SCENARIO(shot_down_crawl)
+
+/datum/police_soak_scenario/shot_down_crawl
+	limit = 5 MINUTES
+	/// world.time of the suspect's next crawl
+	var/next_crawl = 0
+	/// world.time of the suspect's next try at breaking a hold
+	var/next_try = 0
+
+/// Holds the suspect's heat at four stars (OUTPOST_POLICE_STAR_HEAT: 90 for four), as an officer's killing leaves it
+/datum/police_soak_scenario/shot_down_crawl/proc/pin(datum/police_soak/run)
+	var/old_stars = run.police.get_stars(run.suspect.mind)
+	var/datum/outpost_warrant/warrant = run.police.get_warrant(run.suspect.mind)
+	if(warrant && warrant.heat >= 100)
+		return
+	warrant = run.test.police_pin_warrant(run.police, run.suspect.mind, 100)
+	var/new_stars = run.police.get_stars(run.suspect.mind)
+	if(new_stars != old_stars)
+		run.police.stars_changed(warrant, old_stars, new_stars)
+
+/datum/police_soak_scenario/shot_down_crawl/play(datum/police_soak/run)
+	for(var/round in 1 to 3)
+		if(!run.punch_townsperson(2, TRUE))
+			return
+		if(run.wait_for("wanted", 10 SECONDS))
+			break
+	if(!run.is_now("wanted"))
+		run.script_failed("no officer saw three punches in a row")
+		return
+	pin(run)
+	// Hurt already from the fight before, so the officers' own fire takes them into crit rather than out of stamina
+	run.suspect.adjustBruteLoss(80)
+	run.suspect.set_combat_mode(TRUE)
+	run.note(">>", "is at [run.police.get_stars(run.suspect.mind)] stars and hurt; keeps stepping about with fists up")
+	var/until = world.time + 90 SECONDS
+	while(world.time < until && !run.finished && !QDELETED(run.suspect) && run.suspect.stat == CONSCIOUS && !run.is_now("cuffed"))
+		pin(run)
+		run.fidget()
+		sleep(1 SECONDS)
+	if(run.finished || QDELETED(run.suspect))
+		return
+	var/finished_off = run.police.finishes_downed(run.suspect, null)
+	if(run.suspect.stat != SOFT_CRIT)
+		if(run.suspect.stat == CONSCIOUS)
+			run.script_failed("nobody shot a four-star suspect stepping about in front of them into crit in 90s")
+		else
+			run.note(">>", "went past soft crit at once ([run.suspect.stat == DEAD ? "dead" : "stat [run.suspect.stat]"]); no crawl")
+		run.stand(30 SECONDS)
+		return
+	var/downed_at = world.time
+	var/list/shooters = list()
+	for(var/list/event as anything in run.force_events)
+		shooters |= event[2]
+	run.note(">>", "is in soft crit at [run.where(run.suspect)]; crawls away from the nearest officer every few seconds")
+	var/list/said_seen = list()
+	var/taken_at = 0
+	until = world.time + 60 SECONDS
+	while(world.time < until && !run.finished && !QDELETED(run.suspect) && run.suspect.stat != DEAD)
+		pin(run)
+		if(!taken_at && (run.suspect.handcuffed || run.police.arrest_cuffing(run.suspect) || is_outpost_police_npc(run.suspect.pulledby)))
+			taken_at = world.time
+			run.note(">>", "is taken hold of or cuffed [round((taken_at - downed_at) / (1 SECONDS))]s after going down")
+		if(run.suspect.handcuffed)
+			break
+		// Nobody looks for someone lying in front of them
+		if(!finished_off)
+			for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer as anything in run.officers_up())
+				var/datum/police_soak_track/found = run.tracks[officer]
+				if(!found || found.said_at <= downed_at || said_seen[officer] == found.said_at)
+					continue
+				said_seen[officer] = found.said_at
+				if((found.said_kind == "stealth_search" || found.said_kind == "lost" || found.said_kind == "stealth_give_up") && run.police.perception.sees(officer, run.suspect))
+					run.script_failed("[run.who(officer)][(officer in shooters) ? ", who shot them down," : ""] said \"[found.said_text]\" ([found.said_kind]) with the suspect down in its sight at [run.where(run.suspect)]")
+		if(!taken_at)
+			crawl(run)
+		sleep(5)
+	if(finished_off)
+		run.note(">>", "the Undertow: [run.suspect.stat == DEAD ? "finished where they lay" : "still alive"]")
+	else if(!taken_at)
+		run.script_failed("nobody took hold of or cuffed a suspect in soft crit within 60s of going down (at [run.where(run.suspect)], [run.police.arrest_on(run.suspect) ? "an arrest open" : "no arrest open"])")
+	else if(taken_at - downed_at > 30 SECONDS)
+		run.script_failed("the cuffs took [round((taken_at - downed_at) / (1 SECONDS))]s to come out for a suspect shot down in front of the officers")
+	run.stand(30 SECONDS)
+
+/// One crawl of the suspect's in soft crit away from the nearest officer, as their player's key press would make it
+/datum/police_soak_scenario/shot_down_crawl/proc/crawl(datum/police_soak/run)
+	var/mob/living/carbon/human/crawler = run.suspect
+	if(world.time < next_crawl || QDELETED(crawler) || crawler.stat != SOFT_CRIT || crawler.buckled || !isturf(crawler.loc) || !(crawler.mobility_flags & MOBILITY_MOVE))
+		return FALSE
+	if(crawler.pulledby)
+		if(world.time < next_try)
+			return FALSE
+		if(crawler.resist_grab(TRUE))
+			next_try = world.time + 4 SECONDS
+			run.note(">>", "tries to crawl off and fails to break the hold")
+			return FALSE
+	var/mob/living/officer = run.nearest_officer()
+	var/turf/best
+	var/best_distance = -1
+	for(var/direction in shuffle(GLOB.cardinals.Copy()))
+		var/turf/open/next = get_step(crawler, direction)
+		if(!istype(next) || next.is_blocked_turf(TRUE))
+			continue
+		var/distance = officer ? get_dist(next, officer) : 0
+		if(distance > best_distance)
+			best = next
+			best_distance = distance
+	if(!best)
+		return FALSE
+	next_crawl = world.time + max(3 SECONDS, crawler.cached_multiplicative_slowdown)
+	SEND_SIGNAL(crawler, COMSIG_MOB_CLIENT_PRE_MOVE, list(best, get_dir(crawler, best)))
+	crawler.Move(best, get_dir(crawler, best))
+	if(crawler.loc != best)
+		return FALSE
+	run.own_step_at = world.time
+	run.note(">>", "crawls a tile, to [run.where(crawler)]")
+	return TRUE
+
 #undef POLICE_SOAK_SCENARIO

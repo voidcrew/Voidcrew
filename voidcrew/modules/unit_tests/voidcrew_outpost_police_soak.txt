@@ -11,3 +11,4 @@
 /datum/unit_test/voidcrew_police_soak/crowded_gate
 /datum/unit_test/voidcrew_police_soak/crawl_from_cuffs
 /datum/unit_test/voidcrew_police_soak/give_up_then_bolt
+/datum/unit_test/voidcrew_police_soak/shot_down_crawl
