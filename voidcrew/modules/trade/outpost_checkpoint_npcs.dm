@@ -412,6 +412,21 @@
 			post.request_outer(walker)
 	return here
 
+/**
+ * A working hatch's chamber, too, while the key fits its inner door (police_key_fits()): the officers' search goes in
+ * from the concourse. The search's own rule (police_search.dm) stops at the door of a hatch, whose outer door is out
+ * on the hull.
+ */
+/datum/outpost_police/search_inside(turf/last, mob/living/officer)
+	. = ..()
+	if(.)
+		return
+	var/datum/outpost_checkpoint/post = search_gate(last)
+	if(!post?.is_hatch() || QDELETED(post.inner_door) || QDELETED(post.outer_door) || !post.hatch_inner_safe())
+		return null
+	var/datum/outpost_police_floor/floor = search_floor(last, officer)
+	return (post.secured_turf && floor?.walkable[post.secured_turf]) ? last : null
+
 /proc/outpost_police_elevator_panel(obj/structure/overmap/trader_outpost/outpost, sector)
 	if(!outpost)
 		return null
