@@ -1211,7 +1211,86 @@
 	var/list/deckhand_view = panel.saved_ships_data(deckhand)
 	TEST_ASSERT_EQUAL(length(deckhand_view["ships"]), 0, "The panel offered a deckhand the ship")
 
+	check_carried(captain, bay, panel)
 	check_password(captain, deckhand)
+
+/// Ship parts the captain carries pay first, once a round, and never go missing.
+/datum/unit_test/voidcrew_ship_saves_hull/proc/check_carried(mob/living/carbon/human/captain, datum/outpost_berth/bay, datum/ship_checkpoint_ui/registry_test/save_prompt/panel)
+	var/list/old_used = GLOB.ship_save_carried_used
+	GLOB.ship_save_carried_used = list()
+	test_ship.ship_account.account_balance = 0
+	panel.error = null
+	panel.pick = null
+	panel.while_open = null
+	panel.accept_save = TRUE
+	var/list/cost = test_ship.save_survey(fresh = TRUE)["cost"]
+	// The class the hull needs most of: every hull's bill has one of at least 2.
+	var/part_class
+	for(var/each_class in cost)
+		if(!part_class || cost[each_class] > cost[part_class])
+			part_class = each_class
+	TEST_ASSERT(cost[part_class] >= 2, "The hull's bill has no class of 2 parts")
+	var/part_type = text2path("/obj/item/ship_parts/[part_class]")
+	var/obj/item/storage/briefcase/secure/extraction/case = allocate(__IMPLIED_TYPE__)
+	TEST_ASSERT(captain.put_in_hands(case), "The captain could not hold the case")
+	var/list/banked = list("combat" = 0, "science" = 0, "trade" = 0, "misc" = 0)
+	for(var/each_class in cost)
+		banked[each_class] = cost[each_class]
+
+	// Carried parts pay first, and the banked ones cover the rest.
+	economy.held = banked.Copy()
+	var/list/carried = list(new part_type(case), new part_type(case))
+	economy.parts_cache[captain.ckey] = banked.Copy()
+	var/list/shown = panel.saved_ships_data(captain)
+	TEST_ASSERT_EQUAL(shown["parts"][part_class], banked[part_class] + 2, "The screen doesn't count carried parts")
+	TEST_ASSERT_EQUAL(shown["banked"][part_class], banked[part_class], "The banked count includes carried parts")
+	TEST_ASSERT(panel.save_ship(captain, bay, 1), "Saving with carried parts failed: [panel.error]")
+	TEST_ASSERT_EQUAL(economy.held[part_class], 2, "Carried parts were not spent first")
+	for(var/obj/item/ship_parts/part as anything in carried)
+		TEST_ASSERT(QDELETED(part), "A carried part that paid is still around")
+	TEST_ASSERT(GLOB.ship_save_carried_used[captain.ckey], "Paying with carried parts didn't use up the round's turn")
+
+	// Only once a round: the next save needs banked parts.
+	economy.held = banked.Copy()
+	economy.held[part_class] -= 2
+	var/list/held_before = economy.held.Copy()
+	carried = list(new part_type(case), new part_type(case))
+	economy.parts_cache[captain.ckey] = economy.held.Copy()
+	shown = panel.saved_ships_data(captain)
+	TEST_ASSERT_EQUAL(shown["parts"][part_class], banked[part_class] - 2, "Carried parts counted twice in a round")
+	TEST_ASSERT_EQUAL(shown["carried_spent"], 2, "The screen doesn't know the carried parts no longer count")
+	TEST_ASSERT(!panel.save_ship(captain, bay, 1), "Carried parts paid for a second save in a round")
+	TEST_ASSERT_EQUAL(panel.error, "Carried parts already used this round.", "A second carried payment gave the wrong refusal")
+	TEST_ASSERT_EQUAL(json_encode(economy.held), json_encode(held_before), "A refused save took banked parts")
+	for(var/obj/item/ship_parts/part as anything in carried)
+		TEST_ASSERT(!QDELETED(part) && part.loc == case, "A refused save took a carried part")
+
+	// A failed write gives the carried parts back, and the turn with them.
+	GLOB.ship_save_carried_used = list()
+	store.fail_writes = TRUE
+	TEST_ASSERT(!panel.save_ship(captain, bay, 1), "A failed write reported success")
+	store.fail_writes = FALSE
+	TEST_ASSERT_EQUAL(json_encode(economy.held), json_encode(held_before), "A failed write kept banked parts")
+	for(var/obj/item/ship_parts/part as anything in carried)
+		TEST_ASSERT(!QDELETED(part), "A failed write deleted a carried part")
+		TEST_ASSERT(part.loc == captain || get_turf(part) == get_turf(captain), "A failed write didn't give a carried part back")
+	TEST_ASSERT(!GLOB.ship_save_carried_used[captain.ckey], "A failed write used up the round's turn")
+
+	// Parts put down while the box is open can't pay.
+	for(var/obj/item/ship_parts/part as anything in carried)
+		part.forceMove(case)
+	panel.while_open = CALLBACK(captain, TYPE_PROC_REF(/mob, dropItemToGround), case)
+	TEST_ASSERT(!panel.save_ship(captain, bay, 1), "Parts dropped under the box still paid")
+	panel.while_open = null
+	TEST_ASSERT_EQUAL(panel.error, "Your parts changed. Try again.", "Dropped parts gave the wrong refusal")
+	TEST_ASSERT_EQUAL(json_encode(economy.held), json_encode(held_before), "A save refused for dropped parts took banked parts")
+	for(var/obj/item/ship_parts/part as anything in carried)
+		TEST_ASSERT(!QDELETED(part), "A save refused for dropped parts deleted one")
+	TEST_ASSERT(!GLOB.ship_save_carried_used[captain.ckey], "A refused save used up the round's turn")
+
+	QDEL_LIST(carried)
+	panel.error = null
+	GLOB.ship_save_carried_used = old_used
 
 /datum/unit_test/voidcrew_ship_saves_hull/proc/set_parts(misc)
 	economy.held = list("combat" = 0, "science" = 0, "trade" = 0, "misc" = misc)
