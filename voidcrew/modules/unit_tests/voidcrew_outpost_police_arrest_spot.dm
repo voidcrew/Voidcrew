@@ -95,7 +95,6 @@
 	if(!case)
 		return
 	TEST_ASSERT_EQUAL(case.arresting(), officer, "Fixture: the officer is not the arresting officer")
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/other = squad_officer(10, 5, WEST)
 	cuffed_for_the_walk(case)
 	case.step_escort()
 	TEST_ASSERT_EQUAL(officer.pulling, suspect, "Fixture: the officer did not take hold of the cuffed suspect")
@@ -120,6 +119,9 @@
 	TEST_ASSERT(case.bolting(suspect), "Three steps of their own out of the hold in the cuffs are not running ([case.bolt_steps] steps)")
 	TEST_ASSERT(officer.police_will_fight(suspect), "The arresting officer will not stop someone running in its cuffs")
 	TEST_ASSERT_EQUAL(officer.force_for(suspect), 2, "The force for someone running in the cuffs is not a stun") // POLICE_FORCE_STUN
+	// An officer off the arrest (made now: the case's own tick would take it on as the cover)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/other = squad_officer(10, 5, WEST)
+	TEST_ASSERT_NULL(other.case, "Fixture: the other officer is on the arrest")
 	TEST_ASSERT(!other.police_will_fight(suspect), "An officer off the arrest goes for someone in its cuffs")
 	case.step_escort()
 	TEST_ASSERT_EQUAL(case.goal, suspect, "The arresting officer is not going after someone running in the cuffs")
@@ -176,7 +178,7 @@
 	police_arrest_wait(case)
 	TEST_ASSERT(QDELETED(case), "The arrest is still open after the fine on the spot")
 	TEST_ASSERT(!suspect.handcuffed, "The cuffs stayed on after the fine on the spot")
-	TEST_ASSERT_NULL(police.get_warrant(who), "The warrant is still open after the fine on the spot")
+	TEST_ASSERT_EQUAL(police.get_stars(who), 0, "The warrant is still open after the fine on the spot")
 
 /**
  * A player standing in the way of an arrest, told to make way, is charged with resisting a few seconds later if they
