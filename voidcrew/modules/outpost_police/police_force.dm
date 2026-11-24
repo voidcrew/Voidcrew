@@ -399,6 +399,7 @@
  * them. The first officer to do so before the arrest has spoken to them tells them to stay where they are.
  */
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_hold_aim(datum/ai_controller/controller, atom/target, mob/living/person)
+	police_let_arrest_past(person)
 	if(!HAS_TRAIT(src, TRAIT_HANDS_BLOCKED) && !LAZYLEN(do_afters) && isturf(loc))
 		face_atom(target)
 	if(!case && !police.order_pending(person) && !police.arrest_cuffing(person))
@@ -409,6 +410,37 @@
 		controller.queue_behavior(/datum/ai_behavior/human_npc_close_in, BB_BASIC_MOB_CURRENT_TARGET, OUTPOST_POLICE_COVER_RANGE)
 	else
 		controller.queue_behavior(/datum/ai_behavior/outpost_police_watch)
+
+/**
+ * The officer making the arrest goes first. This one, standing beside it and between it and `person` (in a doorway,
+ * at the mouth of a dead end: the only way in), trades places with it, tg's own swap. Standing still with its aim on
+ * them it is otherwise walked round, and where there is no way round the cuffs never got there: the arresting
+ * officer went round and round it (the Undertow's corner by the Exchange). TRUE if they traded.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_let_arrest_past(mob/living/person)
+	if(!police || !isliving(person) || !person.mind || !isturf(loc) || !isturf(person.loc))
+		return FALSE
+	var/datum/outpost_police_case/their_case = police.cases[person.mind]
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/arresting = QDELETED(their_case) ? null : their_case.arresting()
+	if(isnull(arresting) || arresting == src || arresting.stat != CONSCIOUS || !isturf(arresting.loc) || arresting.z != z || get_dist(src, arresting) > 1)
+		return FALSE
+	// Beside them already, cuffing them or walking them in: it is where it needs to be
+	if(arresting.Adjacent(person) || arresting.pulling || LAZYLEN(arresting.do_afters) || LAZYLEN(do_afters))
+		return FALSE
+	if(!outpost_npc_can_make_room(src) || !(arresting.mobility_flags & MOBILITY_MOVE) || arresting.moving_diagonally || arresting.buckled)
+		return FALSE
+	// In its way: nearer to them than it is, or the tile its walk takes next, or what it last walked into
+	var/in_the_way = get_dist(src, person) < get_dist(arresting, person)
+	in_the_way ||= outpost_npc_next_step(arresting) == get_turf(src)
+	in_the_way ||= arresting.bump_blocker?.resolve() == src && world.time - arresting.bump_last <= 1.5 SECONDS
+	if(!in_the_way || !COOLDOWN_FINISHED(src, police_swap_cooldown))
+		return FALSE
+	// POLICE_SWAP_COOLDOWN (police_movement.dm, compiled after this file)
+	COOLDOWN_START(src, police_swap_cooldown, 1 SECONDS)
+	if(!pirate_crew_swap_places(arresting, src))
+		return FALSE
+	arresting.police_note_trade(src)
+	return TRUE
 
 // =========================================================================
 // FORCE
@@ -437,6 +469,7 @@
 	var/level = officer.force_for(target)
 	officer.sync_force(level)
 	if(level == POLICE_FORCE_ARREST && !officer.case)
+		officer.police_let_arrest_past(officer.police_mech_suspect(target))
 		if(!HAS_TRAIT(officer, TRAIT_HANDS_BLOCKED) && !LAZYLEN(officer.do_afters))
 			officer.face_atom(target)
 		controller.queue_behavior(/datum/ai_behavior/outpost_police_watch)

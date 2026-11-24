@@ -396,3 +396,39 @@
 	TEST_ASSERT(!("suspicious" in stages), "An officer took a second look at a wanted person who had just hit somebody ([stages.Join(", ")])")
 	TEST_ASSERT_EQUAL(brain.stealth_state(), "alert", "An officer who sees a wanted person fresh from a fight is [brain.stealth_state()] ([stages.Join(", ")])")
 	TEST_ASSERT(!brain.bark_ready_at["stealth_suspicious"], "An officer said its \"what's that\" line to a wanted person who had just hit somebody")
+
+/// An officer holding its aim that stands between the arresting officer and the suspect trades places with it: the cuffs go first
+/datum/unit_test/voidcrew_stealth_live/police/holder_lets_arrest_past
+
+/datum/unit_test/voidcrew_stealth_live/police/holder_lets_arrest_past/Run()
+	var/list/scene = force_scene()
+	if(!scene)
+		return
+	var/mob/living/carbon/human/suspect = scene[1]
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/arresting = scene[3]
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/watcher = scene[5]
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = watcher.ai_controller
+	var/datum/ai_planning_subtree/outpost_police_force/force_tree = locate() in brain.planning_subtrees
+	// The arresting officer three tiles from the suspect, the holder between them
+	arresting.forceMove(at(9, 4))
+	watcher.forceMove(at(8, 4))
+	TEST_ASSERT(!arresting.Adjacent(suspect) && get_dist(watcher, suspect) < get_dist(arresting, suspect), "Fixture: the holder is not between the arresting officer and the suspect")
+	brain.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, suspect)
+	brain.planned_behaviors.Cut()
+	force_tree.SelectBehaviors(brain, 1)
+	TEST_ASSERT_EQUAL(get_turf(arresting), at(8, 4), "An officer holding its aim did not let the arresting officer past (arresting officer [arresting.x - at(0, 0).x],[arresting.y - at(0, 0).y])")
+	TEST_ASSERT_EQUAL(get_turf(watcher), at(9, 4), "An officer holding its aim did not trade places with the arresting officer")
+	// Behind it now, it stays there
+	watcher.police_swap_cooldown = 0
+	brain.planned_behaviors.Cut()
+	force_tree.SelectBehaviors(brain, 1)
+	TEST_ASSERT_EQUAL(get_turf(watcher), at(9, 4), "An officer behind the arresting officer traded places with it again")
+	// Nowhere near the arresting officer, it stays where it is
+	watcher.forceMove(at(6, 7))
+	watcher.police_swap_cooldown = 0
+	brain.planned_behaviors.Cut()
+	force_tree.SelectBehaviors(brain, 1)
+	TEST_ASSERT_EQUAL(get_turf(watcher), at(6, 7), "An officer holding its aim away from the arresting officer moved")
+	brain.planned_behaviors.Cut()
+	brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+	police.close_case(suspect.mind)

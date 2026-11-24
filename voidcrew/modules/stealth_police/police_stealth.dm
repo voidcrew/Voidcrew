@@ -718,6 +718,8 @@
 		controller.queue_behavior(/datum/ai_behavior/human_npc_close_in, BB_OUTPOST_POLICE_COVER, OUTPOST_POLICE_COVER_RANGE)
 		return SUBTREE_RETURN_FINISH_PLANNING
 	controller.stealth_drop_walk()
+	// The officer with the cuffs goes first (police_force.dm)
+	officer.police_let_arrest_past(who)
 	if(!HAS_TRAIT(officer, TRAIT_HANDS_BLOCKED) && !LAZYLEN(officer.do_afters) && isturf(officer.loc))
 		officer.face_atom(who)
 	return SUBTREE_RETURN_FINISH_PLANNING
