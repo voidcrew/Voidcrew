@@ -23,6 +23,12 @@
 	TEST_ASSERT(!officer.Move(in_the_way, get_dir(stepped_to, in_the_way)), "The officer walked straight back into the escort's way")
 	TEST_ASSERT_EQUAL(get_turf(officer), stepped_to, "The officer left the tile it stepped aside to")
 
+	// Running (sent to search a spot) it is held all the same
+	officer.toggle_move_intent()
+	TEST_ASSERT_EQUAL(officer.move_intent, MOVE_INTENT_RUN, "Setup: the officer is not running")
+	TEST_ASSERT(!officer.Move(in_the_way, get_dir(stepped_to, in_the_way)), "A running officer ran straight back into the escort's way")
+	officer.toggle_move_intent()
+
 	// The escort has gone on: the way is the officer's again
 	escort.stop_pulling()
 	escort.forceMove(at(7, 0))

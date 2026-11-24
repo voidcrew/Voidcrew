@@ -423,8 +423,8 @@
 
 /**
  * One of the outpost's people who stepped out of the way of someone bringing a person in stays out of it: for
- * OUTPOST_GIVE_WAY_HOLD, while the escort is within OUTPOST_GIVE_WAY_RANGE with someone still in hand, their own
- * walk does not take them back onto the tile they stepped off or any nearer the escort. They wait where they stepped
+ * OUTPOST_GIVE_WAY_HOLD, while the escort is within OUTPOST_GIVE_WAY_RANGE with someone still in hand (led, or held
+ * for the cuffs), their own walk or run does not take them back onto the tile they stepped off or any nearer the escort. They wait where they stepped
  * to, or their pathfinder finds another way. A beat officer whose patrol ran past an escort standing at the desk
  * stepped aside, walked straight back into its way, and was stepped aside again, three times in fifteen seconds
  * (pass 2 soak, Halcyon hangar_wait).
@@ -463,7 +463,7 @@
 		gave_way_until = 0
 		return FALSE
 	// Their own walk only: dragged, shoved, thrown, or partway through a trade of places, they go where they are taken
-	if(!isturf(newloc) || !isturf(loc) || client || mind || pulledby || buckled || throwing || (pass_flags & PASSMOB) || move_intent != MOVE_INTENT_WALK)
+	if(!isturf(newloc) || !isturf(loc) || client || mind || pulledby || buckled || throwing || (pass_flags & PASSMOB))
 		return FALSE
 	return newloc == gave_way_from || get_dist(newloc, escort) < get_dist(loc, escort)
 
@@ -472,9 +472,11 @@
 	if(. && give_way_holds(newloc))
 		return FALSE
 
-// On an arrest or riding a lift an officer goes where it must
+// On an arrest, riding a lift, or with someone to fight, an officer goes where it must. (One running to search a spot
+// is held: at the Undertow's checkpoint a searcher sent to the suspect's tile was stepped aside by the officer cuffing
+// them and ran straight back, three times in fifteen seconds.)
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/give_way_holds(turf/newloc)
-	if(case || dispatch_riding)
+	if(case || dispatch_riding || !QDELETED(ai_controller?.blackboard[BB_BASIC_MOB_CURRENT_TARGET]))
 		return FALSE
 	return ..()
 
