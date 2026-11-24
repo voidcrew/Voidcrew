@@ -1004,10 +1004,10 @@
 	TEST_ASSERT_NOTNULL(GLOB.ship_saves.saves_for(captain.ckey), "Opening the panel did not load the captain's saves")
 
 	// Not in the bay, whatever else is true. A berth is not in bay_berths, so it arrives as null.
-	TEST_ASSERT_EQUAL(panel.saved_ship_denial(captain, null), "Dock your ship in a ship bay first.", "A berthed ship could be saved")
+	TEST_ASSERT_EQUAL(panel.saved_ship_denial(captain, null), "Dock your ship here first.", "A berthed ship could be saved")
 	var/datum/outpost_berth/ship_bay/bay = home.allocate_ship_bay(test_ship)
 	TEST_ASSERT_NOTNULL(bay, "The hull was not given a bay")
-	TEST_ASSERT_EQUAL(panel.saved_ship_denial(captain, bay), "Dock your ship in a ship bay first.", "A ship that hasn't landed could be saved")
+	TEST_ASSERT_EQUAL(panel.saved_ship_denial(captain, bay), "Dock your ship here first.", "A ship that hasn't landed could be saved")
 	adjust_reserve_dock_to_shuttle(bay.dock, test_ship.shuttle)
 	test_ship.shuttle.mode = SHUTTLE_PREARRIVAL
 	test_ship.shuttle.initiate_docking(bay.dock)
