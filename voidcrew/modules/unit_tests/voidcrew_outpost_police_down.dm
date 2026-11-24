@@ -342,7 +342,7 @@
 	TEST_ASSERT_EQUAL(watcher_brain.stealth_state(), "alert", "Fixture: the officer is not alert on a four-star suspect")
 
 	// Shot into soft crit in front of it
-	suspect.adjustBruteLoss(110)
+	suspect.adjustToxLoss(suspect.maxHealth - suspect.crit_threshold + 10) // shot down: the damage kind does not matter here
 	TEST_ASSERT_EQUAL(suspect.stat, SOFT_CRIT, "Fixture: the suspect is not in soft crit")
 	watcher_brain.stealth_keep_target()
 	TEST_ASSERT(police.arrest_on(suspect), "No arrest opened on a four-star suspect shot into crit in front of an officer")
@@ -350,7 +350,7 @@
 	watcher_brain.stealth_drop_call()
 
 	// A colleague goes down beside it
-	colleague.adjustBruteLoss(110)
+	colleague.adjustToxLoss(colleague.maxHealth - colleague.crit_threshold + 10)
 	TEST_ASSERT(colleague.stat != CONSCIOUS, "Fixture: the colleague is not down")
 	watcher_brain.next_body_scan = 0
 	watcher_brain.stealth_check_bodies()
@@ -359,4 +359,47 @@
 	TEST_ASSERT_NULL(watcher_brain.pending_call, "An officer standing over a downed suspect called the squad to a fallen colleague")
 	watcher_brain.SelectBehaviors(1)
 	TEST_ASSERT_EQUAL(watcher_brain.police_covered(), suspect, "An officer standing over a downed suspect left them for a fallen colleague")
+	police.close_case(suspect.mind)
+
+/**
+ * The owner's playtest: an officer-killer shot into crit at four stars by officers in front of them was cuffed a
+ * minute later by an officer they had crawled to. The officer who put them down takes the arrest unless a stun
+ * officer is nearer or has them in sight; a stun officer out of sight across a wall leaves it to the one on the spot.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/downed_cuffed_by_shooter
+
+/datum/unit_test/voidcrew_stealth_live/police/downed_cuffed_by_shooter/Run()
+	TEST_ASSERT(police_room(30, 9), "No room for the test")
+	// A wall across the room with no gap: the stun officer is beyond it
+	for(var/dy in 1 to 8)
+		var/turf/wall_spot = at(16, dy)
+		wall_spot.ChangeTurf(/turf/closed/wall)
+	allocate(/obj/effect/landmark/stealth_group, at(0, 8))
+	person_at(1, 8)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/shooter = ready_officer(9, 4, WEST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/stunner = ready_officer(20, 4, WEST)
+	shooter.police_role = "lethal" // POLICE_ROLE_LETHAL
+	stunner.police_role = "stun" // POLICE_ROLE_STUN
+	police_arrest_kit(shooter)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/shooter_brain = shooter.ai_controller
+	var/mob/living/carbon/human/suspect = visitor_at(6, 4)
+	police_pin_warrant(police, suspect.mind, 100) // four stars
+	TEST_ASSERT(!police.perception.sees(stunner, suspect), "Fixture: the stun officer sees the suspect through the wall")
+	shooter_brain.stealth_go_alert(suspect)
+	suspect.adjustToxLoss(suspect.maxHealth - suspect.crit_threshold + 10) // shot down: the damage kind does not matter here
+	TEST_ASSERT_EQUAL(suspect.stat, SOFT_CRIT, "Fixture: the suspect is not in soft crit")
+	shooter_brain.stealth_keep_target()
+	var/datum/outpost_police_case/case = police.cases[suspect.mind]
+	TEST_ASSERT(!QDELETED(case), "No arrest opened on a four-star suspect shot into crit in front of an officer")
+	TEST_ASSERT_EQUAL(case.arresting(), shooter, "A stun officer out of sight across a wall took the arrest from the officer who shot the suspect down beside it")
+
+	// A stun officer nearer the suspect than the shooter, in sight of them, takes it as before
+	police.close_case(suspect.mind)
+	stunner.forceMove(at(7, 5))
+	TEST_ASSERT(police.perception.sees(stunner, suspect), "Fixture: the stun officer beside the suspect does not see them")
+	shooter_brain.stealth_go_alert(suspect)
+	shooter_brain.stealth_keep_target()
+	case = police.cases[suspect.mind]
+	TEST_ASSERT(!QDELETED(case), "No arrest opened on a four-star suspect in crit")
+	TEST_ASSERT_EQUAL(case.arresting(), stunner, "A stun officer beside a downed four-star suspect did not take the arrest")
 	police.close_case(suspect.mind)

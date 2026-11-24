@@ -439,7 +439,7 @@ POLICE_SOAK_SCENARIO(shot_down_crawl)
 	// Hurt already from the fight before, so the officers' own fire takes them into crit rather than out of stamina.
 	// The officer nearest them is hurt from it too, and the suspect shoots back at it: in the round an officer went
 	// down beside them a second before they did.
-	run.suspect.adjustBruteLoss(80)
+	run.suspect.adjustBruteLoss(95)
 	run.suspect.set_combat_mode(TRUE)
 	var/obj/item/gun/ballistic/automatic/pistol/pistol = new(run.suspect.loc)
 	run.suspect.put_in_hands(pistol)
