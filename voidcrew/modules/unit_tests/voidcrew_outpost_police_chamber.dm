@@ -30,9 +30,21 @@
 		if(in_gate(post, officer))
 			. += officer
 
-/// The doors and the state of `post`, for a failure message
+/// The doors and the state of `post`, and who stands in it or in front of its outer door, for a failure message
 /datum/unit_test/voidcrew_outpost_police_search/chamber/proc/gate_report(datum/outpost_checkpoint/post)
-	return "checkpoint [post.state], outer door [post.outer_door.density ? "shut" : "open"], inner door [post.inner_door.density ? "shut" : "open"]"
+	var/list/people = list()
+	var/turf/outer_turf = get_turf(post.outer_door)
+	for(var/turf/tile as anything in post.chamber_turfs + outer_turf + get_turf(post.inner_door) + post.lobby_turf)
+		for(var/mob/living/person in tile)
+			var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = person
+			var/where = tile == outer_turf ? "the outer doorway" : (tile == post.lobby_turf ? "front of the outer door" : (tile in post.chamber_turfs ? "the chamber" : "the inner doorway"))
+			var/what = "[person.type]"
+			if(istype(officer))
+				what = "officer ([officer.unit_kind][officer.case ? ", on an arrest" : ""][HAS_TRAIT(officer, "checkpoint_crossing") ? ", going through" : ""])" // TRAIT_CHECKPOINT_CROSSING
+			else if(person.mind)
+				what = "[person.real_name]"
+			people += "[what] in [where]"
+	return "checkpoint [post.state], outer door [post.outer_door.density ? "shut" : "open"][post.outer_door.operating ? " and moving" : ""], inner door [post.inner_door.density ? "shut" : "open"], police at work [post.police_at_work() ? "yes" : "no"]; there: [length(people) ? people.Join(", ") : "nobody"]"
 
 /**
  * Two stars, standing in the lobby checkpoint's scan chamber, hands empty, doing as told. An officer comes in for
@@ -319,28 +331,37 @@
 	sleep(1.5 SECONDS)
 	TEST_ASSERT(checkpoint.chamber_place_for(npc) in chamber, "After the police left a townsperson had no place in the chamber")
 
-/// Someone shut in a closed chamber when the police finish there is scanned then, not left waiting
+/**
+ * A scan that falls due while the police are at work in the chamber waits for them, and is made once they are done:
+ * the gate comes back up with its inner door open on an arrest, the door shuts on the two of them, nobody is
+ * scanned; the officer gone, whoever is left shut in is.
+ */
 /datum/unit_test/voidcrew_trader_checkpoint/police_scan_after/Run()
 	TEST_ASSERT(fixture(FALSE), "Could not prepare the checkpoint")
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/cop = key_officer(chamber[1])
 	var/mob/living/carbon/human/suspect = visitor(chamber[2])
 	police_pin_warrant(host.police, suspect.mind, 40)
 	TEST_ASSERT(checkpoint.police_at_work(), "Fixture: the police are not at work")
-	// The gate mends with both doors shut and the two of them inside: no scan on the officer's arrest
-	checkpoint.end_disable()
-	TEST_ASSERT_EQUAL(checkpoint.state, "idle", "A mended gate scanned a chamber the police were at work in") // CHECKPOINT_IDLE
-	// The officer lets itself out by the outer door and it shuts behind it: who is left is scanned
-	outer.bumpopen(cop)
+	// The gate down and its inner door open, as the officer came in by it
+	checkpoint.disabled_until = world.time + 1800
+	TEST_ASSERT(checkpoint.open_freely(inner), "Fixture: the inner door of a gate that is down did not open")
 	sleep(1.5 SECONDS)
-	TEST_ASSERT(!outer.density, "Fixture: the officer could not let itself out")
+	TEST_ASSERT(!inner.density, "Fixture: the inner door is not open")
+	// The gate comes back up: the inner door shuts on them, and the scan that is due waits
+	checkpoint.disabled_until = world.time - 1
+	checkpoint.end_disable()
+	TEST_ASSERT(wait_shut(inner, 5 SECONDS), "The inner door of a mended gate did not shut")
+	sleep(0.5 SECONDS)
+	TEST_ASSERT_EQUAL(checkpoint.state, "idle", "A chamber the police were at work in was scanned") // CHECKPOINT_IDLE
+	// The officer is done and gone, the doors still shut: who is left is scanned
 	cop.forceMove(lobby)
 	var/scanned = FALSE
-	for(var/i in 1 to 150)
+	for(var/i in 1 to 100)
 		if(checkpoint.state == "scanning" || checkpoint.state == "rejecting") // CHECKPOINT_SCANNING, CHECKPOINT_REJECTING
 			scanned = TRUE
 			break
 		sleep(0.1 SECONDS)
-	TEST_ASSERT(scanned, "Someone left in the chamber when the police were done was never scanned (checkpoint [checkpoint.state])")
+	TEST_ASSERT(scanned, "Someone left shut in the chamber when the police were done was never scanned (checkpoint [checkpoint.state])")
 
 /**
  * The officer making an arrest gets to its suspect in the chamber past a colleague standing in the only place beside

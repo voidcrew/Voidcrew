@@ -645,9 +645,6 @@
 		do_sparks(2, TRUE, sensor)
 		playsound(sensor, 'sound/machines/ping.ogg', 40, FALSE, SILENCED_SOUND_EXTRARANGE)
 		sensor.visible_message(span_notice("[sensor] sparks and flickers back on."))
-	// Both doors shut already: no door will close to start it, so whoever stands in there is scanned now
-	if(!QDELETED(outer_door) && !QDELETED(inner_door) && outer_door.density && inner_door.density && !outer_door.operating && !inner_door.operating && length(chamber_people()))
-		start_scan()
 
 /// The gate is down: `door` opens for whoever asked, like a plain airlock, and shuts again once its doorway is clear. TRUE if it opens.
 /datum/outpost_checkpoint/proc/open_freely(obj/machinery/door/airlock/outpost/checkpoint/door)
