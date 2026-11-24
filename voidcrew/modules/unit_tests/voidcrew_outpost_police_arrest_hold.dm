@@ -337,6 +337,33 @@
 	police.close_case(suspect.mind)
 
 /**
+ * An officer on its way past a colleague who stands right in front of it, a wall on its other side, and the suspect
+ * off on the diagonal. Its pathfinder plans the diagonal step past the colleague; the colleague stands on one leg of
+ * that step and the wall is the other, so the step never happens, and it used to be planned again for good (Halcyon's
+ * bar doorway, the hostage soak). It takes the colleague up straight, gets past, and makes the arrest.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/crowd/diagonal_past
+
+/datum/unit_test/voidcrew_stealth_live/police/crowd/diagonal_past/Run()
+	TEST_ASSERT(police_room(9, 8), "No room for the test")
+	open_place()
+	// A wall with a gap three wide. The officer stands at the gap's west end, the colleague on the tile in front of it.
+	for(var/dx in list(0, 1, 2, 3, 7, 8))
+		var/turf/wall_spot = at(dx, 1)
+		wall_spot.ChangeTurf(/turf/closed/wall)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = squad_officer(4, 1, NORTH)
+	police_arrest_kit(officer)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/colleague = officer_at(4, 2, NORTH)
+	wanted_at(1, 4, 12, FALSE)
+	var/datum/outpost_police_case/case = police.open_case(police.get_warrant(suspect.mind))
+	TEST_ASSERT_NOTNULL(case, "Fixture: no arrest opened on the suspect")
+	if(case.arresting() != officer)
+		case.officers.Swap(1, 2)
+	TEST_ASSERT_EQUAL(case.arresting(), officer, "Fixture: the officer behind its colleague is not the arresting officer")
+	watch(40, CALLBACK(src, PROC_REF(suspect_cuffed)))
+	TEST_ASSERT(suspect.handcuffed, "The officer never got past the colleague in front of it to the suspect (officer at [officer.x - at(0, 0).x],[officer.y - at(0, 0).y], colleague at [colleague.x - at(0, 0).x],[colleague.y - at(0, 0).y], arrest on \"[case.step]\")")
+
+/**
  * A cover taken from the lobby (the desk warden, when nobody else is free) goes to the concourse by the checkpoint,
  * the way an officer on any other errand does. Its plain walk at the arresting officer had no way through the gate.
  */
