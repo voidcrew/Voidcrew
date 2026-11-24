@@ -97,9 +97,13 @@
 	TEST_ASSERT(rule_room(), "No room for the test")
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(2, 2, EAST)
 	var/mob/living/carbon/human/prisoner = wanted_visitor(5, 2)
+	// Alert on them while they were at large (the police brain refuses anyone in hand as a new target), and still so
+	// once they are in a cell
+	set_mind(officer, "alert", prisoner)
 	jail(prisoner)
 	TEST_ASSERT(police.in_custody(prisoner), "The prisoner in a cell made by hand is not in custody")
-	set_mind(officer, "alert", prisoner)
+	TEST_ASSERT(probe.minds(officer, prisoner), "Fixture: the officer does not have the prisoner in mind")
+	TEST_ASSERT_EQUAL(probe.state_of(officer), "alert", "Fixture: the officer is not alert")
 	var/list/found = breaks_after(/datum/police_soak_invariant/alert_on_custody)
 	TEST_ASSERT(length(found), "alert_on_custody stayed quiet about an officer alert on someone in a cell for a minute")
 	// Alert on someone at large is the officer's work
