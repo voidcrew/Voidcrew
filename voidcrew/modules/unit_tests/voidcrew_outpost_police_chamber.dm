@@ -372,6 +372,19 @@
 	TEST_ASSERT_EQUAL(police.search_place(warrant, second), chamber[2], "The chamber did not go to the next officer")
 	police.search_looked(warrant, second, chamber[1])
 	TEST_ASSERT(search.done[chamber[2]], "A look from inside the chamber did not count")
+	// In someone's sight in there (a colleague inside, the scanner): officers are sent in to them, not to the door
+	warrant.unseen_since = 0
+	TEST_ASSERT_EQUAL(police.search_place(warrant, first), chamber[2], "With eyes on someone in the chamber an officer was sent to its door, not in to them")
+	// From where its outer door cannot be walked to (a hatch onto the hull, seen from the concourse) the door is as far
+	// as anyone is sent while the gate works; with the gate down, in by the inner door
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/third = key_officer(secured)
+	QDEL_NULL(police.search_main)
+	TEST_ASSERT_NULL(police.search_inside(chamber[2], third), "An officer is sent into a working gate's chamber whose outer door it cannot walk to")
+	TEST_ASSERT_EQUAL(police.search_place(warrant, third), secured, "With no way in, an officer was not sent to the chamber's door")
+	checkpoint.disabled_until = world.time + 1800
+	TEST_ASSERT_EQUAL(police.search_place(warrant, third), chamber[2], "With the gate down an officer on the concourse was not sent into the chamber")
+	checkpoint.disabled_until = 0
+	qdel(third)
 	// No part of the floor: an officer who stood in it while the floor was read does not make it one
 	first.forceMove(chamber[1])
 	QDEL_NULL(police.search_main)

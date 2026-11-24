@@ -163,7 +163,7 @@
 	var/stamp = 0
 	/// Where it starts (/datum/outpost_police_floor/proc/reach())
 	var/turf/start
-	/// The last-seen tile itself, when that is in a checkpoint's scan chamber or doorway: looked into first, from inside (search_gate())
+	/// The last-seen tile itself, when that is in a checkpoint's scan chamber or doorway officers can get into: looked into first, from inside (search_inside())
 	var/turf/inside
 	/// Places looked at since: turf -> TRUE
 	var/list/done = list()
@@ -677,6 +677,21 @@
 	return null
 
 /**
+ * `last` itself, when it is in a scan chamber or doorway that an officer's key gets it into now
+ * (trade/outpost_checkpoint_npcs.dm): the gate down or forced, its inner door standing open, or its outer door one
+ * officers can walk to. Null anywhere else, and for a working hatch, whose outer door is out on the hull: there the
+ * door is as far as anyone gets (search_start()).
+ */
+/datum/outpost_police/proc/search_inside(turf/last, mob/living/officer)
+	var/datum/outpost_checkpoint/post = search_gate(last)
+	if(!post || QDELETED(post.inner_door) || QDELETED(post.outer_door))
+		return null
+	if(post.is_disabled() || post.state == CHECKPOINT_FORCED || !post.inner_door.density)
+		return last
+	var/datum/outpost_police_floor/floor = search_floor(last, officer)
+	return (post.lobby_turf && floor?.walkable[post.lobby_turf]) ? last : null
+
+/**
  * Where `officer` goes to look for `warrant`'s holder now. With someone's eyes on them this moment (an officer, a
  * scan): where they are seen. Else the next place of the search since they were last seen. Null with no sighting
  * to start from: nobody is sent to look for someone nobody has seen (owner decision 52).
@@ -689,9 +704,11 @@
 	if(!search_floor(last, officer))
 		return last
 	var/turf/start = search_start(last, officer)
-	// Someone has eyes on them now: straight to where they are seen
+	var/turf/inside = search_inside(last, officer)
+	// Someone has eyes on them now: straight to where they are seen. In a scan chamber that is the chamber: from its
+	// door, a solid one, the officer making the arrest never saw who a colleague inside was looking at
 	if(!warrant.unseen_since || !istype(officer) || !warrant.mind)
-		return start
+		return inside || start
 	var/datum/outpost_police_search/search = searches[warrant.mind]
 	if(!search || search.stamp != warrant.last_seen_at || search.start != start)
 		search_prune()
@@ -699,7 +716,7 @@
 			searches -= warrant.mind
 			qdel(search)
 		search = new(warrant.last_seen_at, start)
-		search.inside = search_gate(last) ? last : null
+		search.inside = inside
 		searches[warrant.mind] = search
 	return search.deal(src, officer) || start
 
