@@ -464,6 +464,8 @@
 		if(!wave.released_at)
 			if(world.time >= wave.release_at && (!pending || world.time >= wave.release_at + POLICE_WAVE_WAIT_MAX))
 				dispatch_release_wave(wave)
+			else
+				dispatch_wave_contact(wave)
 			continue
 		if(!wave.checked && world.time >= wave.released_at + OUTPOST_POLICE_LIFT_BLOCKED)
 			wave.checked = TRUE
@@ -477,11 +479,48 @@
 
 /// The wave leaves its door: everyone built so far goes at once
 /datum/outpost_police/proc/dispatch_release_wave(datum/outpost_police_wave/wave)
+	if(QDELETED(wave) || wave.released_at)
+		return
 	wave.released_at = world.time
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/member as anything in wave.living_members())
+		UnregisterSignal(member, COMSIG_MOB_AFTER_APPLY_DAMAGE)
 		REMOVE_TRAIT(member, TRAIT_AI_PAUSED, POLICE_WAVE_TRAIT)
+		// One already fighting (shot at, or someone armed in sight) keeps at it rather than going to search
+		var/datum/ai_controller/basic_controller/human_npc/stealth/brain = member.ai_controller
+		if(istype(brain) && brain.stealth_state() == STEALTH_ALERT)
+			continue
 		// They come out of the lift doors already hunting (spec-stealth 1.4)
 		member.police_search_for(member.dispatch_mind?.resolve())
+
+/**
+ * A wave still forming up on its lift point that comes under fire, or that sees someone wanted with a weapon in hand,
+ * goes at once, all of it: whoever camps a lift meets the squad, not one officer at a time standing frozen behind the
+ * door. TRUE when it went.
+ */
+/datum/outpost_police/proc/dispatch_wave_contact(datum/outpost_police_wave/wave)
+	if(QDELETED(wave) || wave.released_at)
+		return FALSE
+	var/list/members = wave.living_members()
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/member as anything in members)
+		if(member.stat != CONSCIOUS)
+			continue
+		if(member.getBruteLoss() + member.getFireLoss() + member.getStaminaLoss() > 0)
+			dispatch_release_wave(wave)
+			return TRUE
+		for(var/mob/living/suspect as anything in dispatch_suspect_mobs())
+			if(outpost_police_armed(suspect) && perception.sees(member, suspect))
+				dispatch_release_wave(wave)
+				return TRUE
+	return FALSE
+
+/// A member of a wave forming up was hurt: the wave goes now (dispatch_wave_contact())
+/datum/outpost_police/proc/dispatch_wave_member_hurt(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, damage)
+	SIGNAL_HANDLER
+	var/datum/outpost_police_wave/wave = officer.dispatch_wave
+	if(damage <= 0 || QDELETED(wave) || wave.released_at)
+		return
+	// The search it is sent on reads the floor; not in the middle of the hit
+	INVOKE_ASYNC(src, PROC_REF(dispatch_release_wave), wave)
 
 /**
  * Abuse M2. Members still on their lift point a while after leaving, with a suspect to go to, could not get
@@ -767,6 +806,7 @@
 		officer.dispatch_wave.members -= WEAKREF(officer)
 		officer.dispatch_wave = null
 		REMOVE_TRAIT(officer, TRAIT_AI_PAUSED, POLICE_WAVE_TRAIT)
+		UnregisterSignal(officer, COMSIG_MOB_AFTER_APPLY_DAMAGE)
 	var/turf/exit = dispatch_free_exit(officer)
 	if(!exit)
 		if(!officer.dispatch_no_lift_since)
@@ -1229,6 +1269,8 @@
 	wave.members += WEAKREF(officer)
 	if(!wave.released_at)
 		ADD_TRAIT(officer, TRAIT_AI_PAUSED, POLICE_WAVE_TRAIT)
+		// Hurt while it forms up (shot at the lift), the whole wave goes at once (dispatch_wave_contact())
+		RegisterSignal(officer, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(dispatch_wave_member_hurt))
 	else
 		officer.police_search_for(officer.dispatch_mind?.resolve())
 
