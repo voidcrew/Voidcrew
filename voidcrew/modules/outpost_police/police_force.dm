@@ -283,7 +283,7 @@
 
 /// What the officers have seen of someone they may stun, a moment ago
 /datum/outpost_police_stance
-	/// Where they stand: a step to the next tile is not walking off
+	/// Where they stand: a step to the next tile is not walking off (pulling away from the cuffs, any step is)
 	var/turf/spot
 	/// world.time they were last seen further than that from it, or 0
 	var/moved_at = 0
@@ -293,6 +293,8 @@
 	var/looked_at = 0
 	/// Whether their arrest was going for the cuffs at that look
 	var/cuffing = FALSE
+	/// Whether they had pulled away from those cuffs by then (a step of their own since the cuffs came out)
+	var/away = FALSE
 	/// world.time an officer holding its fire last told them to stay where they are
 	var/told_at = 0
 
@@ -300,7 +302,9 @@
  * One look at `person`: where they are against where they stood, and whether their arrest has come to the cuffs.
  * Returns what is known of them. With nobody having looked for OUTPOST_POLICE_STANCE_STALE, where they are is where
  * they stand. The moment the cuffs come out the same holds, and what they did before is past: from then on it is
- * getting away from the cuffs, a weapon or a blow that counts.
+ * pulling away from the cuffs, a weapon or a blow that counts. tg's cuffing breaks on any step of theirs, so once
+ * they have taken one from the cuffs every further tile counts: lying there shuffling a tile at a time would
+ * otherwise keep the cuffs off for good with everyone else holding their fire.
  */
 /datum/outpost_police/proc/stance_of(mob/living/person)
 	var/datum/weakref/key = WEAKREF(person.mind)
@@ -311,26 +315,32 @@
 	var/turf/here = get_turf(person)
 	var/cuffing = arrest_cuffing(person)
 	var/cuffs_out = cuffing && !stance.cuffing
+	var/away = cuffing && arrest_pulled_away(person)
 	if(isnull(stance.spot) || cuffs_out || world.time - stance.looked_at > OUTPOST_POLICE_STANCE_STALE)
 		stance.spot = here
 		stance.moved_at = 0
 		if(cuffs_out)
 			stance.fought_at = 0
-	else if(here && (here.z != stance.spot.z || get_dist(here, stance.spot) > 1))
+	else if(here && (here.z != stance.spot.z || get_dist(here, stance.spot) > (away ? 0 : 1)))
 		stance.spot = here
 		// Pulled along, by an officer or anyone else, they are going nowhere of their own (whoever pulls a suspect off
 		// answers for it: police_arrest.dm check_interference())
 		if(!person.pulledby)
 			stance.moved_at = world.time
+	// Their first step from the cuffs, wherever it left them
+	if(away && !stance.away && !cuffs_out)
+		stance.moved_at = world.time
 	stance.cuffing = cuffing
+	stance.away = away
 	stance.looked_at = world.time
 	return stance
 
 /**
  * Whether `person` is giving up, as the officers see it: for OUTPOST_POLICE_YIELD_TIME they have stayed where they
- * are (a step to the next tile aside), on their feet or on the floor, with no gun or weapon in their hands, and gone
- * for nobody. Someone first seen standing there is taken to be. Hands up or fists up is the arresting officer's to
- * judge (police_arrest.dm suspect_complied()); what everyone else sees is whether they fight or get away.
+ * are (a step to the next tile aside; with the cuffs coming, no step of their own at all), on their feet or on the
+ * floor, with no gun or weapon in their hands, and gone for nobody. Someone first seen standing there is taken to
+ * be. Hands up or fists up is the arresting officer's to judge (police_arrest.dm suspect_complied()); what everyone
+ * else sees is whether they fight or get away.
  */
 /datum/outpost_police/proc/gives_up(mob/living/person)
 	if(!isliving(person) || !person.mind || person.stat == DEAD || !isturf(person.loc))

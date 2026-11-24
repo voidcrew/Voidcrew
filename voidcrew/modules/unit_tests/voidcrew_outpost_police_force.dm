@@ -105,13 +105,22 @@
 	TEST_ASSERT(!police.has_in_hand(suspect), "Fixture: a suspect who is only knocked down counts as in hand")
 	TEST_ASSERT(!police_plans_shot(watcher, suspect), "An officer off the arrest plans a shot at a two-star suspect who is knocked down with the arresting officer going for the cuffs")
 
-	// Crawling off from the cuffs is getting away: fair game again, until they have lain still a while
+	// Pushed a tile by someone else, they have not moved. A crawl of their own, of one tile, is pulling away from the
+	// cuffs (tg's cuffing breaks on it): fair game again, until they have lain still a while
 	var/datum/outpost_police_stance/stance = police.stance_of(suspect)
-	suspect.forceMove(at(8, 6))
+	suspect.forceMove(at(7, 4))
+	TEST_ASSERT(!police.arrest_pulled_away(suspect), "Fixture: a push counted as the suspect's own step")
+	TEST_ASSERT(!police_plans_shot(watcher, suspect), "An officer off the arrest plans a shot at a suspect who was pushed a tile with the cuffs coming")
+	suspect.Move(at(7, 5), NORTH)
+	TEST_ASSERT_EQUAL(get_turf(suspect), at(7, 5), "Fixture: the suspect did not crawl a tile")
+	TEST_ASSERT(police.arrest_pulled_away(suspect), "Fixture: a crawl of the suspect's own did not count as pulling away from the cuffs")
 	TEST_ASSERT_EQUAL(case.step, "cuff", "Fixture: the arrest left the cuffs")
 	TEST_ASSERT(police_plans_shot(watcher, suspect), "An officer off the arrest plans no shot at a two-star suspect crawling off from the cuffs")
 	stance.moved_at -= 2 SECONDS // OUTPOST_POLICE_YIELD_TIME
 	TEST_ASSERT(!police_plans_shot(watcher, suspect), "An officer off the arrest plans a shot at a suspect who has lain still again")
+	suspect.Move(at(8, 5), EAST)
+	TEST_ASSERT(police_plans_shot(watcher, suspect), "An officer off the arrest plans no shot at a suspect who crawls another tile from the cuffs")
+	stance.moved_at -= 2 SECONDS // OUTPOST_POLICE_YIELD_TIME
 	// So is a kick at the arresting officer from the floor (a blow on an officer is the crime "resist")
 	police.report_crime(suspect, "resist", scene[3]) // OUTPOST_CRIME_RESIST
 	TEST_ASSERT_EQUAL(stance.fought_at, world.time, "A blow on an officer was not marked against the suspect who gave it")
@@ -310,6 +319,12 @@
 	TEST_ASSERT(police.arrest_cuffing(suspect), "Fixture: the arrest is not going for the cuffs")
 	TEST_ASSERT(police.gives_up(suspect), "With the cuffs coming, a suspect on the floor is still held to what they did before")
 	TEST_ASSERT(!stance.fought_at && !stance.moved_at, "The cuffs coming out did not put what came before behind them")
+	// From the cuffs, one step of their own is one too many
+	suspect.Move(get_step(suspect, EAST), EAST)
+	TEST_ASSERT(police.arrest_pulled_away(suspect), "Fixture: the suspect's own step from the cuffs was not counted")
+	TEST_ASSERT(!police.gives_up(suspect), "Someone who crawled a tile from the cuffs is taken as lying still for them")
+	stance.moved_at -= 2 SECONDS // OUTPOST_POLICE_YIELD_TIME
+	TEST_ASSERT(police.gives_up(suspect), "Someone who has lain still for two seconds since crawling from the cuffs is not taken as giving up")
 
 	// Nobody looked for a while: seen afresh where they are
 	stance.looked_at -= 5 SECONDS // past OUTPOST_POLICE_STANCE_STALE

@@ -1945,6 +1945,14 @@
 	var/datum/outpost_police_case/case = cases[target.mind]
 	return !QDELETED(case) && case.step == CASE_STEP_CUFF && case.get_suspect() == target
 
+/// Whether `target`, with the cuffs coming, has taken a step of their own since: they are pulling away from the cuffs
+/// (on_suspect_moved(): a push, a pull or a throw is no step of theirs). Read only, for the same officers.
+/datum/outpost_police/proc/arrest_pulled_away(mob/living/target)
+	if(!arrest_cuffing(target))
+		return FALSE
+	var/datum/outpost_police_case/case = cases[target.mind]
+	return case.suspect_moved
+
 #undef CASE_STEP_RESPOND
 #undef CASE_STEP_ORDER
 #undef CASE_STEP_SUBDUE
