@@ -21,6 +21,8 @@
  * "By the outer door" is a tile they can step to the door's front tile from (outpost_checkpoint_by_outer_door()).
  * Quartermain's and the Undertow's lobbies lead up to the door between queue rails: a tile across a rail from the
  * door's front is one tile away and nowhere near it.
+ *
+ * The outpost's officers are the exception to "no NPC walks into a chamber": see "the police's key" at the end.
  */
 
 /// How long a place in the chamber is kept for someone who has stopped asking for it
@@ -211,6 +213,9 @@
  */
 /datum/outpost_checkpoint/proc/chamber_place_for(mob/living/walker)
 	if(QDELETED(walker))
+		return null
+	// The police are at work in there: nobody walks in on an arrest, and whoever is inside already stays where they are
+	if(police_at_work())
 		return null
 	LAZYINITLIST(chamber_places)
 	LAZYINITLIST(chamber_places_at)
@@ -420,5 +425,119 @@
 /datum/outpost_police/elevator_busy(sector)
 	var/obj/machinery/outpost_elevator/panel = outpost_police_elevator_panel(outpost, sector)
 	return !!(panel && !QDELETED(panel) && panel.moving)
+
+// =========================================================================
+// THE POLICE'S KEY
+// =========================================================================
+// An officer never walks through a scan chamber on its way somewhere: lobby to concourse it is scanned like anyone
+// (checkpoint_step_to_concourse() above), and back it takes the exit gate. But the chamber is no refuge from it.
+// With business in there (someone to look for, arrest or walk out: its walk ends in the chamber or a doorway, or it
+// stands in one and wants out) pathing lets it through the doors its key opens, and walking into one opens it:
+// - the outer door, the lobby's side, where the desk and the cells are. A scan under way stops for it. Never while
+//   the inner door is open: the lock holds for the key too, and the inner door shuts in its own time;
+// - the inner door only while the gate is down (an emag), when both doors are plain airlocks to everyone. With the
+//   gate working no key opens the way onto the concourse for whoever stands in the chamber unscanned: an officer on
+//   the concourse walks in if that door stands open, and round by the exit gate if it does not.
+// While officers are at work in there (police_at_work()) the chamber scans nobody, its outer door stays open behind
+// them, and none of the outpost's people walks in or asks a door. Nothing here moves, stuns or holds anyone: the
+// arrest in the chamber is the same arrest as anywhere (outpost_police/police_arrest.dm).
+
+/// Whether `tile` is this checkpoint's: a tile of its chamber or one of its two doorways
+/datum/outpost_checkpoint/proc/holds_turf(turf/tile)
+	return !!tile && ((tile in chamber_turfs) || tile == get_turf(outer_door) || tile == get_turf(inner_door))
+
+/// `person` as one of this outpost's own officers, on duty and up, nobody playing them; null for anyone else
+/datum/outpost_checkpoint/proc/duty_officer(mob/living/person)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cop = person
+	if(!istype(cop) || cop.mind || cop.client || cop.stat != CONSCIOUS || !outpost || cop.police?.outpost != outpost)
+		return null
+	return cop
+
+/**
+ * Whether `walker` is an officer with business in here now, so its key is for these doors: it stands in the chamber
+ * or a doorway (the way out is its own), or what its own walk goes to is in here (a suspect, the tile they were last
+ * seen on, a colleague it covers, evidence on the floor). Where it walks is the officer's own business; nothing here
+ * reads where anyone wanted is.
+ */
+/datum/outpost_checkpoint/proc/police_key_holder(mob/living/walker)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cop = duty_officer(walker)
+	if(!cop)
+		return FALSE
+	if(holds_turf(get_turf(cop)))
+		return TRUE
+	var/atom/walking_to = cop.ai_controller?.current_movement_target
+	return !QDELETED(walking_to) && holds_turf(get_turf(walking_to))
+
+/// Whether pathing takes `walker` through `door`: an officer with business in here, and a door that is open or that its key opens
+/datum/outpost_checkpoint/proc/police_key_fits(obj/machinery/door/airlock/outpost/checkpoint/door, mob/living/walker)
+	if(QDELETED(outer_door) || QDELETED(inner_door) || !police_key_holder(walker))
+		return FALSE
+	if(!door.density || is_disabled())
+		return TRUE
+	return door == outer_door
+
+/**
+ * `user` walks into `door`, shut: if it is an officer with business in here, the door its key opens does. The outer
+ * door, whatever the chamber is doing, short of having its inner door open; the inner door only while the gate is
+ * down. TRUE if it opens.
+ */
+/datum/outpost_checkpoint/proc/police_key(obj/machinery/door/airlock/outpost/checkpoint/door, mob/living/user)
+	if(QDELETED(outer_door) || QDELETED(inner_door) || QDELETED(door) || door.operating || !door.density || !police_key_holder(user))
+		return FALSE
+	if(is_disabled())
+		return open_freely(door)
+	if(door != outer_door)
+		return FALSE
+	// Whoever is being scanned waits: nothing is decided about a chamber the police have opened
+	if(state == CHECKPOINT_SCANNING)
+		set_state(CHECKPOINT_IDLE)
+	return request_outer(user)
+
+/// Whether `person` is someone the police are after or hold: wanted here, under arrest, or in custody
+/datum/outpost_checkpoint/proc/police_wants(mob/living/person)
+	var/datum/outpost_police/police = outpost?.police
+	if(!police || !isliving(person) || !person.mind || person.stat == DEAD)
+		return FALSE
+	return police.get_stars(person.mind) >= 1 || police.arrest_on(person) || police.in_custody(person)
+
+/**
+ * Whether the police are at work in here: one of the outpost's officers, on duty and not just going through to the
+ * concourse, stands in the chamber or a doorway, and so does someone they are after or hold (in a locker or a mech
+ * counts). An officer by itself is no work: one dragged in here holds nothing up. Meanwhile the chamber scans nobody,
+ * its outer door stays open, and the outpost's people keep out.
+ */
+/datum/outpost_checkpoint/proc/police_at_work()
+	if(!outpost?.police || QDELETED(outer_door) || QDELETED(inner_door))
+		return FALSE
+	var/list/turf/tiles = chamber_turfs + get_turf(outer_door) + get_turf(inner_door)
+	var/officer_here = FALSE
+	for(var/turf/tile as anything in tiles)
+		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cop in tile)
+			// "outpost_police_checkpoint": the source checkpoint_step_to_concourse() gives an officer going through
+			if(duty_officer(cop) && !HAS_TRAIT_FROM(cop, TRAIT_CHECKPOINT_CROSSING, "outpost_police_checkpoint"))
+				officer_here = TRUE
+				break
+		if(officer_here)
+			break
+	if(!officer_here)
+		return FALSE
+	for(var/turf/tile as anything in tiles)
+		for(var/atom/movable/thing as anything in tile)
+			if(!scannable(thing))
+				continue
+			for(var/mob/living/person in thing.get_all_contents())
+				if(police_wants(person))
+					return TRUE
+	return FALSE
+
+/// The police were at work in here when a scan was due (start_scan()): once they are done, whoever is shut in is scanned
+/datum/outpost_checkpoint/proc/scan_after_police()
+	if(QDELETED(src) || QDELETED(outer_door) || QDELETED(inner_door) || is_disabled() || state != CHECKPOINT_IDLE)
+		return
+	// A door is open: its closing starts the scan (on_door_closed())
+	if(!outer_door.density || !inner_door.density || outer_door.operating || inner_door.operating)
+		return
+	if(length(chamber_people()))
+		start_scan()
 
 #undef OUTPOST_CHECKPOINT_NPC_PLACE_TIME

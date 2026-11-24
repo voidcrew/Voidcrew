@@ -28,6 +28,9 @@
  * - A door never closes on anyone in its doorway: it waits for them to move.
  * - NPCs never work the doors by walking into them, and pathing never takes an NPC through a chamber.
  *   Someone off the lift crosses by asking each door once (outpost_checkpoint_npcs.dm).
+ * - The outpost's officers have a key, for police business in the chamber only: someone to look for, arrest or walk
+ *   out of it (outpost_checkpoint_npcs.dm, "the police's key"). It opens the outer door; the inner door only while the
+ *   gate is down. While they are at work in there the chamber scans nobody and its outer door stays open behind them.
  *
  * The parts are mapped (doors, a chamber marker on every chamber tile, one wall scanner, the exit gate
  * and lockers) and tied together by checkpoint_id when the outpost links its interior
@@ -387,7 +390,8 @@
 	if(door.density)
 		on_door_closed(door)
 		return
-	if(door.operating || doorway_blocked(door))
+	// The police at work in the chamber are never shut in: the outer door, their way back to the desk, waits for them
+	if(door.operating || doorway_blocked(door) || (door == outer_door && police_at_work()))
 		addtimer(CALLBACK(src, PROC_REF(close_door), door), OUTPOST_CHECKPOINT_DOORWAY_WAIT, TIMER_UNIQUE | TIMER_DELETE_ME)
 		return
 	INVOKE_ASYNC(src, PROC_REF(finish_close), door)
@@ -449,6 +453,9 @@
 
 /// Someone walks into or clicks the outer door. Returns TRUE if it opens.
 /datum/outpost_checkpoint/proc/request_outer(mob/user)
+	// The police are at work in there: none of the outpost's people asks the door to open on them
+	if(!outpost_checkpoint_door_user(user) && !police_key_holder(user) && police_at_work())
+		return FALSE
 	// The gate is down (an emag on its scanner): a plain airlock
 	if(is_disabled() && !QDELETED(outer_door) && !QDELETED(inner_door))
 		return open_freely(outer_door)
@@ -483,6 +490,9 @@
 		return FALSE
 	if(!inner_door.density || inner_door.operating || outer_door.operating)
 		return FALSE
+	// The police are at work in here: no scan until they are done, unless it is an officer who asks
+	if(police_at_work() && !duty_officer(user))
+		return FALSE
 	if(state == CHECKPOINT_REJECTING)
 		// Held open for something refused: nothing more until it has been taken back out
 		if(length(inspect_chamber()))
@@ -500,11 +510,17 @@
 		phase_timer = null
 		close_door(outer_door)
 		return TRUE
-	start_scan()
+	start_scan(user)
 	return TRUE
 
-/datum/outpost_checkpoint/proc/start_scan()
+/// The chamber scans. `asker`: who asked for it, if anyone did
+/datum/outpost_checkpoint/proc/start_scan(mob/asker)
 	if(is_disabled())
+		return
+	// The police are at work in here: nobody is scanned until they are done (an officer going through may still ask),
+	// and then whoever is left shut in is
+	if(police_at_work() && !duty_officer(asker))
+		addtimer(CALLBACK(src, PROC_REF(scan_after_police)), OUTPOST_CHECKPOINT_REJECT_RECHECK, TIMER_UNIQUE | TIMER_DELETE_ME)
 		return
 	set_state(CHECKPOINT_SCANNING)
 	sweep_chamber()
@@ -629,6 +645,9 @@
 		do_sparks(2, TRUE, sensor)
 		playsound(sensor, 'sound/machines/ping.ogg', 40, FALSE, SILENCED_SOUND_EXTRARANGE)
 		sensor.visible_message(span_notice("[sensor] sparks and flickers back on."))
+	// Both doors shut already: no door will close to start it, so whoever stands in there is scanned now
+	if(!QDELETED(outer_door) && !QDELETED(inner_door) && outer_door.density && inner_door.density && !outer_door.operating && !inner_door.operating && length(chamber_people()))
+		start_scan()
 
 /// The gate is down: `door` opens for whoever asked, like a plain airlock, and shuts again once its doorway is clear. TRUE if it opens.
 /datum/outpost_checkpoint/proc/open_freely(obj/machinery/door/airlock/outpost/checkpoint/door)
@@ -816,11 +835,14 @@
 /obj/machinery/door/airlock/outpost/checkpoint/emag_act(mob/user, obj/item/card/emag/emag_card)
 	return FALSE
 
-// NPCs never plan a route through a checkpoint; one going through it by the rules passes a door only once it is open
+// NPCs never plan a route through a checkpoint; one going through it by the rules passes a door only once it is open.
+// An officer with business in the chamber has a key (outpost_checkpoint_npcs.dm)
 /obj/machinery/door/airlock/outpost/checkpoint/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
 	var/mob/living/walker = outpost_checkpoint_npc_walker(pass_info)
 	if(walker)
-		return !density && HAS_TRAIT(walker, TRAIT_CHECKPOINT_CROSSING)
+		if(!density && HAS_TRAIT(walker, TRAIT_CHECKPOINT_CROSSING))
+			return TRUE
+		return !!checkpoint?.police_key_fits(src, walker)
 	return ..()
 
 /// A walk into or click on this door was refused: the deny light, unless the chamber is busy cycling
@@ -833,7 +855,11 @@
 /obj/machinery/door/airlock/outpost/checkpoint/outer
 
 /obj/machinery/door/airlock/outpost/checkpoint/outer/bumpopen(mob/user)
-	if(operating || !density || !outpost_checkpoint_door_user(user))
+	if(operating || !density)
+		return
+	if(!outpost_checkpoint_door_user(user))
+		// An officer on police business in the chamber uses its key; any other NPC gets nothing at all
+		checkpoint?.police_key(src, user)
 		return
 	if(!checkpoint?.request_outer(user))
 		refuse()
@@ -855,7 +881,11 @@
 	return ..()
 
 /obj/machinery/door/airlock/outpost/checkpoint/inner/bumpopen(mob/user)
-	if(operating || !density || !outpost_checkpoint_door_user(user))
+	if(operating || !density)
+		return
+	if(!outpost_checkpoint_door_user(user))
+		// An officer's key opens this door only while the gate is down
+		checkpoint?.police_key(src, user)
 		return
 	if(!checkpoint?.request_cycle(user))
 		refuse()
