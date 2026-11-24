@@ -343,6 +343,42 @@
 	TEST_ASSERT(scanned, "Someone left in the chamber when the police were done was never scanned (checkpoint [checkpoint.state])")
 
 /**
+ * The officer making an arrest gets to its suspect in the chamber past a colleague standing in the only place beside
+ * them: the two trade places. (Anyone else's walk ends beside whoever is on the tile it wanted: police_movement.dm.)
+ */
+/datum/unit_test/voidcrew_trader_checkpoint/police_arrest_place/Run()
+	TEST_ASSERT(fixture(FALSE), "Could not prepare the checkpoint")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/lead = key_officer(lobby)
+	var/datum/outpost_police/police = host.police
+	// At the far end of the chamber, which is reached only past its first tile
+	var/mob/living/carbon/human/suspect = visitor(chamber[2])
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 40)
+	var/datum/outpost_police_case/case = police.open_case(warrant)
+	police.sleep_tick()
+	TEST_ASSERT_EQUAL(case?.arresting(), lead, "Fixture: the officer in the lobby did not take the arrest")
+	// A colleague not on the arrest came in first and stands beside the suspect, between them and the door
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/other = key_officer(chamber[1])
+	TEST_ASSERT_NULL(other.case, "Fixture: the colleague is on the arrest")
+	lead.ai_controller.set_movement_target(type, suspect)
+	lead.ai_controller.set_blackboard_key(BB_CURRENT_MIN_MOVE_DISTANCE, 1)
+	outer.bumpopen(lead)
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(!outer.density, "Fixture: the officer's key did not open the outer door")
+	lead.forceMove(get_turf(outer))
+	TEST_ASSERT(!lead.Adjacent(suspect), "Fixture: the suspect is in reach from the doorway")
+	lead.Move(chamber[1], NORTH)
+	TEST_ASSERT_EQUAL(get_turf(lead), chamber[1], "The officer making the arrest did not get the place beside its suspect from a colleague standing in it")
+	TEST_ASSERT_EQUAL(get_turf(other), get_turf(outer), "The colleague did not trade places with the officer making the arrest")
+	TEST_ASSERT(lead.Adjacent(suspect), "From the place it traded for, the officer making the arrest cannot reach its suspect")
+	// The colleague walking back into it gets nothing: nobody trades with the officer making the arrest
+	other.ai_controller.set_movement_target(type, suspect)
+	other.ai_controller.set_blackboard_key(BB_CURRENT_MIN_MOVE_DISTANCE, 1)
+	COOLDOWN_RESET(other, police_swap_cooldown)
+	other.Move(chamber[1], NORTH)
+	TEST_ASSERT_EQUAL(get_turf(lead), chamber[1], "A colleague took the place back from the officer making the arrest")
+	police.close_case(suspect.mind)
+
+/**
  * Last seen in the scan chamber and seen by nobody since: the first officer is sent into the chamber itself, the next
  * to its door; a look from outside the door is no look into it, and the place goes to another officer.
  */
@@ -372,18 +408,24 @@
 	TEST_ASSERT_EQUAL(police.search_place(warrant, second), chamber[2], "The chamber did not go to the next officer")
 	police.search_looked(warrant, second, chamber[1])
 	TEST_ASSERT(search.done[chamber[2]], "A look from inside the chamber did not count")
-	// In someone's sight in there (a colleague inside, the scanner): officers are sent in to them, not to the door
+	// In someone's sight in there (a colleague inside, the scanner): the officer making the arrest is sent in to them,
+	// everyone else to the door
 	warrant.unseen_since = 0
-	TEST_ASSERT_EQUAL(police.search_place(warrant, first), chamber[2], "With eyes on someone in the chamber an officer was sent to its door, not in to them")
+	var/datum/outpost_police_case/case = police.open_case(warrant)
+	police.sleep_tick()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/lead = case?.arresting()
+	TEST_ASSERT_NOTNULL(lead, "Fixture: no officer took the arrest")
+	TEST_ASSERT_EQUAL(police.search_place(warrant, lead), chamber[2], "With eyes on someone in the chamber the officer making the arrest was sent to its door, not in to them")
 	// From where its outer door cannot be walked to (a hatch onto the hull, seen from the concourse) the door is as far
-	// as anyone is sent while the gate works; with the gate down, in by the inner door
+	// as anyone is sent while the gate works; with the gate down the inner door is a way in
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/third = key_officer(secured)
 	QDEL_NULL(police.search_main)
 	TEST_ASSERT_NULL(police.search_inside(chamber[2], third), "An officer is sent into a working gate's chamber whose outer door it cannot walk to")
-	TEST_ASSERT_EQUAL(police.search_place(warrant, third), secured, "With no way in, an officer was not sent to the chamber's door")
+	TEST_ASSERT_EQUAL(police.search_place(warrant, third), secured, "With eyes on someone in the chamber an officer not on the arrest was not sent to its door")
 	checkpoint.disabled_until = world.time + 1800
-	TEST_ASSERT_EQUAL(police.search_place(warrant, third), chamber[2], "With the gate down an officer on the concourse was not sent into the chamber")
+	TEST_ASSERT_EQUAL(police.search_inside(chamber[2], third), chamber[2], "With the gate down the chamber is not somewhere an officer on the concourse is sent into")
 	checkpoint.disabled_until = 0
+	police.close_case(suspect.mind)
 	qdel(third)
 	// No part of the floor: an officer who stood in it while the floor was read does not make it one
 	first.forceMove(chamber[1])

@@ -705,10 +705,11 @@
 		return last
 	var/turf/start = search_start(last, officer)
 	var/turf/inside = search_inside(last, officer)
-	// Someone has eyes on them now: straight to where they are seen. In a scan chamber that is the chamber: from its
-	// door, a solid one, the officer making the arrest never saw who a colleague inside was looking at
+	// Someone has eyes on them now: straight to where they are seen. In a scan chamber that is the chamber for the
+	// officer making the arrest (from its door, a solid one, it never saw who the scanner or a colleague was looking
+	// at) and the door for everyone else: a chamber has room for the two of them and little more
 	if(!warrant.unseen_since || !istype(officer) || !warrant.mind)
-		return inside || start
+		return (inside && officer?.case) ? inside : start
 	var/datum/outpost_police_search/search = searches[warrant.mind]
 	if(!search || search.stamp != warrant.last_seen_at || search.start != start)
 		search_prune()

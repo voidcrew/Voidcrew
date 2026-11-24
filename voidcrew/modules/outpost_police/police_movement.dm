@@ -14,7 +14,8 @@
  * tile traded places for as long as they both wanted it. With room to, the officer walks round whoever is in its
  * way (police_step_round()). A trade is for getting past someone in a place too narrow for that, once:
  * - never onto the tile the walk ends on (its destination, or as near what it walks to as the walk goes). That place
- *   is the other one's, and next to it will do; taking it only sends them walking back for it;
+ *   is the other one's, and next to it will do; taking it only sends them walking back for it. (The officer making
+ *   an arrest does take it, where there is no walking round to another tile beside its suspect: a scan chamber);
  * - never with someone walking somewhere themselves, unless they are walking straight into the officer (or
  *   strolling ahead of one on the run). They are out of the way in a step, and passing someone going the same way
  *   at the same pace only has them pass back;
@@ -85,12 +86,14 @@
 	if(moving_diagonally)
 		return FALSE
 	// Where they stand is where this walk ends: the place is theirs. A tile beside them that is as good will do, and
-	// with none, next to them will
-	if(police_walk_ends_on(get_turf(other)))
-		return police_step_round(other, TRUE)
-	// Room to walk round them: round them it goes
-	if(police_step_round(other))
+	// with none, next to them will. Room to walk round them otherwise: round them it goes
+	var/ends_here = police_walk_ends_on(get_turf(other))
+	if(police_step_round(other, ends_here))
 		return TRUE
+	// Except for the officer making an arrest, with no other tile beside its suspect to be had (a scan chamber, a
+	// doorway): the place of whoever stands there and is not making one is its to trade for, or the cuffs never go on
+	if(ends_here && !outpost_police_making_arrest(src))
+		return FALSE
 	if(!they_can_move || outpost_police_making_arrest(other))
 		return FALSE
 	// They are walking somewhere themselves, and not into us: out of the way in a step. (Someone strolling ahead of
