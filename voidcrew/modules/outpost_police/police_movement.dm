@@ -23,6 +23,14 @@
  * - never twice by the same two within POLICE_SWAP_PAIR_GAP, whoever walks into whom. The one put off a spot it
  *   wanted waits or goes round. (The officer making an arrest is not held up by this.)
  * Too close to someone it is shooting at, an officer steps back only onto a free tile (outpost_police_step_back).
+ *
+ * A diagonal step is two straight ones, and nothing is settled part-way through one. Its pathfinder plans a diagonal
+ * past someone standing on one leg of it even when the other leg is a wall, and plans it again every time: an officer
+ * stood behind a colleague in a doorway for good that way. Walked into someone on a leg of a diagonal, it takes them
+ * up straight a moment later (police_bump_straight()). And the way round a tile it asked its pathfinder for
+ * (police_note_blocked()) is given up when it has not moved the officer in POLICE_BLOCKED_RESET: tg's pathfinder
+ * keeps to that same diagonal, steps sideways to make it, and the sideways step can be into the wall
+ * (remove_clunky_diagonals()).
  */
 
 /// How long an officer keeps walking into the same person on the same tile before planning a way around them
@@ -35,6 +43,8 @@
 #define POLICE_SWAP_PAIR_GAP (10 SECONDS)
 /// Someone with a walk of their own who moved a tile this recently is on the move, and is not traded places with
 #define POLICE_WALKING_ON (1 SECONDS)
+/// Least time between two straight tries at someone it walked into on a leg of a diagonal step
+#define POLICE_STRAIGHT_BUMP_GAP (0.5 SECONDS)
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/police
 	/// Who this officer last walked into and could not pass (police_movement.dm)
@@ -48,6 +58,8 @@
 	COOLDOWN_DECLARE(police_swap_cooldown)
 	/// REF of whoever it traded places with -> world.time it did (police_note_trade())
 	var/list/traded_with
+	/// world.time it may next take someone it walked into on a diagonal up straight (police_diagonal_blocked())
+	var/bump_straight_at = 0
 
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/MobBump(mob/M)
 	if(client || mind || !isliving(M) || stat != CONSCIOUS)
@@ -56,11 +68,40 @@
 	if(istype(M, /mob/living/carbon/human/npc) && !M.client && !M.mind)
 		if(!police_make_room(M))
 			police_note_blocked(M)
+			police_diagonal_blocked(M)
 		return TRUE
 	var/turf/before = get_turf(src)
 	. = ..()
 	if(get_turf(src) == before)
 		police_note_blocked(M)
+		police_diagonal_blocked(M)
+
+/// Walked into `blocker` on one leg of a diagonal step, where nothing is settled: a tick later they are taken up straight
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_diagonal_blocked(mob/living/blocker)
+	if(!moving_diagonally || world.time < bump_straight_at)
+		return
+	bump_straight_at = world.time + POLICE_STRAIGHT_BUMP_GAP
+	addtimer(CALLBACK(src, PROC_REF(police_bump_straight), WEAKREF(blocker)), 1)
+
+/**
+ * The straight try at someone it walked into on a leg of a diagonal step: beside them still, and still walking, it
+ * settles it with one of the outpost's people by the rules above (round them, or a trade of places), and walks
+ * straight into anyone else as tg has it. Its pathfinder would only plan the same diagonal again.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_bump_straight(datum/weakref/blocker_ref)
+	var/mob/living/blocker = blocker_ref?.resolve()
+	if(QDELETED(blocker) || QDELETED(src) || client || mind || stat != CONSCIOUS || moving_diagonally || now_pushing || !isturf(loc) || !isturf(blocker.loc))
+		return
+	var/way = get_dir(src, blocker)
+	if(!way || (way & (way - 1)) || get_dist(src, blocker) != 1)
+		return
+	var/datum/move_loop/loop = GLOB.move_manager.processing_on(src, SSai_movement)
+	if(isnull(loop) || !(loop.status & MOVELOOP_STATUS_RUNNING) || (loop.status & MOVELOOP_STATUS_PAUSED))
+		return
+	if(istype(blocker, /mob/living/carbon/human/npc) && !blocker.client && !blocker.mind)
+		police_make_room(blocker)
+	else
+		Move(get_turf(blocker), way)
 
 /**
  * `other`, an outpost NPC, is in this officer's way. An officer bringing someone in has the NPC step aside; an
@@ -317,6 +358,18 @@
 	loop.avoid = blocked_at
 	// The next step plans again, with the tile left out
 	loop.movement_path = null
+	addtimer(CALLBACK(src, PROC_REF(police_avoid_check), blocked_at, get_turf(src)), POLICE_BLOCKED_RESET)
+
+/// The way round `avoided` it asked its pathfinder for has not moved it off `stood_at`: the tile is given back, and it walks at whoever stands there again
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_avoid_check(turf/avoided, turf/stood_at)
+	if(QDELETED(src) || get_turf(src) != stood_at)
+		return
+	var/datum/move_loop/has_target/jps/loop = GLOB.move_manager.processing_on(src, SSai_movement)
+	if(!istype(loop) || loop.avoid != avoided)
+		return
+	loop.avoid = null
+	loop.movement_path = null
+	bump_blocked_since = world.time
 
 /**
  * Whether `blocker`, an outpost NPC, can take a step out of someone's way: up, free and not held, and not a trader at
@@ -416,3 +469,4 @@
 #undef POLICE_SWAP_COOLDOWN
 #undef POLICE_SWAP_PAIR_GAP
 #undef POLICE_WALKING_ON
+#undef POLICE_STRAIGHT_BUMP_GAP
