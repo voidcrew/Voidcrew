@@ -1236,7 +1236,8 @@
 /// Whether `spot` is a tile the arresting officer could lead `suspect` off from: beside them, free of furniture, one they can step onto
 /datum/outpost_police_case/proc/lead_spot_ok(mob/living/carbon/suspect, turf/spot)
 	var/turf/there = get_turf(suspect)
-	if(isnull(there) || isnull(spot) || spot == there || !isopenturf(spot) || isspaceturf(spot) || isgroundlessturf(spot))
+	// Water will do (they are led out of a pond by wading): space, lava, a chasm or a drop will not
+	if(isnull(there) || isnull(spot) || spot == there || !isopenturf(spot) || (isgroundlessturf(spot) && !istype(spot, /turf/open/water)))
 		return FALSE
 	if(LAZYACCESS(lead_skips, spot) > world.time || (locate(/obj/structure/outpost_exit_gate) in spot))
 		return FALSE
