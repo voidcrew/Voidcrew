@@ -429,8 +429,10 @@
 	// A shot already in the air when the order was given, or when they gave up, is nobody's fault: a second's grace
 	if(police.order_pending(suspect) && world.time - case.order_at > 1 SECONDS)
 		return "[round((world.time - case.order_at) / (1 SECONDS))]s into the time to comply with an order"
-	// CASE_STEP_CUFF: they did as told and the cuffs are going on
-	if(case && !QDELETED(case) && case.step == "cuff" && world.time - case.step_started_at > 1 SECONDS)
+	// CASE_STEP_CUFF: they did as told and the cuffs are going on. Someone getting away from the cuffs (a step of their
+	// own in the last three seconds: crawling off after the baton put them down) or with a weapon in their hand has
+	// not given up, and is fair game (police_force.dm gives_up())
+	if(case && !QDELETED(case) && case.step == "cuff" && world.time - case.step_started_at > 1 SECONDS && world.time - own_step_at > 3 SECONDS && !case.suspect_armed(suspect))
 		return "being cuffed after giving up"
 	return null
 

@@ -272,4 +272,47 @@ POLICE_SOAK_SCENARIO(crowded_gate)
 		run.arrival()
 	run.stand(60 SECONDS)
 
+// ----- give up at gunpoint, then bolt from the cuffs -----
+// Two stars (the gate emag), then stand just inside the concourse with empty hands until the cuffs come out. Nobody
+// may fire on or strike someone who stands there. Then they run for it, and are anyone's again.
+
+POLICE_SOAK_SCENARIO(give_up_then_bolt)
+
+/datum/police_soak_scenario/give_up_then_bolt/start_turf(datum/police_soak/run, datum/outpost_checkpoint/post)
+	return run.scanner_room_tile(post)
+
+/datum/police_soak_scenario/give_up_then_bolt/play(datum/police_soak/run)
+	if(!run.emag_gate())
+		return
+	run.give_up()
+	var/datum/outpost_checkpoint/post = run.outpost.lobby_checkpoint(null)
+	if(!run.go_to(post.secured_turf, 0, 30 SECONDS))
+		run.script_failed("could not walk through the open gate to [run.where(post.secured_turf)] (got to [run.where(run.suspect)])")
+		return
+	var/stood_at = world.time
+	run.note(">>", "stands at [run.where(run.suspect)] with empty hands")
+	var/until = world.time + 60 SECONDS
+	while(world.time < until && !run.finished && !run.police.arrest_cuffing(run.suspect) && !run.is_now("cuffed"))
+		sleep(2)
+	// A shot at someone still walking, or in the air as they stopped, is fair: three seconds' grace
+	var/hits = 0
+	for(var/list/event as anything in run.force_events)
+		if(event[1] > stood_at + 3 SECONDS)
+			hits++
+	if(hits)
+		run.script_failed("was hit [hits] time\s while standing still with empty hands at two stars, before the cuffs were on")
+	if(run.finished || !run.police.arrest_cuffing(run.suspect))
+		if(!run.is_now("cuffed"))
+			run.note(">>", "nobody went for the cuffs in 60s")
+		run.stand(40 SECONDS)
+		return
+	var/turf/corner = run.far_corner()
+	if(!corner)
+		run.script_failed("no far corner of the concourse to run to")
+		return
+	run.note(">>", "bolts from the cuffs for [run.where(corner)]")
+	run.go_to(corner, 0, 20 SECONDS)
+	run.note(">>", "stops at [run.where(run.suspect)]")
+	run.stand(75 SECONDS)
+
 #undef POLICE_SOAK_SCENARIO
