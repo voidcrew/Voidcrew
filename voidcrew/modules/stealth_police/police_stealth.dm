@@ -841,6 +841,24 @@
 		seen |= key
 		group.reported_bodies |= key
 
+/**
+ * A colleague found down while it stands over someone down with the cuffs to come, or while it has a wanted person at
+ * large to look for: it calls them in and leaves them to the medics. The search it was dealt goes on; it is not pulled
+ * to the body and does not search round it. With nobody to look for it goes and sees to them as before.
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_fallen_left(mob/living/member)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	if(!istype(officer) || !officer.police)
+		return ..()
+	if(police_covered())
+		return TRUE
+	var/list/datum/mind/sought = list(police_hunt?.resolve(), officer.dispatch_mind?.resolve())
+	for(var/datum/mind/mind as anything in sought)
+		var/mob/living/quarry = mind?.current
+		if(isliving(quarry) && quarry.stat != DEAD && officer.police.get_stars(mind) >= 1 && officer.police.force_level(quarry, officer) != POLICE_FORCE_NONE && !officer.police.has_in_hand(quarry, officer))
+			return TRUE
+	return ..()
+
 /// The fallen of trouble that is over are known to it: it does not find them afresh and search for whoever did it
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/proc/police_know_fallen()
 	var/list/seen = blackboard[BB_STEALTH_BODIES_SEEN]

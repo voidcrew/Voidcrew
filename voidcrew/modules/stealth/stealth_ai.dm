@@ -1261,6 +1261,11 @@
 			group.reported_bodies += key
 		// Awake, it is no body: it is asked what happened, not called in as one.
 		var/line = fallen == STEALTH_FALLEN_BODY ? STEALTH_BARK_BODY : STEALTH_BARK_HELPLESS
+		// Busy with something that matters more: it calls it in and keeps at what it was doing
+		if(stealth_fallen_left(member))
+			if(news)
+				stealth_bark(line)
+			return
 		if(!news || stealth_state() == STEALTH_SEARCHING)
 			stealth_go_searching(where)
 			search_for_body = TRUE
@@ -1278,6 +1283,11 @@
 			stealth_blow(near)
 			break
 		return
+
+/// Whether it leaves `member`, one of its group it has just found fallen, where they lie: says what it found and goes
+/// on with what it was doing. Stealth's guards always go and look.
+/datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_fallen_left(mob/living/member)
+	return FALSE
 
 // ===== Touches, hits and recovery =====
 
