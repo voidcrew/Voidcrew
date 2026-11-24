@@ -1,0 +1,74 @@
+2026-08-14:
+  Jackriip:
+  - rscadd: "Electric and EMP storms can now be surveyed from up to 3 tiles away."
+  - tweak: "The Explosives research node no longer needs an ordnance experiment and can be bought with research points."
+  - bugfix: "Players who were dead when the Curse of Babel lifted no longer come back still babbling."
+  - server: "Keeping the cargo console open no longer lags your connection."
+2026-08-16:
+  Jackriip:
+  - rscadd: "New players get a one-time welcome notice in the lobby."
+  - rscadd: "The lobby shows a starfield instead of the live overmap."
+  - rscadd: "Ships that load without breathing gear get an emergency internals crate, and infirmaries missing surgical tools get the rest of the set."
+  - rscadd: "RTG and thermoelectric generator boards can now be researched and printed."
+  - rscadd: "Ship defense turrets can be set to ignore wildlife and fire only on boarders."
+  - balance: "The Verdigris Lich no longer curses ships with rituals. His lair is now an optional raid."
+  - balance: "The anomalock heart now soaks up one EMP at a time instead of making its owner immune to EMPs."
+  - rscadd: "Barnaby now buys sea crystals."
+  - qol: "The ore redemption machine now says what it took in and how many points it earned."
+  - qol: "Shield generators and thrusters now say why they aren't working."
+  - bugfix: "Crew monitoring consoles only show your own ship's crew."
+  - bugfix: "A ship whose crash site disappears now crashes into open space instead of getting stuck in transit."
+  - bugfix: "Cargo deliveries no longer get stuck at the berth when the send button is clicked repeatedly."
+  - balance: "A pirate siphon now freezes the account it is draining, so the balance can't be moved out from under it."
+  - tweak: "Cyberware implants, NPC pirate ships, nanites and the express supply console received a round of fixes and balance changes."
+2026-08-18:
+  Jackriip:
+  - balance: "RTGs produce much more power and gain more from upgraded parts."
+  - bugfix: "Riding an outpost elevator with combat mode on no longer counts as attacking the outpost."
+  - bugfix: "Rescue mission survivors no longer freeze or suffocate in their wreck before you reach them."
+2026-08-20:
+  Jackriip:
+  - server: "Rounds use far less memory, fixing the crashes that ended rounds after two to three hours."
+2026-08-21:
+  Jackriip:
+  - rscadd: "When no captain is aboard, the first crew member to join holds acting command until one arrives."
+  - bugfix: "Traders and outpost regulars can no longer be dragged onto beds or stuffed into crates and disposals."
+  - admin: "Added an admin crew management panel to promote, demote, kick and add crew on any ship."
+  - server: "Fixed memory leaks from planets and ruins being cleared."
+2026-08-22:
+  Jackriip:
+  - rscadd: "Player ships now appear in the ghost orbit menu."
+  - rscadd: "Ship missiles accept chemical payload cores as warheads."
+  - rscadd: "The helm chart shows the coordinates of the tile under your cursor."
+  - rscadd: "Drunk pilots can fumble manual course changes."
+  - balance: "Sunglasses protect against welding again."
+  - tweak: "The chasm rescue rod moved to the Mining tab of the mining vendor and now costs 350 points."
+  - tweak: "Fulton beacons only work for the crew that set them up, unless the owner opens them to everyone."
+  - bugfix: "NTNet now works aboard ships, so tablet apps and NTNet circuits work again."
+  - bugfix: "USB cable links survive docking, undocking and overmap jumps."
+  - bugfix: "Crew-built cameras join their ship's camera network on their own."
+  - bugfix: "Walls built by the construction console leave plating when deconstructed."
+  - bugfix: "Ships landing on a planet no longer arrive with the site's junk and wildlife inside the hull."
+  - bugfix: "Sea crystals spawn their hivelord waves again when damaged."
+  - bugfix: "PACMAN micro-lasers now improve fuel efficiency."
+  - bugfix: "The observe and ghost prompts now say correctly whether you can respawn."
+2026-08-23:
+  Jackriip:
+  - rscadd: "Added smart lockers, buildable storage machines that catalogue loose items."
+  - rscadd: "Climbing back into a cryopod takes you out of the round and frees your crew slot. Rejoining that same ship has a 10-minute cooldown."
+  - rscadd: "Anyone who falls off a ship in flight now lands at a real site, ship or planet instead of being lost in an empty void. Landing on a planet is a hard fall."
+  - tweak: "New ships are open to anyone. The captain can set a join password from Ship Management."
+  - qol: "Ghosts can alt-click to open the loot panel."
+  - bugfix: "The ore silo window no longer breaks when a connected machine is destroyed."
+  - server: "Busy rounds are less likely to crash from running out of memory."
+2026-08-25:
+  Jackriip:
+  - rscadd: "Assault pods now have a hatch that seals before launch."
+  - tweak: "A ship is no longer counted as abandoned while its crew is on the planet below it."
+  - tweak: "Guns found in ruins and loot caches now come ready to fire."
+  - tweak: "Plasmamen start with a spare plasma tank in their bag."
+  - tweak: "Falling from orbit onto a planet is now animated, and hyperspace no longer lets you walk freely next to a hull."
+  - balance: "Treasure chests give their spins per crew instead of per person."
+  - bugfix: "Printed drop pods now see the planet below them."
+  - bugfix: "Cargo deliveries no longer arrive with doors locked to cargo access."
+  - bugfix: "Hopper Pistons and the Meteor Piledriver can no longer leap through windows."
