@@ -97,16 +97,27 @@ GLOBAL_DATUM_INIT(lobby_terminal_state, /datum/ui_state/lobby_terminal, new)
 /datum/lobby_terminal/ui_static_data(mob/user)
 	var/list/data = list()
 	data["wiki"] = !!CONFIG_GET(string/wikiurl)
+	data["rules"] = !!CONFIG_GET(string/rulesurl)
+	data["discord"] = !!CONFIG_GET(string/discordurl)
 	data["localhost_admin"] = !!(user.client?.is_localhost() && check_rights_for(user.client, R_SERVER))
-	data["port"] = null
+	data["port"] = html_decode(station_name())
+	// Whether a player who observes can come back this round (voidcrew/edits/mobs/ghost_respawn.dm).
+	switch(CONFIG_GET(flag/allow_respawn))
+		if(RESPAWN_FLAG_DISABLED)
+			data["respawn"] = "none"
+		if(RESPAWN_FLAG_NEW_CHARACTER)
+			data["respawn"] = "new"
+		else
+			data["respawn"] = "same"
 	data["bezel"] = lobby_terminal_bezel_spec()
+	// Sounds still played by a stand-in clip, with the rate and volume the page plays each at (lobby_assets.dm).
+	data["sfx_tune"] = lobby_terminal_sound_tune()
 	merge_section(data, yard_static(user))
 	return data
 
 /datum/lobby_terminal/ui_data(mob/user)
 	var/list/data = list()
 	shell_data(user, data)
-	data["saves"] = saved_ships_data()
 	merge_section(data, crews_data(user))
 	merge_section(data, yard_data(user))
 	merge_section(data, housing_data(user))
@@ -139,4 +150,9 @@ GLOBAL_DATUM_INIT(lobby_terminal_state, /datum/ui_state/lobby_terminal, new)
 		if(!user.client?.prefs || SSearly_assets.initialized != INITIALIZATION_INNEW_REGULAR)
 			return FALSE
 		return char_act(action, params, user)
+	if(copytext(action, 1, 10) == "settings_")
+		// The same guard for game preferences (SETTINGS) and keybindings (its KEYS group).
+		if(!user.client?.prefs || SSearly_assets.initialized != INITIALIZATION_INNEW_REGULAR)
+			return FALSE
+		return settings_act(action, params, user)
 	return shell_act(action, params, user)

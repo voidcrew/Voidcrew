@@ -290,6 +290,24 @@
    "reason": "Looks like any other headset. A disguise piece with nothing extra in it.",
    "tier": "none"
   },
+  "/obj/item/radio/headset/guard_net": {
+   "confidence": "high",
+   "group": "plain and department headsets",
+   "hash": "",
+   "name": "earpiece",
+   "rank": 4,
+   "reason": "A plain headset locked to one guard faction's channel. Only taken off guards; hearing their calls is the point, not the gear.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset/guard_net/scav": {
+   "confidence": "high",
+   "group": "plain and department headsets",
+   "hash": "",
+   "name": "scav earpiece",
+   "rank": 4,
+   "reason": "A plain headset locked to one guard faction's channel. Only taken off guards; hearing their calls is the point, not the gear.",
+   "tier": "none"
+  },
   "/obj/item/radio/headset/heads/captain": {
    "confidence": "high",
    "group": "plain and department headsets",

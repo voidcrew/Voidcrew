@@ -1,0 +1,232 @@
+2026-09-01:
+  Jackriip:
+  - rscadd: "Ported live Russian-English speech translation from BubberFenyshaEventsFork. Players can opt in from their preferences."
+  - balance: "Abandoned crates now hold real loot instead of joke items."
+  - server: "Fixed a timer leak that crashed long rounds after about three and a half hours."
+2026-09-02:
+  Jackriip:
+  - bugfix: "The health doll no longer loses limbs after docking or undocking."
+  - bugfix: "The survey console links to its ship's R&D server by itself and says when it does."
+  - bugfix: "Australium no longer spoils its own reaction."
+  - bugfix: "Golem bodies give mineral buffs no matter whose brain is inside."
+  - bugfix: "Assault pods no longer drop riders in the error room, carry mech pilots and stowaways correctly, refuse bad launches and warn about outpost shields. Their tube can be mounted on a wall."
+  - bugfix: "Galactic Materials Market orders now reach the cargo console, and cargo berths no longer turn into broken walls after several deliveries."
+  - bugfix: "Planet landing berths stay clear of ruins, nests, wildlife and anomalies."
+  - bugfix: "Planet ore vents now hold minerals, the RCD works on water, ruins no longer sit in rings of ungenerated ground, and GPS units linked at the mission board mark the objective."
+  - tweak: "Planets in the red band now say they have radiation storms."
+  - bugfix: "NPC ships slow down as they lose thrusters, their engines can be damaged in melee, and pirate hulls have working thrusters."
+  - bugfix: "Outpost NPCs and bosses can no longer be stuffed into containers."
+  - bugfix: "The flensing knife can now kill."
+  - bugfix: "Grounding rods now catch electrical-storm lightning nearby."
+  - bugfix: "The Spacer quirk no longer gives planet debuffs in space."
+  - bugfix: "Construction drone scans and pipe blasts happen at the drone, catwalk mode no longer builds floors and walls, drone-built structures face the drone's direction, and buried docking ports are fixed or flagged."
+  - bugfix: "Nanite dermal buttons no longer show an ERROR sprite, and nanite hosts are told about cloud sync problems."
+  - bugfix: "Fixed the blank Character Setup window, blue-screens on NT-IRN and airlock electronics, and a rendering fault that could break a player's screen."
+  - bugfix: "Ghosts can no longer spawn ship parts."
+  - qol: "Added a volume and mute setting for voice barks."
+  - map: "Fixed the Phalanx's xenobiology pens and atmos room, and the Delta's dock fans, stray board and SMES."
+2026-09-04:
+  Jackriip:
+  - rscadd: "The helm console has a distress beacon."
+  - rscadd: "Locked ships take applications from the lobby, which the captain can approve or deny."
+  - rscadd: "Captains can hand over command, and crew can elect a new captain when theirs is gone."
+  - rscadd: "Captains can make a ship's airlocks crew-only."
+  - rscadd: "Bolted ship fixtures can be unbolted and taken apart."
+  - rscadd: "Ballistic and automatic ammunition research and the construction console's fabrication upgrades are back."
+  - tweak: "Overmap hazards now form local clusters instead of walls along a whole orbit."
+  - balance: "Dangerous planet storms are shorter."
+  - balance: "Ship hulls now shield their crew from tritium nebula radiation."
+  - qol: "RPD upgrade disks install either way round."
+  - map: "The Goon and Kilo hulls gained firelocks and cameras."
+  - map: "The Phalanx's xenobiology lab gained a grinder and cameras, and the Phalanx has a new Powerplant Deck module with a thermoelectric generator."
+2026-09-05:
+  Jackriip:
+  - tweak: "Communications, alert levels, status displays and emergency access now work per ship."
+  - rscadd: "OOC messages can be translated too."
+  - qol: "Mission objectives and turn-in requirements are clearer."
+  - rscadd: "Added Specialist, Experimental and Explosive ammunition research, plus specialist ammunition for the Bulldog, L6 SAW and sniper rifles."
+  - tweak: "Ronin and Buster cyberware ammunition can also be fabricated with late research."
+  - balance: "Crafted ballistic guns now come unloaded."
+  - rscadd: "Disarmed pirate ships can be boarded and claimed for a while before they are cleared away."
+  - tweak: "Overmap hazards now leave clear travel lanes between the zone bands."
+  - bugfix: "Planet ground under glass floors no longer shows the starfield."
+  - bugfix: "The cryo cooldown now shows correctly."
+2026-09-06:
+  Jackriip:
+  - rscadd: "Player outposts now have their own bank, cargo deliveries by freight ferry, research and resident cryopods for returning players, with permissions the owner can hand out."
+  - rscadd: "Added R&D relays, which let docked ships share an outpost's research."
+  - rscadd: "Added the Registry uplink implant, sold by Splice, to manage your outposts from anywhere."
+  - tweak: "Players can own more than one outpost, unowned outposts can be claimed, and outposts can build across their whole sector."
+  - rscdel: "Removed the Bare Claim outpost option."
+  - rscadd: "Added ship repair drones, built in Robotics, which patch hull damage with materials from the ship's ore silo."
+  - rscadd: "The construction console gained a build queue, area painting, floor decals, hull windows and room editing, with new construction research to unlock them."
+  - tweak: "Autopilot is simpler: it always avoids storms and asteroid fields, and three buttons choose which zones it may enter."
+  - rscadd: "The helm chart wraps seamlessly across the map edges and draws the planned autopilot route."
+  - rscadd: "Vestige trials are now hands-on solo tasks."
+  - balance: "Vestige ruins, boons and ascensions received a large fix and balance pass."
+  - rscadd: "Trader shelves restock with supply convoys, and the shop shows when the next one arrives."
+  - balance: "Ruin charts restock and give each buyer a fresh expedition."
+  - balance: "Bonded courier platforms can appear up to three times a round."
+  - balance: "Firing pins cost 250 credits at Quartermain Depot."
+  - balance: "Department starter packs are cheaper, and the xenobiology pack includes a slime extract, plasma and monkey cubes."
+  - balance: "Specialist gear, MODsuits and outfitter stock were repriced, and cargo refunds and resale prices are now consistent."
+  - rscadd: "Green-band Exploration Contracts are now offered as a simple starting job."
+  - rscdel: "Missions can no longer be abandoned."
+  - tweak: "Experimental research discoveries refill once every one has been found."
+  - map: "Trader outposts have refreshed layouts."
+  - map: "The Pill's Engineering Bay module now includes construction console and ore silo boards with building supplies."
+  - imageadd: "The skills button on the HUD now has themed icons."
+  - qol: "The Status tab shows how many players are connected."
+  - qol: "Smart lockers accept the contents of bags and boxes dumped into them."
+  - qol: "Bump mining works with a tool in your off hand."
+  - bugfix: "You can walk between operating tables."
+  - admin: "Added an admin outpost manipulator."
+2026-09-07:
+  ExcessiveUseOfCobblestone:
+  - tweak: "Tend Wounds surgery no longer takes longer when the patient is wearing clothes."
+  Jackriip:
+  - rscadd: "Your screentip now shows which overmap zone you are in when you aren't hovering over anything."
+  - rscadd: "Players in the lobby can ask a ship's crew to open a job slot when its slots are full, and ships can be filtered by whether they have a password."
+  - tweak: "Defending yourself at a trader outpost no longer counts against you."
+  - balance: "No more than five Vestige ruins appear in a round."
+  - bugfix: "Bank terminals can no longer link to or drain money from a crewmember's ID account."
+  - bugfix: "Fixed prisoners joining at the wrong time, getting duplicate crimes on their record, and leaving stale portraits behind."
+  - bugfix: "Boarding pods can land on the Pill."
+2026-09-08:
+  Twaticus:
+  - map: "Remapped the beach ruins: the Tiki Bar, Fishing Hut, Smuggler Cove, Push It, Flooded Lab and Cargo Wreck."
+  Jackriip:
+  - qol: "The Colosseum vault now uses the smart locker window."
+  - rscdel: "Ships no longer get extra internals crates, oxygen canisters and surgical duffels added at round start; they carry what their map gives them."
+  - balance: "Feral slaughter demons no longer drop demon hearts."
+  - tweak: "Translated chat messages are now marked as translated."
+  - bugfix: "Mission objectives and GPS beacons now activate when a ship coasts into the area with its engines off."
+2026-09-09:
+  Jackriip:
+  - admin: "Added an Overmap Management panel for finding, spawning, loading, unloading, deleting and visiting overmap locations and ships."
+2026-09-14:
+  "MonkeStation contributors: dwasint, SirNightKnight, Xander3359":
+  - rscadd: "Ported MonkeStation's soft-crit item use: while critically injured but conscious you can use your inventory, use held items and inject yourself with a medipen, though slowly and with poor aim."
+  Jackriip:
+  - rscadd: "Crew can swipe their ID on a ship's bank console to link it to that ship's account, and swipe at another of their ships to switch back."
+  - qol: "An RCD linked to a ship's ore silo keeps working when you carry it off the ship."
+  - bugfix: "Ships docked at an outpost or the Colosseum are no longer abandoned while their crew are visiting it."
+  - bugfix: "Researching Elite Dissection no longer hides every dissection surgery."
+  - bugfix: "Russian runechat now uses proper Cyrillic pixel fonts, ported from SS220."
+  - admin: "Ship expansions are no longer announced in admin chat."
+2026-09-16:
+  Jackriip:
+  - tweak: "Only a ship's own crew can use or tamper with its helm console; anyone else can look but not touch."
+  - bugfix: "Ship power grids are no longer cut when the ship jumps or docks, so emitters and containment fields keep running."
+  - bugfix: "Plumbing on a ship keeps working after it docks, undocks or rotates."
+  - bugfix: "Xenobiology slimes and stored bodies on docked ships and outposts are no longer deleted when everyone leaves a planet."
+  - bugfix: "Trader outposts are protected from singularities, Teslas, explosions, EMPs and bag of holding rifts."
+  - bugfix: "Explosions in the Colosseum no longer dig up fish."
+  - admin: "Trader outposts can be spawned, loaded and removed from the Overmap Management panel."
+  RandomDudeFromTheRim:
+  - balance: "There is no longer a round-wide limit on how many anomaly cores can be refined."
+2026-09-17:
+  Jackriip:
+  - rscadd: "Trader outpost turrets now shoot xenomorphs and hostile wildlife on sight, and no longer ignore barred troublemakers riding something that isn't human."
+  - bugfix: "Armed NPC ships no longer flee mid-fight claiming their weapons are offline."
+  - bugfix: "Yellow-zone pirates no longer spam the same ship with financial scan warnings every few seconds."
+  - bugfix: "Stairs and edged floor tiles in ship rooms now face the way they were mapped."
+2026-09-18:
+  RandomDudeFromTheRim:
+  - qol: "The Research & Development Kit now ships its four machines flat-packed, ready to deploy with a multitool, plus the iron, glass and cable to frame the R&D console."
+  - balance: "Printing the Research & Development Kit now costs 50 iron and 50 glass."
+  Jackriip:
+  - qol: "Dying in the Neutral Zone no longer makes you wait out the respawn delay."
+  - balance: "Being marked as an aggressor at an outpost now wears off after 15 minutes, along with your crew's embargo, and old warnings fade with good behaviour."
+  - bugfix: "Every hit thrown at an outpost now counts toward its warnings."
+  - bugfix: "Ships parked at a player outpost are no longer abandoned and deleted while their crew is away."
+2026-09-20:
+  arealbeba:
+  - rscadd: "Added the Squab, a Nanotrasen multipurpose frigate with three themes and swappable rooms."
+  Twaticus:
+  - rscadd: "Added the Nanobead, a small modular ship with two themes and a wide choice of rooms."
+  Jackriip:
+  - rscadd: "Ships can now carry cyborg and AI crew, with a Silicon preference to opt in to those slots."
+  - rscdel: "Removed the Bluespace Artillery station goal and its cargo crate."
+  - bugfix: "Kudzu can no longer be planted on trader outposts, and vines from outside stop at the outpost's edge."
+2026-09-21:
+  Jackriip:
+  - server: "Fixed memory build-up from planet air, thrown objects and unused space levels that made long rounds more likely to crash."
+  - bugfix: "Armor upgrades no longer wipe the protections they don't change."
+  - bugfix: "Autopilot now routes around radioactive nebulae."
+  - bugfix: "Targeting cameras now see into a ship through doors and windows shot out by lasers."
+  - bugfix: "Cargo shuttles no longer leave with someone hidden in a crate or boarding at the last second."
+  - bugfix: "Cargo deliveries no longer arrive sideways across a ship that docked rotated."
+  - bugfix: "Player bodies inside a Legion are no longer deleted when an empty planet clears its wildlife."
+  - bugfix: "Pandora arena portals stay in their own arena, and the exits open when the guardian dies."
+  - bugfix: "Built-in MOD night vision works again."
+  - bugfix: "Fixed jetpack stabilizing, tethers and released objects drifting in the wrong direction in space."
+  - bugfix: "Dismantling a construction console returns its upgrade disks."
+  - bugfix: "Loot crates can no longer swallow sliding puzzle pillars."
+  - bugfix: "Shuttle and survey boards now appear in the right circuit imprinter categories."
+  - bugfix: "Windoors facing north, east or west now seal the room as soon as they are built."
+2026-09-22:
+  Jackriip:
+  - bugfix: "Opening the ship catalog while the server starts up no longer leaves the round with no ships."
+2026-09-24:
+  RikuTheKiller:
+  - rscadd: "Ported MonkeStation's nanite programmer, which replaces the nanite program hub, programmer and cloud controller with one console that edits cloud programs directly."
+  - rscadd: "Nanite program disks now hold whole cloud backups that can be saved and loaded at the nanite programmer."
+  - balance: "Ported MonkeStation's nanite crash error, which replaces the toggle error: a crashed program stays off until the next cloud sync."
+  - bugfix: "Triggered nanite programs now respect their rules."
+  - qol: "Nanite cloud backups show their program rules without a sensor program loaded, ported from /tg/station."
+  Twaticus:
+  - map: "Remapped the black market outpost."
+  - map: "Outposts now have newscasters and paintings that persist between rounds, and the general and black market outposts have employee of the month frames."
+2026-09-25:
+  Jackriip:
+  - rscadd: "The sector is flipped: crews start in the green zone at the centre, with yellow around it and red at the outer edge."
+  - rscadd: "Captains can invite cyborgs, AIs and other player-controlled creatures to their crew."
+  - qol: "Unused slime extracts of the same kind gather into a pile on the floor."
+  - bugfix: "AIs and cyborgs can switch the survey scanner on and off."
+  - bugfix: "Illegal Technology can be researched after Specialist Ammunition reveals it."
+  - bugfix: "Rapid repeaters no longer cancel cooldown modkits on the kinetic accelerator."
+  - bugfix: "Re-entering your corpse no longer restarts the respawn timer."
+  - bugfix: "The skeleton ghost role in the jungle Skeleton Pile is no longer attacked by the ruin's own skeletons."
+  - bugfix: "The construction console can lay floors on plating, and floors it builds over space no longer leave a hole when pried up."
+  - map: "Every Phalanx plasma thruster now has a heater on the fuel line."
+  arealbeba:
+  - rscdel: "Removed the demoralizer module from the infiltrator MODsuit."
+  Aliceee2ch:
+  - image: "Resprited the lobby wiki button."
+  Twaticus:
+  - map: "Enlarged the Nanobead's engine room and gave its parts prices."
+2026-09-29:
+  Jackriip:
+  - tweak: "Ship alerts now only reach crew aboard the ship or at the same place as it, not away teams elsewhere."
+  - bugfix: "Players on newer BYOND versions can open the join menu and other windows again."
+2026-09-30:
+  Jackriip:
+  - rscadd: "Added bounty hunting: wanted criminals now appear on the mission board."
+  - rscadd: "Player outposts can build prison wings and get paid to keep prisoners in line."
+  - rscadd: "Player outposts can pick a look, build new rooms and services, and charge other crews to use them."
+  - rscadd: "Player outposts can build a ship bay to expand, save and buy ships, and rebuild a saved ship that was destroyed."
+  - rscadd: "Each round a derelict outpost waits somewhere in dangerous space to be found, powered up and claimed."
+  - rscadd: "People now go about their day at trading outposts, on planets and out in space."
+  - rscdel: "Ship weapons can no longer target player outposts."
+  - rscadd: "The construction drone now builds wherever you click near it, with its tools picked from a new Tools tab on the console."
+  - balance: "Ship weapons and thrusters now need a clear line to open space."
+  - balance: "Teleporters, portals and other bluespace travel can no longer cross into another overmap zone."
+  - tweak: "Outpost hangar berths are crew only: only a ship's own crew, and anyone riding with them, can take the elevator down to it."
+  - balance: "Kudzu stops spreading once a patch grows large, and seed packs won't take root when there's too much kudzu around."
+  - bugfix: "Jetpacks now work around a ship in hyperspace instead of being dragged away, and crew thrown overboard land only once."
+  - bugfix: "Slime extract piles no longer fall apart in light airflow, and brooms can sweep them."
+  sylvia-from-fulp-station:
+  - rscadd: "Added the Hiryu-class carrier, a medium ship with three hull variants and swappable rooms."
+  - balance: "Open-cage mechs like the Ripley can be piloted by MMIs, positronic brains and AIs again, though the pilot can be hurt by hits."
+  - balance: "The Paddy moves at its old speed again."
+  - balance: "The Phazon uses a bluespace anomaly core again."
+  - rscadd: "Positronic brains show their damage on examine and can be repaired with a welding tool or cable coil."
+  DeveloperLoser:
+  - rscadd: "The Bogatyr is back as a modular ship with three themes, including a nightclub."
+  RandomDudeFromTheRim:
+  - qol: "Ore redemption machines pay out mining points without an ore silo connection."
+  - balance: "Mining fauna shrug off far less projectile damage."
+  - qol: "The mining equipment order console now shows the price it actually charges."
+  Aliceee2ch:
+  - rscadd: "Added wall lockers, smaller lockers that mount on walls."

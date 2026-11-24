@@ -126,6 +126,9 @@
 	check_partial_spend_refund()
 	check_commission_paths()
 	check_free_ships()
+	check_shown_total()
+	check_kept_confirmation()
+	check_notice_lengths()
 
 /datum/unit_test/lobby_terminal_bill/proc/check_bill_lines()
 	var/list/lines = lobby_yard_bill_lines(hull, finish, selections, FALSE, list(), list("lobby_bill_owned"))
@@ -199,3 +202,63 @@
 	TEST_ASSERT_EQUAL(result, TRUE, "FREE_SHIPS refused a commission")
 	TEST_ASSERT_EQUAL(length(ledger.spent_calls), 0, "FREE_SHIPS charged parts")
 	qdel(terminal)
+
+/// The page's total is compared, never charged: a higher server bill is refused, a lower one goes through.
+/datum/unit_test/lobby_terminal_bill/proc/check_shown_total()
+	var/test_ckey = "lobbybilltotal"
+	var/datum/lobby_terminal/bill_test/terminal = new
+	var/datum/ship_economy_db/lobby_bill_test/ledger = new
+	var/list/total = lobby_yard_bill_total(lobby_yard_bill_lines(hull, finish, selections, FALSE, list(), list()))
+	for(var/part_class in total)
+		ledger.balance[part_class] = total[part_class] + 5
+
+	// The page showed one part less than the bill in one class.
+	var/list/shown = lobby_yard_shown_total(total.Copy())
+	var/lowered_class = total[1]
+	shown[lowered_class] -= 1
+	GLOB.lobby_join_locks[test_ckey] = world.time
+	terminal.run_commission(null, test_ckey, hull, finish, selections, FALSE, ledger, shown)
+	TEST_ASSERT(!GLOB.lobby_join_locks[test_ckey], "A refused higher bill kept the join lock")
+	TEST_ASSERT_EQUAL(length(ledger.spent_calls), 0, "A bill higher than the page showed was charged")
+	TEST_ASSERT_EQUAL(terminal.notice?["text"], "The bill has changed. Check it again.", "Wrong notice for a changed bill")
+	TEST_ASSERT_EQUAL(terminal.notice?["kind"], "bad", "A changed bill should be a bad notice")
+
+	// The page showed more than the bill: the server's own (lower) figure is charged.
+	shown = lobby_yard_shown_total(total.Copy())
+	shown[lowered_class] += 3
+	terminal.notice = null
+	GLOB.lobby_join_locks[test_ckey] = world.time
+	terminal.run_commission(null, test_ckey, hull, finish, selections, FALSE, ledger, shown)
+	TEST_ASSERT_EQUAL(length(ledger.spent_calls), 1, "A bill lower than the page showed was not charged ([terminal.notice?["text"] || "no notice"])")
+	var/list/spent = ledger.spent_calls[1]
+	for(var/part_class in total)
+		TEST_ASSERT_EQUAL(spent[part_class], total[part_class], "The page's figure was charged instead of the server's for [part_class]")
+
+	// A page that sent no total at all is refused rather than charged.
+	TEST_ASSERT_EQUAL(lobby_yard_shown_total(null)[lowered_class], 0, "A missing total should read as zero")
+	TEST_ASSERT_EQUAL(lobby_yard_shown_total(list("[lowered_class]" = "lots"))[lowered_class], 0, "A non-number total should read as zero")
+	qdel(terminal)
+
+/// A second press while a route runs leaves its CONFIRMED box; with no box up it says why.
+/datum/unit_test/lobby_terminal_bill/proc/check_kept_confirmation()
+	var/datum/lobby_terminal/bill_test/terminal = new
+	terminal.set_notice("Preparing your test hull.", "ok")
+	var/list/before = terminal.notice
+	terminal.yard_lock_busy()
+	TEST_ASSERT_EQUAL(terminal.notice, before, "A second press replaced the CONFIRMED box")
+	terminal.set_notice(null)
+	terminal.yard_lock_busy()
+	TEST_ASSERT_EQUAL(terminal.notice?["kind"], "warn", "A press while busy with no box up said nothing")
+	qdel(terminal)
+
+/// Every literal set_notice() string in the shipyard fits the 59-character notice line.
+/datum/unit_test/lobby_terminal_bill/proc/check_notice_lengths()
+	var/source = file2text("voidcrew/modules/lobby_terminal/lobby_yard.dm")
+	TEST_ASSERT(length(source), "Could not read lobby_yard.dm")
+	var/regex/literal = regex(@{"set_notice\("([^"\[\]]*)""}, "g")
+	var/found = 0
+	while(literal.Find(source))
+		found++
+		var/text = literal.group[1]
+		TEST_ASSERT(length(text) <= 59, "Shipyard notice is [length(text)] characters (59 at most): [text]")
+	TEST_ASSERT(found >= 5, "Found only [found] literal notices in lobby_yard.dm")

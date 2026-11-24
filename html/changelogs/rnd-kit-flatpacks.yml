@@ -1,6 +1,0 @@
-author: "RandomDudeFromTheRim"
-delete-after: true
-changes:
-  - qol: "The Research & Development Kit now ships its four machines flat-packed. Deploy each with a multitool and it comes up finished - no machine frames or stock parts needed."
-  - qol: "The kit also carries 5 iron, 2 glass and 5 cable coil, so the R&D console (which is still a board) can be framed on the spot."
-  - balance: "Printing the Research & Development Kit from an autolathe now costs 50 sheets of iron and 50 of glass, instead of 32 and 64."

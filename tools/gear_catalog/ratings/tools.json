@@ -1099,6 +1099,15 @@
    "reason": "Flashlight that hits for 9. A light first and a poor club second.",
    "tier": "none"
   },
+  "/obj/item/flashlight/seclite/scav": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "",
+   "name": "seclite",
+   "rank": 1,
+   "reason": "A plain seclite carried by scav den guards. Same light and same 9 force.",
+   "tier": "none"
+  },
   "/obj/item/flashlight/slime": {
    "confidence": "high",
    "group": "Lights",

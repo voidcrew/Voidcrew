@@ -515,7 +515,7 @@
 /proc/human_npc_ally_in_line(mob/living/shooter, atom/target)
 	var/turf/shooter_turf = get_turf(shooter)
 	var/turf/target_turf = get_turf(target)
-	for(var/turf/line_turf as anything in get_line(shooter_turf, target_turf))
+	for(var/turf/line_turf as anything in human_npc_shot_path(shooter_turf, target_turf))
 		if(line_turf == shooter_turf || line_turf == target_turf)
 			continue
 		for(var/mob/living/other in line_turf)
@@ -524,6 +524,42 @@
 			if(shooter.faction_check_atom(other))
 				return TRUE
 	return FALSE
+
+/**
+ * Every turf a shot from the centre of `start_turf` to the centre of `end_turf` passes through, in order. A bullet
+ * flies the straight line, so at an angle it clips turfs that get_line()'s one-turf-per-step line skips
+ * (someone beside the target, a tile off that line). Where the line runs exactly through a corner both
+ * turfs beside it count.
+ */
+/proc/human_npc_shot_path(turf/start_turf, turf/end_turf)
+	. = list(start_turf)
+	if(isnull(start_turf) || isnull(end_turf) || start_turf.z != end_turf.z)
+		return
+	var/x_sign = SIGN(end_turf.x - start_turf.x)
+	var/y_sign = SIGN(end_turf.y - start_turf.y)
+	var/x_count = abs(end_turf.x - start_turf.x)
+	var/y_count = abs(end_turf.y - start_turf.y)
+	var/x = start_turf.x
+	var/y = start_turf.y
+	var/x_done = 0
+	var/y_done = 0
+	while(x_done < x_count || y_done < y_count)
+		// Which grid line the shot crosses next: a vertical one (< 0), a horizontal one (> 0) or both at a corner.
+		var/decision = (1 + 2 * x_done) * y_count - (1 + 2 * y_done) * x_count
+		if(decision == 0)
+			. += locate(x + x_sign, y, start_turf.z)
+			. += locate(x, y + y_sign, start_turf.z)
+			x += x_sign
+			y += y_sign
+			x_done++
+			y_done++
+		else if(decision < 0)
+			x += x_sign
+			x_done++
+		else
+			y += y_sign
+			y_done++
+		. += locate(x, y, start_turf.z)
 
 /// One step sideways, keeping no further from the target, for a clear shot.
 /proc/human_npc_sidestep(mob/living/shooter, atom/target)

@@ -65,7 +65,7 @@
 		vote_on_poll_handler(poll, href_list)
 
 //When you cop out of the round (NB: this HAS A SLEEP FOR PLAYER INPUT IN IT)
-/mob/dead/new_player/proc/make_me_an_observer()
+/mob/dead/new_player/proc/make_me_an_observer(confirmed = FALSE) // VOIDCREW EDIT CHANGE - lobby_terminal: confirmed skips the alert; the dock terminal asks in its own window - ORIGINAL: /mob/dead/new_player/proc/make_me_an_observer()
 	if(QDELETED(src) || !src.client)
 		ready = PLAYER_NOT_READY
 		return FALSE
@@ -74,7 +74,7 @@
 	if(SSlag_switch.measures[DISABLE_DEAD_KEYLOOP])
 		less_input_message = " - Notice: Observer freelook is currently disabled."
 	// Don't convert this to tgui please, it's way too important
-	var/this_is_like_playing_right = alert(usr, "Are you sure you wish to observe? [get_respawn_notice()][less_input_message]", "Observe", "Yes", "No") // VOIDCREW EDIT: ghost respawn integration: display the applicable respawn notice (voidcrew/edits/mobs/ghost_respawn.dm)
+	var/this_is_like_playing_right = confirmed ? "Yes" : alert(usr, "Are you sure you wish to observe? [get_respawn_notice()][less_input_message]", "Observe", "Yes", "No") // VOIDCREW EDIT: ghost respawn integration: display the applicable respawn notice (voidcrew/edits/mobs/ghost_respawn.dm); lobby_terminal: no alert when already confirmed
 	if(QDELETED(src) || !src.client || this_is_like_playing_right != "Yes")
 		ready = PLAYER_NOT_READY
 		return FALSE

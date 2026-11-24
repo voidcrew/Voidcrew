@@ -17,8 +17,8 @@
 //
 // The mouth click reaches us through tg's handle_suicide(); the head click through
 // hv_try_head_execution(), called from a marked line in tg's fire_gun(). Anyone the execution does
-// not apply to keeps tg's behaviour: a normal point-blank shot to the head, or tg's slow mouth
-// version (which is also how you shoot yourself). Holding someone up (right click) and gun bashes are
+// not apply to gets a normal point-blank shot at the aimed zone, mouth or head: tg's slow mouth version
+// is kept only for shooting yourself (a marked line in fire_gun()). Holding someone up (right click) and gun bashes are
 // unchanged. Human NPCs execute only if they are bosses (owner rulings D4 and OC-9, hv_can_execute()).
 // Every human-looking NPC is a real body, so what the round does shows on that body; a basic mob shows
 // nothing more than the shot.
@@ -26,6 +26,8 @@
 /obj/item/gun
 	/// While an execution round is being fired: the damage it has dealt to the victim's head
 	var/hv_execution_head_damage = 0
+	/// Counts clicks that went to an execution, so try_fire_gun() can tell its own click took that path
+	var/hv_execution_claims = 0
 	/// TRUE while an execution round is being fired: the barrel is on the head, so the shot's flash is drawn there
 	/// (visuals/execution_motion.dm) and not at the hip
 	var/hv_firing_execution = FALSE
@@ -33,7 +35,19 @@
 /obj/item/gun/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer)
 	if(bypass_timer || !hv_execution_possible(user, target))
 		return ..()
+	hv_execution_claims++
 	hv_start_execution(user, target, params)
+
+/**
+ * tg's fire_gun() returns nothing after the mouth path and after the marked head execution hook, so its click carries
+ * on down tg's attack chain and the gun also clubs the target (a pistol-whip on top of the execution). A click that
+ * went to an execution, whether the barrel was held or the wind-up was refused or broken, ends here instead.
+ */
+/obj/item/gun/try_fire_gun(atom/target, mob/living/user, params)
+	var/claims_before = hv_execution_claims
+	. = ..()
+	if(hv_execution_claims != claims_before)
+		return TRUE
 
 /// Called by tg's fire_gun() for a point-blank shot, after its own checks (safeties, firing pins, the
 /// mouth). A head-aimed one at someone who can be executed starts the execution instead of firing.
@@ -43,6 +57,7 @@
 		return FALSE
 	if(!hv_execution_possible(user, target))
 		return FALSE
+	hv_execution_claims++
 	hv_start_execution(user, target, params)
 	return TRUE
 
