@@ -424,3 +424,19 @@
 	TEST_ASSERT_NOTEQUAL(brain.goto_dest, get_turf(officer), "The cover in the lobby walks straight at the arresting officer's tile")
 	police.close_case(suspect.mind)
 	police_pin_warrant(police, suspect.mind, 0)
+
+/**
+ * A cog (the mark over someone at work) on a user whose overlays are redrawn part-way through, as getting wet does to
+ * an officer cuffing someone in the pond: tg's redraw sweeps every managed overlay off them, and the cog's own
+ * removal then had nothing to remove from, which is a runtime.
+ */
+/datum/unit_test/voidcrew_outpost_police_arrest_wet_cog
+
+/datum/unit_test/voidcrew_outpost_police_arrest_wet_cog/Run()
+	var/mob/living/carbon/human/worker = allocate(/mob/living/carbon/human/consistent)
+	var/datum/cogbar/cog = new(worker, 'icons/effects/progressbar.dmi', "Cog")
+	TEST_ASSERT(length(worker.managed_vis_overlays), "Fixture: the cog is not on the worker")
+	worker.update_appearance(UPDATE_OVERLAYS)
+	TEST_ASSERT_NULL(worker.managed_vis_overlays, "Fixture: a redraw of the worker's overlays did not sweep the cog off")
+	qdel(cog)
+	TEST_ASSERT_EQUAL(length(worker.vis_contents), 0, "The cog is still on the worker after its work ended")
