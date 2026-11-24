@@ -40,6 +40,13 @@
 		var/obj/item/mod/control/suit = body.back
 		if(istype(suit))
 			suit.quick_activation()
+	// Fixture: four more drums in the bag. The outfit's 32 shells ran dry in 22 s on Quartermain, and a player who
+	// means to fight brings more; the owner spawned what they wanted too
+	for(var/count in 1 to 4)
+		var/obj/item/ammo_box/magazine/m12g/drum = new(get_turf(body))
+		if(!body.back?.atom_storage?.attempt_insert(drum, body, override = TRUE, force = STORAGE_FULLY_LOCKED, messages = FALSE))
+			run.note(">>", "SCRIPT: no room in the suit's storage for a spare drum")
+			qdel(drum)
 	var/obj/item/gun/gun = locate(/obj/item/gun/ballistic/shotgun/bulldog) in body.held_items
 	if(!gun)
 		return run.script_failed("the outfit put no Bulldog in the suspect's hands")
@@ -95,7 +102,7 @@
 	return TRUE
 
 /// The officer to shoot: standing, awake and in the suspect's sight, the nearest first; null if none
-/datum/police_soak_scenario/combat/proc/mark(datum/police_soak/run, range = 8)
+/datum/police_soak_scenario/combat/proc/mark(datum/police_soak/run, range = 6)
 	var/best_distance = INFINITY
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer as anything in run.officers_up())
 		if(officer.z != run.suspect.z || officer.body_position == LYING_DOWN || HAS_TRAIT(officer, TRAIT_CRITICAL_CONDITION))
@@ -105,6 +112,21 @@
 			continue
 		best_distance = distance
 		. = officer
+
+/// The nearest officer on their feet whom the suspect has a way to walk up to (not behind a counter or glass), or null
+/datum/police_soak_scenario/combat/proc/quarry(datum/police_soak/run)
+	var/list/candidates = list()
+	for(var/mob/living/officer as anything in run.officers_up())
+		if(officer.z == run.suspect.z && officer.body_position != LYING_DOWN)
+			candidates[officer] = get_dist(officer, run.suspect)
+	sortTim(candidates, GLOBAL_PROC_REF(cmp_numeric_asc), TRUE)
+	var/tried = 0
+	for(var/mob/living/officer as anything in candidates)
+		if(++tried > 5)
+			break
+		if(length(get_path_to(run.suspect, officer, 200, 1)))
+			return officer
+	return null
 
 /// Notes every officer that went down since the last look
 /datum/police_soak_scenario/combat/proc/count_fallen(datum/police_soak/run)
@@ -141,9 +163,10 @@
 				shots++
 			sleep(1 SECONDS)
 			continue
-		var/mob/living/nearest = run.nearest_officer()
-		if(nearest && get_dist(nearest, run.suspect) > 3)
-			run.go_to(nearest, 3, 3 SECONDS)
+		// Nobody in sight: after the nearest officer the suspect can walk up to
+		var/mob/living/quarry = quarry(run)
+		if(quarry)
+			run.go_to(quarry, 3, 3 SECONDS)
 		else
 			sleep(1 SECONDS)
 	count_fallen(run)
