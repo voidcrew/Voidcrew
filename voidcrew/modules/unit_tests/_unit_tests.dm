@@ -240,6 +240,7 @@
 #include "voidcrew_outpost_police_search.dm"
 #include "voidcrew_outpost_police_soak.dm"
 #include "voidcrew_outpost_police_soak_invariants.dm"
+#include "voidcrew_outpost_police_soak_rules.dm"
 #include "voidcrew_outpost_police_soak_scenarios.dm"
 #include "voidcrew_outpost_police_stealth.dm"
 #include "voidcrew_outpost_police_stun_squad.dm"

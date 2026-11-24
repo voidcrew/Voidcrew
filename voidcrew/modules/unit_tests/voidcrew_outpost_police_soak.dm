@@ -838,33 +838,47 @@
 			best_distance = distance
 			. = officer
 
-/// One of the outpost's townspeople, awake: one an officer has in sight if there is any, the nearest such to the suspect
-/datum/police_soak/proc/townsperson()
-	var/mob/living/best
-	var/best_score = INFINITY
+/**
+ * One of the outpost's townspeople, awake: one an officer has in sight if there is any, the nearest such to the
+ * suspect. Not one in `except`. `watched_only`: only one an officer has in sight. `takeable`: only one standing free
+ * (not sitting or lying, nothing holding them) whom the suspect has a way to walk up to, as a hostage taker needs.
+ */
+/datum/police_soak/proc/townsperson(list/except, watched_only = FALSE, takeable = FALSE)
 	var/list/officers = officers_up()
+	var/list/candidates = list()
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/local in place.living_npcs())
-		if(istype(local, /mob/living/carbon/human/npc/ambient_npc/outpost/trader) || local.stat != CONSCIOUS || local.z != suspect.z || !isturf(local.loc))
+		if(istype(local, /mob/living/carbon/human/npc/ambient_npc/outpost/trader) || local.stat != CONSCIOUS || local.z != suspect.z || !isturf(local.loc) || (local in except))
+			continue
+		if(takeable && (local.buckled || local.anchored || local.pulledby || local.body_position == LYING_DOWN))
 			continue
 		var/watched = FALSE
 		for(var/mob/living/officer as anything in officers)
 			if(police.perception.sees(officer, local))
 				watched = TRUE
 				break
-		var/score = get_dist(local, suspect) + (watched ? 0 : 1000)
-		if(score < best_score)
-			best_score = score
-			best = local
-	return best
+		if(watched_only && !watched)
+			continue
+		candidates[local] = get_dist(local, suspect) + (watched ? 0 : 1000)
+	sortTim(candidates, GLOBAL_PROC_REF(cmp_numeric_asc), TRUE)
+	for(var/mob/living/local as anything in candidates)
+		// A way to them: a counter or a closed room between is no way
+		if(!takeable || suspect.Adjacent(local) || length(get_path_to(suspect, local, 200, 1)))
+			return local
+	return null
 
 /**
- * A crime in plain sight: the suspect walks up to a townsperson an officer can see and punches them (combat mode,
- * a click) until `blows` have landed. TRUE if they landed.
+ * A crime in plain sight: the suspect walks up to a townsperson an officer can see (if there is one; with
+ * `watched_only`, only such a one) and punches them (combat mode, a click) until `blows` have landed. TRUE if they landed.
  */
-/datum/police_soak/proc/punch_townsperson(blows = 2)
-	var/mob/living/carbon/human/victim = townsperson()
+/datum/police_soak/proc/punch_townsperson(blows = 2, watched_only = FALSE)
+	var/mob/living/carbon/human/victim = townsperson(null, watched_only)
+	// A crime an officer must see: wait for one of the outpost's people to be in an officer's sight, as the beat comes round
+	var/until = world.time + 45 SECONDS
+	while(watched_only && !victim && !finished && world.time < until)
+		sleep(1 SECONDS)
+		victim = townsperson(null, TRUE)
 	if(!victim)
-		return script_failed("no townsperson on the concourse to hit")
+		return script_failed("no townsperson [watched_only ? "in an officer's sight in 45s " : ""]on the concourse to hit")
 	if(!go_up_to(victim))
 		return script_failed("could not walk up to [victim] at [where(victim)] from [where(suspect)]")
 	suspect.set_combat_mode(TRUE)
@@ -910,37 +924,93 @@
 	return TRUE
 
 /**
- * A shove (a right click) on `target`, until they are on the floor or `tries` are spent. tg's shove sends someone
- * back a tile and floors them when there is no tile to go back to, so the suspect follows and keeps shoving the
- * same way until they are against something. TRUE if they went down.
+ * A shove (a right click) on `target`, until they are on the floor or `tries` are spent. tg's shove floors someone
+ * only when they cannot go back a tile: a wall, a closed door, furniture or another person behind them
+ * (/mob/living/proc/disarm(): SHOVE_BLOCKED, or a human on the far tile, COMSIG_LIVING_DISARM_COLLIDE). In the open
+ * it only pushes them back. So the suspect steps round to the side of them that has something solid at their back
+ * (pinning_tile()) and shoves from there; with no such side in reach they shove where they stand and follow.
+ * TRUE if they went down.
  */
 /datum/police_soak/proc/shove_down(mob/living/target, tries = 14)
 	var/push
 	for(var/attempt in 1 to tries)
-		if(QDELETED(target) || !suspect_able())
+		if(QDELETED(target) || !suspect_able() || HAS_TRAIT(suspect, TRAIT_RESTRAINED))
 			return FALSE
 		if(target.body_position == LYING_DOWN)
 			return TRUE
+		var/turf/stand = pinning_tile(target)
+		if(stand && get_turf(suspect) != stand)
+			go_to(stand, 0, 6 SECONDS)
 		if(!suspect.Adjacent(target))
 			var/turf/after = push ? get_step(suspect, push) : null
 			if(!(after && own_step(after) && suspect.Adjacent(target)) && !go_up_to(target, 10 SECONDS))
 				return FALSE
+		if(!suspect_able() || HAS_TRAIT(suspect, TRAIT_RESTRAINED))
+			return FALSE
 		push = get_dir(suspect, target)
+		var/turf/behind = get_step(target, push)
+		var/atom/stopper = (push in GLOB.cardinals) ? shove_stopper(behind, target) : null
 		click(target, "right=1")
-		note(">>", "shoves [who(target)] at [where(target)]")
+		note(">>", "shoves [who(target)] at [where(target)][stopper ? " into [who(stopper)] at [where(behind)]" : ""]")
 		sleep(2)
 	return !QDELETED(target) && target.body_position == LYING_DOWN
 
-/// tg's grab on `target`, tightened by taking hold again (a second ctrl-click) until it is `state` or `limit` runs out
+/// A free tile beside `target` (a cardinal step away) from which a shove sends them into something that stops them, the nearest to the suspect; null if none
+/datum/police_soak/proc/pinning_tile(mob/living/target)
+	var/turf/target_turf = get_turf(target)
+	var/turf/here = get_turf(suspect)
+	if(!target_turf || !here)
+		return null
+	var/turf/best
+	var/best_distance = INFINITY
+	for(var/direction in GLOB.cardinals)
+		var/turf/behind = get_step(target_turf, direction)
+		var/turf/stand = get_step(target_turf, REVERSE_DIR(direction))
+		if(!behind || !stand || !shove_stopper(behind, target))
+			continue
+		if(stand != here && stand.is_blocked_turf(FALSE, suspect))
+			continue
+		var/distance = get_dist(here, stand)
+		if(distance < best_distance)
+			best_distance = distance
+			best = stand
+	return best
+
+/// What on `tile` stops `target` being shoved onto it (a wall, a dense object, a person standing there), or null
+/datum/police_soak/proc/shove_stopper(turf/tile, mob/living/target)
+	if(!tile)
+		return null
+	if(tile.density)
+		return tile
+	for(var/atom/movable/thing in tile)
+		if(thing == target || thing == suspect || !thing.density || (thing.flags_1 & ON_BORDER_1))
+			continue
+		if(ismob(thing) && !ishuman(thing))
+			continue
+		return thing
+	return null
+
+/**
+ * tg's grab on `target`, tightened by taking hold again (a second ctrl-click) until it is `state` or `limit` runs out.
+ * Someone held loosely breaks free at once when they resist (/mob/living/resist_grab()), and the outpost's people do
+ * resist, so it can take a few goes. Each hold lost is written to the trace.
+ */
 /datum/police_soak/proc/grab(mob/living/target, state = GRAB_AGGRESSIVE, limit = 25 SECONDS)
 	var/until = world.time + limit
+	var/best = -1
 	while(!finished && world.time < until && suspect_able() && !QDELETED(target))
-		if(suspect.pulling == target && suspect.grab_state >= state)
+		var/holding = suspect.pulling == target
+		if(holding && suspect.grab_state >= state)
 			return TRUE
+		if(holding)
+			best = max(best, suspect.grab_state)
+		else if(best >= 0)
+			note(">>", "loses hold of [who(target)] (had them at grab state [best])")
+			best = -1
 		if(!suspect.Adjacent(target) && !go_up_to(target, 10 SECONDS))
 			return FALSE
 		click(target, "ctrl=1")
-		sleep(3)
+		sleep(1)
 	return !QDELETED(target) && suspect.pulling == target && suspect.grab_state >= state
 
 /// The public floor tile of the concourse farthest from the suspect that no officer has in sight and the suspect can walk to, or null
