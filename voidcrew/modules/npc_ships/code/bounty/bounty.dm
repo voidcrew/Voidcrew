@@ -1,3 +1,14 @@
+/// The ship parts a bounty pays out when its ship's faction names nothing else.
+GLOBAL_LIST_INIT(bounty_default_part_weights, list(
+	/obj/item/ship_parts/combat = 70,
+	/obj/item/ship_parts/misc = 30,
+))
+
+/// pick_weight() list of /obj/item/ship_parts types a bounty on this ship pays out. Return a shared
+/// static list, never a new or per-ship one.
+/obj/structure/overmap/ship/npc/proc/bounty_part_weights()
+	return GLOB.bounty_default_part_weights
+
 /**
  * Bounty - Global competitive bounty for pirate ships
  *
@@ -11,17 +22,6 @@
  * - The pirate ship is claimed via helm (not bounty turn-in)
  * - The pirate ship is abandoned (crew all dead, no one claimed)
  */
-/// The ship parts a bounty pays out when its ship's faction names nothing else.
-GLOBAL_LIST_INIT(bounty_default_part_weights, list(
-	/obj/item/ship_parts/combat = 70,
-	/obj/item/ship_parts/misc = 30,
-))
-
-/// pick_weight() list of /obj/item/ship_parts types a bounty on this ship pays out. Return a shared
-/// static list, never a new or per-ship one.
-/obj/structure/overmap/ship/npc/proc/bounty_part_weights()
-	return GLOB.bounty_default_part_weights
-
 /datum/pirate_bounty
 	/// Display name for the bounty
 	var/name = "Unknown Target"
