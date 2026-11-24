@@ -2,7 +2,7 @@
 title: Ship Parts
 category: The Fleet
 order: 1.5
-blurb: Where to find ship parts, how to extract them, and how to spend or trade your banked parts.
+blurb: Where to find ship parts, how to extract them, and how to spend, exchange or trade your banked parts.
 ---
 
 **Ship parts** are physical loot you can bank to your account and spend on permanent shipyard unlocks. Collect them during a round, put them in an extraction case, and carry the case when you extract. Banked parts stay with your account across characters and rounds. They are separate from the credits and trade vouchers covered in [Money & Trade](money-and-trade.md).
@@ -13,9 +13,9 @@ Every part belongs to one of four classes. Examine it to check its class before 
 
 | Class | Colour | Places to look |
 |---|---|---|
-| Combat | Red | Shipwrecks, armory and syndicate loot, pirate bounty rewards |
-| Science | Blue | Research sites, laboratory, medical and occult loot |
-| Trade | Gold | Old stations, trade posts, industrial and wardrobe loot |
+| Combat | Red | Shipwrecks, armory and syndicate loot, bounties on ghost ships and siege warships |
+| Science | Blue | Research sites, laboratory, medical and occult loot, bounties on Interdyne and crystal ships |
+| Trade | Gold | Old stations, trade posts, industrial and wardrobe loot, bounties on auditor and Silverscale ships |
 | Misc | Grey | Derelicts, wrecks, expedition caches and general loot |
 
 These are loot sources, not guarantees that every container holds a part. Purchases require the classes shown in their price. For example, the Goon's Chem Lab module costs **4 science parts**; combat, trade and misc parts cannot cover that cost.
@@ -26,10 +26,20 @@ Explore [ruins](ruins.md) and open their loot containers. Different sites favour
 
 | Source | Ship-part reward |
 |---|---|
-| [Pirate bounties](pirates-and-npc-ships.md) | Light bounties pay 1 part and heavy bounties pay 3. Each is combat or misc, with combat more likely. Collect the loose parts from the mission pad after turning in the bounty. |
+| [Pirate bounties](pirates-and-npc-ships.md) | Light bounties pay 1 part and heavy bounties pay 3. The class depends on who you hunted (see below). Collect the loose parts from the mission pad after turning in the bounty. |
 | [Contested cache](dynamic-events.md) | A bonded prize crate with 5 parts and a standard extraction case. The parts favour combat but can be any class. |
 | [Prospect Stake missions](missions.md) | Some hard contracts offer a bonded crate of ship-grade components instead of vouchers. Check the contract's reward text. The crate contains 5 parts and a standard extraction case. |
 | [Grand Colosseum](colosseum.md) | The match prize pool scales with the roster and is divided among the winners in champion's extraction cases. Parts favour combat; see the Colosseum guide for prize sizes and claiming them. |
+
+Pirate bounty parts by crew:
+
+| Pirates | Parts |
+|---|---|
+| Auditors, Silverscale nobles | Mostly trade, some misc |
+| Siege warships, ghost ships | Mostly combat, some misc |
+| Interdyne biocraft, crystal ships | Mostly science, some misc |
+| Toolbox salvagers | Mostly misc, some trade and combat |
+| Other pirates | Mostly combat, some misc |
 
 These rewards still need to be extracted. Parts arriving on a pad or in a prize crate have not reached your account yet. Move the parts from a bonded prize crate into its case, then pick up the case.
 
@@ -75,6 +85,10 @@ You can hand over parts you found, or use **Withdraw Ship Part** in the **IC** t
 
 Give the item to the recipient so they can put it in their case and extract it. They receive the account credit only when they extract, and their usual extraction limit still applies. A withdrawn part can be lost or stolen like any other physical part.
 
+## Exchanging banked parts
+
+The **Exchange** tab of any [shipyard console](trader-outposts.md#the-shipyard-console) trades your banked parts from one class to another: **2 parts of one class for 1 of another**, one trade per press. Pick the class to pay with and the class to receive. You don't need a ship or a captaincy, and the parts never leave your account.
+
 ## Spending banked parts
 
 Open the **SHIPYARD** tab on the lobby's dock terminal to see your balance and the prices of hulls, themes and modules. The bill for a ship adds up everything on it you don't own yet, and **COMMISSION** pays it from your banked parts in one go. You do not carry physical parts into the shipyard. Free options need no parts.
@@ -82,5 +96,7 @@ Open the **SHIPYARD** tab on the lobby's dock terminal to see your balance and t
 Unlocks are permanent. Buying a theme or module lets you select it for future launches of that hull without paying again, and losing a ship does not erase your purchases. See [Buying & Upgrading Ships](ship-upgrades.md) for choosing a loadout and [Ship Catalog](ship-catalog.md) for the available hulls.
 
 [Saving a ship](player-outposts.md) in a ship bay or at a trader outpost also costs parts. The hull costs misc parts, which can be paid for at 2,500 credits each. The rest pays for the progress a save carries, in matching classes: upgraded weapons cost combat parts, upgraded lab and chemistry machines and research (1 science part per 50 nodes) cost science parts, and upgraded cargo and mining machines cost trade parts. Machines at their standard parts are free, upgrades and research together cost at most 10 parts, and every save costs at least 5 parts in total. Funds carry at 1 trade part per 5,000 credits.
+
+The captain can also pay for a save with ship parts they carry, loose or in a case, once a round. Carried parts are used first and banked parts cover the rest. After a save paid partly with carried parts, only banked parts count for that player until the next round.
 
 A ship's join password can be paid for with parts of any class. Setting or changing it costs **3 parts**; clearing it is free.

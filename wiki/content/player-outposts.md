@@ -162,16 +162,19 @@ A hull defense turret bolted to the outpost answers only to its owner, stewards,
 
 The **Rooms** tab sells a permanent **ship bay** for 6,000 credits, 100 iron and 50 glass from the outpost silo; it needs a working hangar elevator. Ships reach it through the **Ship Bay** option at the helm, and people by elevator. When a ship in the bay asks to use the outpost silo, the request appears on its bay row. An evicted ship has three minutes to undock, and gets its docking fee back if it paid in the last 30 minutes.
 
-The bay's own **shipyard console**, found only in the bay itself, has two tabs:
+The bay's own **shipyard console**, found only in the bay itself, has three tabs:
 
 - **Saved ships** keeps a ship you command for a later round.
 - **New ship** orders a new ship, built at the bay by your delivery drones and stocked with its usual starting supplies, paid from the outpost bank or your own account.
+- **Exchange** trades your banked [ship parts](ship-parts.md#exchanging-banked-parts) between classes, 2 for 1.
 
 ### Saved ships
 
 You have three save slots. Dock a ship you command in a ship bay or at a [trader outpost](trader-outposts.md#the-shipyard-console), choose a slot and pay with [ship parts](ship-parts.md) to save it there. The hull needs at least one cryopod. Saving to a slot that already holds a ship overwrites that save, and you pay again.
 
-The price depends on what is aboard, and the console lists it before you pay. The hull costs misc parts. Weapons, defenses, lab, chemistry, cargo and mining machines cost nothing at their standard parts; once upgraded, weapons and defenses cost combat parts, lab and chemistry machines science parts, and cargo and mining machines trade parts. Upgraded machines and research together never cost more than 10 parts. Every save costs at least 5 parts in total. Misc parts can be paid for in credits instead, at 2,500 credits each from the ship's account. Combat, science and trade parts have to be parts. Whatever you take off the ship before saving is not charged for, and is not in the save.
+The price depends on what is aboard, and the console lists it before you pay. The hull costs misc parts. Weapons, defenses, lab, chemistry, cargo and mining machines cost nothing at their standard parts; once upgraded, weapons and defenses cost combat parts, lab and chemistry machines science parts, and cargo and mining machines trade parts. Upgraded machines and research together never cost more than 10 parts. Every save costs at least 5 parts in total. Misc parts can be paid for in credits instead, at 2,500 credits each from the ship's account. Combat, science and trade parts have to be parts.
+
+Ship parts you carry, loose or in an extraction case, count toward the price along with your banked parts, once a round. Carried parts are spent first. If you drop or hand off parts while the console is asking you to confirm, the save stops and nothing is taken. Once carried parts have paid for a save, only banked parts count for you for the rest of the round. Whatever you take off the ship before saving is not charged for, and is not in the save.
 
 Get a saved ship back for free, either from **Saved Ships** in the lobby's join menu, which launches it with you aboard, or from the **Saved ships** tab of any shipyard console, in a ship bay or a trader outpost berth, where the delivery drones build it. Each save works once: using it uses it up and frees the slot.
 
