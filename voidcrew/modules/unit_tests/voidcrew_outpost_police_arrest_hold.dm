@@ -61,11 +61,17 @@
 	TEST_ASSERT(!suspect.handcuffed, "Fixture: the cuffs went on someone who crawled off")
 	TEST_ASSERT_EQUAL(case.step, "subdue", "A suspect who crawled off from the cuffs is not put down again")
 
-	// The baton again, on the floor, before the next try at the cuffs
+	// The baton again, on the floor, before the next try at the cuffs. The grip it took a moment ago is a click of
+	// its own (tg's CLICK_CD_GRABBING, one second), so the blow is the case's next try or the one after
 	officer.forceMove(at(4, 3))
 	case.step_subdue()
-	sleep(2)
+	TEST_ASSERT_EQUAL(case.step, "subdue", "A suspect who crawled off was taken back to the cuffs before any blow")
+	var/blow_by = world.time + 4 SECONDS
+	while(case.strikes < 1 && world.time < blow_by)
+		sleep(5)
+		case.step_subdue()
 	TEST_ASSERT(case.strikes >= 1, "No blow was thrown at a suspect crawling off from the cuffs")
+	sleep(2)
 	case.step_subdue()
 	TEST_ASSERT_EQUAL(case.step, "cuff", "After the blow the arrest did not go back to the cuffs")
 	case.step_cuff()
