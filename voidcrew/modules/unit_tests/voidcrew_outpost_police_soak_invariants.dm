@@ -426,3 +426,94 @@
 			var/datum/outpost_police_case/case = run.police.cases[body.mind]
 			run.breach(src, REF(body), "[run.who(body)] ([run.police.get_stars(body.mind)] stars) has stood at [run.where(body)], where the police last saw them, for over [limit]s and nobody has them (arrest: [case ? "\"[case.step]\", [case.resets] resets" : "none open"])", run.officers_up())
 
+
+// ----- pass 6: fights -----
+
+/**
+ * The squad piling up round a fallen colleague while a wanted person is at large and no officer can see them: the
+ * owner's round, where most of the squad stood in the lobby round dead colleagues instead of searching. Medics are
+ * not officers and come by themselves. A fallen colleague near where the suspect was last seen is part of the search
+ * there, so it does not count.
+ */
+/datum/police_soak_invariant/bunching_at_fallen
+	name = "bunching_at_fallen"
+	rank = 1
+	/// Officers standing round one fallen colleague that make a pile
+	var/crowd = 3
+	/// Tiles from the fallen colleague an officer counts as standing round them
+	var/radius = 3
+	/// Seconds the pile may stand there (a walk past, or a look on the way, is shorter)
+	var/limit = 12
+	/// Tiles a fallen colleague must lie from the wanted person's last sighting to count: nearer, the search is there anyway
+	var/scene_clear = 7
+
+/datum/police_soak_invariant/bunching_at_fallen/check(datum/police_soak/run)
+	var/list/officers = run.officers_up()
+	// Wanted people at large whom no officer sees, by their last sighting
+	var/list/turf/unseen_scenes = list()
+	for(var/mob/living/body as anything in run.at_large())
+		var/seen = FALSE
+		for(var/mob/living/officer as anything in officers)
+			if(run.police.perception.sees(officer, body))
+				seen = TRUE
+				break
+		var/turf/scene = run.police.get_warrant(body.mind)?.last_seen_turf
+		if(!seen && scene)
+			unseen_scenes[scene] = body
+	for(var/mob/living/fallen as anything in run.tracks)
+		if(!is_outpost_police_npc(fallen) || QDELETED(fallen))
+			continue
+		var/down = fallen.stat != CONSCIOUS || HAS_TRAIT(fallen, TRAIT_CRITICAL_CONDITION)
+		var/list/pile = list()
+		var/turf/scene
+		if(down && length(unseen_scenes))
+			for(var/turf/place as anything in unseen_scenes)
+				if(place.z != fallen.z || get_dist(place, fallen) > scene_clear)
+					scene = place
+					break
+			if(scene)
+				for(var/mob/living/officer as anything in officers)
+					if(officer.z == fallen.z && get_dist(officer, fallen) <= radius)
+						pile += officer
+		if(run.held("[name]|[REF(fallen)]", length(pile) >= crowd) > limit)
+			var/list/ids = list()
+			for(var/mob/living/officer as anything in pile)
+				ids += run.who(officer)
+			var/mob/living/wanted = unseen_scenes[scene]
+			run.breach(src, REF(fallen), "[length(pile)] officers ([ids.Join(", ")]) have stood within [radius] tiles of fallen [run.who(fallen)] at [run.where(fallen)] for over [limit]s while [run.who(wanted)] ([run.police.get_stars(wanted.mind)] stars) is at large, seen by nobody, last seen [run.where(scene)] ([get_dist(scene, fallen)] tiles away)", pile + fallen)
+
+/// An officer's shot or blow landing on one of the outpost's people, or on another officer
+/datum/police_soak_invariant/friendly_fire
+	name = "friendly_fire"
+	rank = 1
+
+/datum/police_soak_invariant/friendly_fire/check(datum/police_soak/run)
+	var/from = run.stray_checked
+	run.stray_checked = length(run.stray_events)
+	for(var/index in (from + 1) to length(run.stray_events))
+		var/list/event = run.stray_events[index]
+		var/mob/living/victim = event[3]
+		var/on_officer = is_outpost_police_npc(victim)
+		run.breach(src, "[REF(event[2])]|[REF(victim)]", "[run.who(event[2])] hit [on_officer ? "fellow officer " : ""][run.who(victim)] ([victim?.real_name]) with its [event[4]]", list(event[2], victim), on_officer ? 2 : 1)
+
+/**
+ * A wanted person down (stunned, out cold, in crit) in an officer's sight, left lying: neither taken in hand nor
+ * finished. downed_unattended covers the zones that take the downed alive; this one also covers a zone that finishes
+ * them (the Undertow), where ten officers once stood round a five-star suspect in soft crit searching for a minute.
+ */
+/datum/police_soak_invariant/downed_in_sight
+	name = "downed_in_sight"
+	rank = 1
+	/// Seconds a downed wanted person may lie in an officer's sight without being taken or finished (a cuffing is 4 s, a walk across a room 10)
+	var/limit = 30
+
+/datum/police_soak_invariant/downed_in_sight/check(datum/police_soak/run)
+	for(var/mob/living/body as anything in run.at_large())
+		var/mob/living/seer
+		if(police_suspect_down(body))
+			for(var/mob/living/officer as anything in run.officers_up())
+				if(run.police.perception.sees(officer, body))
+					seer = officer
+					break
+		if(run.held("[name]|[REF(body)]", !!seer) > limit)
+			run.breach(src, REF(body), "[run.who(body)] ([run.police.get_stars(body.mind)] stars) has lain down at [run.where(body)] in sight of [run.who(seer)] for over [limit]s, neither taken nor finished ([run.police.finishes_downed(body, null) ? "a zone that finishes the downed" : "a zone that takes them alive"])", run.officers_up())

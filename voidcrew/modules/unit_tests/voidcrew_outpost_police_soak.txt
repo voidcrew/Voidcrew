@@ -12,3 +12,7 @@
 /datum/unit_test/voidcrew_police_soak/crawl_from_cuffs
 /datum/unit_test/voidcrew_police_soak/give_up_then_bolt
 /datum/unit_test/voidcrew_police_soak/shot_down_crawl
+/datum/unit_test/voidcrew_police_soak/jailbreak_shootout
+/datum/unit_test/voidcrew_police_soak/kill_then_hide
+/datum/unit_test/voidcrew_police_soak/four_star_crawl
+/datum/unit_test/voidcrew_police_soak/five_star_heavy

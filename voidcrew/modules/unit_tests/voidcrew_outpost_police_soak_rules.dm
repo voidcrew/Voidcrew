@@ -249,3 +249,79 @@
 	police.note_seen(suspect.mind, get_turf(suspect))
 	found = breaks_after(/datum/police_soak_invariant/door_loiter)
 	TEST_ASSERT(length(found), "door_loiter stayed quiet about the cover officer standing in a doorway for a minute, four tiles from its suspect")
+
+// ----- bunching_at_fallen -----
+// Pass 6: the owner's round 17.22.26, most of the squad stood in the lobby round dead colleagues while the suspect was
+// elsewhere and nobody saw them.
+
+/datum/unit_test/voidcrew_stealth_live/police/soak_rule/bunching_at_fallen
+
+/datum/unit_test/voidcrew_stealth_live/police/soak_rule/bunching_at_fallen/Run()
+	TEST_ASSERT(rule_room(), "No room for the test")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/fallen = officer_at(2, 2, WEST)
+	var/list/pile = list(officer_at(3, 2, WEST), officer_at(2, 3, WEST), officer_at(3, 1, WEST))
+	var/mob/living/carbon/human/suspect = wanted_visitor(14, 2, 90)
+	fallen.Unconscious(5 MINUTES)
+	TEST_ASSERT(fallen.stat != CONSCIOUS, "Fixture: the fallen officer is awake")
+	for(var/mob/living/officer as anything in pile)
+		TEST_ASSERT(!police.perception.sees(officer, suspect), "Fixture: [officer] facing away sees the suspect")
+	var/list/found = breaks_after(/datum/police_soak_invariant/bunching_at_fallen)
+	TEST_ASSERT(length(found), "bunching_at_fallen stayed quiet about three officers standing round a fallen colleague for a minute while a four-star suspect nobody saw was at large twelve tiles off")
+	// Spread out, away from the fallen colleague, nobody is piling up
+	for(var/index in 1 to length(pile))
+		var/mob/living/officer = pile[index]
+		officer.forceMove(at(7 + index, 2))
+	found = breaks_after(/datum/police_soak_invariant/bunching_at_fallen)
+	TEST_ASSERT(!length(found), "bunching_at_fallen fired with the officers spread out away from the fallen colleague: [jointext(found, "; ")]")
+	// Round the fallen colleague again, but the suspect lies by them: that is the search, not a pile
+	for(var/index in 1 to length(pile))
+		var/mob/living/officer = pile[index]
+		officer.forceMove(at(3, index))
+	suspect.forceMove(at(6, 2))
+	police.note_seen(suspect.mind, get_turf(suspect))
+	suspect.forceMove(at(14, 2))
+	found = breaks_after(/datum/police_soak_invariant/bunching_at_fallen)
+	TEST_ASSERT(!length(found), "bunching_at_fallen fired on officers round a fallen colleague four tiles from where the suspect was last seen: [jointext(found, "; ")]")
+
+// ----- friendly_fire -----
+
+/datum/unit_test/voidcrew_stealth_live/police/soak_rule/friendly_fire
+
+/datum/unit_test/voidcrew_stealth_live/police/soak_rule/friendly_fire/Run()
+	TEST_ASSERT(rule_room(), "No room for the test")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(2, 2, EAST)
+	var/mob/living/carbon/human/bystander = person_at(6, 2, FALSE)
+	var/mob/living/carbon/human/suspect = wanted_visitor(10, 2)
+	probe.suspect = suspect
+	probe.track(bystander)
+	var/obj/projectile/beam/disabler/shot = allocate(/obj/projectile/beam/disabler, at(5, 2))
+	shot.firer = officer
+	// A shot of the officer's landing on the bystander, as tg's bullet_act() sends it
+	SEND_SIGNAL(bystander, COMSIG_ATOM_BULLET_ACT, shot, BODY_ZONE_CHEST, FALSE, 0)
+	var/list/found = breaks_after(/datum/police_soak_invariant/friendly_fire, 0)
+	TEST_ASSERT(length(found), "friendly_fire stayed quiet about an officer's disabler landing on a bystander")
+	// The suspect's own shot on the bystander is the suspect's crime, not the rule's
+	shot.firer = suspect
+	SEND_SIGNAL(bystander, COMSIG_ATOM_BULLET_ACT, shot, BODY_ZONE_CHEST, FALSE, 0)
+	found = breaks_after(/datum/police_soak_invariant/friendly_fire, 0)
+	probe.suspect = null
+	TEST_ASSERT(!length(found), "friendly_fire fired on the suspect's shot hitting a bystander: [jointext(found, "; ")]")
+
+// ----- downed_in_sight -----
+
+/datum/unit_test/voidcrew_stealth_live/police/soak_rule/downed_in_sight
+
+/datum/unit_test/voidcrew_stealth_live/police/soak_rule/downed_in_sight/Run()
+	TEST_ASSERT(rule_room(), "No room for the test")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(2, 2, EAST)
+	var/mob/living/carbon/human/suspect = wanted_visitor(5, 2, 180)
+	suspect.Paralyze(5 MINUTES)
+	TEST_ASSERT(police_suspect_down(suspect), "Fixture: a paralysed suspect is not down to the police")
+	TEST_ASSERT(police.perception.sees(officer, suspect), "Fixture: the officer does not see the suspect three tiles in front of it")
+	var/list/found = breaks_after(/datum/police_soak_invariant/downed_in_sight)
+	TEST_ASSERT(length(found), "downed_in_sight stayed quiet about a downed five-star suspect lying a minute in front of an officer")
+	// Out of every officer's sight it is the search's work, not this rule's
+	officer.setDir(WEST)
+	TEST_ASSERT(!police.perception.sees(officer, suspect), "Fixture: the officer facing away still sees the suspect")
+	found = breaks_after(/datum/police_soak_invariant/downed_in_sight)
+	TEST_ASSERT(!length(found), "downed_in_sight fired with no officer seeing the downed suspect: [jointext(found, "; ")]")
