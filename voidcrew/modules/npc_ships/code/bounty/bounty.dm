@@ -11,6 +11,17 @@
  * - The pirate ship is claimed via helm (not bounty turn-in)
  * - The pirate ship is abandoned (crew all dead, no one claimed)
  */
+/// The ship parts a bounty pays out when its ship's faction names nothing else.
+GLOBAL_LIST_INIT(bounty_default_part_weights, list(
+	/obj/item/ship_parts/combat = 70,
+	/obj/item/ship_parts/misc = 30,
+))
+
+/// pick_weight() list of /obj/item/ship_parts types a bounty on this ship pays out. Return a shared
+/// static list, never a new or per-ship one.
+/obj/structure/overmap/ship/npc/proc/bounty_part_weights()
+	return GLOB.bounty_default_part_weights
+
 /datum/pirate_bounty
 	/// Display name for the bounty
 	var/name = "Unknown Target"
@@ -61,6 +72,9 @@
 	var/work_serial
 	/// The zone its pirate was in when posted, for when it is somewhere with no zone at the end.
 	var/posted_zone
+	/// pick_weight() list of /obj/item/ship_parts types this bounty pays out, read from its ship when posted
+	/// because the ship may be gone by turn-in. A shared static list: never edit it.
+	var/list/part_weights
 
 /datum/pirate_bounty/New(obj/structure/overmap/ship/npc/target_ship, obj/item/ship_key/captain_key)
 	. = ..()
@@ -75,6 +89,7 @@
 	target_ship_ref = WEAKREF(target_ship)
 	target_key_ref = WEAKREF(captain_key)
 	ship_type_path = target_ship.type
+	part_weights = target_ship.bounty_part_weights()
 
 	// Generate bounty details from ship. Ship names are lowercase like every
 	// other atom name, so capitalize for the headline the UI and the bounty
@@ -434,7 +449,7 @@
  * Spawns bounty loot at the given location.
  * Light bounties: 2 standard missiles + basic weapon crate + 1 ship part
  * Heavy bounties: 2 heavy missiles + premium weapon crate + 3 ship parts
- * Ship parts are 70% combat, 30% misc.
+ * Ship part classes are weighted by the pirate's faction (bounty_part_weights()).
  * @param spawn_loc The turf to spawn items on
  * @return List of item names spawned (for announcement)
  */
@@ -485,12 +500,9 @@
 
 	// Spawn ship parts loose on pad (players must collect and store in extraction briefcase)
 	var/part_count = is_heavy_bounty ? BOUNTY_HEAVY_SHIP_PARTS : BOUNTY_LIGHT_SHIP_PARTS
-	var/static/list/bounty_part_types = list(
-		/obj/item/ship_parts/combat = 70,
-		/obj/item/ship_parts/misc = 30,
-	)
+	var/list/weights = part_weights || GLOB.bounty_default_part_weights
 	for(var/i in 1 to part_count)
-		var/part_type = pick_weight(bounty_part_types)
+		var/part_type = pick_weight(weights)
 		new part_type(spawn_loc)
 	spawned_items += "[part_count] ship part[part_count > 1 ? "s" : ""]"
 
