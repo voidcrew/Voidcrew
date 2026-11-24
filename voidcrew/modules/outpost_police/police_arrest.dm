@@ -1704,6 +1704,11 @@
 /datum/outpost_police_case/proc/strike(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/carbon/suspect)
 	if(QDELETED(src) || QDELETED(officer) || QDELETED(suspect) || !officer.Adjacent(suspect))
 		return FALSE
+	// Down since the blow was planned, or lying there for the cuffs: the cuffs, not the baton. plan_for() plans a blow
+	// on every planning tick of the subdue step, and the case only moves on to the cuffs once a second (step_subdue()):
+	// someone a colleague's disabler put down in between was struck again.
+	if(police_suspect_down(suspect) || (step == CASE_STEP_SUBDUE && suspect_subdued(suspect) && !crawling_off(suspect)))
+		return FALSE
 	var/obj/item/baton = officer.get_baton()
 	if(baton && !officer.is_holding(baton) && !human_npc_take_in_hand(officer, baton))
 		baton = null
@@ -2011,6 +2016,13 @@
 			// Nothing taken, or nothing carried any more: straight on
 			disposed_at = world.time
 		else
+			// The suspect comes along to the desk, as on the escort: a hold that slipped is taken again before the walk
+			// goes on. Walked off from, they stood there alone in the cuffs, and the steps they took were a bolt.
+			if(!suspect_lost)
+				var/mob/living/carbon/led = get_suspect()
+				if(!led || !keep_pulling(officer, led, TRUE))
+					return
+				make_way(officer, led)
 			if(route_to(officer, desk, 1))
 				set_goal(null)
 				begin_action(CASE_ACT_DISPOSING)
