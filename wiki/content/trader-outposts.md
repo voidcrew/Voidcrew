@@ -255,7 +255,7 @@ A report that hasn't gone out yet can be stopped. It is dropped if every witness
 
 More officers arrive through the staff lifts as your stars rise, and they keep coming.
 
-At 2 stars the officers around the one arresting you hold their fire while you stay where you are with empty hands and hit nobody. They keep their guns on you until you are cuffed. Walk off, draw a weapon or hit out, and they stun you until you stop or go down.
+At 2 stars the officers around the one arresting you hold their fire while you stay where you are with empty hands and hit nobody. They keep their guns on you until you are cuffed. Walk off, pull away from the cuffs, draw a weapon or hit out, and they stun you until you stop or go down.
 
 **Losing them.** Out of sight, the officers search outward from where you were last seen, one officer to a place, and they keep at it for as long as you are wanted. Anyone who spots you brings the rest.
 
