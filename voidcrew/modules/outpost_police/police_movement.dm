@@ -472,6 +472,14 @@
 	if(. && give_way_holds(newloc))
 		return FALSE
 
+// Put somewhere else (carried, thrown, moved by a script), the meeting with that escort is over
+/mob/living/carbon/human/npc/ambient_npc/outpost/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
+	. = ..()
+	if(forced && gave_way_until)
+		gave_way_to = null
+		gave_way_from = null
+		gave_way_until = 0
+
 // On an arrest, riding a lift, or with someone to fight, an officer goes where it must. (One running to search a spot
 // is held: at the Undertow's checkpoint a searcher sent to the suspect's tile was stepped aside by the officer cuffing
 // them and ran straight back, three times in fifteen seconds.)
