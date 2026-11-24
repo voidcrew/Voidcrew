@@ -119,9 +119,9 @@
 		post.disabled_until = 0
 		post.end_disable()
 	started = world.time
-	while(world.time - started < 20 SECONDS && (!post.outer_door.density || !post.inner_door.density || post.state != "idle")) // CHECKPOINT_IDLE
+	while(world.time - started < 20 SECONDS && (!post.outer_door.density || !post.inner_door.density || post.outer_door.operating || post.inner_door.operating || post.state != "idle")) // CHECKPOINT_IDLE
 		sleep(0.5 SECONDS)
-	TEST_ASSERT(post.outer_door.density && post.inner_door.density && post.state == "idle", "[outpost_type], [gate]: 20 s after the arrest the gate has not settled ([gate_report(post)])")
+	TEST_ASSERT(post.outer_door.density && post.inner_door.density && !post.outer_door.operating && !post.inner_door.operating && post.state == "idle", "[outpost_type], [gate]: 20 s after the arrest the gate has not settled ([gate_report(post)])")
 	var/mob/living/carbon/human/visitor = dispatch_suspect(outpost, 0, post.lobby_turf)
 	TEST_ASSERT(post.request_outer(visitor), "[outpost_type], [gate]: after the arrest the outer door would not open for a visitor")
 	sleep(2 SECONDS)
