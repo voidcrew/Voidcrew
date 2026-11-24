@@ -572,7 +572,8 @@
 	// Out with the bag
 	var/obj/structure/closet/body_bag/outpost_morgue/bag = allocate(/obj/structure/closet/body_bag/outpost_morgue, corpse_tile)
 	corpse.forceMove(bag)
-	TEST_ASSERT(worker.start_pulling(bag), "Setup: the worker could not pull the bag")
+	worker.start_pulling(bag, supress_message = TRUE)
+	TEST_ASSERT_EQUAL(worker.pulling, bag, "Setup: the worker could not pull the bag")
 	TEST_ASSERT(cell.body_walk_out(worker, bag), "The morgue crew did not bring the bag out of the cell")
 	var/turf/bag_turf = get_turf(bag)
 	TEST_ASSERT(!(bag_turf in cell.tiles) && bag_turf != get_turf(cell.door), "The bag is still in the cell or its doorway")
