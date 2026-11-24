@@ -34,7 +34,7 @@ Every berth has a **shipyard console** beside its exit, the same one found in a 
 
 - **Saved ships**: the captain of the ship in the berth can save it to one of their slots, paying [ship parts](ship-parts.md) as usual. A save can also be loaded here.
 - **New ship**: order a new hull.
-- **Exchange**: trade your banked [ship parts](ship-parts.md#exchanging-banked-parts) between classes, 2 for 1. Anyone can use it.
+- **Exchange**: trade your banked [ship parts](ship-parts.md#exchanging-banked-parts) between classes. Anyone can use it.
 
 A loaded save or a new hull is built in a berth of its own, so a free berth is needed. Until it is finished, only the captain can ride down to it. An outpost that has marked you or your ship for violence will not deal with you.
 

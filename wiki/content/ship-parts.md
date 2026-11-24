@@ -87,7 +87,14 @@ Give the item to the recipient so they can put it in their case and extract it. 
 
 ## Exchanging banked parts
 
-The **Exchange** tab of any [shipyard console](trader-outposts.md#the-shipyard-console) trades your banked parts from one class to another: **2 parts of one class for 1 of another**, one trade per press. Pick the class to pay with and the class to receive. You don't need a ship or a captaincy, and the parts never leave your account.
+The **Exchange** tab of any [shipyard console](trader-outposts.md#the-shipyard-console) trades your banked parts from one class to another, one trade per press. Pick the class to pay with and the class to receive. You don't need a ship or a captaincy, and the parts never leave your account.
+
+| Pay | For combat | For science | For trade | For misc |
+|---|---|---|---|---|
+| Combat | | 4 for 1 | 2 for 1 | 2 for 1 |
+| Science | 1 for 2 | | 1 for 2 | 1 for 1 |
+| Trade | 2 for 1 | 4 for 1 | | 2 for 1 |
+| Misc | 1 for 1 | 3 for 1 | 1 for 1 | |
 
 ## Spending banked parts
 

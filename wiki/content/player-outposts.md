@@ -166,7 +166,7 @@ The bay's own **shipyard console**, found only in the bay itself, has three tabs
 
 - **Saved ships** keeps a ship you command for a later round.
 - **New ship** orders a new ship, built at the bay by your delivery drones and stocked with its usual starting supplies, paid from the outpost bank or your own account.
-- **Exchange** trades your banked [ship parts](ship-parts.md#exchanging-banked-parts) between classes, 2 for 1.
+- **Exchange** trades your banked [ship parts](ship-parts.md#exchanging-banked-parts) between classes.
 
 ### Saved ships
 
