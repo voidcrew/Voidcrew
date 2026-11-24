@@ -154,3 +154,227 @@
 
 /datum/unit_test/voidcrew_outpost_police_search/chamber/undertow_working
 	outpost_type = /obj/structure/overmap/trader_outpost/black_market
+
+// ===== THE KEY, BY ITS RULES =====
+// On the small checkpoint of voidcrew_trader_checkpoint.dm: lobby below, a chamber of two tiles (the first between the
+// doors, the second beside it), the concourse above.
+
+/// An officer of the fixture's outpost at `where`, on its roster
+/datum/unit_test/voidcrew_trader_checkpoint/proc/key_officer(turf/where)
+	host.ensure_police()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/cop = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, where)
+	host.police.add_officer(cop)
+	return cop
+
+/**
+ * An officer's key at the checkpoint: nothing for an officer with no business in the chamber; the outer door for one
+ * walking to someone in it, whatever the chamber is doing, short of an open inner door; the inner door only with the
+ * gate down; and the way out for one standing in it.
+ */
+/datum/unit_test/voidcrew_trader_checkpoint/police_key/Run()
+	TEST_ASSERT(fixture(FALSE), "Could not prepare the checkpoint")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/cop = key_officer(lobby)
+	var/datum/can_pass_info/cop_walk = new(cop, list())
+	var/mob/living/carbon/human/suspect = visitor(chamber[2])
+	police_pin_warrant(host.police, suspect.mind, 40)
+	// Nothing to do in there: the doors are walls to it, as to any NPC
+	TEST_ASSERT(!outer.CanAStarPass(NORTH, cop_walk) && !inner.CanAStarPass(SOUTH, cop_walk), "An officer with no business in the chamber paths through its doors")
+	outer.bumpopen(cop)
+	inner.bumpopen(cop)
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(outer.density && inner.density, "An officer with no business in the chamber opened a door by walking into it")
+	// Walking to someone in it: the outer door is its to open, the inner door is not
+	cop.ai_controller.set_movement_target(type, suspect)
+	TEST_ASSERT(outer.CanAStarPass(NORTH, cop_walk), "An officer walking to someone in the chamber cannot path through the outer door")
+	TEST_ASSERT(!inner.CanAStarPass(SOUTH, cop_walk), "With the gate working an officer paths in through the shut inner door")
+	inner.bumpopen(cop)
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(inner.density, "With the gate working an officer's key opened the inner door")
+	// A scan under way stops for it
+	checkpoint.start_scan()
+	TEST_ASSERT_EQUAL(checkpoint.state, "scanning", "Fixture: the chamber did not scan") // CHECKPOINT_SCANNING
+	outer.bumpopen(cop)
+	TEST_ASSERT_EQUAL(checkpoint.state, "idle", "A scan went on with an officer's key in the outer door") // CHECKPOINT_IDLE
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(!outer.density, "An officer's key did not open the outer door on someone wanted in the chamber")
+	TEST_ASSERT(inner.density, "The inner door opened with the outer door")
+	// Any other NPC still gets nothing, key or no key about
+	suspect.forceMove(secured)
+	settle()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/npc = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, lobby)
+	var/datum/can_pass_info/npc_walk = new(npc, list())
+	suspect.forceMove(chamber[2])
+	npc.ai_controller?.set_movement_target(type, suspect)
+	TEST_ASSERT(!outer.CanAStarPass(NORTH, npc_walk), "A townsperson walking to someone in the chamber paths through its door")
+	outer.bumpopen(npc)
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(outer.density, "A townsperson opened the outer door by walking into it")
+	// The lock holds for the key: never the outer door while the inner one is open
+	var/mob/living/carbon/human/clean = visitor(chamber[1])
+	suspect.forceMove(secured)
+	TEST_ASSERT(scan_now(clean), "Fixture: could not scan a clean visitor through")
+	sleep(2 SECONDS)
+	TEST_ASSERT(!inner.density, "Fixture: the inner door did not open for a clean visitor")
+	suspect.forceMove(chamber[2])
+	TEST_ASSERT(outer.CanAStarPass(NORTH, cop_walk), "An officer's way in is not the outer door while the inner door is open")
+	outer.bumpopen(cop)
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(outer.density, "An officer's key opened the outer door with the inner door open")
+	clean.forceMove(secured)
+	TEST_ASSERT(wait_shut(inner, 10 SECONDS), "Fixture: the inner door did not shut after its pass")
+	outer.bumpopen(cop)
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(!outer.density, "With the inner door shut again an officer's key did not open the outer door")
+	suspect.forceMove(secured)
+	settle()
+	// The gate down: either door, as for anyone, and still nothing for a townsperson walking into one
+	suspect.forceMove(chamber[2])
+	checkpoint.disabled_until = world.time + 1800
+	cop.forceMove(secured)
+	TEST_ASSERT(inner.CanAStarPass(SOUTH, cop_walk), "With the gate down an officer cannot path in through the inner door")
+	inner.bumpopen(npc)
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(inner.density, "With the gate down a townsperson opened the inner door by walking into it")
+	inner.bumpopen(cop)
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(!inner.density, "With the gate down an officer's key did not open the inner door")
+	checkpoint.disabled_until = 0
+	suspect.forceMove(lobby)
+	settle()
+	// Standing in it: the way out is its own, wherever it is going
+	cop.ai_controller.set_movement_target(type, null)
+	cop.forceMove(chamber[1])
+	TEST_ASSERT(outer.CanAStarPass(SOUTH, cop_walk), "An officer in the chamber cannot path out through the outer door")
+	TEST_ASSERT(!inner.CanAStarPass(NORTH, cop_walk), "With the gate working an officer in the chamber paths out through the shut inner door")
+	outer.bumpopen(cop)
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(!outer.density, "An officer shut in the chamber could not let itself out")
+	cop.forceMove(lobby)
+	settle()
+	// Someone playing an officer's body has no key
+	suspect.forceMove(chamber[2])
+	cop.ai_controller.set_movement_target(type, suspect)
+	TEST_ASSERT(checkpoint.police_key_holder(cop), "Fixture: the officer has no business in the chamber")
+	cop.mind_initialize()
+	TEST_ASSERT(!checkpoint.police_key_holder(cop), "A played officer's body has the police's key")
+	qdel(cop)
+
+/**
+ * The police at work in the chamber (an officer and someone it is after, both inside): no scan, the outer door stays
+ * open behind them, the outpost's people keep out, and a player cannot cycle the gate on them. Done, the gate goes on
+ * as it would have. An officer alone in there, or one only going through, holds nothing up.
+ */
+/datum/unit_test/voidcrew_trader_checkpoint/police_at_work/Run()
+	TEST_ASSERT(fixture(FALSE), "Could not prepare the checkpoint")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/cop = key_officer(lobby)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/npc = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, lobby)
+	var/mob/living/carbon/human/suspect = visitor(chamber[2])
+	var/datum/outpost_warrant/warrant = police_pin_warrant(host.police, suspect.mind, 40)
+	// An officer and nobody wanted, or someone wanted and no officer: no work
+	cop.forceMove(chamber[1])
+	suspect.forceMove(secured)
+	TEST_ASSERT(!checkpoint.police_at_work(), "An officer alone in the chamber counts as the police at work")
+	suspect.forceMove(chamber[2])
+	cop.forceMove(lobby)
+	TEST_ASSERT(!checkpoint.police_at_work(), "Someone wanted alone in the chamber counts as the police at work")
+	// In for them: the door stays open behind the officer past its usual four seconds, and nothing is scanned
+	cop.ai_controller.set_movement_target(type, suspect)
+	outer.bumpopen(cop)
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(!outer.density, "Fixture: the officer's key did not open the outer door")
+	cop.forceMove(chamber[1])
+	TEST_ASSERT(checkpoint.police_at_work(), "An officer in the chamber with someone wanted is not the police at work")
+	sleep(7 SECONDS) // OUTPOST_CHECKPOINT_OUTER_HOLD is 4 s
+	TEST_ASSERT(!outer.density, "The outer door shut on an officer at work in the chamber")
+	TEST_ASSERT_EQUAL(checkpoint.state, "idle", "The chamber went on with its cycle with the police at work in it") // CHECKPOINT_IDLE
+	// Nobody walks in on it or works the gate on them
+	TEST_ASSERT_NULL(checkpoint.chamber_place_for(npc), "A townsperson was given a place in the chamber during an arrest")
+	TEST_ASSERT(!checkpoint.request_outer(npc), "A townsperson's ask was answered with the police at work in the chamber")
+	TEST_ASSERT(!outer.density, "A townsperson's ask shut the outer door on the police")
+	TEST_ASSERT(!checkpoint.request_cycle(suspect), "Someone in the chamber cycled the gate on the officer arresting them")
+	checkpoint.request_outer(suspect)
+	sleep(2.5 SECONDS)
+	TEST_ASSERT(!outer.density, "A click on the outer door shut it on an officer at work in the chamber")
+	// The officer only going through to the concourse holds nothing up
+	ADD_TRAIT(cop, "checkpoint_crossing", "outpost_police_checkpoint") // TRAIT_CHECKPOINT_CROSSING, as checkpoint_step_to_concourse() gives it
+	TEST_ASSERT(!checkpoint.police_at_work(), "An officer going through the checkpoint counts as the police at work")
+	REMOVE_TRAIT(cop, "checkpoint_crossing", "outpost_police_checkpoint")
+	// Done (the officer walks out; the suspect is left, still wanted): the gate goes on as for anyone wanted. The door
+	// shuts, they are scanned and refused, and it opens for them to leave.
+	cop.ai_controller.set_movement_target(type, null)
+	cop.forceMove(lobby)
+	var/refused = FALSE
+	for(var/i in 1 to 150)
+		if(checkpoint.state == "rejecting" && !outer.density) // CHECKPOINT_REJECTING
+			refused = TRUE
+			break
+		sleep(0.1 SECONDS)
+	TEST_ASSERT(refused, "With the police gone the gate did not go on to scan and refuse who was left in it (checkpoint [checkpoint.state], outer door [outer.density ? "shut" : "open"])")
+	// And with nobody wanted left, the queue has its places back
+	host.police.remove_warrant(warrant)
+	suspect.forceMove(secured)
+	TEST_ASSERT(wait_shut(outer, 15 SECONDS), "The outer door did not shut once the refused person had gone")
+	TEST_ASSERT_EQUAL(checkpoint.state, "idle", "The gate did not settle after the police left") // CHECKPOINT_IDLE
+	TEST_ASSERT(checkpoint.request_outer(npc), "After the police left a townsperson could not ask the outer door")
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(checkpoint.chamber_place_for(npc) in chamber, "After the police left a townsperson had no place in the chamber")
+
+/// Someone shut in a closed chamber when the police finish there is scanned then, not left waiting
+/datum/unit_test/voidcrew_trader_checkpoint/police_scan_after/Run()
+	TEST_ASSERT(fixture(FALSE), "Could not prepare the checkpoint")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/cop = key_officer(chamber[1])
+	var/mob/living/carbon/human/suspect = visitor(chamber[2])
+	police_pin_warrant(host.police, suspect.mind, 40)
+	TEST_ASSERT(checkpoint.police_at_work(), "Fixture: the police are not at work")
+	// The gate mends with both doors shut and the two of them inside: no scan on the officer's arrest
+	checkpoint.end_disable()
+	TEST_ASSERT_EQUAL(checkpoint.state, "idle", "A mended gate scanned a chamber the police were at work in") // CHECKPOINT_IDLE
+	// The officer lets itself out by the outer door and it shuts behind it: who is left is scanned
+	outer.bumpopen(cop)
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(!outer.density, "Fixture: the officer could not let itself out")
+	cop.forceMove(lobby)
+	var/scanned = FALSE
+	for(var/i in 1 to 150)
+		if(checkpoint.state == "scanning" || checkpoint.state == "rejecting") // CHECKPOINT_SCANNING, CHECKPOINT_REJECTING
+			scanned = TRUE
+			break
+		sleep(0.1 SECONDS)
+	TEST_ASSERT(scanned, "Someone left in the chamber when the police were done was never scanned (checkpoint [checkpoint.state])")
+
+/**
+ * Last seen in the scan chamber and seen by nobody since: the first officer is sent into the chamber itself, the next
+ * to its door; a look from outside the door is no look into it, and the place goes to another officer.
+ */
+/datum/unit_test/voidcrew_trader_checkpoint/police_search_inside/Run()
+	TEST_ASSERT(fixture(FALSE), "Could not prepare the checkpoint")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/first = key_officer(lobby)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/second = key_officer(locate(lobby.x - 1, lobby.y, lobby.z))
+	var/datum/outpost_police/police = host.police
+	var/mob/living/carbon/human/suspect = visitor(secured)
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 40)
+	warrant.last_seen_turf = chamber[2]
+	warrant.last_seen_at = world.time
+	warrant.unseen_since = world.time
+	TEST_ASSERT_EQUAL(police.search_gate(chamber[2]), checkpoint, "The police do not know a chamber tile for the checkpoint's")
+	TEST_ASSERT_EQUAL(police.search_gate(get_turf(outer)), checkpoint, "The police do not know a doorway for the checkpoint's")
+	TEST_ASSERT_NULL(police.search_gate(lobby), "The police take the lobby for part of the checkpoint")
+	TEST_ASSERT_EQUAL(police.search_start(chamber[2], first), lobby, "With the gate working the search for someone last seen in the chamber does not start on the lobby side")
+	TEST_ASSERT_EQUAL(police.search_place(warrant, first), chamber[2], "The first officer was not sent into the chamber they were last seen in")
+	TEST_ASSERT_EQUAL(police.search_place(warrant, second), lobby, "The second officer was not sent to the chamber's door")
+	var/datum/outpost_police_search/search = police.searches[suspect.mind]
+	TEST_ASSERT_NOTNULL(search, "No search was started")
+	// A look from the lobby, the door between: not a look into the chamber
+	police.search_looked(warrant, first, lobby)
+	TEST_ASSERT(!search.done[chamber[2]], "A look from outside its door counted as a look into the chamber")
+	police.search_looked(warrant, second, lobby)
+	TEST_ASSERT(search.done[lobby], "A look from the lobby side did not count for the lobby side")
+	TEST_ASSERT_EQUAL(police.search_place(warrant, second), chamber[2], "The chamber did not go to the next officer")
+	police.search_looked(warrant, second, chamber[1])
+	TEST_ASSERT(search.done[chamber[2]], "A look from inside the chamber did not count")
+	// No part of the floor: an officer who stood in it while the floor was read does not make it one
+	first.forceMove(chamber[1])
+	QDEL_NULL(police.search_main)
+	var/datum/outpost_police_floor/floor = police.search_floor(lobby, first)
+	TEST_ASSERT_NOTNULL(floor, "The floor was not read")
+	TEST_ASSERT(!floor.walkable[chamber[1]] && !floor.walkable[chamber[2]] && !floor.walkable[get_turf(outer)], "The scan chamber was read as part of the floor officers walk")
