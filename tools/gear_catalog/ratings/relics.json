@@ -9,6 +9,24 @@
   "harmless"
  ],
  "items": {
+  "/obj/item/anomaly_battery": {
+   "confidence": "high",
+   "group": "parts and upgrades",
+   "hash": "",
+   "name": "exotic battery",
+   "rank": 2,
+   "reason": "Holds one effect drawn off an artifact for the exotic utilizer and does nothing alone. Rated as what it powers.",
+   "tier": "yellow"
+  },
+  "/obj/item/anomaly_utilizer": {
+   "confidence": "medium",
+   "group": "parts and upgrades",
+   "hash": "",
+   "name": "exotic utilizer",
+   "rank": 2,
+   "reason": "Runs one harvested artifact effect from an exotic battery: a field or bursts for about 6.5 minutes, or 10 contact uses. Power is the artifact's own; the worst cases are stun or teleport bursts every 10 to 50 s over 2 to 8 tiles, which hit the holder too unless bio-suited. Healing shares the per-person artifact cap. Needs a dug artifact and a harvester to fill.",
+   "tier": "yellow"
+  },
   "/obj/item/book_of_babel": {
    "confidence": "high",
    "group": "harmless",
@@ -349,6 +367,7 @@
   "/obj/item/hot_potato/harmless": "no route",
   "/obj/item/hot_potato/harmless/toy": "toy",
   "/obj/item/hot_potato/syndicate": "no route",
+  "/obj/item/relic/excavated": "no route",
   "/obj/item/shadowcloak/weaker": "no route",
   "/obj/item/soulstone": "no route",
   "/obj/item/soulstone/anybody/chaplain/sparring": "no route",
