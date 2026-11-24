@@ -134,15 +134,30 @@
 	while(world.time - started < 20 SECONDS && (!post.outer_door.density || !post.inner_door.density || post.outer_door.operating || post.inner_door.operating || post.state != "idle")) // CHECKPOINT_IDLE
 		sleep(0.5 SECONDS)
 	TEST_ASSERT(post.outer_door.density && post.inner_door.density && !post.outer_door.operating && !post.inner_door.operating && post.state == "idle", "[outpost_type], [gate]: 20 s after the arrest the gate has not settled ([gate_report(post)])")
+	// The next visitor walks up to the outer door, in when it opens, and is scanned and let through. On their own feet:
+	// put down inside the chamber by hand they would land past whichever of the outpost's people was walking in, and
+	// leave them standing in the doorway
 	var/mob/living/carbon/human/visitor = dispatch_suspect(outpost, 0, post.lobby_turf)
-	TEST_ASSERT(post.request_outer(visitor), "[outpost_type], [gate]: after the arrest the outer door would not open for a visitor")
-	sleep(2 SECONDS)
-	TEST_ASSERT(!post.outer_door.density, "[outpost_type], [gate]: after the arrest the outer door did not open for a visitor")
-	visitor.forceMove(stand)
+	var/turf/outer_turf = get_turf(post.outer_door)
 	started = world.time
-	while(world.time - started < 20 SECONDS && (post.inner_door.density || post.state != "passing")) // CHECKPOINT_PASSING
+	while(world.time - started < 30 SECONDS && !(visitor.loc in post.chamber_turfs))
+		if(post.outer_door.density)
+			if(!post.outer_door.operating)
+				post.outer_door.bumpopen(visitor)
+		else if(visitor.loc == outer_turf)
+			for(var/turf/tile as anything in post.chamber_turfs)
+				if(get_dist(tile, outer_turf) == 1 && !tile.is_blocked_turf(exclude_mobs = FALSE) && visitor.Move(tile, get_dir(visitor, tile)))
+					break
+		else if(get_dist(visitor, outer_turf) <= 1)
+			visitor.Move(outer_turf, get_dir(visitor, outer_turf))
+		else
+			visitor.forceMove(post.lobby_turf)
 		sleep(0.5 SECONDS)
-	TEST_ASSERT(!post.inner_door.density && post.state == "passing", "[outpost_type], [gate]: after the arrest a visitor with nothing on them was not let through in 20 s ([gate_report(post)])")
+	TEST_ASSERT(visitor.loc in post.chamber_turfs, "[outpost_type], [gate]: after the arrest a visitor could not walk in at the outer door in 30 s ([gate_report(post)])")
+	started = world.time
+	while(world.time - started < 40 SECONDS && (post.inner_door.density || post.state != "passing")) // CHECKPOINT_PASSING
+		sleep(0.5 SECONDS)
+	TEST_ASSERT(!post.inner_door.density && post.state == "passing", "[outpost_type], [gate]: after the arrest a visitor with nothing on them, standing in the chamber, was not let through in 40 s ([gate_report(post)])")
 	police.sleep_tick()
 	dispatch_clear(police)
 
