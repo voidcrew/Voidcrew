@@ -667,7 +667,7 @@
 	TEST_ASSERT(case.step in list("respond", "order", "subdue", "cuff"), "After the cuffs came off the arrest is on [case.step]")
 	TEST_ASSERT(!case.cuffed, "The arrest still counts the suspect as cuffed")
 
-	// Called off with our cuffs on (the third timeout): an officer takes them off before the case ends
+	// The third timeout with our cuffs on: held, never let go (pass 3)
 	police_pin_warrant(police, suspect.mind, 12) // back to one star, whatever slipping the cuffs added
 	var/obj/item/restraints/handcuffs/again = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
 	suspect.equip_to_slot(again, ITEM_SLOT_HANDCUFFED)
@@ -677,6 +677,14 @@
 	case.resets = 2
 	case.set_step("escort")
 	case.step_started_at = world.time - 61 SECONDS // OUTPOST_POLICE_STEP_TIMEOUT is 60 s
+	case.process_case()
+	TEST_ASSERT(!QDELETED(case), "The case closed with the suspect left in police cuffs")
+	if(QDELETED(case))
+		return
+	TEST_ASSERT_EQUAL(case.step, "hold", "An arrest that timed out a third time with the suspect in its cuffs is on [case.step], not holding them")
+	TEST_ASSERT(suspect.handcuffed, "The cuffs came off an arrest that timed out")
+	// Called off with our cuffs on (the warrant gone): an officer takes them off before the case ends
+	police_pin_warrant(police, suspect.mind, 0)
 	case.process_case()
 	TEST_ASSERT(!QDELETED(case), "The case closed with the suspect left in police cuffs")
 	if(QDELETED(case))

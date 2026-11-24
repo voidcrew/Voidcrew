@@ -66,6 +66,9 @@
 	if(istype(living_target, /mob/living/carbon/human/npc/ambient_npc/outpost/police) && !living_target.mind && !living_target.client)
 		return FALSE
 	if(living_target.mind || living_target.client)
+		// Running off in the cuffs of an arrest this officer is on: stunned and taken hold of again (police_arrest.dm bolting())
+		if(police.bolting_from(living_target, src))
+			return TRUE
 		if(police.in_custody(living_target))
 			return FALSE
 		// Down (crit, stamina crit, stunned): the cuffs are the arrest's job at every star, never a fight
@@ -100,6 +103,9 @@
 		return best
 	var/mob/living/living_target = target
 	if(isliving(living_target) && (living_target.mind || living_target.client))
+		// Running off in its own arrest's cuffs: a stun, never more, at any stars (police_arrest.dm bolting())
+		if(police?.bolting_from(living_target, src))
+			return POLICE_FORCE_STUN
 		var/level = police?.force_level(living_target, src) || POLICE_FORCE_NONE
 		if(level >= POLICE_FORCE_LETHAL && police.role_of(src) == POLICE_ROLE_STUN)
 			return POLICE_FORCE_STUN
@@ -297,6 +303,8 @@
 	var/away = FALSE
 	/// world.time an officer holding its fire last told them to stay where they are
 	var/told_at = 0
+	/// world.time someone else last shoved them (their arrest hears it: police_arrest.dm on_suspect_shoved()), or 0
+	var/shoved_at = 0
 
 /**
  * One look at `person`: where they are against where they stood, and whether their arrest has come to the cuffs.
@@ -330,7 +338,8 @@
 		// Pulled along, by an officer or anyone else, they are going nowhere of their own (whoever pulls a suspect off
 		// answers for it: police_arrest.dm check_interference()). And with the cuffs coming the arrest knows their own
 		// steps exactly: until it has counted one, being somewhere else is being pushed, carried or traded places with.
-		if(!person.pulledby && (!cuffing || away))
+		// Nor shoved along by someone else: a shove is an ordinary step to tg
+		if(!person.pulledby && (!cuffing || away) && world.time - stance.shoved_at > 1 SECONDS)
 			stance.moved_at = world.time
 	// Their first step from the cuffs, wherever it left them
 	if(away && !stance.away && !cuffs_out)
@@ -363,6 +372,14 @@
 		return
 	var/datum/outpost_police_stance/stance = stance_of(person)
 	stance.fought_at = world.time
+
+/// Someone else shoved `person`: the tile it moves them is not theirs to answer for
+/datum/outpost_police/proc/note_shoved(mob/living/person)
+	if(!isliving(person) || !person.mind)
+		return
+	var/datum/outpost_police_stance/stance = LAZYACCESS(stances, WEAKREF(person.mind))
+	if(stance)
+		stance.shoved_at = world.time
 
 /// Whether `person` went for someone, fired a gun or was seen with a weapon out within the last `within`
 /datum/outpost_police/proc/fought_within(mob/living/person, within)

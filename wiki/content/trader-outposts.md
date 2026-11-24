@@ -215,7 +215,7 @@ Crimes pile up against the person who did them, shown as **stars** on a wanted a
 | Hitting a shopper or regular | 1 from one hit, up to 3 |
 | Forcing the checkpoint, emagging the gate scanner, looting a locker | 2 |
 | Armed robbery | At least 2 |
-| Punching, shoving or grabbing an officer, pulling a suspect away from one | 1 at once, up to 3 |
+| Punching, shoving or grabbing an officer, pulling a suspect away from one, or staying in an arrest's way after being told to move | 1 at once, up to 3 |
 | Aiming a gun at an officer | 2 |
 | Opening a cell with someone in it, walking out of one, or carrying a prisoner out | At least 3 |
 | Attacking an officer with a weapon or a stun, or trying to cuff one | 3, and a little more for each blow after |
@@ -263,7 +263,7 @@ At 2 stars the officers around the one arresting you hold their fire while you s
 
 **Hostages.** Hold one of the outpost's people by the neck with a gun in your other hand, and every officer who can see it holds fire and keeps their distance. Tell them out loud to back off and they will. Tell them to drop it, and an officer who walked in on it puts their weapon away; one who was already after you, or already looking for you, keeps it. The hostage struggles, and once they get loose or you let go the officers carry on. They hold fire for one minute, counted from the first officer to do it, and say so when it is nearly up. Then they shoot, hostage or not, and a second hostage buys no more time while you are still wanted there. Hurt the hostage or attack an officer, and the officers who saw it never hold fire for you again. They do not hold fire for a hostage who is not one of the outpost's own, or for one who is out cold.
 
-At Halcyon and Quartermain a downed suspect is cuffed, never shot, at any stars. Nobody fires on someone who is cuffed and being taken in, or who is in a cell. Get away from them and you are fair game again.
+At Halcyon and Quartermain a downed suspect is cuffed, never shot, at any stars. Nobody fires on someone who is cuffed and being taken in, or who is in a cell. Run off in the cuffs and the officers taking you in stun you and take hold of you again. Get out of the cuffs and you are fair game again.
 
 The Undertow is the exception. From 3 stars up every officer there shoots to kill, and keeps shooting a downed suspect until they are dead. Below 3 stars they arrest you like anyone else.
 
@@ -271,7 +271,7 @@ The Undertow is the exception. From 3 stars up every officer there shoots to kil
 
 When an officer gives the order you have a few seconds to stand still with empty hands and your guard down, or to lie down with `*surrender`. Halcyon gives you the longest and the Undertow the shortest. Do it and they cuff you without a fight. At 3 stars and up only a suspect who is down is taken alive.
 
-If you go down before the cuffs are on, you are cuffed and searched where you lie. Then an officer takes you to the security desk and books you into a cell, on your feet or dragged.
+If you go down before the cuffs are on, you are cuffed and searched where you lie. Then an officer takes you to the security desk and books you into a cell, on your feet or dragged. If they cannot get you there, they keep hold of you until they can. At 1-2 stars, after a few minutes of that, you are fined where you stand and let go.
 
 The officer keeps a hand on you while the cuffs go on, and a firm grip if the baton put you on the floor. Walking or crawling away means breaking that grip first, and it gets you the baton again.
 
