@@ -59,6 +59,7 @@
 #define CASE_ACT_BOOKING "booking"
 #define CASE_ACT_RECOVERING "recovering"
 #define CASE_ACT_RELEASING "releasing"
+#define CASE_ACT_FINING "fining"
 
 /// Blackboard key: where the officer's case sends them
 #define BB_OUTPOST_POLICE_CASE_GOAL "outpost_police_case_goal"
@@ -106,6 +107,18 @@
 #define CASE_COVER_LONG_WALK 8
 /// How far off the arrest's officers still turn to face the suspect while they stand
 #define CASE_FACE_RANGE 7
+/// How long the arresting officer has to reach someone giving up beside another officer, before that one makes the arrest
+#define CASE_ON_THE_SPOT_WAIT (8 SECONDS)
+/// Steps of their own in police cuffs, with nobody holding them, that are running off
+#define CASE_BOLT_STEPS 3
+/// How long after the last of those steps they still count as running
+#define CASE_BOLT_MEMORY (3 SECONDS)
+/// Someone in the arrest's way, told to make way, has this long to step aside before standing there is resisting
+#define CASE_BLOCK_GRACE (4 SECONDS)
+/// Someone not in the arrest's way for this long is forgotten (told again if they come back)
+#define CASE_BLOCK_FORGET (4 SECONDS)
+/// Held in cuffs at one or two stars with no way to a cell: after this long the fine is taken where they stand
+#define CASE_HOLD_FINE_AFTER (3 MINUTES)
 
 /datum/outpost_police
 	/// P5: minds no new case opens on until a world.time (their last case closed on timeouts). Written by police_arrest.dm only.
@@ -316,6 +329,26 @@
 	var/list/lead_skips
 	/// world.time since which the suspect has been in cuffs and in nobody's hands, or 0
 	var/unheld_since = 0
+	/// The officer the arrest was handed to on the spot (check_on_the_spot()): it keeps it unless put out of action
+	var/datum/weakref/handed_ref
+	/// An officer beside or covering the suspect while they give up and the arresting officer is not there, and since when
+	var/datum/weakref/spot_ref
+	var/spot_since = 0
+	/// Steps of the suspect's own in cuffs with nobody holding them, and world.time of the last (bolting())
+	var/bolt_steps = 0
+	var/bolted_at = 0
+	/// world.time someone else last shoved the suspect: the move that comes with the shove is not their own step
+	var/shoved_at = -1
+	/// Whether the suspect's steps are being listened for (watch_steps())
+	var/watching_steps = FALSE
+	/// Players standing in the arrest's way: mind weakref -> list(world.time told to make way or 0, world.time last in the way)
+	var/list/blockers
+	/// Players on the tiles ahead of the officer leading the suspect this second (make_way())
+	var/list/way_ahead
+	/// world.time make_way() last told the way ahead to make way
+	var/make_way_said_at = 0
+	/// world.time since which the suspect has been held in cuffs for want of a way to a cell, or 0 (step_hold())
+	var/held_since = 0
 
 /datum/outpost_police_case/New(datum/outpost_police/new_police, datum/outpost_warrant/new_warrant)
 	. = ..()
@@ -329,7 +362,7 @@
 /datum/outpost_police_case/Destroy()
 	var/mob/living/carbon/suspect = suspect_ref?.resolve()
 	if(suspect)
-		UnregisterSignal(suspect, list(COMSIG_MOVABLE_MOVED, COMSIG_BEING_STRIPPED))
+		UnregisterSignal(suspect, list(COMSIG_MOVABLE_MOVED, COMSIG_BEING_STRIPPED, COMSIG_LIVING_DISARM_HIT))
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/releaser
 	for(var/datum/weakref/ref as anything in officers)
 		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = ref?.resolve()
@@ -373,6 +406,10 @@
 	resist_reports = null
 	release_tried = null
 	said = null
+	handed_ref = null
+	spot_ref = null
+	blockers = null
+	way_ahead = null
 	return ..()
 
 /// The suspect's body, or null if they are gone or in another body now
@@ -462,7 +499,8 @@
 	book_tries = 0
 	resets++
 	if(resets >= 3)
-		if(hold_for_cell())
+		// Still in our cuffs: held, never let go for running the clock out (in_our_cuffs())
+		if(hold_for_cell() || in_our_cuffs())
 			start_hold()
 			return
 		var/datum/mind/held_mind = warrant?.mind || suspect_mind_ref?.resolve()
@@ -526,7 +564,7 @@
 		suspect = null
 	// A suspect on the floor with the cuffs still to come is up again in seconds: of the two, the nearer one on its
 	// feet cuffs them (an arresting officer back up beside them takes the arrest back from a cover further off)
-	if(length(kept) >= 2 && suspect && !cuffed && !acting && step != CASE_STEP_RELEASE && (police_suspect_down(suspect) || suspect.body_position == LYING_DOWN))
+	if(length(kept) >= 2 && suspect && !cuffed && !acting && step != CASE_STEP_RELEASE && (police_suspect_down(suspect) || suspect.body_position == LYING_DOWN) && !(handed_ref && handed_ref.resolve() == kept[1]))
 		var/mob/living/first = kept[1]
 		var/mob/living/second = kept[2]
 		if(!HAS_TRAIT(second, TRAIT_INCAPACITATED) && first.z == suspect.z && second.z == suspect.z && get_dist(second, suspect) < get_dist(first, suspect))
@@ -650,6 +688,10 @@
 /// After the order their own steps count against them; being pushed, pulled or thrown does not
 /datum/outpost_police_case/proc/on_suspect_moved(mob/living/carbon/source, atom/old_loc, dir, forced, list/old_locs)
 	SIGNAL_HANDLER
+	// A shove from someone else moves them by an ordinary step, in the same tick as the shove: not theirs
+	if(shoved_at == world.time)
+		shoved_at = -1
+		return
 	if(forced || source.pulledby || source.throwing || source.buckled)
 		return
 	// Nor does having places traded with them by someone who ran into them (tg's swap, living.dm MobBump(): the one
@@ -659,6 +701,44 @@
 		if(other != source && other.now_pushing)
 			return
 	suspect_moved = TRUE
+	if(cuffed && source.handcuffed)
+		bolt_steps++
+		bolted_at = world.time
+
+/// Someone shoved the suspect (tg's disarm, living_defense.dm): the shove's move comes next, in the same tick (police_cell.dm does the same)
+/datum/outpost_police_case/proc/on_suspect_shoved(mob/living/carbon/source, mob/living/attacker, zone, obj/item/weapon)
+	SIGNAL_HANDLER
+	if(attacker != source)
+		shoved_at = world.time
+		police?.note_shoved(source)
+
+/// Listens for the suspect's own steps, and for shoves, which are not theirs
+/datum/outpost_police_case/proc/watch_steps(mob/living/carbon/suspect)
+	if(!suspect)
+		return
+	RegisterSignal(suspect, COMSIG_MOVABLE_MOVED, PROC_REF(on_suspect_moved), override = TRUE)
+	RegisterSignal(suspect, COMSIG_LIVING_DISARM_HIT, PROC_REF(on_suspect_shoved), override = TRUE)
+	watching_steps = TRUE
+
+/**
+ * Whether `suspect`, in this arrest's police cuffs, has got out of everyone's hands and is making off on their own
+ * feet: CASE_BOLT_STEPS steps of their own, the last a moment ago. Pushed, pulled, thrown, shoved, swapped past or
+ * carried by a lift is no step of theirs (on_suspect_moved()). The arrest's officers stun them, the baton or a
+ * disabler, and take hold of them again (keep_pulling(), plan_for(), police_force.dm police_will_fight()).
+ */
+/datum/outpost_police_case/proc/bolting(mob/living/carbon/suspect)
+	if(!suspect || !cuffed || !police_cuffs || suspect_lost || step == CASE_STEP_RELEASE || !istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police))
+		return FALSE
+	if(bolt_steps < CASE_BOLT_STEPS || world.time - bolted_at > CASE_BOLT_MEMORY)
+		return FALSE
+	return suspect.stat == CONSCIOUS && suspect.body_position == STANDING_UP && !suspect.pulledby && !suspect.buckled && isturf(suspect.loc) && !police_suspect_down(suspect)
+
+/// Whether `suspect` is still in this arrest's police cuffs, in a state to be held rather than let go
+/datum/outpost_police_case/proc/in_our_cuffs()
+	var/mob/living/carbon/suspect = get_suspect()
+	if(!suspect || !cuffed || !police_cuffs || grip_held || suspect_lost || suspect_downed(suspect))
+		return FALSE
+	return istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police)
 
 /**
  * Someone starts taking the suspect's cuffs off through the strip menu. COMSIG_TRY_STRIP is the same string,
@@ -714,6 +794,14 @@
 		check_down(suspect)
 	if(QDELETED(src))
 		return
+	if(suspect)
+		check_on_the_spot(suspect)
+		// Their own steps are watched from the first (after the order: walking off; in cuffs: running off, bolting()),
+		// and shoves, which are not theirs. In someone's hands they are going nowhere
+		if(!suspect_lost && !watching_steps)
+			watch_steps(suspect)
+		if(suspect.pulledby)
+			bolt_steps = 0
 	// In cuffs and in nobody's hands: since when (the cover takes hold of them, cover_hold())
 	if(suspect && cuffed && suspect.handcuffed && !suspect_lost && isturf(suspect.loc) && !suspect.pulledby)
 		unheld_since ||= world.time
@@ -738,6 +826,10 @@
 	if(recover_evidence(officer))
 		return
 	run_step()
+	if(QDELETED(src))
+		return
+	// Whoever stands in its way this second (make_way(), in the step, counted the way ahead)
+	check_blocking(arresting(), get_suspect())
 	// After the arresting officer has its place: the cover's own search (cover_looks())
 	if(!QDELETED(src))
 		tick_cover()
@@ -889,6 +981,149 @@
 		return
 	LAZYSET(resist_reports, puller_ref, world.time)
 	report(puller, OUTPOST_CRIME_RESIST, arresting() || suspect)
+
+/**
+ * The officer on the spot makes the arrest (owner, pass 3). Someone giving up (police_force.dm gives_up()) with
+ * another officer on its feet beside them, or holding its aim on them from a few tiles, waits at gunpoint only so
+ * long for the arrest's own officer: CASE_ON_THE_SPOT_WAIT, or not at all if it has no way to them (another level,
+ * stunned). Then the arrest is handed to the officer on the spot, and the one it was taken from covers it. Once
+ * handed over it stays, unless that officer is put out of action. Up to the cuffs, at one or two stars; an officer
+ * busy with another arrest is never taken off it.
+ */
+/datum/outpost_police_case/proc/check_on_the_spot(mob/living/carbon/suspect)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/lead = arresting()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/handed = handed_ref?.resolve()
+	if(handed)
+		if(handed == lead && officer_fit(handed) && !HAS_TRAIT(handed, TRAIT_INCAPACITATED))
+			return
+		handed_ref = null
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/spot = null
+	if(!acting && !cuffed && !suspect_lost && isturf(suspect.loc) && warrant?.mind && police.get_stars(warrant.mind) <= 2)
+		if(step == CASE_STEP_RESPOND || step == CASE_STEP_ORDER || step == CASE_STEP_SUBDUE || step == CASE_STEP_CUFF)
+			if(!lead || !(lead.Adjacent(suspect) || lead.pulling == suspect))
+				spot = officer_on_the_spot(suspect, lead)
+	if(spot && !police.gives_up(suspect))
+		spot = null
+	if(!spot)
+		spot_ref = null
+		spot_since = 0
+		return
+	if(spot_ref?.resolve() != spot)
+		spot_ref = WEAKREF(spot)
+		spot_since = world.time
+	var/no_way = !lead || lead.z != suspect.z || HAS_TRAIT(lead, TRAIT_INCAPACITATED)
+	if(!no_way && world.time - spot_since < CASE_ON_THE_SPOT_WAIT)
+		return
+	hand_over(spot, no_way ? null : lead)
+
+/// The nearest officer, not on this arrest's lead, on its feet beside `suspect` or holding its aim on them, free to take it. Null if none.
+/datum/outpost_police_case/proc/officer_on_the_spot(mob/living/carbon/suspect, mob/living/carbon/human/npc/ambient_npc/outpost/police/lead)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/best
+	var/best_dist = INFINITY
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police.officers)
+		if(officer == lead || officer.client || officer.z != suspect.z || !officer_fit(officer))
+			continue
+		// Covering someone else's arrest, or making one, it stays on that
+		if(officer.case && officer.case != src)
+			continue
+		if(HAS_TRAIT(officer, TRAIT_INCAPACITATED) || officer.body_position != STANDING_UP || LAZYLEN(officer.do_afters) || (officer.pulling && officer.pulling != suspect))
+			continue
+		var/dist = get_dist(officer, suspect)
+		if(!officer.Adjacent(suspect))
+			var/datum/ai_controller/brain = officer.ai_controller
+			if(dist > OUTPOST_POLICE_COVER_RANGE || !brain || brain.blackboard[BB_BASIC_MOB_CURRENT_TARGET] != suspect || !can_see(officer, suspect, OUTPOST_POLICE_COVER_RANGE))
+				continue
+		if(dist < best_dist)
+			best = officer
+			best_dist = dist
+	return best
+
+/// `officer` takes the arrest; `keep` (the officer it is taken from, if it can still help) covers it. Anyone else goes back to what it was doing.
+/datum/outpost_police_case/proc/hand_over(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/carbon/human/npc/ambient_npc/outpost/police/keep)
+	for(var/datum/weakref/ref as anything in officers.Copy())
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/other = ref?.resolve()
+		if(other == officer || other == keep)
+			officers -= ref
+			continue
+		drop_officer(other)
+		officers -= ref
+	if(officer.case != src)
+		take_officer(officer)
+	officers.Insert(1, WEAKREF(officer))
+	if(keep)
+		officers.Insert(2, WEAKREF(keep))
+	handed_ref = WEAKREF(officer)
+	spot_ref = null
+	spot_since = 0
+	log_game("OUTPOST POLICE: [key_name(officer)] took the arrest of [key_name(get_suspect())] on the spot at [police.outpost].")
+	staff()
+
+/// Whether `someone` can be in the arrest's way by choice: a player on their feet and free to step aside, not one of the outpost's own
+/datum/outpost_police_case/proc/can_block(mob/living/someone, mob/living/carbon/suspect)
+	if(!isliving(someone) || someone == suspect || !someone.mind || istype(someone, /mob/living/carbon/human/npc/ambient_npc/outpost))
+		return FALSE
+	if(police?.perception?.is_officer(someone))
+		return FALSE
+	if(someone.stat != CONSCIOUS || HAS_TRAIT(someone, TRAIT_INCAPACITATED) || HAS_TRAIT(someone, TRAIT_RESTRAINED) || !(someone.mobility_flags & MOBILITY_MOVE))
+		return FALSE
+	return someone.density && isturf(someone.loc) && !someone.buckled && !someone.pulledby
+
+/**
+ * Blocking an arrest is resisting (owner, pass 3). A player standing where the arresting officer is trying to go (it
+ * walked into them and could not pass), on a tile it means to lead its suspect off from, or on the way ahead while it
+ * leads them (make_way()), is told to make way. Still there CASE_BLOCK_GRACE later, it is RESIST, through the
+ * crime report as the officer sees it, and again every OUTPOST_POLICE_BLOCK_TIME while they stay, as for pulling
+ * the suspect away (check_interference()). Crates and lockers are only walked round.
+ */
+/datum/outpost_police_case/proc/check_blocking(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/carbon/suspect)
+	var/list/ahead = way_ahead
+	way_ahead = null
+	if(!officer || officer.client || !suspect || suspect_lost || acting || step == CASE_STEP_RELEASE || !isturf(officer.loc))
+		return
+	var/list/in_way = list()
+	// Walked into a moment ago and could not get past
+	var/mob/living/bumped = officer.bump_blocker?.resolve()
+	if(bumped && world.time - officer.bump_last <= 1.5 SECONDS && get_dist(officer, bumped) <= 1)
+		in_way |= bumped
+	// On the tiles it could lead them off from, with them in hand and no way to lead them from where it stands
+	var/turf/there = get_turf(suspect)
+	if(there && cuffed && (step == CASE_STEP_ESCORT || step == CASE_STEP_DESK || step == CASE_STEP_HOLD) && (officer.pulling == suspect || lead_goal) && !lead_ready(officer, suspect))
+		for(var/direction in GLOB.alldirs)
+			var/turf/spot = get_step(there, direction)
+			if(!spot || spot == get_turf(officer) || !outpost_police_can_draw(suspect, spot))
+				continue
+			for(var/mob/living/someone in spot)
+				in_way |= someone
+	if(ahead)
+		in_way |= ahead
+	var/list/still = list()
+	for(var/mob/living/someone as anything in in_way)
+		if(!can_block(someone, suspect))
+			continue
+		var/datum/weakref/key = WEAKREF(someone.mind)
+		still[key] = TRUE
+		var/list/entry = LAZYACCESS(blockers, key)
+		if(!entry)
+			entry = list(0, world.time)
+			LAZYSET(blockers, key, entry)
+		entry[2] = world.time
+		if(!entry[1])
+			// Told this second by make_way(), or now
+			if(make_way_said_at == world.time || officer.police_say(POLICE_LINE_MAKE_WAY))
+				make_way_said_at = world.time
+				entry[1] = world.time
+			continue
+		if(world.time - entry[1] < CASE_BLOCK_GRACE)
+			continue
+		var/last = LAZYACCESS(resist_reports, key)
+		if(last && world.time - last < OUTPOST_POLICE_BLOCK_TIME)
+			continue
+		LAZYSET(resist_reports, key, world.time)
+		report(someone, OUTPOST_CRIME_RESIST, officer)
+	for(var/datum/weakref/key as anything in blockers?.Copy())
+		var/list/entry = blockers[key]
+		if(!still[key] && world.time - entry[2] > CASE_BLOCK_FORGET)
+			LAZYREMOVE(blockers, key)
 
 /**
  * Dead, or in crit (owner decisions 37 and 60). Dead before the cuffs: nobody left to arrest. Dead after the cuffs or
@@ -1174,6 +1409,20 @@
 		suspect.buckled.user_unbuckle_mob(suspect, officer)
 		if(suspect.buckled)
 			return FALSE
+	// Running off in the cuffs: the baton, then hold of them again, tg's firm grip, once they are down
+	if(bolting(suspect))
+		lead_goal = null
+		escort_held = FALSE
+		pull_breaks = max(pull_breaks, 1)
+		if(get_dist(officer, suspect) > 1)
+			officer.police_say(POLICE_LINE_CHASE, line_values(suspect))
+		if(officer.Adjacent(suspect))
+			set_goal(null)
+			INVOKE_ASYNC(src, PROC_REF(strike), officer, suspect)
+			return FALSE
+		police_case_pace(officer, TRUE)
+		route_to(officer, suspect, 1)
+		return FALSE
 	// Off on their own feet while it was going round to them: a chase again, and tg's firm grip when it has them
 	if(lead_goal && get_dist(lead_goal, suspect) > 1)
 		lead_goal = null
@@ -1327,7 +1576,8 @@
 /// Stops listening for the suspect's steps after the order
 /datum/outpost_police_case/proc/unregister_order(mob/living/carbon/suspect)
 	if(suspect)
-		UnregisterSignal(suspect, COMSIG_MOVABLE_MOVED)
+		UnregisterSignal(suspect, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_DISARM_HIT))
+	watching_steps = FALSE
 
 /// What follows reaching the suspect: the order, or (cuffs on already) the search or the walk
 /datum/outpost_police_case/proc/after_contact()
@@ -1379,7 +1629,7 @@
 	if(!order_at)
 		order_at = world.time
 		suspect_moved = FALSE
-		RegisterSignal(suspect, COMSIG_MOVABLE_MOVED, PROC_REF(on_suspect_moved), override = TRUE)
+		watch_steps(suspect)
 		officer.face_atom(suspect)
 		officer.police_say(POLICE_LINE_ORDER, line_values(suspect))
 	if(suspect_subdued(suspect))
@@ -1400,7 +1650,7 @@
 /datum/outpost_police_case/proc/enter_cuff(mob/living/carbon/suspect, gave_up = FALSE)
 	complied = gave_up
 	suspect_moved = FALSE
-	RegisterSignal(suspect, COMSIG_MOVABLE_MOVED, PROC_REF(on_suspect_moved), override = TRUE)
+	watch_steps(suspect)
 	set_step(CASE_STEP_CUFF)
 
 /// Subdue: baton blows (a real click, the baton's own cooldown) until they are down
@@ -1534,6 +1784,8 @@
 /datum/outpost_police_case/proc/cuffs_on(mob/living/carbon/suspect)
 	unregister_order(suspect)
 	cuffed = TRUE
+	bolt_steps = 0
+	watch_steps(suspect)
 	crawled_at = 0
 	police_cuffs = istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police)
 	stripper_ref = null
@@ -1636,9 +1888,13 @@
 				continue
 			if(outpost_npc_step_aside(someone, officer, path))
 				continue
+			if(someone.mind || someone.client)
+				LAZYOR(way_ahead, someone)
 			if(!told && !(istype(someone, /mob/living/carbon/human/npc/ambient_npc/outpost/police) && !someone.mind && !someone.client))
 				told = TRUE
 				. = officer.police_say(POLICE_LINE_MAKE_WAY)
+				if(.)
+					make_way_said_at = world.time
 
 /**
  * `blocker`, an outpost NPC standing where `walker` is going, takes one real step out of the way: to the side first,
@@ -1772,6 +2028,11 @@
 		return
 	if(!keep_pulling(officer, suspect, TRUE))
 		return
+	// One or two stars and no way to a cell all this time: the fine where they stand, as an outpost with no cell does
+	if(held_since && world.time - held_since >= CASE_HOLD_FINE_AFTER && warrant?.mind && police.get_stars(warrant.mind) <= 2 && officer.Adjacent(suspect))
+		set_goal(null)
+		begin_action(CASE_ACT_FINING)
+		return
 	if(world.time >= hold_retry_at)
 		hold_retry_at = world.time + CASE_HOLD_RETRY
 		if(police.cell_best(officer))
@@ -1792,6 +2053,7 @@
 
 /// Holds the suspect by the desk until a cell can be had (CASE_STEP_HOLD)
 /datum/outpost_police_case/proc/start_hold()
+	held_since ||= world.time
 	booked_at = 0
 	book_tries = 0
 	lift_goal = null
@@ -1849,6 +2111,8 @@
 				act_recover(officer)
 			if(CASE_ACT_RELEASING)
 				act_release(officer, suspect_ref?.resolve())
+			if(CASE_ACT_FINING)
+				act_fine(officer, suspect)
 	if(!QDELETED(src) && acting == action)
 		acting = null
 
@@ -2007,6 +2271,27 @@
 	if(!QDELETED(src) && !QDELETED(evidence) && !(evidence in officer.get_all_contents()))
 		recover_tries++
 
+/**
+ * Held in cuffs at one or two stars with no cell to be got to for CASE_HOLD_FINE_AFTER: the fine where they stand and
+ * the cuffs off, the warrant closed, as at an outpost with no cell (police_cell.dm cell_book_fallback()).
+ */
+/datum/outpost_police_case/proc/act_fine(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/carbon/suspect)
+	if(booked_at || !suspect || !warrant || police.get_warrant(suspect.mind) != warrant || !officer.Adjacent(suspect))
+		return
+	booked_at = world.time
+	log_game("OUTPOST POLICE: [key_name(suspect)] was fined where they stood at [police.outpost], with no way to a cell ([AREACOORD(suspect)]).")
+	if(officer.pulling == suspect)
+		officer.stop_pulling()
+	police.cell_book_fallback(suspect, officer, warrant)
+	if(QDELETED(src))
+		return
+	if(!QDELETED(suspect) && istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police/used))
+		// The cuffs would not come off: the release step sees to them
+		booked_at = 0
+		finish()
+		return
+	close()
+
 /// The cuffs off, with the strip menu's wait; the case is over once they are off
 /datum/outpost_police_case/proc/act_release(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, mob/living/carbon/suspect)
 	if(QDELETED(suspect))
@@ -2078,7 +2363,7 @@
 		if(acting || HAS_TRAIT(officer, TRAIT_INCAPACITATED))
 			controller.queue_behavior(/datum/ai_behavior/outpost_police_case_stand)
 			return SUBTREE_RETURN_FINISH_PLANNING
-		if(step == CASE_STEP_SUBDUE && suspect && officer.Adjacent(suspect))
+		if((step == CASE_STEP_SUBDUE || bolting(suspect)) && suspect && officer.Adjacent(suspect))
 			INVOKE_ASYNC(src, PROC_REF(strike), officer, suspect)
 		if(!queue_walk(controller, officer, goal, goal_distance))
 			controller.queue_behavior(/datum/ai_behavior/outpost_police_case_stand)
@@ -2090,6 +2375,20 @@
 			controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, suspect)
 			// The force subtree (P4) picks the weapon mode; the shooting subtrees fire
 			return
+	// Running off in the cuffs: the baton beside them, a disabler from further off (police_force.dm police_will_fight())
+	if(bolting(suspect))
+		if(officer.Adjacent(suspect))
+			INVOKE_ASYNC(src, PROC_REF(strike), officer, suspect)
+			controller.queue_behavior(/datum/ai_behavior/outpost_police_case_stand)
+			return SUBTREE_RETURN_FINISH_PLANNING
+		var/datum/targeting_strategy/bolt_strategy = GET_TARGETING_STRATEGY(controller.blackboard[BB_TARGETING_STRATEGY])
+		if(officer.police_loaded_gun_for(POLICE_FORCE_STUN) && bolt_strategy?.can_attack(officer, suspect))
+			controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, suspect)
+			return
+		police_case_pace(officer, TRUE)
+		if(!queue_walk(controller, officer, suspect, 1))
+			controller.queue_behavior(/datum/ai_behavior/outpost_police_case_stand)
+		return SUBTREE_RETURN_FINISH_PLANNING
 	var/datum/ai_controller/basic_controller/human_npc/stealth/brain = controller
 	if(!istype(brain))
 		brain = null
@@ -2284,6 +2583,15 @@
 	var/datum/outpost_police_case/case = cases[target.mind]
 	return !QDELETED(case) && case.step == CASE_STEP_CUFF && case.get_suspect() == target
 
+/// Whether `target` is running off in the cuffs of an arrest `officer` is on: that officer stuns them (police_force.dm police_will_fight()). Read only.
+/datum/outpost_police/proc/bolting_from(mob/living/target, mob/living/carbon/human/npc/ambient_npc/outpost/police/officer)
+	if(!isliving(target) || !target.mind || !istype(officer) || officer.client)
+		return FALSE
+	var/datum/outpost_police_case/case = cases[target.mind]
+	if(QDELETED(case) || officer.case != case || case.get_suspect() != target)
+		return FALSE
+	return case.bolting(target)
+
 /// Whether `target`, with the cuffs coming, has taken a step of their own since: they are pulling away from the cuffs
 /// (on_suspect_moved(): a push, a pull or a throw is no step of theirs). Read only, for the same officers.
 /datum/outpost_police/proc/arrest_pulled_away(mob/living/target)
@@ -2331,3 +2639,10 @@
 #undef CASE_COVER_HOLD_AFTER
 #undef CASE_COVER_LONG_WALK
 #undef CASE_FACE_RANGE
+#undef CASE_ON_THE_SPOT_WAIT
+#undef CASE_BOLT_STEPS
+#undef CASE_BOLT_MEMORY
+#undef CASE_BLOCK_GRACE
+#undef CASE_BLOCK_FORGET
+#undef CASE_HOLD_FINE_AFTER
+#undef CASE_ACT_FINING
