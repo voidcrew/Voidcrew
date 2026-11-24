@@ -214,8 +214,8 @@
 /datum/outpost_checkpoint/proc/chamber_place_for(mob/living/walker)
 	if(QDELETED(walker))
 		return null
-	// The police are at work in there: nobody walks in on an arrest, and whoever is inside already stays where they are
-	if(police_at_work())
+	// The police (or the crews) are at work in there: nobody walks in on them, and whoever is inside stays where they are
+	if(work_inside())
 		return null
 	LAZYINITLIST(chamber_places)
 	LAZYINITLIST(chamber_places_at)
@@ -412,6 +412,21 @@
 			post.request_outer(walker)
 	return here
 
+/**
+ * A working hatch's chamber, too, while the key fits its inner door (police_key_fits()): the officers' search goes in
+ * from the concourse. The search's own rule (police_search.dm) stops at the door of a hatch, whose outer door is out
+ * on the hull.
+ */
+/datum/outpost_police/search_inside(turf/last, mob/living/officer)
+	. = ..()
+	if(.)
+		return
+	var/datum/outpost_checkpoint/post = search_gate(last)
+	if(!post?.is_hatch() || QDELETED(post.inner_door) || QDELETED(post.outer_door) || !post.hatch_inner_safe())
+		return null
+	var/datum/outpost_police_floor/floor = search_floor(last, officer)
+	return (post.secured_turf && floor?.walkable[post.secured_turf]) ? last : null
+
 /proc/outpost_police_elevator_panel(obj/structure/overmap/trader_outpost/outpost, sector)
 	if(!outpost)
 		return null
@@ -441,6 +456,16 @@
 // While officers are at work in there (police_at_work()) the chamber scans nobody, its outer door stays open behind
 // them, and none of the outpost's people walks in or asks a door. Nothing here moves, stuns or holds anyone: the
 // arrest in the chamber is the same arrest as anywhere (outpost_police/police_arrest.dm).
+//
+// The hatches (a checkpoint whose outer door opens onto space: Quartermain's two yard hatches and the Undertow's bar
+// hatch) let nobody wanted out (request_cycle(), request_outer()). Officers cannot follow anyone out there, so the
+// key is for the inner door instead, and only while nothing unscanned can be in the chamber: the outer door has not
+// opened since the chamber last let anyone through clean (outer_opened), so whoever is in there came from the
+// concourse. It never opens a hatch's outer door.
+//
+// The outpost's medics and morgue crew carry the same key for their own work: a patient or a body (or its bag) lying
+// in the chamber or a doorway (crew_key_holder()). While one of them stands in there with it (crew_at_work()) the
+// chamber behaves as it does for the police.
 
 /// Whether `tile` is this checkpoint's: a tile of its chamber or one of its two doorways
 /datum/outpost_checkpoint/proc/holds_turf(turf/tile)
@@ -468,12 +493,71 @@
 	var/atom/walking_to = cop.ai_controller?.current_movement_target
 	return !QDELETED(walking_to) && holds_turf(get_turf(walking_to))
 
-/// Whether pathing takes `walker` through `door`: an officer with business in here, and a door that is open or that its key opens
+/// `person` as one of this outpost's medics or morgue crew, awake, nobody playing them; null for anyone else
+/datum/outpost_checkpoint/proc/crew_worker(mob/living/person)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/worker = person
+	if(!istype(worker) || worker.mind || worker.client || worker.stat != CONSCIOUS || !outpost || worker.outpost_recovery?.outpost != outpost)
+		return null
+	if(!istype(worker, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/medic) && !istype(worker, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue))
+		return null
+	return worker
+
+/// What `worker`'s job is about: the patient a medic treats, the body (or its crew bag) the morgue crew collects; null for no job
+/datum/outpost_checkpoint/proc/crew_job_target(mob/living/carbon/human/npc/ambient_npc/worker)
+	var/datum/ambient_activity/recover_body/collecting = worker.activity
+	if(istype(collecting))
+		return collecting.bag() || collecting.body()
+	var/datum/ambient_activity/treat_patient/treating = worker.activity
+	if(istype(treating))
+		return treating.patient()
+	return null
+
+/**
+ * Whether `walker` is a medic or one of the morgue crew with work in here, so the police's key is theirs too: it
+ * stands in the chamber or a doorway (the way out is its own), or the patient or body its job is about lies in here
+ * and its walk goes in here to it.
+ */
+/datum/outpost_checkpoint/proc/crew_key_holder(mob/living/walker)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/worker = crew_worker(walker)
+	if(!worker)
+		return FALSE
+	if(holds_turf(get_turf(worker)))
+		return TRUE
+	var/atom/job = crew_job_target(worker)
+	var/atom/walking_to = worker.ai_controller?.current_movement_target
+	return !QDELETED(job) && holds_turf(get_turf(job)) && !QDELETED(walking_to) && holds_turf(get_turf(walking_to))
+
+/// Whether `walker` carries the key now: an officer on police business here, or a crew member with work here
+/datum/outpost_checkpoint/proc/key_holder(mob/living/walker)
+	return police_key_holder(walker) || crew_key_holder(walker)
+
+/// Whether this checkpoint is a hatch: its outer door opens onto space, not onto the outpost
+/datum/outpost_checkpoint/proc/is_hatch()
+	return !!lobby_turf && !istype(lobby_turf.loc, /area/voidcrew/trader_outpost)
+
+/// Whether this is a hatch with someone the police want in its chamber (in a locker, a bag or a mech counts), so its outer door stays shut
+/datum/outpost_checkpoint/proc/hatch_holds_wanted()
+	if(!is_hatch())
+		return FALSE
+	for(var/mob/living/person as anything in chamber_people())
+		if(police_wants(person))
+			return TRUE
+	return FALSE
+
+/// Whether the key may open a hatch's inner door now: the outer door shut and not opened since the last clean pass, nothing being forced
+/datum/outpost_checkpoint/proc/hatch_inner_safe()
+	if(!is_hatch() || outer_opened || forcing || !outer_door.density || outer_door.operating)
+		return FALSE
+	return state == CHECKPOINT_IDLE || state == CHECKPOINT_SCANNING
+
+/// Whether pathing takes `walker` through `door`: a key holder with business in here, and a door that is open or that its key opens
 /datum/outpost_checkpoint/proc/police_key_fits(obj/machinery/door/airlock/outpost/checkpoint/door, mob/living/walker)
-	if(QDELETED(outer_door) || QDELETED(inner_door) || !police_key_holder(walker))
+	if(QDELETED(outer_door) || QDELETED(inner_door) || !key_holder(walker))
 		return FALSE
 	if(!door.density || is_disabled())
 		return TRUE
+	if(is_hatch())
+		return door == inner_door && hatch_inner_safe()
 	return door == outer_door
 
 /**
@@ -482,10 +566,18 @@
  * down. TRUE if it opens.
  */
 /datum/outpost_checkpoint/proc/police_key(obj/machinery/door/airlock/outpost/checkpoint/door, mob/living/user)
-	if(QDELETED(outer_door) || QDELETED(inner_door) || QDELETED(door) || door.operating || !door.density || !police_key_holder(user))
+	if(QDELETED(outer_door) || QDELETED(inner_door) || QDELETED(door) || door.operating || !door.density || !key_holder(user))
 		return FALSE
 	if(is_disabled())
 		return open_freely(door)
+	// A hatch: the inner door, for a few seconds, as for a clean pass. Whoever is being scanned waits.
+	if(is_hatch())
+		if(door != inner_door || !hatch_inner_safe())
+			return FALSE
+		set_state(CHECKPOINT_PASSING)
+		open_door(inner_door)
+		phase_timer = addtimer(CALLBACK(src, PROC_REF(close_door), inner_door), OUTPOST_CHECKPOINT_PASS_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME)
+		return TRUE
 	if(door != outer_door)
 		return FALSE
 	// Whoever is being scanned waits: nothing is decided about a chamber the police have opened
@@ -529,6 +621,27 @@
 				if(police_wants(person))
 					return TRUE
 	return FALSE
+
+/**
+ * Whether one of the outpost's medics or morgue crew stands in the chamber or a doorway with the patient or body its
+ * job is about also in here. Meanwhile, as for the police at work, the chamber scans nobody and its outer door waits.
+ */
+/datum/outpost_checkpoint/proc/crew_at_work()
+	if(!outpost || QDELETED(outer_door) || QDELETED(inner_door))
+		return FALSE
+	var/list/turf/tiles = chamber_turfs + get_turf(outer_door) + get_turf(inner_door)
+	for(var/turf/tile as anything in tiles)
+		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/worker in tile)
+			if(!crew_worker(worker))
+				continue
+			var/atom/job = crew_job_target(worker)
+			if(!QDELETED(job) && holds_turf(get_turf(job)))
+				return TRUE
+	return FALSE
+
+/// Whether anyone with the key is at work in here: the police (police_at_work()) or a crew (crew_at_work())
+/datum/outpost_checkpoint/proc/work_inside()
+	return police_at_work() || crew_at_work()
 
 /// The police were at work in here when a scan was due (start_scan()): once they are done, whoever is shut in is scanned
 /datum/outpost_checkpoint/proc/scan_after_police()

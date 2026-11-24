@@ -45,6 +45,7 @@ No combat guns past the checkpoint. Work tools and disablers are fine, including
 - The scan looks everywhere: hands, pockets, bags inside bags, implants. Anything lying on the floor of the chamber counts too, and a gun left there keeps the chamber refusing everyone until someone carries it out.
 - **Lockers** line the lobby. Shut your guns in one and swipe your ID to lock it to yourself. It frees up again once you empty it.
 - You leave through the **exit gate**, a one-way light curtain beside the checkpoint. Nothing comes in through it.
+- The outer hatches onto the hull have no exit gate: walk into the inner door to go out. A hatch will not let anyone with stars out, and its outer door stays shut while one of them is in the chamber.
 
 **Weapons permit.** The guard sells a personal weapons permit at the booth window for 1,000 credits. It is good for twenty minutes, at that outpost only, and lets you through the scan and carry openly inside. It is yours alone: the outpost keeps the record, and the paper the guard hands you is just a receipt. A permit is no licence to shoot anyone; the usual rules on violence still apply.
 
