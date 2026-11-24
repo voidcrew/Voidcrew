@@ -139,7 +139,8 @@ type Util = {
 /**
  * WIKI, RULES, DISCORD, POLLS, MANIFEST, SETTINGS, CHANGELOG. SETTINGS opens the terminal's SETTINGS
  * screen (lit while it is open); WIKI, RULES and DISCORD open the server's pages in the player's
- * browser. POLLS, MANIFEST and CHANGELOG are switched off for now and draw dead.
+ * browser. CHANGELOG opens the game's changelog window. POLLS and MANIFEST are switched off for
+ * now and draw dead.
  */
 function utilities(
   data: LobbyData,
@@ -165,7 +166,7 @@ function utilities(
           : 'idle',
       onClick: settings?.onSettings,
     },
-    { label: 'CHANGELOG', action: 'changelog', state: 'dead' },
+    { label: 'CHANGELOG', action: 'changelog', state: 'idle' },
   ];
 }
 
