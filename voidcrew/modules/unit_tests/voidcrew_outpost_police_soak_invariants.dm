@@ -379,8 +379,15 @@
 			continue
 		found.stuck_ticks++
 		if(found.stuck_ticks > limit)
+			// Who stands round it, and where its pathfinder wants its next step: what it cannot get past
+			var/list/around = list()
+			for(var/mob/living/other in range(1, officer))
+				if(other != officer)
+					around += "[run.who(other)] at [run.where(other)][other.body_position == LYING_DOWN ? " (lying)" : ""]"
+			var/datum/move_loop/has_target/jps/loop = GLOB.move_manager.processing_on(officer, SSai_movement)
+			var/next_step = (istype(loop) && length(loop.movement_path)) ? run.where(loop.movement_path[1]) : "none"
 			// The officer making an arrest that stands still is the arrest not happening: worse than a stalled beat
-			run.breach(src, "[REF(officer)]|[run.where(here)]", "[run.who(officer)] has stood at [run.where(officer)] for over [limit]s with a walk to [run.where(goal)] ([get_dist(officer, goal)] tiles off)[case ? ", on the arrest of [run.who(case.get_suspect())] (step \"[case.step]\")" : ""]", list(officer), case ? 2 : null)
+			run.breach(src, "[REF(officer)]|[run.where(here)]", "[run.who(officer)] has stood at [run.where(officer)] for over [limit]s with a walk to [run.where(goal)] ([get_dist(officer, goal)] tiles off)[case ? ", on the arrest of [run.who(case.get_suspect())] (step \"[case.step]\")" : ""]. Beside it: [length(around) ? around.Join(", ") : "nobody"]; its path's next tile: [next_step]; it last walked into [run.who(officer.bump_blocker?.resolve())]", list(officer), case ? 2 : null)
 
 /// An officer walking a cuffed suspect in keeps losing hold of them, though the suspect only stands where they are put
 /datum/police_soak_invariant/escort_lets_go

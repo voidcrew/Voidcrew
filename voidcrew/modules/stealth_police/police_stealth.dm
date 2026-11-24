@@ -192,7 +192,8 @@
 	if(from_sector == to_sector || from_sector == POLICE_SECTOR_OUTSIDE || to_sector == POLICE_SECTOR_OUTSIDE)
 		police.clear_checkpoint_crossing(officer)
 		return ..()
-	if(istype(to_sector, /datum/outpost_berth) && !police.dispatch_is_response_unit(officer))
+	// (An arrest takes its officers anywhere: its cover rides down after the arresting officer, police_arrest.dm cover_follow())
+	if(istype(to_sector, /datum/outpost_berth) && !police.dispatch_is_response_unit(officer) && !officer.case)
 		police.clear_checkpoint_crossing(officer)
 		if(goto_dest != dest)
 			stealth_drop_walk()
@@ -1031,7 +1032,8 @@
  */
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_search_for(datum/mind/mind)
 	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = ai_controller
-	if(!istype(brain) || !mind || stat != CONSCIOUS || client || case || npc_exit)
+	// On an arrest only its cover looks, and only while the arrest has not found its suspect (police_arrest.dm cover_looks())
+	if(!istype(brain) || !mind || stat != CONSCIOUS || client || (case && !case.cover_looks(src)) || npc_exit)
 		return FALSE
 	var/datum/outpost_warrant/warrant = police?.get_warrant(mind)
 	// The floor is still being read (the first second of the first hunt): asked again at the police's next tick

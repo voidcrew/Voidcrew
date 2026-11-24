@@ -664,10 +664,14 @@
 
 // ----- the leash -----
 
-/// Anywhere on their outpost's walkable ground: the concourse, the lobby and the hangars, never open space
+/// Anywhere on their outpost's walkable ground: the concourse, the lobby and the hangars, never open space.
+/// Water is no ground to them (Halcyon's pond), except on an arrest: an officer wades in after its suspect, who
+/// could otherwise stand in the pond for good (police_arrest.dm).
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/leash_ok(turf/tile)
 	tile = get_turf(tile)
-	if(!tile || isspaceturf(tile) || isgroundlessturf(tile) || islava(tile) || ischasm(tile))
+	if(!tile || isspaceturf(tile) || islava(tile) || ischasm(tile))
+		return FALSE
+	if(isgroundlessturf(tile) && !(case && istype(tile, /turf/open/water)))
 		return FALSE
 	var/obj/structure/overmap/trader_outpost/keep = police?.outpost || get_outpost()
 	if(keep?.template_bottom_left)
