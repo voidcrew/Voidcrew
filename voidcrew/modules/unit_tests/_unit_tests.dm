@@ -231,6 +231,7 @@
 #include "voidcrew_outpost_police_heavy.dm"
 #include "voidcrew_outpost_police_helpers.dm"
 #include "voidcrew_outpost_police_hud.dm"
+#include "voidcrew_outpost_police_leftovers.dm"
 #include "voidcrew_outpost_police_life.dm"
 #include "voidcrew_outpost_police_payoff.dm"
 #include "voidcrew_outpost_police_playtest2.dm"

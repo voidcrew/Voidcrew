@@ -418,6 +418,70 @@
 	return TRUE
 
 // =========================================================================
+// GIVING WAY TO AN ESCORT
+// =========================================================================
+
+/**
+ * One of the outpost's people who stepped out of the way of someone bringing a person in stays out of it: for
+ * OUTPOST_GIVE_WAY_HOLD, while the escort is within OUTPOST_GIVE_WAY_RANGE with someone still in hand, their own
+ * walk does not take them back onto the tile they stepped off or any nearer the escort. They wait where they stepped
+ * to, or their pathfinder finds another way. A beat officer whose patrol ran past an escort standing at the desk
+ * stepped aside, walked straight back into its way, and was stepped aside again, three times in fifteen seconds
+ * (pass 2 soak, Halcyon hangar_wait).
+ */
+
+/// How long one of the outpost's people who gave way to an escort keeps out of its way
+#define OUTPOST_GIVE_WAY_HOLD (5 SECONDS)
+/// The escort is out of the way once this far off
+#define OUTPOST_GIVE_WAY_RANGE 2
+
+/mob/living/carbon/human/npc/ambient_npc/outpost
+	/// The escort they last stepped out of the way of (police_movement.dm)
+	var/datum/weakref/gave_way_to
+	/// The tile they stepped off for it
+	var/turf/gave_way_from
+	/// world.time they may walk back into its way
+	var/gave_way_until = 0
+
+/// `blocker` stepped off `from` out of `walker`'s way (outpost_npc_step_aside()). Always TRUE.
+/proc/outpost_npc_gave_way(mob/living/blocker, mob/living/walker, turf/from)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/local = blocker
+	if(istype(local) && isliving(walker?.pulling))
+		local.gave_way_to = WEAKREF(walker)
+		local.gave_way_from = from
+		local.gave_way_until = world.time + OUTPOST_GIVE_WAY_HOLD
+	return TRUE
+
+/// Whether a step of their own onto `newloc` would take them back into the way of the escort they gave way to
+/mob/living/carbon/human/npc/ambient_npc/outpost/proc/give_way_holds(turf/newloc)
+	if(!gave_way_until)
+		return FALSE
+	var/mob/living/escort = gave_way_to?.resolve()
+	if(world.time >= gave_way_until || QDELETED(escort) || !isliving(escort.pulling) || escort.z != z || get_dist(escort, src) > OUTPOST_GIVE_WAY_RANGE)
+		gave_way_to = null
+		gave_way_from = null
+		gave_way_until = 0
+		return FALSE
+	// Their own walk only: dragged, shoved, thrown, or partway through a trade of places, they go where they are taken
+	if(!isturf(newloc) || !isturf(loc) || client || mind || pulledby || buckled || throwing || (pass_flags & PASSMOB) || move_intent != MOVE_INTENT_WALK)
+		return FALSE
+	return newloc == gave_way_from || get_dist(newloc, escort) < get_dist(loc, escort)
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/own_step_allowed(atom/newloc)
+	. = ..()
+	if(. && give_way_holds(newloc))
+		return FALSE
+
+// On an arrest or riding a lift an officer goes where it must
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/give_way_holds(turf/newloc)
+	if(case || dispatch_riding)
+		return FALSE
+	return ..()
+
+#undef OUTPOST_GIVE_WAY_HOLD
+#undef OUTPOST_GIVE_WAY_RANGE
+
+// =========================================================================
 // THE EXIT GATE WITH SOMEONE IN HAND
 // =========================================================================
 
