@@ -319,8 +319,12 @@
 		run.script_failed("the doorjack did not open the cell door")
 		return
 	// Out of the cell, as the owner walked out (17:27:47 open, 17:27:52 in the lobby shooting)
-	if(cell.outside_turf && !run.go_to(cell.outside_turf, 0, 10 SECONDS))
-		run.note(">>", "could not step out of the cell to [run.where(cell.outside_turf)] (at [run.where(body)])")
+	// Two steps of their own: into the doorway, then out (the pathfinder would not plan through the broken door)
+	var/turf/doorway = get_turf(cell.door)
+	if(!run.own_step(doorway) || !cell.outside_turf || !run.own_step(cell.outside_turf))
+		run.note(">>", "could not step out of the cell to [run.where(cell.outside_turf)] (at [run.where(body)], the door [cell.door.density ? "shut" : "open"][cell.door.locked ? ", bolted" : ""])")
+	else
+		run.note(">>", "steps out of the cell to [run.where(body)]")
 	var/datum/outpost_checkpoint/post = run.outpost.lobby_checkpoint(null)
 	fight(run, 150 SECONDS, null, post?.secured_turf)
 	run.note(">>", "the fight ends at [run.police.get_stars(body.mind)] stars, [length(fallen)] officers down, [shots] shots fired, suspect [body.stat == CONSCIOUS ? "up" : (body.stat == DEAD ? "dead" : "down")]")
