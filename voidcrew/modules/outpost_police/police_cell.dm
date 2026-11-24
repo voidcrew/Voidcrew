@@ -991,12 +991,18 @@
 			cell_walk_out(officer)
 			shut_door(TRUE)
 			return FALSE
+	// The steps above take their time (the strip, the cuffs, the walk out). A cell rebuilt, or an outpost unloaded,
+	// meanwhile has no police left to book anyone for
+	if(QDELETED(src) || QDELETED(police))
+		return FALSE
 	var/list/worn_restraints = list()
 	if(suspect.handcuffed)
 		worn_restraints += suspect.handcuffed
 	if(suspect.legcuffed)
 		worn_restraints += suspect.legcuffed
 	police.cell_remove_cuffs(suspect, officer)
+	if(QDELETED(src) || QDELETED(police))
+		return FALSE
 	for(var/obj/item/restraint as anything in worn_restraints)
 		if(QDELETED(restraint) || restraint == suspect.handcuffed || restraint == suspect.legcuffed)
 			continue
@@ -1015,6 +1021,8 @@
 		officer.combat_mode = old_guard_combat
 	// The officer steps out
 	cell_walk_out(officer)
+	if(QDELETED(src) || QDELETED(police))
+		return FALSE
 	var/term = paid ? OUTPOST_POLICE_HOLDS[stars] : OUTPOST_POLICE_JAIL[full_stars]
 	prisoners[prisoner] = world.time + term
 	if(!paid)
