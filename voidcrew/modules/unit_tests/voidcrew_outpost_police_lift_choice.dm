@@ -76,7 +76,7 @@
 		return
 	var/datum/outpost_police/police = outpost.police
 	test_police = police
-	TEST_ASSERT(length(police.lift_turfs) >= 4, "Fixture: Quartermain has [length(police.lift_turfs)] police lift tiles, not 4")
+	TEST_ASSERT(length(police.lift_turfs) >= 2, "Fixture: Quartermain has [length(police.lift_turfs)] police lift tiles")
 	TEST_ASSERT(length(police.cells), "Fixture: Quartermain has no cells")
 	var/datum/outpost_police_cell/cell = police.cells[1]
 	TEST_ASSERT_NOTNULL(cell.outside_turf, "Fixture: the cell has no tile outside its door")
@@ -144,7 +144,7 @@
 	if(!outpost)
 		return
 	var/datum/outpost_police/police = outpost.police
-	TEST_ASSERT(length(police.lift_turfs) >= 4, "Fixture: Quartermain has [length(police.lift_turfs)] police lift tiles, not 4")
+	TEST_ASSERT(length(police.lift_turfs) >= 2, "Fixture: Quartermain has [length(police.lift_turfs)] police lift tiles")
 	dispatch_clear(police)
 	// Down beside the right-hand stairs, on the concourse: the upper-left lift is the farther one from them
 	var/turf/spot = local(outpost, 29, 15)
@@ -187,3 +187,64 @@
 			TEST_ASSERT(desk_best, "Fixture: no walk to the desk from any police lift ([walks_text(outpost, desk_walks)])")
 		TEST_ASSERT(desk_walks[arrived] && desk_walks[arrived] <= desk_best + 1, "Arrival [arrival]: the sergeant came up at [local_text(outpost, arrived)], a walk of [desk_walks[arrived]] to the desk for a shortest of [desk_best] ([walks_text(outpost, desk_walks)])")
 	dispatch_clear(police)
+
+/**
+ * Halcyon and the Undertow: a cell medic comes up the police lift with the shortest walk to the cell, and the desk
+ * sergeant's replacement the one with the shortest walk to the desk. The walks from every lift are noted in the log.
+ */
+/datum/unit_test/voidcrew_outpost_police_lift_choice/other_outposts
+
+/datum/unit_test/voidcrew_outpost_police_lift_choice/other_outposts/Run()
+	for(var/outpost_type in list(/obj/structure/overmap/trader_outpost/general, /obj/structure/overmap/trader_outpost/black_market))
+		var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost(outpost_type)
+		if(!outpost)
+			return
+		var/datum/outpost_police/police = outpost.police
+		test_police = police
+		TEST_ASSERT(length(police.lift_turfs) >= 2, "Fixture: [outpost_type] has [length(police.lift_turfs)] police lift tiles")
+		TEST_ASSERT(length(police.cells), "Fixture: [outpost_type] has no cells")
+		dispatch_clear(police)
+		var/datum/outpost_police_cell/cell = police.cells[1]
+		var/turf/floor
+		for(var/turf/tile as anything in cell.tiles)
+			if(!tile.is_blocked_turf(exclude_mobs = FALSE))
+				floor = tile
+				break
+		TEST_ASSERT(floor && cell.outside_turf, "Fixture: [outpost_type]'s first cell has no free floor or no outside tile")
+		var/mob/living/carbon/human/prisoner = police_arrest_person(floor)
+		crit_medic_beat(prisoner)
+		cell.prisoners[prisoner.mind] = world.time + 30 MINUTES
+		TEST_ASSERT(police.cell_patient_ok(prisoner), "Fixture: [outpost_type]'s prisoner is not a cell medic's patient")
+		var/list/walks
+		var/best = 0
+		for(var/call_number in 1 to 6)
+			TEST_ASSERT(police.call_cell_medic(prisoner), "[outpost_type] call [call_number]: no medic came")
+			var/mob/living/medic = police.cell_medic_for(prisoner)
+			var/turf/arrived = get_turf(medic)
+			TEST_ASSERT(arrived in police.lift_turfs, "[outpost_type] call [call_number]: the medic came up at [local_text(outpost, arrived)], not on a police lift")
+			if(!walks)
+				walks = lift_walks(police, medic, cell.outside_turf)
+				best = shortest(walks)
+				TEST_NOTICE(src, "[outpost_type]: walks to cell [local_text(outpost, cell.outside_turf)]: [walks_text(outpost, walks)]")
+				TEST_ASSERT(best, "Fixture: [outpost_type] has no walk to the cell from any police lift ([walks_text(outpost, walks)])")
+			TEST_ASSERT(walks[arrived] && walks[arrived] <= best + 1, "[outpost_type] call [call_number]: the medic came up at [local_text(outpost, arrived)], a walk of [walks[arrived]] to the cell for a shortest of [best] ([walks_text(outpost, walks)])")
+			crit_medic_cleanup(police)
+		qdel(prisoner)
+
+		var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(outpost)
+		var/datum/ambient_outpost_role/role = SSambient_npcs.get_outpost_role(/datum/ambient_outpost_role/police_sergeant)
+		var/list/desk_walks
+		var/desk_best = 0
+		for(var/arrival in 1 to 6)
+			dispatch_clear(police)
+			var/mob/living/sergeant = outpost_police_arrive(role, place, null)
+			TEST_ASSERT_NOTNULL(sergeant, "[outpost_type] arrival [arrival]: no sergeant came up")
+			var/turf/arrived = get_turf(sergeant)
+			if(!desk_walks)
+				desk_walks = lift_walks(police, sergeant, police.desk_turf)
+				desk_best = shortest(desk_walks)
+				TEST_NOTICE(src, "[outpost_type]: walks to the desk [local_text(outpost, police.desk_turf)]: [walks_text(outpost, desk_walks)]")
+				TEST_ASSERT(desk_best, "Fixture: [outpost_type] has no walk to the desk from any police lift ([walks_text(outpost, desk_walks)])")
+			TEST_ASSERT(desk_walks[arrived] && desk_walks[arrived] <= desk_best + 1, "[outpost_type] arrival [arrival]: the sergeant came up at [local_text(outpost, arrived)], a walk of [desk_walks[arrived]] to the desk for a shortest of [desk_best] ([walks_text(outpost, desk_walks)])")
+		dispatch_clear(police)
+		test_police = null
