@@ -1171,9 +1171,11 @@
 		suspect.buckled.user_unbuckle_mob(suspect, officer)
 		if(suspect.buckled)
 			return FALSE
-	// Off on their own feet while it was going round to them: that is a chase again
+	// Off on their own feet while it was going round to them: a chase again, and tg's firm grip when it has them
 	if(lead_goal && get_dist(lead_goal, suspect) > 1)
 		lead_goal = null
+		if(!suspect.pulledby)
+			pull_breaks++
 	if(lead && (lead_goal || officer.pulling == suspect || officer.Adjacent(suspect)) && !lead_ready(officer, suspect))
 		return go_round(officer, suspect)
 	lead_goal = null
@@ -1294,7 +1296,7 @@
 	if(officer.pulling == suspect)
 		officer.stop_pulling()
 		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/second = cover()
-		if(second && !second.pulling && second.stat == CONSCIOUS && !HAS_TRAIT(second, TRAIT_INCAPACITATED) && isturf(second.loc) && second.Adjacent(suspect))
+		if(second && !second.client && !second.pulling && second.stat == CONSCIOUS && !HAS_TRAIT(second, TRAIT_INCAPACITATED) && isturf(second.loc) && second.Adjacent(suspect))
 			second.start_pulling(suspect)
 	escort_held = FALSE
 	var/dist = here.z == lead_goal.z ? get_dist(here, lead_goal) : INFINITY
@@ -2145,7 +2147,8 @@
 			return FALSE
 		controller.queue_behavior(/datum/ai_behavior/outpost_police_case_stand)
 		return TRUE
-	if(!unheld_since || world.time - unheld_since < CASE_COVER_HOLD_AFTER || suspect.pulledby || !suspect.handcuffed || !isturf(suspect.loc) || acting || step == CASE_STEP_RELEASE)
+	// At once while the arresting officer goes round to them; else once they have been let be a moment
+	if(!unheld_since || (!lead_goal && world.time - unheld_since < CASE_COVER_HOLD_AFTER) || suspect.pulledby || !suspect.handcuffed || !isturf(suspect.loc) || acting || step == CASE_STEP_RELEASE)
 		return FALSE
 	if(officer.pulling || HAS_TRAIT(officer, TRAIT_INCAPACITATED) || HAS_TRAIT(officer, TRAIT_HANDS_BLOCKED) || !isturf(officer.loc))
 		return FALSE
