@@ -194,6 +194,9 @@
 		return
 	var/mob/living/carbon/human/body = run.suspect
 	var/stars = run.police.get_stars(body.mind)
+	if(run.police.cell_holding(body.mind) || run.police.in_custody(body))
+		run.note(">>", "is already in custody ([run.police.cell_holding(body.mind) ? "in a cell" : "held"]) at [stars] stars when the script looks")
+		return
 	if(body.stat == CONSCIOUS)
 		run.note(">>", "is still up at [stars] stars when the fight ends ([body.handcuffed ? "in cuffs" : "not cuffed"])")
 		return
@@ -303,7 +306,9 @@
 	return length(fallen) >= 2 && run.police.get_stars(run.suspect.mind) >= 3
 
 /datum/police_soak_scenario/combat/kill_then_hide/play(datum/police_soak/run)
-	if(!arm(run))
+	// The sealed suit: without its armour the suspect was shot down while running on two maps of three, and the run is
+	// about the search after they get away
+	if(!arm(run, TRUE))
 		return
 	if(!fight(run, 90 SECONDS, PROC_REF(enough)))
 		run.note(">>", "never got two officers down at three stars while still up ([length(fallen)] down, [run.police.get_stars(run.suspect.mind)] stars, suspect [run.suspect_able() ? "up" : "down"])")
@@ -316,7 +321,10 @@
 	if(!corner)
 		run.script_failed("no far corner of the concourse out of the officers' sight to run to")
 		return
-	if(!run.go_to(corner, 0, 60 SECONDS))
+	var/run_until = world.time + 60 SECONDS
+	while(world.time < run_until && run.suspect_able() && get_turf(run.suspect) != corner)
+		run.go_to(corner, 0, 3 SECONDS)
+	if(get_turf(run.suspect) != corner)
 		run.note(">>", "could not run to the far corner at [run.where(corner)] (got to [run.where(run.suspect)])")
 	if(!run.suspect_able())
 		down_and_crawl(run)
