@@ -142,7 +142,7 @@
  * sight walks towards the nearest officer. Until `limit` runs out, they cannot fight on, or `done` (a proc on this
  * scenario, called with the run) says to stop. TRUE if `done` stopped it.
  */
-/datum/police_soak_scenario/combat/proc/fight(datum/police_soak/run, limit, done)
+/datum/police_soak_scenario/combat/proc/fight(datum/police_soak/run, limit, done, turf/roam)
 	var/until = world.time + limit
 	while(!run.finished && world.time < until && !QDELETED(run.suspect) && run.suspect.stat == CONSCIOUS && !run.suspect.handcuffed && !HAS_TRAIT(run.suspect, TRAIT_RESTRAINED) && !(run.police.in_custody(run.suspect) && !run.police.cell_holding(run.suspect.mind)))
 		count_fallen(run)
@@ -172,6 +172,9 @@
 		var/mob/living/quarry = quarry(run)
 		if(quarry)
 			run.go_to(quarry, 3, 3 SECONDS)
+		else if(roam && get_dist(run.suspect, roam) > 1)
+			// Nobody to go after: on to where the round went, the concourse
+			run.go_to(roam, 1, 3 SECONDS)
 		else
 			sleep(1 SECONDS)
 	count_fallen(run)
@@ -315,7 +318,11 @@
 	if(cell.door.density)
 		run.script_failed("the doorjack did not open the cell door")
 		return
-	fight(run, 150 SECONDS)
+	// Out of the cell, as the owner walked out (17:27:47 open, 17:27:52 in the lobby shooting)
+	if(cell.outside_turf && !run.go_to(cell.outside_turf, 0, 10 SECONDS))
+		run.note(">>", "could not step out of the cell to [run.where(cell.outside_turf)] (at [run.where(body)])")
+	var/datum/outpost_checkpoint/post = run.outpost.lobby_checkpoint(null)
+	fight(run, 150 SECONDS, null, post?.secured_turf)
 	run.note(">>", "the fight ends at [run.police.get_stars(body.mind)] stars, [length(fallen)] officers down, [shots] shots fired, suspect [body.stat == CONSCIOUS ? "up" : (body.stat == DEAD ? "dead" : "down")]")
 	down_and_crawl(run)
 	run.stand(30 SECONDS)
