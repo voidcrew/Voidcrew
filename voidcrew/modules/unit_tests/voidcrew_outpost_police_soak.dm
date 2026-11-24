@@ -151,6 +151,8 @@
 	var/stray_checked = 0
 	/// world.time of the suspect's last step of their own (own_step())
 	var/own_step_at = 0
+	/// Until when a failed struggle against a grip keeps the suspect from trying again (tg's client move_delay after resist_grab())
+	var/struggle_until = 0
 	/// Whether an officer had hold of the suspect at the last sample
 	var/was_held = FALSE
 	/// world.times an officer lost hold of a suspect in custody who had not taken a step of their own
@@ -444,11 +446,18 @@
 /datum/police_soak/proc/held_state()
 	if(police.cell_holding(suspect.mind))
 		return "in a cell"
+	var/datum/outpost_police_case/case = police.cases[suspect.mind]
+	// Making off in the cuffs of their own arrest: stunned and taken hold of again, by design (police_force.dm police_will_fight())
+	if(case && !QDELETED(case) && case.bolting(suspect))
+		return null
 	if(police.in_custody(suspect))
 		return "in custody"
 	if(police.has_in_hand(suspect))
 		return "down with an arrest on them"
-	var/datum/outpost_police_case/case = police.cases[suspect.mind]
+	// Hit out a moment ago (a shove, a blow, a shot): not giving up for OUTPOST_POLICE_YIELD_TIME (2 s), plus a second
+	// for a beam already in the air (police_force.dm gives_up())
+	if(police.fought_within(suspect, 3 SECONDS))
+		return null
 	// A shot already in the air when the order was given, or when they gave up, is nobody's fault: a second's grace
 	if(police.order_pending(suspect) && world.time - case.order_at > 1 SECONDS)
 		return "[round((world.time - case.order_at) / (1 SECONDS))]s into the time to comply with an order"
@@ -703,10 +712,23 @@
 	suspect.ClickOn(target, params)
 	return TRUE
 
-/// One step of the suspect's own onto `next`, as their player's key press makes it. FALSE if they did not get there.
+/**
+ * One step of the suspect's own onto `next`, as their player's key press makes it. FALSE if they did not get there.
+ * Held by someone, the key press goes as tg's client/Process_Grab() has it: restrained, no step at all; otherwise a
+ * struggle against the grip (resist_grab()), and a step only if it breaks, with tg's 4 s wait after a failed one.
+ */
 /datum/police_soak/proc/own_step(turf/next)
 	if(!suspect_able() || suspect.buckled || !(suspect.mobility_flags & MOBILITY_MOVE) || !isturf(suspect.loc))
 		return FALSE
+	var/mob/living/holder = suspect.pulledby
+	if(holder && !(holder == suspect.pulling && holder.grab_state == GRAB_PASSIVE))
+		if(HAS_TRAIT(suspect, TRAIT_RESTRAINED) || world.time < struggle_until)
+			return FALSE
+		if(suspect.resist_grab(TRUE))
+			struggle_until = world.time + 4 SECONDS
+			note(">>", "struggles against [who(holder)]'s grip")
+			return FALSE
+		note(">>", "breaks free of [who(holder)]'s grip")
 	var/direction = get_dir(suspect, next)
 	SEND_SIGNAL(suspect, COMSIG_MOB_CLIENT_PRE_MOVE, list(next, direction))
 	suspect.Move(next, direction)
@@ -723,13 +745,15 @@
  * The suspect walks to `goal` (or within `reach` of it) on their own feet, by tg's pathfinder, bumping doors open
  * as anyone does. TRUE once there; FALSE if `limit` ran out, they went down, or there is no way.
  */
-/datum/police_soak/proc/go_to(atom/goal, reach = 0, limit = 45 SECONDS)
+/datum/police_soak/proc/go_to(atom/goal, reach = 0, limit = 45 SECONDS, stop_cuffed = FALSE)
 	var/turf/end = get_turf(goal)
 	if(!end)
 		return FALSE
 	var/until = world.time + limit
 	var/no_path = 0
 	while(!finished && world.time < until && !QDELETED(suspect))
+		if(stop_cuffed && HAS_TRAIT(suspect, TRAIT_RESTRAINED))
+			return FALSE
 		var/turf/here = get_turf(suspect)
 		if(here == end || (reach && here.z == end.z && get_dist(here, end) <= reach))
 			return TRUE
@@ -744,7 +768,7 @@
 			sleep(1 SECONDS)
 			continue
 		for(var/turf/next as anything in path)
-			if(finished || world.time >= until)
+			if(finished || world.time >= until || (stop_cuffed && HAS_TRAIT(suspect, TRAIT_RESTRAINED)))
 				break
 			if(own_step(next))
 				sleep(step_delay())
@@ -758,13 +782,18 @@
 	var/turf/ended = get_turf(suspect)
 	return ended == end || (reach && ended && ended.z == end.z && get_dist(ended, end) <= reach)
 
-/// The suspect walks up to `target`, who may be walking too, until they are beside them. TRUE once beside them.
+/**
+ * The suspect walks up to `target`, who may be walking too, until they are beside them. TRUE once beside them. It is
+ * always to go for them, so it stops once the suspect is cuffed: walking at officers in cuffs is a bolt, not a script.
+ */
 /datum/police_soak/proc/go_up_to(mob/living/target, limit = 45 SECONDS)
 	var/until = world.time + limit
 	while(!finished && world.time < until && !QDELETED(target) && !QDELETED(suspect))
+		if(HAS_TRAIT(suspect, TRAIT_RESTRAINED))
+			return FALSE
 		if(suspect.Adjacent(target))
 			return TRUE
-		go_to(target, 1, min(4 SECONDS, until - world.time))
+		go_to(target, 1, min(4 SECONDS, until - world.time), TRUE)
 	return !QDELETED(target) && !QDELETED(suspect) && suspect.Adjacent(target)
 
 /// One step of the suspect's own to a free tile beside them, any way
