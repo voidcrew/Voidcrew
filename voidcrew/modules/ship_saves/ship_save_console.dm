@@ -175,7 +175,8 @@ GLOBAL_LIST_EMPTY(ship_save_carried_used)
 			working = FALSE
 			return FALSE
 		payment = options[choice]
-		failure = saved_ship_changed_denial(user, bay, ship, slot)
+		// A button that isn't one of the options must not charge anything.
+		failure = islist(payment) ? saved_ship_changed_denial(user, bay, ship, slot) : "Try again."
 		// Parts pulled or research done while the box was open would be saved as it was, and priced as it was.
 		if(!failure && snapshot.progress_changed(ship.shuttle))
 			failure = "The ship changed. Try again."

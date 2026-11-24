@@ -1097,7 +1097,12 @@
 	var/misc_price = survey["cost"]["misc"] * SHIP_SAVE_TEST_CREDITS_PER_PART
 	var/parts_kept = parts_held()
 	test_ship.ship_account.account_balance = misc_price
-	panel.pick = "Parts and credits"
+	// The all-credits option still takes parts for anything but misc; with a misc-only bill it is plain "Credits".
+	var/has_specialized = FALSE
+	for(var/part_class in survey["cost"])
+		if(part_class != "misc" && survey["cost"][part_class])
+			has_specialized = TRUE
+	panel.pick = has_specialized ? "Parts and credits" : "Credits"
 	TEST_ASSERT(panel.save_ship(captain, bay, 1), "Saving the hull for credits failed: [panel.error]")
 	panel.pick = null
 	TEST_ASSERT_EQUAL(test_ship.ship_account.account_balance, 0, "Saving the hull for credits charged the wrong amount")
@@ -1309,7 +1314,14 @@
 /datum/unit_test/voidcrew_ship_saves_hull/proc/change_progress()
 	for(var/turf/open/floor/tile in test_ship.shuttle.return_turfs())
 		if((get_area(tile) in test_ship.shuttle.shuttle_areas) && !tile.is_blocked_turf(exclude_mobs = TRUE))
-			progress_added += new /obj/machinery/rnd/production/protolathe(tile)
+			// Only upgraded machines carry progress since 2026-11-08, so a stock one would change nothing.
+			var/obj/machinery/rnd/production/protolathe/lathe = new(tile)
+			progress_added += lathe
+			var/datum/stock_part/old_bin = locate(/datum/stock_part/matter_bin) in lathe.component_parts
+			if(old_bin)
+				lathe.component_parts -= old_bin
+				lathe.component_parts += GLOB.stock_part_datums[/datum/stock_part/matter_bin/tier2]
+				lathe.RefreshParts()
 			return
 
 /datum/unit_test/voidcrew_ship_saves_hull/proc/change_slot(player_ckey, slot)
