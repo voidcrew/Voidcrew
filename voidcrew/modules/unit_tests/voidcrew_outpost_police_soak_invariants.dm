@@ -140,6 +140,11 @@
 		var/datum/police_soak_track/found = run.tracks[body]
 		var/turf/here = get_turf(body)
 		var/obj/machinery/door/airlock/door = (here && body.stat == CONSCIOUS && isturf(body.loc)) ? (locate(/obj/machinery/door/airlock) in here) : null
+		// An officer in a doorway of the scan chamber the police are at work in (someone wanted or held is in it) is
+		// at that work: in a chamber one tile wide the doorway is the only place beside the suspect to cuff them from
+		var/obj/machinery/door/airlock/outpost/checkpoint/gate_door = door
+		if(istype(gate_door) && is_outpost_police_npc(body) && gate_door.checkpoint?.police_at_work())
+			continue
 		if(door && world.time - found.moved_at > limit SECONDS)
 			run.breach(src, REF(body), "[found.id] ([body.real_name]) has stood still in the doorway of [door] at [run.where(here)] for over [limit]s", list(body))
 
