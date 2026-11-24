@@ -901,6 +901,10 @@
 	checkpoint.on_door_closed(inner)
 	TEST_ASSERT_EQUAL(checkpoint.state, "scanning", "The checkpoint did not scan its chamber once the inner door finished closing") // CHECKPOINT_SCANNING
 	checkpoint.set_state("idle") // CHECKPOINT_IDLE
+	// A mended gate does not scan by itself (voidcrew_outpost_recovery_robbery/gate_repair): whoever is shut in the
+	// chamber asks the inner door, as anyone waiting in it does, and is scanned then
 	checkpoint.end_disable()
-	TEST_ASSERT_EQUAL(checkpoint.state, "scanning", "end_disable() left someone waiting in a closed chamber unscanned") // CHECKPOINT_SCANNING
+	TEST_ASSERT_EQUAL(checkpoint.state, "idle", "A gate that mended scanned its chamber by itself") // CHECKPOINT_IDLE
+	TEST_ASSERT(checkpoint.request_cycle(occupant), "Someone shut in the chamber of a mended gate could not ask it to scan them")
+	TEST_ASSERT_EQUAL(checkpoint.state, "scanning", "Asking the inner door of a mended gate did not scan the chamber") // CHECKPOINT_SCANNING
 	checkpoint.set_state("idle") // CHECKPOINT_IDLE
