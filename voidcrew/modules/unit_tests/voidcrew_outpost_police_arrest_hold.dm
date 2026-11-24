@@ -434,7 +434,7 @@
 
 /datum/unit_test/voidcrew_outpost_police_arrest_wet_cog/Run()
 	var/mob/living/carbon/human/worker = allocate(/mob/living/carbon/human/consistent)
-	var/datum/cogbar/cog = new(worker, 'icons/effects/progressbar.dmi', "Cog")
+	var/datum/cogbar/cog = new(worker, 'icons/effects/progressbar.dmi', "cog")
 	TEST_ASSERT(length(worker.managed_vis_overlays), "Fixture: the cog is not on the worker")
 	worker.update_appearance(UPDATE_OVERLAYS)
 	TEST_ASSERT_NULL(worker.managed_vis_overlays, "Fixture: a redraw of the worker's overlays did not sweep the cog off")

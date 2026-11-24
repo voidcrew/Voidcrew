@@ -5,7 +5,13 @@
 /datum/cogbar/Destroy()
 	if(user)
 		if(cog)
-			SSvis_overlays.remove_vis_overlay(user, list(cog))
+			// Anything that redraws the user's overlays part-way through the work sweeps every managed one off them
+			// (tg's update_icon(UPDATE_OVERLAYS): getting wet, as an officer cuffing someone in a pond does; catching
+			// fire). The cog is gone from their list then, and removing it from no list at all is a runtime.
+			if(cog in user.managed_vis_overlays)
+				SSvis_overlays.remove_vis_overlay(user, list(cog))
+			else
+				user.vis_contents -= cog
 		user_client?.images -= blank
 	// tg's Destroy() then skips its own removal and clears the rest
 	user = null
