@@ -273,10 +273,11 @@
 	for(var/dy in 0 to 6)
 		var/turf/wall_spot = at(8, dy)
 		wall_spot.ChangeTurf(/turf/closed/wall)
-	// Seven tiles and a wall: a pistol carries 9, the wall costs half its 3 for a loud noise
-	var/mob/living/carbon/human/shooter = visitor_at(11, 3)
+	// Six tiles and a wall: a pistol carries 8 (STEALTH_NOISE_RANGE_GUN_PISTOL, lowered from 9 in decision 43), the
+	// wall costs half its 3 for a loud noise, 7.5 in all. Seven tiles and the wall (8.5) is out of earshot.
+	var/mob/living/carbon/human/shooter = visitor_at(10, 3)
 	var/heard_by = stealth_noise(get_turf(shooter), "gun_pistol", null, shooter)
-	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "A pistol shot through a wall seven tiles off did not send the officer to look (heard by [heard_by], officer's AI [brain.ai_status], held still [officer.paused_at], officer's group [brain.group ? "yes" : "none"], muffled distance [stealth_muffled_dist(get_turf(shooter), get_turf(officer), 2)], players on the level [length(SSmobs.clients_by_zlevel[officer.z])], groups [length(GLOB.stealth_groups)])")
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "A pistol shot through a wall six tiles off did not send the officer to look (heard by [heard_by], officer's AI [brain.ai_status], held still [officer.paused_at], officer's group [brain.group ? "yes" : "none"], muffled distance [stealth_muffled_dist(get_turf(shooter), get_turf(officer), 2)], players on the level [length(SSmobs.clients_by_zlevel[officer.z])], groups [length(GLOB.stealth_groups)])")
 	TEST_ASSERT(!length(police.warrants) && !length(police.pending_reports), "A shot heard gave someone a record")
 
 	brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
