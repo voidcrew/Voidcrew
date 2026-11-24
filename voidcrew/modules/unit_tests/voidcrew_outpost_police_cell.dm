@@ -515,6 +515,73 @@
 	TEST_ASSERT(locker.is_authorised(suspect), "The prisoner cannot open their own locker")
 	TEST_ASSERT(!locker.is_authorised(officer), "Someone else can open the prisoner's locker")
 
+/**
+ * A body in an occupied cell: the prisoner shut in with it does not keep the morgue crew from it, the cell lets the
+ * crew in by its door as it does a medic, and they bring the bag out with the door shut behind them and the prisoner
+ * still held.
+ */
+/datum/unit_test/voidcrew_outpost_police_cell_body_recovery
+	var/obj/structure/overmap/trader_outpost/outpost
+	var/datum/outpost_police/old_police
+
+/datum/unit_test/voidcrew_outpost_police_cell_body_recovery/Destroy()
+	if(outpost)
+		outpost.police?.outpost = null
+		outpost.police = old_police
+	outpost = null
+	old_police = null
+	return ..()
+
+/datum/unit_test/voidcrew_outpost_police_cell_body_recovery/Run()
+	outpost = wanted_outpost()
+	var/datum/outpost_police/cell_test/police = police_cells_fixture()
+	old_police = outpost.police
+	outpost.police = police
+	police.outpost = outpost
+	var/datum/outpost_recovery/recovery = allocate(/datum/outpost_recovery, outpost)
+	var/datum/outpost_police_cell/cell = police_cell_named(police, "a")
+	TEST_ASSERT_NOTNULL(cell, "Cell a missing")
+	var/turf/entry = cell.cell_entry_tile()
+	var/turf/corpse_tile
+	var/turf/prisoner_tile
+	for(var/turf/tile as anything in cell.tiles)
+		if(tile == entry)
+			continue
+		if(!corpse_tile)
+			corpse_tile = tile
+		else if(!prisoner_tile && get_dist(tile, corpse_tile) == 1)
+			prisoner_tile = tile
+	TEST_ASSERT(corpse_tile && prisoner_tile, "Setup: no tiles for the body and the prisoner")
+	var/mob/living/carbon/human/prisoner = police_cell_person(prisoner_tile)
+	cell.admit(prisoner, world.time + 10 MINUTES)
+	var/mob/living/carbon/human/corpse = police_cell_person(corpse_tile)
+	corpse.death()
+	cell.shut_door(TRUE)
+	TEST_ASSERT(cell.door.density, "Setup: the cell door is open")
+	TEST_ASSERT_EQUAL(morgue_cell_of(outpost, corpse_tile), cell, "The morgue crew do not see the body is in a cell")
+
+	// The prisoner shut in with it does not keep the crew away
+	TEST_ASSERT(recovery.body_free(corpse), "A prisoner beside a body in their cell keeps the morgue crew from it")
+
+	// In by the cell's door, as a medic
+	var/mob/living/carbon/human/worker = police_cell_person(cell.outside_turf)
+	TEST_ASSERT(cell.medic_walk_in(worker, corpse), "The morgue crew were not let in to the body")
+	TEST_ASSERT(get_turf(worker) in cell.tiles, "The worker is not on the cell floor")
+	TEST_ASSERT(cell.door.density, "The cell door was left open behind the worker")
+
+	// Out with the bag
+	var/obj/structure/closet/body_bag/outpost_morgue/bag = allocate(/obj/structure/closet/body_bag/outpost_morgue, corpse_tile)
+	corpse.forceMove(bag)
+	TEST_ASSERT(worker.start_pulling(bag), "Setup: the worker could not pull the bag")
+	TEST_ASSERT(cell.body_walk_out(worker, bag), "The morgue crew did not bring the bag out of the cell")
+	var/turf/bag_turf = get_turf(bag)
+	TEST_ASSERT(!(bag_turf in cell.tiles) && bag_turf != get_turf(cell.door), "The bag is still in the cell or its doorway")
+	TEST_ASSERT(!(get_turf(worker) in cell.tiles), "The worker is still in the cell")
+	TEST_ASSERT(cell.door.density, "The cell door was left open after the bag came out")
+	TEST_ASSERT(get_turf(prisoner) in cell.tiles, "The prisoner left the cell")
+	TEST_ASSERT(prisoner.mind in cell.prisoners, "The prisoner is no longer held")
+	TEST_ASSERT_EQUAL(length(police.crimes), 0, "Bringing a body out was counted as a crime")
+
 /// An unpaid fine strips the suspect before the cuffs come off, and holds them 1 min at one star and 2 at two
 /datum/unit_test/voidcrew_outpost_police_cell_book_jail
 
