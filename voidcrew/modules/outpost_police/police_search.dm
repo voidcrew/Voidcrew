@@ -165,6 +165,8 @@
 	var/turf/start
 	/// The last-seen tile itself, when that is in a checkpoint's scan chamber or doorway officers can get into: looked into first, from inside (search_inside())
 	var/turf/inside
+	/// Weakref to the mind of who is looked for
+	var/datum/weakref/sought_ref
 	/// Places looked at since: turf -> TRUE
 	var/list/done = list()
 	/// Places dealt and not yet looked at: turf -> list(weakref to the officer, world.time it last asked)
@@ -180,6 +182,7 @@
 /datum/outpost_police_search/Destroy()
 	start = null
 	inside = null
+	sought_ref = null
 	done = null
 	claims = null
 	refused = null
@@ -259,9 +262,13 @@
 	if(!here || !start)
 		return null
 	// Last seen in a scan chamber: one officer goes in to look, with its key (trade/outpost_checkpoint_npcs.dm),
-	// before anyone looks from the door
+	// before anyone looks from the door. With an arrest open on them that is the arrest's own officer: a chamber has
+	// room for the two of them and little more, and whoever else got in first stood where the cuffs go on from
 	if(inside && open_to(inside, officer))
-		return inside
+		var/datum/mind/sought = sought_ref?.resolve()
+		var/datum/outpost_police_case/arrest = sought ? police.cases[sought] : null
+		if(!arrest || QDELETED(arrest) || officer.case == arrest)
+			return inside
 	// Who is taken to a hangar: a response unit (police_stealth.dm stealth_walk()), and anyone on an arrest, whose
 	// walk rides the lift whatever they are (police_arrest.dm route_to())
 	var/rides = police.dispatch_is_response_unit(officer) || !isnull(officer.case)
@@ -718,6 +725,7 @@
 			qdel(search)
 		search = new(warrant.last_seen_at, start)
 		search.inside = inside
+		search.sought_ref = WEAKREF(warrant.mind)
 		searches[warrant.mind] = search
 	return search.deal(src, officer) || start
 

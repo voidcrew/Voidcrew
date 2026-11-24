@@ -416,6 +416,15 @@
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/lead = case?.arresting()
 	TEST_ASSERT_NOTNULL(lead, "Fixture: no officer took the arrest")
 	TEST_ASSERT_EQUAL(police.search_place(warrant, lead), chamber[2], "With eyes on someone in the chamber the officer making the arrest was sent to its door, not in to them")
+	// Out of sight again with the arrest open: the chamber is for the arrest's officer to look into, nobody else
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/fourth = key_officer(locate(lobby.x + 1, lobby.y, lobby.z))
+	TEST_ASSERT_NULL(fourth.case, "Fixture: an officer made after the arrest opened is on it")
+	warrant.last_seen_at = world.time + 1
+	warrant.unseen_since = world.time
+	TEST_ASSERT(police.search_place(warrant, fourth) != chamber[2], "With an arrest open, an officer not on it was sent into the chamber ahead of the one making it")
+	TEST_ASSERT_EQUAL(police.search_place(warrant, lead), chamber[2], "With an arrest open, its officer was not sent into the chamber they were last seen in")
+	warrant.unseen_since = 0
+	qdel(fourth)
 	// From where its outer door cannot be walked to (a hatch onto the hull, seen from the concourse) the door is as far
 	// as anyone is sent while the gate works; with the gate down the inner door is a way in
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/third = key_officer(secured)
