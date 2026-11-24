@@ -650,8 +650,15 @@
 /// After the order their own steps count against them; being pushed, pulled or thrown does not
 /datum/outpost_police_case/proc/on_suspect_moved(mob/living/carbon/source, atom/old_loc, dir, forced, list/old_locs)
 	SIGNAL_HANDLER
-	if(!forced && !source.pulledby && !source.throwing && !source.buckled)
-		suspect_moved = TRUE
+	if(forced || source.pulledby || source.throwing || source.buckled)
+		return
+	// Nor does having places traded with them by someone who ran into them (tg's swap, living.dm MobBump(): the one
+	// who ran in is still on the tile they were moved to, mid-push). An officer running up to someone who stood still
+	// as told moved them a tile that way and then struck them for walking off.
+	for(var/mob/living/other in source.loc)
+		if(other != source && other.now_pushing)
+			return
+	suspect_moved = TRUE
 
 /**
  * Someone starts taking the suspect's cuffs off through the strip menu. COMSIG_TRY_STRIP is the same string,

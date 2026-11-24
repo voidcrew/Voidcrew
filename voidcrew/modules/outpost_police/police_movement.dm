@@ -71,6 +71,14 @@
 			police_note_blocked(M)
 			police_diagonal_blocked(M)
 		return TRUE
+	// Someone with an arrest on them and not yet held is never traded places with or pushed along: the officer comes
+	// to a stop by them, or finds a way round. (tg's bump has a running NPC swap with anyone not in combat mode, which
+	// walked the arresting officer through the person it was coming to cuff.)
+	var/mob/living/bumped = M
+	if(police?.arrest_on(bumped) && !police.in_custody(bumped))
+		police_note_blocked(M)
+		police_diagonal_blocked(M)
+		return TRUE
 	var/turf/before = get_turf(src)
 	. = ..()
 	if(get_turf(src) == before)
