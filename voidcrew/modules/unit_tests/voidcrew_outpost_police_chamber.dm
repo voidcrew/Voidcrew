@@ -350,32 +350,32 @@
 	TEST_ASSERT(fixture(FALSE), "Could not prepare the checkpoint")
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/lead = key_officer(lobby)
 	var/datum/outpost_police/police = host.police
-	// At the far end of the chamber, which is reached only past its first tile
-	var/mob/living/carbon/human/suspect = visitor(chamber[2])
+	// In the chamber, on the tile between its doors: from the lobby the only place beside them is the outer doorway
+	var/mob/living/carbon/human/suspect = visitor(chamber[1])
 	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 40)
 	var/datum/outpost_police_case/case = police.open_case(warrant)
 	police.sleep_tick()
 	TEST_ASSERT_EQUAL(case?.arresting(), lead, "Fixture: the officer in the lobby did not take the arrest")
-	// A colleague not on the arrest came in first and stands beside the suspect, between them and the door
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/other = key_officer(chamber[1])
-	TEST_ASSERT_NULL(other.case, "Fixture: the colleague is on the arrest")
+	// A colleague not on the arrest got there first and stands in that doorway
 	lead.ai_controller.set_movement_target(type, suspect)
 	lead.ai_controller.set_blackboard_key(BB_CURRENT_MIN_MOVE_DISTANCE, 1)
 	outer.bumpopen(lead)
 	sleep(1.5 SECONDS)
 	TEST_ASSERT(!outer.density, "Fixture: the officer's key did not open the outer door")
-	lead.forceMove(get_turf(outer))
-	TEST_ASSERT(!lead.Adjacent(suspect), "Fixture: the suspect is in reach from the doorway")
-	lead.Move(chamber[1], NORTH)
-	TEST_ASSERT_EQUAL(get_turf(lead), chamber[1], "The officer making the arrest did not get the place beside its suspect from a colleague standing in it")
-	TEST_ASSERT_EQUAL(get_turf(other), get_turf(outer), "The colleague did not trade places with the officer making the arrest")
+	var/turf/doorway = get_turf(outer)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer/other = key_officer(doorway)
+	TEST_ASSERT_NULL(other.case, "Fixture: the colleague is on the arrest")
+	TEST_ASSERT(!lead.Adjacent(suspect), "Fixture: the suspect is in reach from the lobby")
+	lead.Move(doorway, NORTH)
+	TEST_ASSERT_EQUAL(get_turf(lead), doorway, "The officer making the arrest did not get the place beside its suspect from a colleague standing in it")
+	TEST_ASSERT_EQUAL(get_turf(other), lobby, "The colleague did not trade places with the officer making the arrest")
 	TEST_ASSERT(lead.Adjacent(suspect), "From the place it traded for, the officer making the arrest cannot reach its suspect")
 	// The colleague walking back into it gets nothing: nobody trades with the officer making the arrest
 	other.ai_controller.set_movement_target(type, suspect)
 	other.ai_controller.set_blackboard_key(BB_CURRENT_MIN_MOVE_DISTANCE, 1)
 	COOLDOWN_RESET(other, police_swap_cooldown)
-	other.Move(chamber[1], NORTH)
-	TEST_ASSERT_EQUAL(get_turf(lead), chamber[1], "A colleague took the place back from the officer making the arrest")
+	other.Move(doorway, NORTH)
+	TEST_ASSERT_EQUAL(get_turf(lead), doorway, "A colleague took the place back from the officer making the arrest")
 	police.close_case(suspect.mind)
 
 /**
