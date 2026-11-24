@@ -161,6 +161,8 @@
 			save_ship(user, bay, text2num(params["slot"]), params["funds_parts"] ? text2num(params["funds_parts"]) : 0)
 		if("ship_save_retrieve")
 			retrieve_ship(user, text2num(params["slot"]))
+		if("ship_parts_exchange")
+			exchange_parts(user, params["from"], params["to"])
 		else
 			shop_act(user, action, params)
 	return TRUE

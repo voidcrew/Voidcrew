@@ -49,6 +49,8 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 	var/list/cache_times = list()
 	/// Cache validity duration in deciseconds (5 minutes)
 	var/cache_duration = 3000
+	/// ckey -> TRUE while that player's parts exchange is between its queries
+	var/list/exchange_locks = list()
 
 /**
  * Initialize the singleton instance
@@ -347,6 +349,38 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 		log_game("SHIP_ECONOMY: [ckey] LOST [plan[part_class]] [part_class] parts: the refund failed")
 		message_admins("Ship parts refund failed for [ckey]: [plan[part_class]] [part_class] parts were taken but not returned. Check the game log.")
 		. = FALSE
+
+/**
+ * Trades SHIP_PART_EXCHANGE_RATE banked parts of one class for one banked part of another. Sleeps.
+ * Returns an error for the player, or null on success. One trade per player at a time, from any console.
+ */
+/datum/ship_economy_db/proc/exchange_parts(ckey, from_class, to_class)
+	ckey = ckey(ckey)
+	if(!ckey || !(from_class in GLOB.ship_part_classes) || !(to_class in GLOB.ship_part_classes) || from_class == to_class)
+		return "Pick two different parts."
+	if(!is_available())
+		return "Shipyard records are offline."
+	if(exchange_locks[ckey])
+		return "Already under way."
+	exchange_locks[ckey] = TRUE
+	. = exchange_claimed_parts(ckey, from_class, to_class)
+	exchange_locks -= ckey
+	invalidate_cache(ckey, "parts")
+
+/datum/ship_economy_db/proc/exchange_claimed_parts(ckey, from_class, to_class)
+	PRIVATE_PROC(TRUE)
+	// A runtime below ends this proc with this answer, not with a null that reads as success.
+	. = "Shipyard records are offline."
+	if(!deduct_part_class(ckey, from_class, SHIP_PART_EXCHANGE_RATE))
+		return "You need [SHIP_PART_EXCHANGE_RATE] [from_class] parts."
+	if(!add_part(ckey, to_class, 1, "exchange"))
+		var/list/taken = list()
+		taken[from_class] = SHIP_PART_EXCHANGE_RATE
+		refund_parts(ckey, taken)
+		return "The exchange failed."
+	log_game("SHIP_ECONOMY: [ckey] exchanged [SHIP_PART_EXCHANGE_RATE] [from_class] parts for 1 [to_class] part")
+	log_extraction(ckey, to_class, "exchange")
+	return null
 
 /// Parts held by class, from the cache alone so it never sleeps. Null until something has loaded them.
 /datum/ship_economy_db/proc/cached_parts(ckey)

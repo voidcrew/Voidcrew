@@ -21,3 +21,6 @@
 #define PART_CLASS_SCIENCE "science"
 #define PART_CLASS_TRADE "trade"
 #define PART_CLASS_MISC "misc"
+
+/// Banked parts of one class paid at a shipyard console for one banked part of another.
+#define SHIP_PART_EXCHANGE_RATE 2
