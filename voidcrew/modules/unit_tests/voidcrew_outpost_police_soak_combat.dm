@@ -40,9 +40,9 @@
 		var/obj/item/mod/control/suit = body.back
 		if(istype(suit))
 			suit.quick_activation()
-	// Fixture: four more drums in the bag. The outfit's 32 shells ran dry in 22 s on Quartermain, and a player who
+	// Fixture: eight more drums in the bag. The outfit's 32 shells ran dry in 22 s on Quartermain, and a player who
 	// means to fight brings more; the owner spawned what they wanted too
-	for(var/count in 1 to 4)
+	for(var/count in 1 to 8)
 		var/obj/item/ammo_box/magazine/m12g/drum = new(get_turf(body))
 		if(!body.back?.atom_storage?.attempt_insert(drum, body, override = TRUE, force = STORAGE_FULLY_LOCKED, messages = FALSE))
 			run.note(">>", "SCRIPT: no room in the suit's storage for a spare drum")
@@ -156,7 +156,8 @@
 			stim(run)
 		var/obj/item/gun/ballistic/gun = gun(run)
 		if(!gun)
-			run.script_failed("lost the Bulldog in the fight")
+			// Knocked out of their hands: the police's doing, not the script's
+			run.note(">>", "has lost the Bulldog")
 			return FALSE
 		if(!gun.get_ammo() && !reload(run, gun))
 			run.note(">>", "is out of shells")
@@ -290,7 +291,8 @@
 	// The emag in the other hand, as the admin tools gave it
 	var/mob/living/carbon/human/body = run.suspect
 	body.swap_hand()
-	var/obj/item/card/emag/card = new(get_turf(body))
+	// A plain emag cannot touch an airlock: the doorjack the owner spawned first did it
+	var/obj/item/card/emag/doorjack/card = new(get_turf(body))
 	body.put_in_active_hand(card)
 	// Beside the door square on: a diagonal click on a door set in a wall does not reach it
 	if(!(get_dist(body, cell.door) == 1 && (get_dir(body, cell.door) in GLOB.cardinals)))
@@ -307,11 +309,11 @@
 	var/open_by = world.time + 5 SECONDS
 	while(cell.door.density && world.time < open_by && !run.finished)
 		sleep(2)
-	run.note(">>", "emags the cell door at [run.where(cell.door)] from [run.where(body)] ([cell.door.density ? "still shut" : "open"], emagged [(cell.door.obj_flags & EMAGGED) ? "yes" : "no"])")
+	run.note(">>", "doorjacks the cell door at [run.where(cell.door)] from [run.where(body)] ([cell.door.density ? "still shut" : "open"], emagged [(cell.door.obj_flags & EMAGGED) ? "yes" : "no"])")
 	body.dropItemToGround(card)
 	body.swap_hand()
 	if(cell.door.density)
-		run.script_failed("the emag did not open the cell door")
+		run.script_failed("the doorjack did not open the cell door")
 		return
 	fight(run, 150 SECONDS)
 	run.note(">>", "the fight ends at [run.police.get_stars(body.mind)] stars, [length(fallen)] officers down, [shots] shots fired, suspect [body.stat == CONSCIOUS ? "up" : (body.stat == DEAD ? "dead" : "down")]")
@@ -345,6 +347,9 @@
 		return
 	var/stars = run.police.get_stars(run.suspect.mind)
 	run.note(">>", "has [length(fallen)] officers down at [stars] stars; runs for it")
+	// The stimulant before the run, as a player would: disablers put the suspect on the floor running on two maps
+	if(!stimmed)
+		stim(run)
 	var/turf/corner = run.far_corner()
 	if(!corner)
 		run.script_failed("no far corner of the concourse out of the officers' sight to run to")
