@@ -423,9 +423,16 @@
 	brain.planned_behaviors.Cut()
 	force_tree.SelectBehaviors(brain, 1)
 	TEST_ASSERT_EQUAL(get_turf(watcher), at(9, 4), "An officer behind the arresting officer traded places with it again")
+	// In its way again within a few seconds, it does not trade a second time: the two would go round each other
+	arresting.forceMove(at(10, 4))
+	watcher.police_swap_cooldown = 0
+	brain.planned_behaviors.Cut()
+	force_tree.SelectBehaviors(brain, 1)
+	TEST_ASSERT_EQUAL(get_turf(watcher), at(9, 4), "An officer traded places with the arresting officer twice in a row")
 	// Nowhere near the arresting officer, it stays where it is
 	watcher.forceMove(at(6, 7))
 	watcher.police_swap_cooldown = 0
+	watcher.police_let_past_cooldown = 0
 	brain.planned_behaviors.Cut()
 	force_tree.SelectBehaviors(brain, 1)
 	TEST_ASSERT_EQUAL(get_turf(watcher), at(6, 7), "An officer holding its aim away from the arresting officer moved")

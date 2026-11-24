@@ -411,6 +411,10 @@
 	else
 		controller.queue_behavior(/datum/ai_behavior/outpost_police_watch)
 
+/mob/living/carbon/human/npc/ambient_npc/outpost/police
+	/// Until when it does not trade places again to let an arresting officer past (police_let_arrest_past())
+	COOLDOWN_DECLARE(police_let_past_cooldown)
+
 /**
  * The officer making the arrest goes first. This one, standing beside it and between it and `person` (in a doorway,
  * at the mouth of a dead end: the only way in), trades places with it, tg's own swap. Standing still with its aim on
@@ -433,12 +437,14 @@
 	var/in_the_way = get_dist(src, person) < get_dist(arresting, person)
 	in_the_way ||= outpost_npc_next_step(arresting) == get_turf(src)
 	in_the_way ||= arresting.bump_blocker?.resolve() == src && world.time - arresting.bump_last <= 1.5 SECONDS
-	if(!in_the_way || !COOLDOWN_FINISHED(src, police_swap_cooldown))
+	// Once: it does not trade with the same officer again for a while, or the two would go round each other
+	if(!in_the_way || !COOLDOWN_FINISHED(src, police_swap_cooldown) || !COOLDOWN_FINISHED(src, police_let_past_cooldown))
 		return FALSE
 	// POLICE_SWAP_COOLDOWN (police_movement.dm, compiled after this file)
 	COOLDOWN_START(src, police_swap_cooldown, 1 SECONDS)
 	if(!pirate_crew_swap_places(arresting, src))
 		return FALSE
+	COOLDOWN_START(src, police_let_past_cooldown, 20 SECONDS)
 	arresting.police_note_trade(src)
 	return TRUE
 
