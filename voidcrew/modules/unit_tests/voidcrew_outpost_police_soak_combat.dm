@@ -272,7 +272,11 @@
 			run.script_failed("could not get beside the cell door at [run.where(cell.door)] from [run.where(body)]")
 			return
 	run.click(cell.door)
-	run.note(">>", "emags the cell door at [run.where(cell.door)] ([cell.door.density ? "still shut" : "open"])")
+	// An emagged airlock sparks and opens 0.6 s later (airlock finish_emag_act()); the round: 17:27:46.2 to 47.4
+	var/open_by = world.time + 5 SECONDS
+	while(cell.door.density && world.time < open_by && !run.finished)
+		sleep(2)
+	run.note(">>", "emags the cell door at [run.where(cell.door)] from [run.where(body)] ([cell.door.density ? "still shut" : "open"], emagged [(cell.door.obj_flags & EMAGGED) ? "yes" : "no"])")
 	body.dropItemToGround(card)
 	body.swap_hand()
 	if(cell.door.density)
