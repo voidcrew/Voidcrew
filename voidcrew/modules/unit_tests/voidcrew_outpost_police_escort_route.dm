@@ -28,10 +28,12 @@
 
 /**
  * An officer at map-local `from` holding a cuffed, searched suspect on `held_at`, carrying evidence, walks them in
- * with its own brain. Returns list(tiles walked, the steps in local coordinates, the case's step at the end).
+ * with its own brain. `crowd`: the outpost's own people are about, and a second officer covers the arrest.
+ * Returns list(tiles walked, the steps in local coordinates with what the walk was doing, the case's step at the end).
  */
-/datum/unit_test/voidcrew_outpost_police_escort_route/proc/walk_in(obj/structure/overmap/trader_outpost/outpost, list/from, list/held_at, crit = FALSE, limit = 60 SECONDS)
+/datum/unit_test/voidcrew_outpost_police_escort_route/proc/walk_in(obj/structure/overmap/trader_outpost/outpost, list/from, list/held_at, crit = FALSE, crowd = FALSE, limit = 60 SECONDS)
 	var/datum/outpost_police/police = outpost.police
+	var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(outpost)
 	var/turf/start = local(outpost, from[1], from[2])
 	var/turf/behind = local(outpost, held_at[1], held_at[2])
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, start)
@@ -45,6 +47,10 @@
 	if(!case || case.arresting() != officer)
 		TEST_FAIL("Fixture: no arrest by the officer at [local_text(outpost, start)] ([case?.arresting()])")
 		return null
+	if(crowd)
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/second = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, police_arrest_beside(suspect))
+		police_arrest_kit(second)
+		case.staff()
 	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs/outpost_police/used)
 	suspect.equip_to_slot(cuffs, ITEM_SLOT_HANDCUFFED)
 	case.cuffs_on(suspect)
@@ -58,21 +64,39 @@
 		suspect.updatehealth()
 	officer.start_pulling(suspect)
 	case.set_step("escort")
-	SSambient_npcs.wake_outpost(SSambient_npcs.outpost_place(outpost))
+	SSambient_npcs.wake_outpost(place)
 	var/datum/ai_controller/brain = officer.ai_controller
 	brain.reset_ai_status()
 
 	var/list/steps = list(local_text(outpost, start))
 	var/turf/last = start
+	var/turf/last_avoid
+	var/turf/last_target
+	var/was_loose = FALSE
 	var/walked = 0
 	var/end = world.time + limit
 	var/next_tick = world.time
 	while(world.time < end && !QDELETED(case) && case.step == "escort")
 		if(world.time >= next_tick)
 			next_tick = world.time + 1 SECONDS
+			if(crowd)
+				SSambient_npcs.update_outpost(place, 1)
+				for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in place.npcs)
+					npc.ai_controller?.reset_ai_status()
 			case.process_case()
 		sleep(world.tick_lag)
 		var/turf/here = get_turf(officer)
+		var/datum/move_loop/has_target/jps/loop = GLOB.move_manager.processing_on(officer, SSai_movement)
+		if(istype(loop) && loop.avoid != last_avoid)
+			last_avoid = loop.avoid
+			steps += "AVOID[local_text(outpost, last_avoid)]"
+		if(istype(loop) && get_turf(loop.target) != last_target)
+			last_target = get_turf(loop.target)
+			steps += "TO[local_text(outpost, last_target)]"
+		var/loose = officer.pulling != suspect
+		if(loose != was_loose)
+			steps += loose ? "LOOSE" : "HELD"
+			was_loose = loose
 		if(here != last)
 			walked++
 			steps += local_text(outpost, here)
@@ -91,9 +115,14 @@
 	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost(/obj/structure/overmap/trader_outpost/outfitter)
 	if(!outpost)
 		return
-	for(var/crit in list(FALSE, TRUE))
-		var/list/result = walk_in(outpost, list(19, 15), list(19, 16), crit)
+	var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(outpost)
+	outpost.police.perception.test_plain = FALSE
+	for(var/pass in 1 to 30)
+		if(!SSambient_npcs.update_outpost(place, 0, null, 40))
+			break
+	for(var/trial in 1 to 3)
+		var/list/result = walk_in(outpost, list(19, 15), list(19, 16), TRUE, TRUE)
 		if(!result)
 			return
 		var/list/steps = result[2]
-		TEST_FAIL("Quartermain, crit [crit]: [result[1]] tiles, ended on [result[3]]: [steps.Join(" ")]")
+		TEST_FAIL("Quartermain crowd trial [trial]: [result[1]] tiles, ended on [result[3]]: [steps.Join(" ")]")
