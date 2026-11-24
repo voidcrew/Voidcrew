@@ -452,8 +452,8 @@
 
 // ----- no second look at someone the police are after (owner playtest 5) -----
 // Stealth's guards take a second look at a stranger ("?", and a line for it) before they go for them. An officer said
-// "Just a moment. What's that?" to someone it then batoned a second later: someone two stars up, with an arrest open
-// on them, shoving its colleague in front of it.
+// "Just a moment. What's that?" to someone it then batoned a second later: someone two stars up, who was shoving its
+// colleague in front of it.
 
 /// Whether the police are already after `person`: an arrest is open on them, or units have been sent after them
 /datum/outpost_police/proc/is_after(mob/living/person)
