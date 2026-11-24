@@ -321,11 +321,16 @@
 		stance.moved_at = 0
 		if(cuffs_out)
 			stance.fought_at = 0
-	else if(here && (here.z != stance.spot.z || get_dist(here, stance.spot) > (away ? 0 : 1)))
+	else if(here && here.z != stance.spot.z)
+		// On another level: a lift carried them there (the public lift came back up with a suspect and the officer
+		// cuffing them on it, and the officers at the top fired). Standing on a lift is no step of theirs.
+		stance.spot = here
+	else if(here && get_dist(here, stance.spot) > (away ? 0 : 1))
 		stance.spot = here
 		// Pulled along, by an officer or anyone else, they are going nowhere of their own (whoever pulls a suspect off
-		// answers for it: police_arrest.dm check_interference())
-		if(!person.pulledby)
+		// answers for it: police_arrest.dm check_interference()). And with the cuffs coming the arrest knows their own
+		// steps exactly: until it has counted one, being somewhere else is being pushed, carried or traded places with.
+		if(!person.pulledby && (!cuffing || away))
 			stance.moved_at = world.time
 	// Their first step from the cuffs, wherever it left them
 	if(away && !stance.away && !cuffs_out)

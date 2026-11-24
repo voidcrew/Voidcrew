@@ -111,14 +111,18 @@
 	suspect.forceMove(at(7, 4))
 	TEST_ASSERT(!police.arrest_pulled_away(suspect), "Fixture: a push counted as the suspect's own step")
 	TEST_ASSERT(!police_plans_shot(watcher, suspect), "An officer off the arrest plans a shot at a suspect who was pushed a tile with the cuffs coming")
-	suspect.Move(at(7, 5), NORTH)
-	TEST_ASSERT_EQUAL(get_turf(suspect), at(7, 5), "Fixture: the suspect did not crawl a tile")
+	// Carried further (a lift, a throw): still no step of theirs
+	suspect.forceMove(at(8, 7))
+	TEST_ASSERT(!police.arrest_pulled_away(suspect), "Fixture: being carried counted as the suspect's own step")
+	TEST_ASSERT(!police_plans_shot(watcher, suspect), "An officer off the arrest plans a shot at a suspect who was carried three tiles with the cuffs coming")
+	suspect.Move(at(8, 8), NORTH)
+	TEST_ASSERT_EQUAL(get_turf(suspect), at(8, 8), "Fixture: the suspect did not crawl a tile")
 	TEST_ASSERT(police.arrest_pulled_away(suspect), "Fixture: a crawl of the suspect's own did not count as pulling away from the cuffs")
 	TEST_ASSERT_EQUAL(case.step, "cuff", "Fixture: the arrest left the cuffs")
 	TEST_ASSERT(police_plans_shot(watcher, suspect), "An officer off the arrest plans no shot at a two-star suspect crawling off from the cuffs")
 	stance.moved_at -= 2 SECONDS // OUTPOST_POLICE_YIELD_TIME
 	TEST_ASSERT(!police_plans_shot(watcher, suspect), "An officer off the arrest plans a shot at a suspect who has lain still again")
-	suspect.Move(at(8, 5), EAST)
+	suspect.Move(at(7, 8), WEST)
 	TEST_ASSERT(police_plans_shot(watcher, suspect), "An officer off the arrest plans no shot at a suspect who crawls another tile from the cuffs")
 	stance.moved_at -= 2 SECONDS // OUTPOST_POLICE_YIELD_TIME
 	// So is a kick at the arresting officer from the floor (a blow on an officer is the crime "resist")
@@ -325,6 +329,14 @@
 	TEST_ASSERT(!police.gives_up(suspect), "Someone who crawled a tile from the cuffs is taken as lying still for them")
 	stance.moved_at -= 2 SECONDS // OUTPOST_POLICE_YIELD_TIME
 	TEST_ASSERT(police.gives_up(suspect), "Someone who has lain still for two seconds since crawling from the cuffs is not taken as giving up")
+
+	// On another level all at once: a lift carried them, and that is no step of theirs
+	var/turf/elsewhere = locate(suspect.x, suspect.y, suspect.z > 1 ? suspect.z - 1 : suspect.z + 1)
+	TEST_ASSERT_NOTNULL(elsewhere, "Fixture: no other level")
+	stance.spot = elsewhere
+	var/moved_before = stance.moved_at
+	TEST_ASSERT(police.gives_up(suspect), "Someone a lift carried to another level was taken as walking off")
+	TEST_ASSERT_EQUAL(stance.moved_at, moved_before, "A lift ride was marked as a step of the suspect")
 
 	// Nobody looked for a while: seen afresh where they are
 	stance.looked_at -= 5 SECONDS // past OUTPOST_POLICE_STANCE_STALE
