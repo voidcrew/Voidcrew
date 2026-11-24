@@ -18,7 +18,8 @@
  *   (search_pending()).
  * - The start (search_start()): the last-seen tile, or the nearest tile an officer can stand on when that one
  *   cannot be walked to or stood beside (a locked room, a ship's deck). For a checkpoint's scan chamber it is the
- *   side they can have left by: the concourse with the gate down or forced, the lobby with it working.
+ *   side they can have left by: the concourse with the gate down or forced, the lobby with it working. The chamber
+ *   itself is looked into before that, by one officer with its key (the search's `inside`): its doors may be solid.
  * - The search (/datum/outpost_police_search): one for each wanted person, from their last sighting. Officers are
  *   dealt its places one each: the start first, then whichever is the shortest walk for that officer, the ones
  *   nearer the start before the ones further out. A place looked at is done, and with every place done it starts
@@ -162,6 +163,10 @@
 	var/stamp = 0
 	/// Where it starts (/datum/outpost_police_floor/proc/reach())
 	var/turf/start
+	/// The last-seen tile itself, when that is in a checkpoint's scan chamber or doorway officers can get into: looked into first, from inside (search_inside())
+	var/turf/inside
+	/// Weakref to the mind of who is looked for
+	var/datum/weakref/sought_ref
 	/// Places looked at since: turf -> TRUE
 	var/list/done = list()
 	/// Places dealt and not yet looked at: turf -> list(weakref to the officer, world.time it last asked)
@@ -176,6 +181,8 @@
 
 /datum/outpost_police_search/Destroy()
 	start = null
+	inside = null
+	sought_ref = null
 	done = null
 	claims = null
 	refused = null
@@ -254,6 +261,14 @@
 	var/turf/here = get_turf(officer)
 	if(!here || !start)
 		return null
+	// Last seen in a scan chamber: one officer goes in to look, with its key (trade/outpost_checkpoint_npcs.dm),
+	// before anyone looks from the door. With an arrest open on them that is the arrest's own officer: a chamber has
+	// room for the two of them and little more, and whoever else got in first stood where the cuffs go on from
+	if(inside && open_to(inside, officer))
+		var/datum/mind/sought = sought_ref?.resolve()
+		var/datum/outpost_police_case/arrest = sought ? police.cases[sought] : null
+		if(!arrest || QDELETED(arrest) || officer.case == arrest)
+			return inside
 	// Who is taken to a hangar: a response unit (police_stealth.dm stealth_walk()), and anyone on an arrest, whose
 	// walk rides the lift whatever they are (police_arrest.dm route_to())
 	var/rides = police.dispatch_is_response_unit(officer) || !isnull(officer.case)
@@ -315,7 +330,11 @@
 		var/datum/weakref/holder_ref = claim?[1]
 		if(holder_ref?.resolve() == officer)
 			claims -= mine
-			if(center && center.z == mine.z && get_dist(center, mine) <= POLICE_SEARCH_NEAR)
+			var/reached = center && center.z == mine.z && get_dist(center, mine) <= POLICE_SEARCH_NEAR
+			// A scan chamber is looked into from inside it or from its doorway, never through its door
+			if(reached && mine == inside)
+				reached = police.search_gate(center) == police.search_gate(inside)
+			if(reached)
 				done[mine] = TRUE
 			else
 				var/list/gave_up = refused[mine]
@@ -606,10 +625,11 @@
 		var/datum/outpost_checkpoint/post = outpost.checkpoints[checkpoint_id]
 		if(QDELETED(post))
 			continue
-		for(var/turf/tile as anything in post.chamber_turfs)
+		// An officer walks in there only with business in it (its key, trade/outpost_checkpoint_npcs.dm): a chamber is
+		// no part of the floor, whoever happened to stand in one while it was read
+		for(var/turf/tile as anything in post.chamber_turfs + get_turf(post.inner_door) + get_turf(post.outer_door))
 			public -= tile
-		public -= get_turf(post.inner_door)
-		public -= get_turf(post.outer_door)
+			floor.walkable -= tile
 	// Nobody stands in an exit gate, a visitor or an officer: it walks them on through (outpost_checkpoint.dm)
 	var/list/stands = floor.walkable.Copy()
 	for(var/turf/tile as anything in floor.walkable)
@@ -653,6 +673,31 @@
 			break
 	return floor.reach(last) || last
 
+/// The checkpoint whose scan chamber or doorway `tile` is, or null
+/datum/outpost_police/proc/search_gate(turf/tile)
+	if(!tile)
+		return null
+	for(var/checkpoint_id in outpost?.checkpoints)
+		var/datum/outpost_checkpoint/post = outpost.checkpoints[checkpoint_id]
+		if(!QDELETED(post) && post.holds_turf(tile))
+			return post
+	return null
+
+/**
+ * `last` itself, when it is in a scan chamber or doorway that an officer's key gets it into now
+ * (trade/outpost_checkpoint_npcs.dm): the gate down or forced, its inner door standing open, or its outer door one
+ * officers can walk to. Null anywhere else, and for a working hatch, whose outer door is out on the hull: there the
+ * door is as far as anyone gets (search_start()).
+ */
+/datum/outpost_police/proc/search_inside(turf/last, mob/living/officer)
+	var/datum/outpost_checkpoint/post = search_gate(last)
+	if(!post || QDELETED(post.inner_door) || QDELETED(post.outer_door))
+		return null
+	if(post.is_disabled() || post.state == CHECKPOINT_FORCED || !post.inner_door.density)
+		return last
+	var/datum/outpost_police_floor/floor = search_floor(last, officer)
+	return (post.lobby_turf && floor?.walkable[post.lobby_turf]) ? last : null
+
 /**
  * Where `officer` goes to look for `warrant`'s holder now. With someone's eyes on them this moment (an officer, a
  * scan): where they are seen. Else the next place of the search since they were last seen. Null with no sighting
@@ -666,9 +711,12 @@
 	if(!search_floor(last, officer))
 		return last
 	var/turf/start = search_start(last, officer)
-	// Someone has eyes on them now: straight to where they are seen
+	var/turf/inside = search_inside(last, officer)
+	// Someone has eyes on them now: straight to where they are seen. In a scan chamber that is the chamber for the
+	// officer making the arrest (from its door, a solid one, it never saw who the scanner or a colleague was looking
+	// at) and the door for everyone else: a chamber has room for the two of them and little more
 	if(!warrant.unseen_since || !istype(officer) || !warrant.mind)
-		return start
+		return (inside && officer?.case) ? inside : start
 	var/datum/outpost_police_search/search = searches[warrant.mind]
 	if(!search || search.stamp != warrant.last_seen_at || search.start != start)
 		search_prune()
@@ -676,6 +724,8 @@
 			searches -= warrant.mind
 			qdel(search)
 		search = new(warrant.last_seen_at, start)
+		search.inside = inside
+		search.sought_ref = WEAKREF(warrant.mind)
 		searches[warrant.mind] = search
 	return search.deal(src, officer) || start
 
