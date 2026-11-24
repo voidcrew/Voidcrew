@@ -511,3 +511,58 @@
 	TEST_ASSERT(wait_shut(outer, 8 SECONDS), "A leftover close of the inner door landing as the outer door opened left it open (checkpoint [checkpoint.state])")
 	TEST_ASSERT_NOTNULL(inside, "The visitor in the chamber went missing")
 
+/**
+ * Halcyon's working lobby gate: someone wanted stands refused in the scan chamber, and a friend of theirs stands in
+ * combat mode in the outer doorway, the only way in. The officer coming for the suspect walks into the friend: the
+ * friend is told to make way, and charged with resisting only some seconds after that, if they are still there.
+ */
+/datum/unit_test/voidcrew_outpost_police_search/chamber/halcyon_doorway
+
+/datum/unit_test/voidcrew_outpost_police_search/chamber/halcyon_doorway/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = search_outpost(/obj/structure/overmap/trader_outpost/general)
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	var/datum/outpost_checkpoint/post = outpost.lobby_checkpoint()
+	TEST_ASSERT_NOTNULL(post?.sensor, "Halcyon has no lobby checkpoint with a scanner")
+	var/turf/stand
+	for(var/turf/tile as anything in post.chamber_turfs)
+		if(!tile.is_blocked_turf(exclude_mobs = TRUE) && (!stand || get_dist(tile, post.outer_door) > get_dist(stand, post.outer_door)))
+			stand = tile
+	TEST_ASSERT_NOTNULL(stand, "Halcyon: no free tile in the scan chamber")
+	duty_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant, police.desk_turf)
+	beat_officers(outpost)
+	var/mob/living/carbon/human/suspect = wanted_at(outpost, stand, stand, 40)
+	TEST_ASSERT(post.request_cycle(suspect), "Halcyon: the chamber would not scan someone standing in it")
+	sleep(4 SECONDS)
+	TEST_ASSERT_EQUAL(post.state, "rejecting", "Halcyon: the gate did not refuse someone wanted") // CHECKPOINT_REJECTING
+	TEST_ASSERT(!post.outer_door.density, "Halcyon: the outer door did not open for someone refused")
+	var/mob/living/carbon/human/friend = dispatch_suspect(outpost, 0, get_turf(post.outer_door))
+	friend.set_combat_mode(TRUE)
+	police.wake()
+
+	var/started = world.time
+	var/told_at = 0
+	var/charged_at = 0
+	while(world.time - started < 90 SECONDS && !charged_at)
+		var/datum/outpost_police_case/case = police.cases[suspect.mind]
+		var/list/entry = case ? LAZYACCESS(case.blockers, WEAKREF(friend.mind)) : null
+		if(!told_at && length(entry) && entry[1])
+			told_at = entry[1]
+		var/datum/outpost_warrant/friend_warrant = police.get_warrant(friend.mind)
+		if(friend_warrant?.heat > 0)
+			charged_at = world.time
+		for(var/datum/outpost_pending_report/pending as anything in police.pending_reports)
+			if(pending.offender?.resolve() == friend && pending.crime == "resist") // OUTPOST_CRIME_RESIST
+				charged_at = world.time
+		if(get_turf(friend) != get_turf(post.outer_door))
+			break
+		sleep(0.5 SECONDS)
+	var/datum/outpost_police_case/case = police.cases[suspect.mind]
+	var/report = "arrest [case ? "on its \"[case.step]\" step" : "never opened"], [gate_report(post)]. [officers_report(outpost)]"
+	TEST_ASSERT_EQUAL(get_turf(friend), get_turf(post.outer_door), "The friend in the doorway was moved off it ([report])")
+	TEST_ASSERT(told_at, "The friend standing in the gate's only doorway was never told to make way in 90 s ([report])")
+	TEST_ASSERT(charged_at, "The friend who stayed in the gate's only doorway after being told was never charged ([report])")
+	TEST_ASSERT(charged_at - told_at >= 4 SECONDS, "The friend in the doorway was charged [(charged_at - told_at) / 10] s after being told, with no time to step aside") // CASE_BLOCK_GRACE
+	police.sleep_tick()
+	dispatch_clear(police)

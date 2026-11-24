@@ -347,6 +347,8 @@
 	var/list/way_ahead
 	/// world.time make_way() last told the way ahead to make way
 	var/make_way_said_at = 0
+	/// world.time the cover last set off to take hold of the suspect (cover_hold()): who it walks into meanwhile is in the arrest's way
+	var/cover_hold_walk_at = -1
 	/// world.time since which the suspect has been held in cuffs for want of a way to a cell, or 0 (step_hold())
 	var/held_since = 0
 
@@ -1085,6 +1087,15 @@
 	var/mob/living/bumped = officer.bump_blocker?.resolve()
 	if(bumped && world.time - officer.bump_last <= 1.5 SECONDS && get_dist(officer, bumped) <= 1)
 		in_way |= bumped
+	// The cover walking up to take hold of them (cover_hold()) is about the arrest's work too: whoever it walked
+	// into is told, and charged, by the cover
+	var/list/seen_by = list()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cover_officer = cover()
+	if(cover_officer && cover_officer != officer && !cover_officer.client && world.time - cover_hold_walk_at <= 2 SECONDS)
+		var/mob/living/cover_bumped = cover_officer.bump_blocker?.resolve()
+		if(cover_bumped && world.time - cover_officer.bump_last <= 1.5 SECONDS && get_dist(cover_officer, cover_bumped) <= 1 && !(cover_bumped in in_way))
+			in_way |= cover_bumped
+			seen_by[cover_bumped] = cover_officer
 	// On the tiles it could lead them off from, with them in hand and no way to lead them from where it stands
 	var/turf/there = get_turf(suspect)
 	if(there && cuffed && (step == CASE_STEP_ESCORT || step == CASE_STEP_DESK || step == CASE_STEP_HOLD) && (officer.pulling == suspect || lead_goal) && !lead_ready(officer, suspect))
@@ -1107,10 +1118,12 @@
 			entry = list(0, world.time)
 			LAZYSET(blockers, key, entry)
 		entry[2] = world.time
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/teller = seen_by[someone] || officer
 		if(!entry[1])
 			// Told this second by make_way(), or now
-			if(make_way_said_at == world.time || officer.police_say(POLICE_LINE_MAKE_WAY))
-				make_way_said_at = world.time
+			if((teller == officer && make_way_said_at == world.time) || teller.police_say(POLICE_LINE_MAKE_WAY))
+				if(teller == officer)
+					make_way_said_at = world.time
 				entry[1] = world.time
 			continue
 		if(world.time - entry[1] < CASE_BLOCK_GRACE)
@@ -1119,7 +1132,7 @@
 		if(last && world.time - last < OUTPOST_POLICE_BLOCK_TIME)
 			continue
 		LAZYSET(resist_reports, key, world.time)
-		report(someone, OUTPOST_CRIME_RESIST, officer)
+		report(someone, OUTPOST_CRIME_RESIST, teller)
 	for(var/datum/weakref/key as anything in blockers?.Copy())
 		var/list/entry = blockers[key]
 		if(!still[key] && world.time - entry[2] > CASE_BLOCK_FORGET)
@@ -2468,6 +2481,7 @@
 		officer.start_pulling(suspect)
 		controller.queue_behavior(/datum/ai_behavior/outpost_police_case_stand)
 		return TRUE
+	cover_hold_walk_at = world.time
 	return queue_walk(controller, officer, suspect, 1)
 
 /**

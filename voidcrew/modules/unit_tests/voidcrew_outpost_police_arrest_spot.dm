@@ -282,3 +282,57 @@
 	TEST_ASSERT(case.suspect_moved, "The suspect's own step after the order was not counted")
 	TEST_ASSERT(!police.gives_up(suspect), "Two tiles of their own were not walking off")
 	police.close_case(suspect.mind)
+
+/**
+ * The cover walking up to take hold of a suspect in cuffs is about the arrest's work too: a player it walks into is
+ * told to make way, by the cover, and charged with resisting if they stay. Walked into while the cover only follows
+ * its partner about, nobody is in the arrest's way.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/crowd/blocking_cover
+
+/datum/unit_test/voidcrew_stealth_live/police/crowd/blocking_cover/Run()
+	TEST_ASSERT(police_room(9, 7), "No room for the test")
+	open_place()
+	squad_officer(4, 5, SOUTH)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/second = squad_officer(1, 1, EAST)
+	var/datum/outpost_police_case/case = arrest_at(4, 2)
+	if(!case)
+		return
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = case.arresting()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cover_officer = case.cover()
+	if(!cover_officer)
+		cover_officer = (officer == second) ? null : second
+		if(cover_officer)
+			case.take_officer(cover_officer)
+			case.officers += WEAKREF(cover_officer)
+	TEST_ASSERT(officer && cover_officer && cover_officer != officer, "Fixture: the arrest has no arresting officer and cover")
+	officer.bump_blocker = null
+	var/mob/living/carbon/human/blocker = visitor_at(2, 2)
+	blocker.set_combat_mode(TRUE)
+
+	// Walked into by the cover on its way to take hold of them: told first, nothing more
+	case.cover_hold_walk_at = world.time
+	cover_officer.bump_blocker = WEAKREF(blocker)
+	cover_officer.bump_last = world.time
+	case.check_blocking(officer, suspect)
+	var/list/entry = LAZYACCESS(case.blockers, WEAKREF(blocker.mind))
+	TEST_ASSERT_NOTNULL(entry, "A player the cover walked into on its way to take hold of the suspect is not seen as in the arrest's way")
+	TEST_ASSERT(entry && entry[1], "A player in the cover's way was not told to make way")
+	TEST_ASSERT_NULL(police.get_warrant(blocker.mind), "A player in the cover's way was charged with no time to step aside")
+	// Still there a few seconds after the warning: resisting
+	entry[1] = world.time - 5 SECONDS
+	case.cover_hold_walk_at = world.time
+	cover_officer.bump_last = world.time
+	case.check_blocking(officer, suspect)
+	var/datum/outpost_warrant/blocker_warrant = police.get_warrant(blocker.mind)
+	TEST_ASSERT(blocker_warrant?.heat > 0 || length(police.pending_reports), "A player who stayed in the cover's way after being told was not charged")
+
+	// The cover only following its partner about: whoever it walks into is not in the arrest's way
+	var/mob/living/carbon/human/bystander = visitor_at(6, 2)
+	bystander.set_combat_mode(TRUE)
+	case.cover_hold_walk_at = world.time - 10 SECONDS
+	cover_officer.bump_blocker = WEAKREF(bystander)
+	cover_officer.bump_last = world.time
+	case.check_blocking(officer, suspect)
+	TEST_ASSERT_NULL(LAZYACCESS(case.blockers, WEAKREF(bystander.mind)), "Someone the cover walked into while only following its partner was counted as in the arrest's way")
+	police.close_case(suspect.mind)
