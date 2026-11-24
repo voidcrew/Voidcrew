@@ -320,6 +320,17 @@
 	police_pin_warrant(police, suspect.mind, 55) // three stars
 	TEST_ASSERT(!watcher.police_holds_fire(suspect), "An officer holds its fire for a three-star suspect who stands still")
 	police_pin_warrant(police, suspect.mind, 25)
+
+	// Pulled along by someone is no step of their own
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/puller = scene[3]
+	puller.forceMove(at(11, 6))
+	TEST_ASSERT(police.gives_up(suspect), "Fixture: the suspect is not giving up before they are pulled")
+	puller.start_pulling(suspect)
+	for(var/i in 1 to 3)
+		puller.Move(get_step(puller, WEST), WEST)
+	TEST_ASSERT(suspect.pulledby == puller && get_dist(suspect, at(12, 6)) >= 2, "Fixture: the suspect was not pulled two tiles or more (at [suspect.x - at(0, 0).x],[suspect.y - at(0, 0).y], pulled by [suspect.pulledby])")
+	TEST_ASSERT(police.gives_up(suspect), "Someone pulled along three tiles was taken as walking off")
+	puller.stop_pulling()
 	police.close_case(suspect.mind)
 
 /// An officer holding its fire keeps its weapon out, tells them to stay where they are, and closes to three tiles in sight of them

@@ -318,8 +318,9 @@
 			stance.fought_at = 0
 	else if(here && (here.z != stance.spot.z || get_dist(here, stance.spot) > 1))
 		stance.spot = here
-		// Walked along by an officer, they are going nowhere of their own
-		if(!is_outpost_police_npc(person.pulledby))
+		// Pulled along, by an officer or anyone else, they are going nowhere of their own (whoever pulls a suspect off
+		// answers for it: police_arrest.dm check_interference())
+		if(!person.pulledby)
 			stance.moved_at = world.time
 	stance.cuffing = cuffing
 	stance.looked_at = world.time

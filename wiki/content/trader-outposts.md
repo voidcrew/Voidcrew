@@ -248,12 +248,14 @@ A report that hasn't gone out yet can be stopped. It is dropped if every witness
 | Stars | What the officers do |
 |---|---|
 | 1 | Order you to stop, then cuff you |
-| 2 | As 1, but they stun you first if you don't do as told |
+| 2 | As 1, and the other officers stun you if you run, fight or have a weapon out |
 | 3 | Mixed squad: some officers carry stun batons and disablers and take you alive, the rest shoot to kill |
 | 4 | As 3, with tactical officers. Your crewmates at the outpost are arrested and your crew is banned there |
 | 5 | As 4, with more tactical officers, the marshal and a heavy weapons team |
 
 More officers arrive through the staff lifts as your stars rise, and they keep coming.
+
+At 2 stars the officers around the one arresting you hold their fire while you stay where you are with empty hands and hit nobody. They keep their guns on you until you are cuffed. Walk off, draw a weapon or hit out, and they stun you until you stop or go down.
 
 **Losing them.** Out of sight, the officers search outward from where you were last seen, one officer to a place, and they keep at it for as long as you are wanted. Anyone who spots you brings the rest.
 
