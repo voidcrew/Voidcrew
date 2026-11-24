@@ -272,4 +272,68 @@ POLICE_SOAK_SCENARIO(crowded_gate)
 		run.arrival()
 	run.stand(60 SECONDS)
 
+// ----- be put on the floor by the baton and crawl off whenever the cuffs come out -----
+// The owner's playtest: "attempted to handcuff", then "failed to handcuff" 1.7 s later. tg's knockdown floors someone
+// and leaves them able to crawl, and tg's cuffing breaks off when they move. A crawl while an officer has hold of
+// them is a try at breaking the hold, as a client's step is (client/Move() -> Process_Grab() -> resist_grab()).
+
+POLICE_SOAK_SCENARIO(crawl_from_cuffs)
+
+/datum/police_soak_scenario/crawl_from_cuffs
+	/// world.time of the suspect's next try at a step (tg makes a client wait four seconds after a try at a hold that failed)
+	var/next_try = 0
+
+/datum/police_soak_scenario/crawl_from_cuffs/play(datum/police_soak/run)
+	if(!run.punch_townsperson(2))
+		return
+	// Fists stay up and they keep stepping about until an officer puts them on the floor
+	var/until = world.time + 75 SECONDS
+	while(world.time < until && !run.finished && !QDELETED(run.suspect) && run.suspect.body_position != LYING_DOWN && !run.is_now("cuffed"))
+		run.fidget()
+		sleep(1 SECONDS)
+	if(run.finished || QDELETED(run.suspect))
+		return
+	if(run.suspect.body_position != LYING_DOWN && !run.is_now("cuffed"))
+		run.script_failed("nobody put a suspect who would not give up on the floor in 75s")
+		return
+	run.note(">>", "is on the floor at [run.where(run.suspect)]; crawls off whenever the cuffs come out")
+	var/failed_cuffings = 0
+	var/was_cuffing = FALSE
+	until = world.time + 60 SECONDS
+	while(world.time < until && !run.finished && !QDELETED(run.suspect) && !run.is_now("cuffed"))
+		var/datum/outpost_police_case/case = run.police.cases[run.suspect.mind]
+		// CASE_ACT_CUFFING
+		var/cuffing = case && !QDELETED(case) && case.acting == "cuffing"
+		if(was_cuffing && !cuffing && !run.suspect.handcuffed)
+			failed_cuffings++
+			run.note(">>", "got out of the cuffing (time [failed_cuffings])")
+		was_cuffing = cuffing
+		if(cuffing)
+			crawl(run)
+		sleep(5)
+	if(!run.is_now("cuffed"))
+		run.script_failed("was not in cuffs within 60s of first going down, having got out of the cuffing [failed_cuffings] times")
+	else if(failed_cuffings > 1)
+		run.script_failed("crawled out of the cuffing [failed_cuffings] times before the cuffs went on")
+	run.stand(45 SECONDS)
+
+/// One crawl of the suspect's, as their player's key press would make it. TRUE if they moved a tile.
+/datum/police_soak_scenario/crawl_from_cuffs/proc/crawl(datum/police_soak/run)
+	var/mob/living/carbon/human/crawler = run.suspect
+	if(world.time < next_try || !run.suspect_able() || crawler.body_position != LYING_DOWN)
+		return FALSE
+	if(crawler.pulledby)
+		if(HAS_TRAIT(crawler, TRAIT_RESTRAINED))
+			return FALSE
+		// Still held: the try failed
+		if(crawler.resist_grab(TRUE))
+			next_try = world.time + 4 SECONDS
+			run.note(">>", "tries to crawl off and fails to break the officer's hold")
+			return FALSE
+		run.note(">>", "breaks the officer's hold")
+	if(!run.fidget())
+		return FALSE
+	run.note(">>", "crawls a tile, to [run.where(crawler)]")
+	return TRUE
+
 #undef POLICE_SOAK_SCENARIO

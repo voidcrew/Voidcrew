@@ -179,6 +179,25 @@
 	TEST_ASSERT_NULL(second.pulling, "The cover kept hold of a suspect the arresting officer has")
 	police.close_case(suspect.mind)
 
+/// Which way someone can be drawn: over no rail, counter or shut door, and a corner rail stops only its own two sides
+/datum/unit_test/voidcrew_stealth_live/police/crowd/can_draw
+
+/datum/unit_test/voidcrew_stealth_live/police/crowd/can_draw/Run()
+	TEST_ASSERT(police_room(9, 7), "No room for the test")
+	var/mob/living/carbon/human/person = person_at(4, 3, FALSE)
+	var/obj/structure/railing/corner = allocate(/obj/structure/railing, at(4, 3))
+	corner.setDir(NORTHWEST)
+	TEST_ASSERT(!outpost_police_can_draw(person, at(4, 4)), "Drawn north over a rail")
+	TEST_ASSERT(!outpost_police_can_draw(person, at(3, 3)), "Drawn west over a rail")
+	TEST_ASSERT(!outpost_police_can_draw(person, at(3, 4)), "Drawn through a rail's corner")
+	TEST_ASSERT(outpost_police_can_draw(person, at(5, 3)), "A corner rail on the north and west stops a step east")
+	TEST_ASSERT(outpost_police_can_draw(person, at(4, 2)), "A corner rail on the north and west stops a step south")
+	TEST_ASSERT(outpost_police_can_draw(person, at(5, 2)), "A corner rail on the north and west stops a step south-east")
+	TEST_ASSERT(outpost_police_can_draw(person, at(4, 3)), "Someone cannot be drawn onto the tile they are on")
+	TEST_ASSERT(!outpost_police_can_draw(person, at(6, 3)), "Drawn two tiles in one step")
+	allocate(/obj/structure/table, at(5, 3))
+	TEST_ASSERT(!outpost_police_can_draw(person, at(5, 3)), "Drawn onto a table")
+
 /**
  * The step's clock. Going back and forth between two things (a hold lost and taken again: to the suspect, to the
  * desk, to the suspect) is not getting anywhere, and the step runs out; it used to start the clock again at every
@@ -255,6 +274,12 @@
 	TEST_ASSERT(length(second_brain.current_behaviors), "The cover standing by its colleague has nothing planned: tg switches its AI off")
 	police_arrest_wait(case)
 	TEST_ASSERT(suspect.handcuffed, "Fixture: the suspect was not cuffed")
+	// Standing, they face the one they have
+	second.setDir(NORTH)
+	var/datum/ai_behavior/outpost_police_case_stand/stand = locate() in second_brain.current_behaviors
+	TEST_ASSERT_NOTNULL(stand, "The cover standing by is not on the arrest's own standing behaviour")
+	stand.perform(1, second_brain)
+	TEST_ASSERT_EQUAL(second.dir, get_dir(second, suspect), "The cover standing by does not face the suspect")
 	police.close_case(suspect.mind)
 
 /**

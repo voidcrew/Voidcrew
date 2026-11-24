@@ -9,3 +9,4 @@
 /datum/unit_test/voidcrew_police_soak/hostage
 /datum/unit_test/voidcrew_police_soak/hangar_wait
 /datum/unit_test/voidcrew_police_soak/crowded_gate
+/datum/unit_test/voidcrew_police_soak/crawl_from_cuffs
