@@ -98,3 +98,40 @@
 
 	GLOB.move_manager.stop_looping(west, SSai_movement)
 	GLOB.move_manager.stop_looping(east, SSai_movement)
+
+/**
+ * An officer leading a cuffed suspect down a hall one tile wide, townspeople ahead: with no room to the side they walk
+ * on ahead of it, the one in front first, until there is room. make_way() kept them off the way ahead, the only tile
+ * there was, and an escort stood behind a townsperson in Quartermain's stock-room aisle for 40 s (pass 3 soak,
+ * stunned_then_up). Anything else that asks someone to keep off a tile still never puts them on it.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/escort_aisle
+
+/datum/unit_test/voidcrew_stealth_live/police/escort_aisle/Run()
+	TEST_ASSERT(police_room(9, 1), "No room for the test")
+	var/mob/living/carbon/human/suspect = person_at(7, 0, FALSE)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(6, 0, WEST)
+	officer.start_pulling(suspect)
+	TEST_ASSERT_EQUAL(officer.pulling, suspect, "Setup: the officer is not leading the suspect")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/near = local_at(5, 0)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/far = local_at(4, 0)
+	TEST_ASSERT(outpost_npc_can_make_room(near) && outpost_npc_can_make_room(far), "Setup: the townspeople cannot step out of anyone's way")
+	// Asked to keep off the tile ahead, the only one there is, they stay put
+	TEST_ASSERT(!outpost_npc_step_aside(near, officer, list(at(4, 0), at(3, 0))), "Someone stepped onto a tile they were asked to keep off")
+	var/datum/outpost_police_case/case = allocate(/datum/outpost_police_case, police, null)
+	officer.setDir(WEST)
+	case.make_way(officer, suspect)
+	TEST_ASSERT_EQUAL(get_turf(far), at(3, 0), "The townsperson in front did not walk on ahead of the escort in a hall one tile wide")
+	TEST_ASSERT_EQUAL(get_turf(near), at(4, 0), "The townsperson beside the escort did not walk on ahead of it in a hall one tile wide")
+	// Where there is room to the side, they step aside, off the way
+	var/turf/side = at(3, 0)
+	var/turf/wide = locate(side.x, side.y + 1, side.z)
+	wide.ChangeTurf(/turf/open/floor/iron)
+	officer.forceMove(at(5, 0))
+	suspect.forceMove(at(6, 0))
+	officer.start_pulling(suspect)
+	far.forceMove(at(1, 0))
+	near.forceMove(at(3, 0))
+	officer.setDir(WEST)
+	case.make_way(officer, suspect)
+	TEST_ASSERT_EQUAL(get_turf(near), wide, "With room to the side the townsperson walked on along the escort's way")

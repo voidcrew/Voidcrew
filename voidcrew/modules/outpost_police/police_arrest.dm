@@ -1882,11 +1882,14 @@
 		if(outpost_police_way_step_ok(here, toward))
 			path |= toward
 	var/told = FALSE
-	for(var/turf/tile as anything in path)
+	// The furthest first: in a hall one tile wide whoever is in front has to move on before the one behind them can
+	for(var/index in length(path) to 1 step -1)
+		var/turf/tile = path[index]
 		for(var/mob/living/someone in tile)
 			if(someone == suspect || someone == officer || someone.stat != CONSCIOUS || !someone.density)
 				continue
-			if(outpost_npc_step_aside(someone, officer, path))
+			// With no room to the side they walk on ahead of the escort, along its way, until there is
+			if(outpost_npc_step_aside(someone, officer, path, TRUE))
 				continue
 			if(someone.mind || someone.client)
 				LAZYOR(way_ahead, someone)
@@ -1900,9 +1903,11 @@
  * `blocker`, an outpost NPC standing where `walker` is going, takes one real step out of the way: to the side first,
  * then on ahead of `walker`, never back toward them, never onto `keep_clear`, a doorway or someone else. Players,
  * traders at their posts, and anyone held, cuffed, buckled, paused (outpost_npc_can_make_room()), down or holding someone,
- * stay put. TRUE if they moved.
+ * stay put. With `ahead_ok`, a step on ahead onto `keep_clear` (the walker's way) is the last choice: in a hall one tile
+ * wide that is the only step there is, and an escort stood behind a townsperson there for good (pass 3 soak,
+ * Quartermain's stock-room aisle). TRUE if they moved.
  */
-/proc/outpost_npc_step_aside(mob/living/blocker, mob/living/walker, list/turf/keep_clear)
+/proc/outpost_npc_step_aside(mob/living/blocker, mob/living/walker, list/turf/keep_clear, ahead_ok = FALSE)
 	// Who can move is outpost_npc_can_make_room() (police_movement.dm); someone holding someone else stays put here
 	if(!outpost_npc_can_make_room(blocker) || blocker.pulling)
 		return FALSE
@@ -1912,8 +1917,6 @@
 		return FALSE
 	var/travel = get_dir(walker_turf, from)
 	var/list/turf/avoid = list(walker_turf)
-	if(keep_clear)
-		avoid |= keep_clear
 	var/mob/living/towed = walker.pulling
 	if(isliving(towed))
 		avoid |= get_turf(towed)
@@ -1926,13 +1929,19 @@
 		// Never back toward the walker
 		if(direction & REVERSE_DIR(travel))
 			continue
+		// The walker's way: on ahead along it only when asked, and only when nothing else is free
+		var/on_the_way = keep_clear && (spot in keep_clear)
+		if(on_the_way && (!ahead_ok || !(direction & travel)))
+			continue
 		if(spot.is_blocked_turf(exclude_mobs = FALSE, source_atom = blocker) || (locate(/obj/machinery/door) in spot) || (locate(/obj/structure/outpost_exit_gate) in spot) || (locate(/obj/effect/landmark/outpost_checkpoint_chamber) in spot))
 			continue
 		if(!outpost_police_way_step_ok(from, spot))
 			continue
-		// Square to the side first, then a diagonal step aside, then straight on ahead
+		// Square to the side first, then a diagonal step aside, then straight on ahead, then on ahead along the way
 		var/score = 3
-		if(!(direction & travel) && (direction in GLOB.cardinals))
+		if(on_the_way)
+			score = 4
+		else if(!(direction & travel) && (direction in GLOB.cardinals))
 			score = 1
 		else if(!(direction in GLOB.cardinals))
 			score = 2

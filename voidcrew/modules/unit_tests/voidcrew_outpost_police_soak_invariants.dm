@@ -385,7 +385,7 @@
 			var/list/around = list()
 			for(var/mob/living/other in range(1, officer))
 				if(other != officer)
-					around += "[run.who(other)] at [run.where(other)][other.body_position == LYING_DOWN ? " (lying)" : ""]"
+					around += "[run.who(other)] at [run.where(other)][other.body_position == LYING_DOWN ? " (lying)" : ""][istype(other, /mob/living/carbon/human/npc) && !other.mind && !outpost_npc_can_make_room(other) ? " (cannot step aside)" : ""]"
 			var/datum/move_loop/has_target/jps/loop = GLOB.move_manager.processing_on(officer, SSai_movement)
 			var/next_step = (istype(loop) && length(loop.movement_path)) ? run.where(loop.movement_path[1]) : "none"
 			// The officer making an arrest that stands still is the arrest not happening: worse than a stalled beat
