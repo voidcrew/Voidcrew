@@ -112,15 +112,25 @@ POLICE_SOAK_SCENARIO(shove_officers)
 /datum/police_soak_scenario/shove_officers/play(datum/police_soak/run)
 	var/list/shoved = list()
 	for(var/turn in 1 to 2)
+		// Taken down or cuffed for the first shove before the second: the police's answer, not the script's fault
+		if(turn > 1 && (!run.suspect_able() || HAS_TRAIT(run.suspect, TRAIT_RESTRAINED)))
+			run.note(">>", "is [HAS_TRAIT(run.suspect, TRAIT_RESTRAINED) ? "in cuffs" : "down"] before the second shove")
+			break
 		var/mob/living/officer = run.nearest_officer(shoved)
 		if(!officer)
 			run.script_failed("no [turn == 1 ? "officer" : "second officer"] on their feet to shove")
 			break
 		shoved += officer
 		if(!run.go_up_to(officer, 45 SECONDS))
+			if(turn > 1 && (!run.suspect_able() || HAS_TRAIT(run.suspect, TRAIT_RESTRAINED)))
+				run.note(">>", "is taken before they reach [run.who(officer)]")
+				break
 			run.script_failed("could not walk up to [run.who(officer)] at [run.where(officer)]")
 			continue
 		if(!run.shove_down(officer))
+			if(turn > 1 && (!run.suspect_able() || HAS_TRAIT(run.suspect, TRAIT_RESTRAINED)))
+				run.note(">>", "is taken before [run.who(officer)] goes down")
+				break
 			run.script_failed("could not shove [run.who(officer)] down")
 		run.stand(4 SECONDS)
 	run.stand(60 SECONDS)
@@ -181,31 +191,36 @@ POLICE_SOAK_SCENARIO(jailed_shove_walk_out)
 POLICE_SOAK_SCENARIO(hostage)
 
 /datum/police_soak_scenario/hostage/play(datum/police_soak/run)
-	var/mob/living/local = run.townsperson()
-	if(!local)
-		run.script_failed("no townsperson to take hostage")
-		return
 	var/obj/item/gun/ballistic/automatic/pistol/gun = run.test.allocate(/obj/item/gun/ballistic/automatic/pistol, get_turf(run.suspect))
 	run.suspect.put_in_active_hand(gun, forced = TRUE)
 	run.note(">>", "draws a pistol")
-	if(!run.go_up_to(local, 45 SECONDS))
-		run.script_failed("could not walk up to [local] at [run.where(local)]")
-		return
-	// tg's neck grab with a gun in hand is the hold (stealth_hostage_of())
-	var/got_hold = run.grab(local, GRAB_NECK, 45 SECONDS)
-	// tg brings someone held by the neck onto the holder's tile as the holder moves: a step or two
-	for(var/shuffle in 1 to 4)
-		if(!got_hold || stealth_hostage_of(run.suspect) == local)
+	// One of the outpost's people standing free whom the suspect can walk up to (not on a seat, not behind a counter),
+	// taken by tg's own grab: a hold, a firm grip, the neck. They resist, as anyone does, so it can take a few goes
+	// and another person
+	var/mob/living/local
+	var/list/tried = list()
+	var/until = world.time + 60 SECONDS
+	while(!run.finished && world.time < until && run.suspect_able())
+		local = run.townsperson(tried, FALSE, TRUE)
+		if(!local)
 			break
-		run.fidget()
-		sleep(5)
-	if(!got_hold || stealth_hostage_of(run.suspect) != local)
-		run.script_failed("could not get [run.who(local)] by the neck with tg's grab in 45s (grab state [run.suspect.grab_state], holding [run.who(run.suspect.pulling)])")
+		tried += local
+		if(!run.go_up_to(local, 20 SECONDS))
+			run.note(">>", "could not walk up to [run.who(local)] at [run.where(local)]")
+			local = null
+			continue
+		// tg's neck grab with a gun in hand is the hold (stealth_hostage_of()); the neck brings them onto the holder's tile
+		if(run.grab(local, GRAB_NECK, 20 SECONDS) && stealth_hostage_of(run.suspect) == local)
+			break
+		run.note(">>", "could not get [run.who(local)] by the neck (grab state [run.suspect.grab_state], holding [run.who(run.suspect.pulling)])")
+		local = null
+	if(!local || stealth_hostage_of(run.suspect) != local)
+		run.script_failed("could not take anyone hostage with tg's grab in 60s ([length(tried)] tried)")
 		run.stand(30 SECONDS)
 		return
 	run.note(">>", "holds [run.who(local)] ([local.real_name]) hostage at gunpoint at [run.where(run.suspect)]")
 	// OUTPOST_POLICE_STANDOFF_MAX is one minute
-	var/until = world.time + 85 SECONDS
+	until = world.time + 85 SECONDS
 	var/said_lost = FALSE
 	while(world.time < until && !run.finished)
 		if(!said_lost && stealth_hostage_of(run.suspect) != local)
@@ -284,7 +299,14 @@ POLICE_SOAK_SCENARIO(crawl_from_cuffs)
 	var/next_try = 0
 
 /datum/police_soak_scenario/crawl_from_cuffs/play(datum/police_soak/run)
-	if(!run.punch_townsperson(2))
+	// A crime an officer sees, so the police come for the cuffs: a blow nobody saw has no witness (police_witness.dm)
+	for(var/round in 1 to 3)
+		if(!run.punch_townsperson(2, TRUE))
+			return
+		if(run.wait_for("wanted", 10 SECONDS))
+			break
+	if(!run.is_now("wanted"))
+		run.script_failed("no officer saw three punches in a row")
 		return
 	// Fists stay up and they keep stepping about until an officer puts them on the floor
 	var/until = world.time + 75 SECONDS
