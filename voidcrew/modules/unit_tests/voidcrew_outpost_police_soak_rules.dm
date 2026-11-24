@@ -306,3 +306,22 @@
 	found = breaks_after(/datum/police_soak_invariant/friendly_fire, 0)
 	probe.suspect = null
 	TEST_ASSERT(!length(found), "friendly_fire fired on the suspect's shot hitting a bystander: [jointext(found, "; ")]")
+
+// ----- downed_in_sight -----
+
+/datum/unit_test/voidcrew_stealth_live/police/soak_rule/downed_in_sight
+
+/datum/unit_test/voidcrew_stealth_live/police/soak_rule/downed_in_sight/Run()
+	TEST_ASSERT(rule_room(), "No room for the test")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(2, 2, EAST)
+	var/mob/living/carbon/human/suspect = wanted_visitor(5, 2, 180)
+	suspect.Paralyze(5 MINUTES)
+	TEST_ASSERT(police_suspect_down(suspect), "Fixture: a paralysed suspect is not down to the police")
+	TEST_ASSERT(police.perception.sees(officer, suspect), "Fixture: the officer does not see the suspect three tiles in front of it")
+	var/list/found = breaks_after(/datum/police_soak_invariant/downed_in_sight)
+	TEST_ASSERT(length(found), "downed_in_sight stayed quiet about a downed five-star suspect lying a minute in front of an officer")
+	// Out of every officer's sight it is the search's work, not this rule's
+	officer.setDir(WEST)
+	TEST_ASSERT(!police.perception.sees(officer, suspect), "Fixture: the officer facing away still sees the suspect")
+	found = breaks_after(/datum/police_soak_invariant/downed_in_sight)
+	TEST_ASSERT(!length(found), "downed_in_sight fired with no officer seeing the downed suspect: [jointext(found, "; ")]")

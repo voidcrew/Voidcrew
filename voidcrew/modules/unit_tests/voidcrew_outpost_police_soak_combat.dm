@@ -144,7 +144,7 @@
  */
 /datum/police_soak_scenario/combat/proc/fight(datum/police_soak/run, limit, done)
 	var/until = world.time + limit
-	while(!run.finished && world.time < until && !QDELETED(run.suspect) && run.suspect.stat == CONSCIOUS && !run.suspect.handcuffed && !HAS_TRAIT(run.suspect, TRAIT_RESTRAINED) && !run.police.in_custody(run.suspect))
+	while(!run.finished && world.time < until && !QDELETED(run.suspect) && run.suspect.stat == CONSCIOUS && !run.suspect.handcuffed && !HAS_TRAIT(run.suspect, TRAIT_RESTRAINED) && !(run.police.in_custody(run.suspect) && !run.police.cell_holding(run.suspect.mind)))
 		count_fallen(run)
 		// Stunned for a moment: they fight on once they can
 		if(!run.suspect_able())

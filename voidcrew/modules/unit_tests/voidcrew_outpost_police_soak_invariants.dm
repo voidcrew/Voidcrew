@@ -495,3 +495,25 @@
 		var/mob/living/victim = event[3]
 		var/on_officer = is_outpost_police_npc(victim)
 		run.breach(src, "[REF(event[2])]|[REF(victim)]", "[run.who(event[2])] hit [on_officer ? "fellow officer " : ""][run.who(victim)] ([victim?.real_name]) with its [event[4]]", list(event[2], victim), on_officer ? 2 : 1)
+
+/**
+ * A wanted person down (stunned, out cold, in crit) in an officer's sight, left lying: neither taken in hand nor
+ * finished. downed_unattended covers the zones that take the downed alive; this one also covers a zone that finishes
+ * them (the Undertow), where ten officers once stood round a five-star suspect in soft crit searching for a minute.
+ */
+/datum/police_soak_invariant/downed_in_sight
+	name = "downed_in_sight"
+	rank = 1
+	/// Seconds a downed wanted person may lie in an officer's sight without being taken or finished (a cuffing is 4 s, a walk across a room 10)
+	var/limit = 30
+
+/datum/police_soak_invariant/downed_in_sight/check(datum/police_soak/run)
+	for(var/mob/living/body as anything in run.at_large())
+		var/mob/living/seer
+		if(police_suspect_down(body))
+			for(var/mob/living/officer as anything in run.officers_up())
+				if(run.police.perception.sees(officer, body))
+					seer = officer
+					break
+		if(run.held("[name]|[REF(body)]", !!seer) > limit)
+			run.breach(src, REF(body), "[run.who(body)] ([run.police.get_stars(body.mind)] stars) has lain down at [run.where(body)] in sight of [run.who(seer)] for over [limit]s, neither taken nor finished ([run.police.finishes_downed(body, null) ? "a zone that finishes the downed" : "a zone that takes them alive"])", run.officers_up())
