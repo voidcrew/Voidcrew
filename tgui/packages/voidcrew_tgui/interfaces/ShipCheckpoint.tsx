@@ -91,6 +91,9 @@ type Data = {
   saved_ships: {
     online: BooleanLike;
     parts: Record<PartClass, number> | null;
+    banked: Record<PartClass, number> | null;
+    carried_spent: number;
+    exchange_rate: number;
     part_credits: number;
     funds_per_part: number;
     slots: number;
@@ -151,9 +154,17 @@ export const ShipCheckpoint = () => {
           >
             New ship
           </Tabs.Tab>
+          <Tabs.Tab
+            icon="right-left"
+            selected={tab === 'exchange'}
+            onClick={() => setTab('exchange')}
+          >
+            Exchange
+          </Tabs.Tab>
         </Tabs>
         {tab === 'shop' && <ShopTab />}
         {tab === 'saved' && <SavedShipsTab />}
+        {tab === 'exchange' && <ExchangeTab />}
       </Window.Content>
     </Window>
   );
@@ -402,8 +413,16 @@ const shortOfParts = (
 
 const SavedShipsTab = () => {
   const { data, act } = useBackend<Data>();
-  const { online, parts, part_credits, funds_per_part, slots, saves, ships } =
-    data.saved_ships;
+  const {
+    online,
+    parts,
+    carried_spent,
+    part_credits,
+    funds_per_part,
+    slots,
+    saves,
+    ships,
+  } = data.saved_ships;
   const [shipRef, setShipRef] = useState<string | null>(null);
   const [wantedFunds, setFundsParts] = useState(0);
   if (!online) {
@@ -435,10 +454,15 @@ const SavedShipsTab = () => {
   const fundsParts = Math.min(wantedFunds, maxFundsParts);
   const fundsCredits = fundsParts * funds_per_part;
   const bill = billWithFunds(baseBill, fundsParts, funds_per_part);
+  const shortBy = ship
+    ? shortOfParts(bill, parts, ship.balance - fundsCredits, part_credits)
+    : null;
   const saveDenial = !ship
     ? 'Dock a ship you command.'
     : ship.denial ||
-      shortOfParts(bill, parts, ship.balance - fundsCredits, part_credits);
+      (shortBy && carried_spent > 0
+        ? `${shortBy} Carried parts already used this round.`
+        : shortBy);
   return (
     <>
       <Section
@@ -727,6 +751,134 @@ const ShopTab = () => {
         >
           Order ship ({credits(shop.price)})
         </Button>
+      </Section>
+    </>
+  );
+};
+
+/** One count per part class, in the class colours. Counts are cut, never wrapped. */
+const PartCounts = (props: { parts: Record<PartClass, number> }) => (
+  <div
+    style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+      gap: '8px',
+    }}
+  >
+    {PART_CLASSES.map(({ id, label, color }) => (
+      <div
+        key={id}
+        style={{
+          borderTop: `2px solid ${color}`,
+          background: 'rgba(255,255,255,0.03)',
+          padding: '6px 8px 8px',
+          minWidth: 0,
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
+          textOverflow: 'ellipsis',
+        }}
+      >
+        <span
+          style={{
+            fontSize: '22px',
+            fontWeight: 'bold',
+            lineHeight: '1',
+            color,
+          }}
+        >
+          {props.parts[id]}
+        </span>{' '}
+        <span style={{ color: '#b9c6d0' }}>{label}</span>
+      </div>
+    ))}
+  </div>
+);
+
+/** A row of part class buttons, one of them picked. */
+const ClassPicker = (props: {
+  value: PartClass;
+  onPick: (id: PartClass) => void;
+}) => (
+  <div
+    style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+      gap: '4px',
+    }}
+  >
+    {PART_CLASSES.map(({ id, label, color }) => (
+      <Button
+        key={id}
+        fluid
+        textAlign="center"
+        style={{
+          margin: 0,
+          borderBottom: `2px solid ${color}`,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+        selected={props.value === id}
+        onClick={() => props.onPick(id)}
+      >
+        {label}
+      </Button>
+    ))}
+  </div>
+);
+
+const ExchangeTab = () => {
+  const { data, act } = useBackend<Data>();
+  const { banked, exchange_rate } = data.saved_ships;
+  const [from, setFrom] = useState<PartClass>('misc');
+  const [to, setTo] = useState<PartClass>('science');
+  if (!banked) {
+    return (
+      <Section title="Exchange">
+        <Box color="label">Shipyard records are offline.</Box>
+      </Section>
+    );
+  }
+  const pickFrom = (id: PartClass) => {
+    if (id === to) {
+      setTo(from);
+    }
+    setFrom(id);
+  };
+  const pickTo = (id: PartClass) => {
+    if (id === from) {
+      setFrom(to);
+    }
+    setTo(id);
+  };
+  const short = exchange_rate - banked[from];
+  const denial = short > 0 ? `Short ${short} ${from}.` : null;
+  return (
+    <>
+      <Section title="Banked parts">
+        <PartCounts parts={banked} />
+      </Section>
+      <Section title="Exchange">
+        <LabeledList>
+          <LabeledList.Item label="Pay">
+            <ClassPicker value={from} onPick={pickFrom} />
+          </LabeledList.Item>
+          <LabeledList.Item label="Receive">
+            <ClassPicker value={to} onPick={pickTo} />
+          </LabeledList.Item>
+        </LabeledList>
+        <Box mt={1}>
+          <Button
+            fluid
+            icon="right-left"
+            textAlign="center"
+            disabled={!!data.working || !!denial}
+            tooltip={denial}
+            onClick={() => act('ship_parts_exchange', { from, to })}
+          >
+            {`${exchange_rate} ${from} → 1 ${to}`}
+          </Button>
+        </Box>
       </Section>
     </>
   );
