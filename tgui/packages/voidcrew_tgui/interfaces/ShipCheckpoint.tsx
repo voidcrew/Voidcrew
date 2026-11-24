@@ -778,17 +778,27 @@ const PartCounts = (props: { parts: Record<PartClass, number> }) => (
           textOverflow: 'ellipsis',
         }}
       >
-        <span
+        <div
           style={{
             fontSize: '22px',
             fontWeight: 'bold',
             lineHeight: '1',
             color,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           }}
         >
           {props.parts[id]}
-        </span>{' '}
-        <span style={{ color: '#b9c6d0' }}>{label}</span>
+        </div>
+        <div
+          style={{
+            color: '#b9c6d0',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {label}
+        </div>
       </div>
     ))}
   </div>
