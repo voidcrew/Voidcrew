@@ -40,6 +40,47 @@
 	return ..()
 
 /**
+ * A bounce homes in on whoever is nearest its new heading (tg on_ricochet(), ricochet_auto_aim_range) and makes them
+ * the shot's `original`, which can_hit_target() hits as the direct target, past the pass-over above and past anyone
+ * lying down. An NPC's shot does not home in on its own side or the NPC itself: it picks again among everyone else, or
+ * flies on where the bounce sent it. A rubber shot pellet off a crate beside an officer's line hit a colleague lying
+ * on the officer's own tile (outpost police soak pass 15, Quartermain shot_down_crawl).
+ */
+/obj/projectile/on_ricochet(atom/target)
+	if(!npc_side_shooter || !length(ignored_factions) || !ricochet_auto_aim_angle || !ricochet_auto_aim_range)
+		return ..()
+	var/atom/aimed = original
+	var/bounce_angle = angle
+	. = ..()
+	if(original == aimed || !npc_shot_spares(original))
+		return
+	original = aimed
+	set_angle(bounce_angle)
+	var/mob/living/unlucky_sob
+	var/best_angle = ricochet_auto_aim_angle
+	if(firer && HAS_TRAIT(firer, TRAIT_NICE_SHOT))
+		best_angle += NICE_SHOT_RICOCHET_BONUS
+	for(var/mob/living/potential_target in range(ricochet_auto_aim_range, loc))
+		if(potential_target.stat == DEAD || !is_in_sight(src, potential_target) || (!ricochet_shoots_firer && potential_target == firer))
+			continue
+		if(npc_shot_spares(potential_target))
+			continue
+		var/our_angle = abs(closer_angle_difference(angle, get_angle(loc, potential_target.loc)))
+		if(our_angle < best_angle)
+			best_angle = our_angle
+			unlucky_sob = potential_target
+	if(unlucky_sob)
+		set_angle(get_angle(src, unlucky_sob.loc))
+		original = unlucky_sob
+
+/// Whether this NPC's shot passes over `target` as one of its side (can_hit_target()'s ignored_factions check)
+/obj/projectile/proc/npc_shot_spares(atom/target)
+	if(!npc_side_shooter || !isliving(target) || !length(ignored_factions))
+		return FALSE
+	var/mob/living/person = target
+	return faction_check(person.faction, ignored_factions) && !npc_shot_shield(person)
+
+/**
  * Whether `target` is one of the NPC's side held in an aggressive grab or tighter by a living mob that is
  * not on that side. tg's grab states are the only test: a passive pull (dragging a body or a cuffed
  * prisoner) is not a shield. tg's own rules still pass over a held body that is dead or lying helpless.
