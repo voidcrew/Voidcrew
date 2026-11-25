@@ -317,11 +317,11 @@ GLOBAL_LIST_INIT(outpost_police_heavy_ammo, typecacheof(list(
 // ----- clear blast -----
 
 /// With the heavy weapon in hand, a clear blast first; then the line as for any shot (check_body_block's short look is the line only)
-/mob/living/carbon/human/npc/ambient_npc/outpost/police/armour/bystander_in_line(atom/target, within = 0)
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/armour/bystander_in_line(atom/target, within = 0, turf/from_turf)
 	if(!within)
 		var/obj/item/gun/heavy = get_heavy()
 		if(heavy && is_holding(heavy))
-			var/atom/blocker = police_heavy_blocker(target, heavy)
+			var/atom/blocker = police_heavy_blocker(target, heavy, from_turf)
 			if(blocker)
 				return blocker
 	return ..()
@@ -332,8 +332,8 @@ GLOBAL_LIST_INIT(outpost_police_heavy_ammo, typecacheof(list(
  * around the target, under the line, or on the few tiles past it where a miss flies on (and around where it would
  * burst on a wall there).
  */
-/mob/living/carbon/human/npc/ambient_npc/outpost/police/armour/proc/police_heavy_blocker(atom/target, obj/item/gun/heavy)
-	var/turf/from = get_turf(src)
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/armour/proc/police_heavy_blocker(atom/target, obj/item/gun/heavy, turf/from_turf)
+	var/turf/from = from_turf || get_turf(src)
 	var/turf/impact = get_turf(target)
 	if(!from || !impact)
 		return impact || src
@@ -349,7 +349,7 @@ GLOBAL_LIST_INIT(outpost_police_heavy_ammo, typecacheof(list(
 		if(istype(line_turf.loc, /area/shuttle) || line_turf.is_blocked_turf(exclude_mobs = TRUE))
 			return line_turf
 		for(var/mob/living/other in line_turf)
-			if(other.stat != DEAD && !police_would_shoot(other, POLICE_FORCE_LETHAL))
+			if(other != src && other.stat != DEAD && !police_would_shoot(other, POLICE_FORCE_LETHAL))
 				return other
 	// A miss flies on past the target
 	var/distance = max(1, get_dist(from, impact))

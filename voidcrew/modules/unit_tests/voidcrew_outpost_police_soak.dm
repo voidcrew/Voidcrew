@@ -280,9 +280,10 @@
 			found.moved_at = world.time
 	if(length(at_large()))
 		ever_wanted = TRUE
-	// An officer walking someone in who lets go of them, with the suspect standing where they were put
+	// An officer walking someone in who lets go of them, with the suspect standing where they were put (not on a cell's floor or
+	// door: cell_walk_in() lets go there a moment before the cell admits them)
 	var/held_now = !QDELETED(suspect) && is_outpost_police_npc(suspect.pulledby)
-	if(was_held && !held_now && !QDELETED(suspect) && police.in_custody(suspect) && !police.cell_holding(suspect.mind) && world.time - own_step_at > 5 SECONDS)
+	if(was_held && !held_now && !QDELETED(suspect) && police.in_custody(suspect) && !police.cell_holding(suspect.mind) && !police.cell_at(get_turf(suspect)) && world.time - own_step_at > 5 SECONDS)
 		hold_losses += world.time
 		note(">>", "the officer's hold on the suspect is gone at [where(suspect)]")
 	was_held = held_now
@@ -393,6 +394,9 @@
 	if(length(found.steps) > 8)
 		found.steps.Cut(1, 2)
 		found.step_times.Cut(1, 2)
+	// An officer back on the tile it left a step ago: what its brain was doing, to tell what sends it to and fro
+	if(is_outpost_police_npc(source) && length(found.steps) >= 3 && found.steps[length(found.steps) - 2] == to_turf)
+		rows += list(list(now(), found.id, "<< back to [where(to_turf)] from [where(from)] doing [police_soak_doing(source)]"))
 	var/list/back = edges["[to_turf.x],[to_turf.y]>[from.x],[from.y]"]
 	edges["[from.x],[from.y]>[to_turf.x],[to_turf.y]"] = list(source, world.time)
 	if(!back || back[1] == source || world.time - back[2] > 2)
@@ -403,6 +407,19 @@
 	var/pair = found.id < other.id ? "[found.id]|[other.id]" : "[other.id]|[found.id]"
 	LAZYADD(swaps[pair], world.time)
 	rows += list(list(now(), found.id, "<> trades tiles with [other.id] at [where(from)]/[where(to_turf)]"))
+
+/// The brain's running behaviours, by the last part of their type, and whether it was on a path or being pulled: for the trace
+/proc/police_soak_doing(mob/living/body)
+	var/list/parts = list()
+	var/datum/ai_controller/controller = body.ai_controller
+	for(var/datum/ai_behavior/behavior as anything in controller?.current_behaviors)
+		var/list/bits = splittext("[behavior.type]", "/")
+		parts += "[bits[length(bits) - 1]]/[bits[length(bits)]]"
+	if(controller?.current_movement_target)
+		parts += "moving"
+	if(body.pulledby)
+		parts += "pulled"
+	return length(parts) ? jointext(parts, ",") : "nothing"
 
 // ----- force on anyone else -----
 

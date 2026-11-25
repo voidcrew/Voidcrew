@@ -380,3 +380,24 @@
 	qdel(hostage)
 	TEST_ASSERT_NULL(hostage.hostage_pose_freed, "A deleted hostage got a let-go spot that keeps him")
 	qdel(block)
+
+/// A guard standing off too close in a doorway backs off only as far as it keeps the holder in view. Backing out of the
+/// doorway lost sight of them, which ended the standoff, and the walk that brought it back in view brought it too close
+/// again: an officer stepped in and out of the Undertow's Bar Access doorway twice a second (police soak, pass 13).
+/datum/unit_test/voidcrew_stealth_hostage_doorway
+
+/datum/unit_test/voidcrew_stealth_hostage_doorway/Run()
+	var/datum/turf_reservation/block = stealth_block(10, 5)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	// A wall down x = 4 with a doorway at (4, 2)
+	for(var/dy in list(0, 1, 3, 4))
+		stealth_at(block, 4, dy).ChangeTurf(/turf/closed/wall)
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 4, 2, EAST)
+	var/mob/living/carbon/human/npc/friend = stealth_guard(block, 7, 1, WEST)
+	var/mob/living/carbon/human/holder = stealth_person(block, 6, 1)
+	var/turf/back_off = stealth_open_near(get_ranged_target_turf_direct(holder, guard, 3), 1) // STEALTH_HOSTAGE_HOLD_RANGE
+	TEST_ASSERT(back_off && !stealth_can_see(back_off, holder, 7), "Fixture: the tile three back from the holder through the doorway ([back_off]) has them in view")
+	var/datum/ai_controller/basic_controller/human_npc/stealth/guard_ai = stealth_test_standoff(guard, holder, friend)
+	TEST_ASSERT_NOTNULL(guard_ai.standoff_holder, "Fixture: no standoff from the doorway")
+	TEST_ASSERT(isnull(guard_ai.goto_dest) || stealth_can_see(guard_ai.goto_dest, holder, 7), "Two tiles from the holder in a doorway, the guard backed off to [guard_ai.goto_dest], out of their sight")
+	qdel(block)

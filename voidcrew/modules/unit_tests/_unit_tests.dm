@@ -249,6 +249,7 @@
 #include "voidcrew_outpost_police_path.dm"
 #include "voidcrew_outpost_police_playtest2.dm"
 #include "voidcrew_outpost_police_property.dm"
+#include "voidcrew_outpost_police_reposition.dm"
 #include "voidcrew_outpost_police_search.dm"
 #include "voidcrew_outpost_police_soak.dm"
 #include "voidcrew_outpost_police_soak_combat.dm"

@@ -250,6 +250,59 @@
 	found = breaks_after(/datum/police_soak_invariant/door_loiter)
 	TEST_ASSERT(length(found), "door_loiter stayed quiet about the cover officer standing in a doorway for a minute, four tiles from its suspect")
 
+// ----- door_loiter: the clock after a spell at work, and the townsfolk -----
+// Pass 13: the rule's clock was the time since the body last moved, and ran through the spell an arrest excused. A
+// cover officer who stood in the Depot Gate doorway beside its suspect through the cuffing and the search was called a
+// loiterer the second the escort walked off, and was gone a second later (Quartermain gate_emag_step_in, 1125002653bdc,
+// 23 s). A townsperson waiting in the Restroom doorway with no officer near was judged as one of the squad
+// (Quartermain stunned_then_up, 63 s).
+
+/datum/unit_test/voidcrew_stealth_live/police/soak_rule/door_loiter_clock
+
+/datum/unit_test/voidcrew_stealth_live/police/soak_rule/door_loiter_clock/Run()
+	TEST_ASSERT(rule_room(), "No room for the test")
+	allocate(/obj/machinery/door/airlock/outpost/checkpoint, at(6, 2))
+	var/mob/living/carbon/human/suspect = wanted_visitor(7, 2)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/arresting = officer_at(8, 2, WEST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/covering = officer_at(6, 2, EAST)
+	var/datum/outpost_police_case/case = police.open_case(police.get_warrant(suspect.mind))
+	police.sleep_tick()
+	TEST_ASSERT(case, "Fixture: no arrest opened on the suspect")
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police.officers)
+		officer.case = null
+	case.officers = list(WEAKREF(arresting), WEAKREF(covering))
+	arresting.case = case
+	covering.case = case
+	// A minute in the doorway beside its suspect, at work
+	var/list/found = breaks_after(/datum/police_soak_invariant/door_loiter)
+	TEST_ASSERT(!length(found), "Fixture: door_loiter fired on the cover officer beside its suspect: [jointext(found, "; ")]")
+	// The escort walks off: the next sample is the first second with no reason to be there
+	suspect.forceMove(at(11, 2))
+	var/datum/police_soak_invariant/rule = new /datum/police_soak_invariant/door_loiter
+	probe.breaks.Cut()
+	rule.check(probe)
+	found = list()
+	for(var/list/one as anything in probe.breaks)
+		found += one["text"]
+	qdel(rule)
+	TEST_ASSERT(!length(found), "door_loiter fired the second the suspect left, on a clock that ran while the officer was at work: [jointext(found, "; ")]")
+
+/datum/unit_test/voidcrew_stealth_live/police/soak_rule/door_loiter_townsfolk
+
+/datum/unit_test/voidcrew_stealth_live/police/soak_rule/door_loiter_townsfolk/Run()
+	TEST_ASSERT(rule_room(), "No room for the test")
+	allocate(/obj/machinery/door/airlock, at(6, 2))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/local = local_at(6, 2)
+	probe.track(local)
+	var/list/found = breaks_after(/datum/police_soak_invariant/door_loiter)
+	TEST_ASSERT(!length(found), "door_loiter judged one of the outpost's people stood in a doorway with no officer about: [jointext(found, "; ")]")
+	// An officer stood there a minute with nothing to do is still loitering
+	local.forceMove(at(10, 2))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/idle = officer_at(6, 2, EAST)
+	probe.track(idle)
+	found = breaks_after(/datum/police_soak_invariant/door_loiter)
+	TEST_ASSERT(length(found), "door_loiter stayed quiet about an officer stood a minute in a doorway with nothing to do")
+
 // ----- bunching_at_fallen -----
 // Pass 6: the owner's round 17.22.26, most of the squad stood in the lobby round dead colleagues while the suspect was
 // elsewhere and nobody saw them.

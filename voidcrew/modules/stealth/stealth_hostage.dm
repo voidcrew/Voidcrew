@@ -293,7 +293,14 @@ GLOBAL_LIST_INIT(stealth_fake_guns, typecacheof(list(
 	var/distance = get_dist(guard, holder)
 	var/turf/dest
 	if(distance < band[1])
-		dest = stealth_open_near(get_ranged_target_turf_direct(holder, guard, band[1]), 1)
+		// Backing off out of their sight (out through a doorway) ends the standoff, and whatever brings it back into
+		// view brings it too close again: an officer stepped in and out of the Undertow's Bar Access doorway twice a
+		// second that way. It backs off only as far as it keeps them in view, and with no such tile holds where it is.
+		for(var/reach in band[1] to distance + 1 step -1)
+			dest = stealth_open_near(get_ranged_target_turf_direct(holder, guard, reach), 1)
+			if(dest && stealth_can_see(dest, holder, HUMAN_NPC_SIGHT_RANGE))
+				break
+			dest = null
 	else if(distance > band[2])
 		dest = stealth_open_near(get_ranged_target_turf_direct(holder, guard, band[2]), 1)
 	if(dest && dest != get_turf(guard) && !controller.stealth_walk_over(dest))
