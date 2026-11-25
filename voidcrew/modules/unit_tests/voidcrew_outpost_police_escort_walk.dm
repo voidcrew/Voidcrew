@@ -127,9 +127,17 @@
  * other leg and got past them. A tick later its straight try at them ran anyway (police_bump_straight()), found them
  * beside it, and walked it round them: back onto the tile it had just left. Its pathfinder planned the same diagonal
  * again, and it went to and fro by a crowd of fallen officers for 20 s on its way to cuff (pass 14 soak, Quartermain
- * four_star_crawl, O10 at 15,6 with O9 standing at 15,7). Past them, it walks on.
+ * four_star_crawl, O10 at 15,6 with O9 standing at 15,7). Past them, it walks on. (Here the walk is slow enough that
+ * POLICE_STRAIGHT_BUMP_GAP spares the second pass; the step back is what is checked.)
  */
 /datum/unit_test/voidcrew_stealth_live/police/crowd/diagonal_passed
+	/// The officer's tiles in the order it stood on them
+	var/list/walked = list()
+
+/datum/unit_test/voidcrew_stealth_live/police/crowd/diagonal_passed/proc/on_officer_moved(mob/living/source, atom/old_loc, dir, forced)
+	SIGNAL_HANDLER
+	var/turf/tile = get_turf(source)
+	walked += "[tile.x - at(0, 0).x],[tile.y - at(0, 0).y]"
 
 /datum/unit_test/voidcrew_stealth_live/police/crowd/diagonal_passed/Run()
 	TEST_ASSERT(police_room(9, 6), "No room for the test")
@@ -146,6 +154,11 @@
 	TEST_ASSERT(!outpost_npc_can_make_room(busy), "Fixture: the one at work could make way")
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = squad_officer(1, 1, NORTH)
 	var/turf/stop = at(5, 5)
+	RegisterSignal(officer, COMSIG_MOVABLE_MOVED, PROC_REF(on_officer_moved))
 	watch(20, CALLBACK(src, PROC_REF(walked_to), officer, stop))
+	UnregisterSignal(officer, COMSIG_MOVABLE_MOVED)
+	var/past = walked.Find("2,2")
+	TEST_ASSERT(past, "Fixture: the officer never got to 2,2 (it went [walked.Join(" ")])")
+	TEST_ASSERT(!walked.Find("1,1", past), "Past the one at work, the officer walked back to where it started (it went [walked.Join(" ")])")
 	TEST_ASSERT(get_dist(officer, stop) <= 1, "The officer never got on past someone it had stepped by on a diagonal (it is at [officer.x - at(0, 0).x],[officer.y - at(0, 0).y], [steps] steps taken)")
 	REMOVE_TRAIT(busy, TRAIT_AI_PAUSED, "test_busy")
