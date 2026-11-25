@@ -359,6 +359,9 @@
 	var/cover_hold_walk_at = -1
 	/// world.time since which the suspect has been held in cuffs for want of a way to a cell, or 0 (step_hold())
 	var/held_since = 0
+	/// world.time since which nobody fit has been on the case, or 0. The step's clock stands still meanwhile, so this
+	/// is how long the arrest has waited for an officer
+	var/unstaffed_since = 0
 
 /datum/outpost_police_case/New(datum/outpost_police/new_police, datum/outpost_warrant/new_warrant)
 	. = ..()
@@ -821,7 +824,9 @@
 	if(!officer)
 		// Nobody to work it: the case waits for dispatch, and the clock waits with it
 		step_started_at = world.time
+		unstaffed_since ||= world.time
 		return
+	unstaffed_since = 0
 	// Holding fire for a hostage is standing still on purpose (police_stealth.dm): the step's clock waits with it
 	var/datum/ai_controller/basic_controller/human_npc/stealth/standing_off = officer.ai_controller
 	if(istype(standing_off) && standing_off.standoff_holder?.resolve())
