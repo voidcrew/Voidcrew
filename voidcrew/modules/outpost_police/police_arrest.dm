@@ -2273,8 +2273,10 @@
 	if(QDELETED(src))
 		return
 	if(!arrived)
-		// Busy elevator car: try again shortly; otherwise walk for a while
-		ride_failed_until = world.time + (police.elevator_busy(police.sector_of(officer)) ? 2 SECONDS : 30 SECONDS)
+		// Busy elevator car: try again shortly; otherwise walk for a while. From a hangar berth there is no walk: the lift
+		// is the only way out, so it is tried again shortly too (a walk to the desk from there stood still for 30 s)
+		var/from_sector = police.sector_of(officer)
+		ride_failed_until = world.time + ((police.elevator_busy(from_sector) || istype(from_sector, /datum/outpost_berth)) ? 2 SECONDS : 30 SECONDS)
 	lift_goal = null
 	ride_sector = null
 

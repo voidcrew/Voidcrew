@@ -300,14 +300,20 @@
 	ADD_TRAIT(officer, TRAIT_AI_PAUSED, POLICE_RIDE_TRAIT)
 	if(istype(rider))
 		rider.dispatch_riding = TRUE
-	. = ride_elevator(officer, panel, floor_id)
+	. = ride_elevator(officer, panel, floor_id, sector)
 	if(!QDELETED(officer))
 		REMOVE_TRAIT(officer, TRAIT_AI_PAUSED, POLICE_RIDE_TRAIT)
 	if(istype(rider) && !QDELETED(rider))
 		rider.dispatch_riding = FALSE
 
-/// Runs the alcove step-in and elevator wait for `ride()` while the rider's AI is paused
-/datum/outpost_police/proc/ride_elevator(mob/living/officer, obj/machinery/outpost_elevator/panel, floor_id)
+/**
+ * Runs the alcove step-in and elevator wait for `ride()` while the rider's AI is paused. A car on its way here from
+ * `sector` is waited for, and the car is never sent with someone another officer holds standing in it. Each car takes
+ * everyone standing in its alcove: an escort sending the hangar's car up while its cover sent the lobby's car down
+ * arrived in the lobby and was taken straight back down by the second car, prisoner and all (pass 12 soak, Halcyon
+ * hangar_wait).
+ */
+/datum/outpost_police/proc/ride_elevator(mob/living/officer, obj/machinery/outpost_elevator/panel, floor_id, sector)
 	var/list/turf/own_alcove = panel.get_own_alcove()
 	if(!length(own_alcove))
 		return FALSE
@@ -340,10 +346,16 @@
 		if(officer.pulling == pulled_in && !(get_turf(pulled_in) in own_alcove))
 			return FALSE
 	var/wait_until = world.time + OUTPOST_ELEVATOR_TRAVEL_TIME + 1 SECONDS
-	while(!QDELETED(panel) && panel.moving && world.time < wait_until)
+	while(!QDELETED(panel) && (panel.moving || (sector && elevator_busy(sector))) && world.time < wait_until)
 		sleep(0.5 SECONDS)
 	if(QDELETED(src) || QDELETED(panel) || QDELETED(officer) || officer.stat != CONSCIOUS)
 		return FALSE
+	// Someone another officer brought up or down in the car stays where they were brought
+	for(var/turf/car_floor as anything in own_alcove)
+		for(var/mob/living/held in car_floor)
+			var/mob/living/carbon/human/npc/ambient_npc/outpost/police/holder = held.pulledby
+			if(istype(holder) && holder != officer && held != officer.pulling)
+				return FALSE
 	if(!panel.start_ride(floor_id, officer))
 		return FALSE
 	var/ride_until = world.time + OUTPOST_ELEVATOR_TRAVEL_TIME + 2 SECONDS
