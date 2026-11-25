@@ -6916,6 +6916,7 @@
 #include "voidcrew\edits\modules\antagonists\heretic\magic\rust_construction.dm"
 #include "voidcrew\edits\modules\asset_cache\assets\rcd.dm"
 #include "voidcrew\edits\modules\atmospherics\machinery\datum_pipeline.dm"
+#include "voidcrew\edits\modules\awaymissions\away_props.dm"
 #include "voidcrew\edits\modules\awaymissions\signpost.dm"
 #include "voidcrew\edits\modules\bitrunning\orders\flair.dm"
 #include "voidcrew\edits\modules\cargo\materials_market.dm"

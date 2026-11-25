@@ -1917,7 +1917,7 @@
 		return
 	check_evidence_stall(officer, desk)
 
-/// Whether a step from `from` onto `to_tile` is open to walk across, mobs aside (no wall, shut door, window, table or rail)
+/// Whether a step from `from` onto `to_tile` is open to walk across, mobs aside (no wall, shut door, window, table, rail or invisible wall)
 /proc/outpost_police_way_step_ok(turf/from, turf/to_tile)
 	if(!from || !to_tile || to_tile == from || from.z != to_tile.z || get_dist(from, to_tile) > 1 || to_tile.density)
 		return FALSE
@@ -1932,6 +1932,10 @@
 			return FALSE
 	for(var/obj/blocker in to_tile)
 		if(!blocker.density)
+			// A map's invisible wall stops anyone though it is not dense: someone stepping out of an escort's way in
+			// Quartermain's stock-room hall chose the row of them along it, never moved, and the escort stood (pass 12)
+			if(istype(blocker, /obj/effect/invisible_wall))
+				return FALSE
 			continue
 		if(blocker.flags_1 & ON_BORDER_1)
 			if((blocker.dir & in_dir) || (blocker.dir & (blocker.dir - 1)))
