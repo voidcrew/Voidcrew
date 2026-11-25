@@ -97,16 +97,21 @@
 	if(!moving_diagonally || world.time < bump_straight_at)
 		return
 	bump_straight_at = world.time + POLICE_STRAIGHT_BUMP_GAP
-	addtimer(CALLBACK(src, PROC_REF(police_bump_straight), WEAKREF(blocker)), 1)
+	addtimer(CALLBACK(src, PROC_REF(police_bump_straight), WEAKREF(blocker), get_turf(src)), 1)
 
 /**
  * The straight try at someone it walked into on a leg of a diagonal step: beside them still, and still walking, it
  * settles it with one of the outpost's people by the rules above (round them, or a trade of places), and walks
  * straight into anyone else as tg has it. Its pathfinder would only plan the same diagonal again.
+ * Off `bumped_from`, the tile it walked into them from, the step went the other way round and it is past them: nothing
+ * to settle. Walking round them then took it back where it came from, and it went to and fro by a colleague kneeling at a
+ * body for 20 s (pass 14 soak, Quartermain four_star_crawl).
  */
-/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_bump_straight(datum/weakref/blocker_ref)
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_bump_straight(datum/weakref/blocker_ref, turf/bumped_from)
 	var/mob/living/blocker = blocker_ref?.resolve()
 	if(QDELETED(blocker) || QDELETED(src) || client || mind || stat != CONSCIOUS || moving_diagonally || now_pushing || !isturf(loc) || !isturf(blocker.loc))
+		return
+	if(bumped_from && get_turf(src) != bumped_from)
 		return
 	var/way = get_dir(src, blocker)
 	if(!way || (way & (way - 1)) || get_dist(src, blocker) != 1)
