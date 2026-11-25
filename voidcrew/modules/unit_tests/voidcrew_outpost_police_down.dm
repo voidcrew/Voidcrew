@@ -439,6 +439,8 @@
 	colleague.adjustToxLoss(colleague.maxHealth - colleague.crit_threshold + 10) // bled down: the damage kind does not matter here
 	TEST_ASSERT(colleague.stat != CONSCIOUS, "Fixture: the colleague is not down")
 	TEST_ASSERT(police.perception.sees(watcher, colleague), "Fixture: the officer does not see its fallen colleague")
+	// The call it made about the shot itself is not this one
+	watcher_brain.stealth_drop_call()
 	TEST_ASSERT_EQUAL(body_look(watcher_brain), "unaware", "An officer went searching over a colleague down from a wound by someone dead")
 	TEST_ASSERT(watcher_brain.bark_ready_at["stealth_body"] > world.time, "An officer did not call in a fallen colleague") // STEALTH_BARK_BODY
 	TEST_ASSERT_NULL(watcher_brain.pending_call, "An officer called the squad to a colleague down from a wound by someone dead")
