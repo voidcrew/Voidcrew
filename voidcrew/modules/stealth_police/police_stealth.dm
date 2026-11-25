@@ -1043,12 +1043,67 @@
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_next_leg(turf/dest)
 	. = ..()
 	var/turf/here = get_turf(pawn)
+	// A leg part of the way: on the police's own floor, by the way there is
+	if(. != dest && !isnull(here) && !isnull(dest) && here.z == dest.z && get_dist(here, dest) > STEALTH_WALK_LEG)
+		return police_walk_leg(here, dest) || .
 	if(. == dest || isnull(here) || isnull(dest) || here.z != dest.z || get_dist(here, dest) > STEALTH_WALK_LEG || !isopenturf(dest))
 		return
 	for(var/atom/movable/thing as anything in dest)
 		if(thing.density && !ismob(thing) && !(thing.flags_1 & ON_BORDER_1))
 			return
 	return dest
+
+/// Steps a leg of an officer's long walk takes over the outpost's floor (half stealth's longest path, STEALTH_PATROL_MAX_PATH)
+#define POLICE_WALK_LEG_STEPS 30
+
+/**
+ * The end of a leg of a long walk from `here` to `dest`, both on the outpost's own floor: the tile POLICE_WALK_LEG_STEPS
+ * steps along the shortest way over that floor. Stealth's leg is a point on the straight line, and across Halcyon that
+ * line runs over the gap of open space between its two halves: an officer sent from the east half to the park was
+ * given a leg out in space, failed to find a path there, was given the next, and stood at its post for good (pass 14
+ * soak, Halcyon hostage). Null where the floor is not read yet, or either end is off it: stealth's own leg is used.
+ */
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/proc/police_walk_leg(turf/here, turf/dest)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	var/datum/outpost_police/police = istype(officer) ? officer.police : null
+	if(!police || police.sector_of(here) != police.sector_of(dest) || !police.dispatch_in_box(here))
+		return null
+	var/datum/outpost_police_floor/floor = police.search_floor(here, officer)
+	var/list/walkable = floor?.walkable
+	if(!walkable?[here] || !walkable[dest])
+		return null
+	// Steps from `dest` over the floor, out until `here` is reached
+	var/datum/can_pass_info/pass = new(officer, officer.get_access())
+	var/list/steps_to = list()
+	steps_to[dest] = 0
+	var/list/turf/frontier = list(dest)
+	var/at = 1
+	while(at <= length(frontier) && isnull(steps_to[here]))
+		var/turf/tile = frontier[at]
+		at++
+		for(var/direction in GLOB.cardinals)
+			var/turf/next = get_step(tile, direction)
+			if(!next || !walkable[next] || !isnull(steps_to[next]) || !CAN_STEP(next, tile, TRUE, pass, null))
+				continue
+			steps_to[next] = steps_to[tile] + 1
+			frontier += next
+	if(isnull(steps_to[here]))
+		return null
+	// Down that count from `here`, as far as a leg goes
+	var/turf/leg = here
+	for(var/step_count in 1 to POLICE_WALK_LEG_STEPS)
+		var/turf/nearer
+		for(var/direction in GLOB.cardinals)
+			var/turf/next = get_step(leg, direction)
+			if(next && !isnull(steps_to[next]) && steps_to[next] < steps_to[leg])
+				nearer = next
+				break
+		if(!nearer)
+			break
+		leg = nearer
+	return leg == here ? null : leg
+
+#undef POLICE_WALK_LEG_STEPS
 
 // =========================================================================
 // ON THE OFFICER
