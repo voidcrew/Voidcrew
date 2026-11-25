@@ -94,6 +94,10 @@
 	cell.prisoners[prisoner.mind] = world.time + 30 MINUTES
 	TEST_ASSERT(police.cell_patient_ok(prisoner), "Fixture: the prisoner is not a cell medic's patient")
 
+	// Someone on the level, as a player there: the place is awake and tg's AI runs
+	listed_z = floor.z
+	SSmobs.clients_by_zlevel[listed_z] |= prisoner
+	SSambient_npcs.wake_outpost(SSambient_npcs.outpost_place(outpost))
 	var/list/walks
 	var/best = 0
 	for(var/call_number in 1 to 8)
@@ -113,9 +117,6 @@
 			continue
 		// The last one walks it, on their own brain
 		var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(outpost)
-		listed_z = arrived.z
-		SSmobs.clients_by_zlevel[listed_z] |= prisoner
-		SSambient_npcs.wake_outpost(place)
 		var/list/steps = list(local_text(outpost, arrived))
 		var/turf/last = arrived
 		var/walked = 0
@@ -132,7 +133,7 @@
 				walked++
 				steps += local_text(outpost, here)
 				last = here
-		TEST_ASSERT(!QDELETED(medic) && get_dist(medic, cell.outside_turf) <= 1, "The medic did not reach the cell door in 90 s: [steps.Join(" ")]")
+		TEST_ASSERT(!QDELETED(medic) && get_dist(medic, cell.outside_turf) <= 1, "The medic did not reach the cell door in 90 s (paused [medic?.paused_at], AI paused [HAS_TRAIT(medic, TRAIT_AI_PAUSED)], AI [medic?.ai_controller?.ai_status], doing [medic?.activity?.name], fading [medic?.fading]): [steps.Join(" ")]")
 		TEST_ASSERT(walked <= walks[arrived] + 6, "The medic walked [walked] tiles to the cell for a shortest way of [walks[arrived]]: [steps.Join(" ")]")
 
 /**
