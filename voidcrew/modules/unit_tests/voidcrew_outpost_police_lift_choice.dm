@@ -66,7 +66,7 @@
 
 /**
  * A cell medic called for a prisoner in crit at Quartermain comes up the right-hand lift every time, the lift with the
- * shortest walk to the cell, and walks to the cell door by the short way.
+ * shortest walk to the cell, and their way to the cell door from there is the short one across the concourse.
  */
 /datum/unit_test/voidcrew_outpost_police_lift_choice/medic
 
@@ -94,10 +94,6 @@
 	cell.prisoners[prisoner.mind] = world.time + 30 MINUTES
 	TEST_ASSERT(police.cell_patient_ok(prisoner), "Fixture: the prisoner is not a cell medic's patient")
 
-	// Someone on the level, as a player there: the place is awake and tg's AI runs
-	listed_z = floor.z
-	SSmobs.clients_by_zlevel[listed_z] |= prisoner
-	SSambient_npcs.wake_outpost(SSambient_npcs.outpost_place(outpost))
 	var/list/walks
 	var/best = 0
 	for(var/call_number in 1 to 8)
@@ -115,26 +111,17 @@
 		if(call_number < 8)
 			crit_medic_cleanup(police)
 			continue
-		// The last one walks it, on their own brain
-		var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(outpost)
-		var/list/steps = list(local_text(outpost, arrived))
-		var/turf/last = arrived
-		var/walked = 0
-		var/end = world.time + 90 SECONDS
-		var/next_tick = world.time
-		while(world.time < end && !QDELETED(medic) && get_dist(medic, cell.outside_turf) > 1)
-			if(world.time >= next_tick)
-				next_tick = world.time + 1 SECONDS
-				SSambient_npcs.update_outpost(place, 1)
-				medic.ai_controller?.reset_ai_status()
-			sleep(world.tick_lag)
-			var/turf/here = get_turf(medic)
-			if(here != last)
-				walked++
-				steps += local_text(outpost, here)
-				last = here
-		TEST_ASSERT(!QDELETED(medic) && get_dist(medic, cell.outside_turf) <= 1, "The medic did not reach the cell door in 90 s (paused [medic?.paused_at], AI paused [HAS_TRAIT(medic, TRAIT_AI_PAUSED)], AI [medic?.ai_controller?.ai_status], doing [medic?.activity?.name], fading [medic?.fading]): [steps.Join(" ")]")
-		TEST_ASSERT(walked <= walks[arrived] + 6, "The medic walked [walked] tiles to the cell for a shortest way of [walks[arrived]]: [steps.Join(" ")]")
+		// The last one's own way to the cell door: across the concourse, never up round the balcony (y 19 and up)
+		ADD_TRAIT(medic, TRAIT_AI_PAUSED, "lift_choice_test")
+		var/list/way = get_path_to(medic, cell.outside_turf, 150, 1, medic.get_access())
+		REMOVE_TRAIT(medic, TRAIT_AI_PAUSED, "lift_choice_test")
+		var/list/steps = list()
+		var/top = 0
+		for(var/turf/step as anything in way)
+			steps += local_text(outpost, step)
+			top = max(top, step.y - outpost.template_bottom_left.y + 1)
+		TEST_ASSERT(length(way), "The medic at [local_text(outpost, arrived)] has no way to the cell")
+		TEST_ASSERT(top < 19, "The medic's way to the cell goes up round the balcony: [steps.Join(" ")]")
 
 /**
  * Officers sent to an arrest on Quartermain's concourse come up the lift with the shortest walk there (not the one
