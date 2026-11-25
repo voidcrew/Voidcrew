@@ -1135,7 +1135,7 @@
 	handed_ref = WEAKREF(officer)
 	spot_ref = null
 	spot_since = 0
-	log_game("OUTPOST POLICE: [key_name(officer)] took the arrest of [key_name(get_suspect())] on the spot at [police.outpost].")
+	log_game(format_text("OUTPOST POLICE: [key_name(officer)] took the arrest of [key_name(get_suspect())] on the spot at [police.outpost]."))
 	staff()
 
 /// Whether `someone` can be in the arrest's way by choice: a player on their feet and free to step aside, not one of the outpost's own
@@ -1271,7 +1271,7 @@
 		return FALSE
 	if(recover_tries >= CASE_RECOVER_TRIES)
 		// It cannot be carried: left where it lies, and the arrest goes on without it
-		log_game("OUTPOST POLICE: [key_name(officer)] could not pick up the evidence ([evidence]) at [AREACOORD(evidence)].")
+		log_game(format_text("OUTPOST POLICE: [key_name(officer)] could not pick up the evidence ([evidence]) at [AREACOORD(evidence)]."))
 		evidence_ref = null
 		recover_tries = 0
 		return FALSE
@@ -2383,7 +2383,7 @@
 		book_tries++
 		set_step(CASE_STEP_DESK)
 		return
-	log_game("OUTPOST POLICE: [key_name(suspect)] was not put in a cell at [police.outpost] ([AREACOORD(suspect)]).")
+	log_game(format_text("OUTPOST POLICE: [key_name(suspect)] was not put in a cell at [police.outpost] ([AREACOORD(suspect)])."))
 	if(!get_suspect() || suspect.stat == DEAD || !warrant?.mind || police.get_warrant(warrant.mind) != warrant)
 		booked_at = 0
 		return
@@ -2444,7 +2444,7 @@
 	if(booked_at || !suspect || !warrant || police.get_warrant(suspect.mind) != warrant || !officer.Adjacent(suspect))
 		return
 	booked_at = world.time
-	log_game("OUTPOST POLICE: [key_name(suspect)] was fined where they stood at [police.outpost], with no way to a cell ([AREACOORD(suspect)]).")
+	log_game(format_text("OUTPOST POLICE: [key_name(suspect)] was fined where they stood at [police.outpost], with no way to a cell ([AREACOORD(suspect)])."))
 	if(officer.pulling == suspect)
 		officer.stop_pulling()
 	police.cell_book_fallback(suspect, officer, warrant)
@@ -2488,7 +2488,7 @@
 	var/obj/item/cuffs = suspect.handcuffed
 	if(!istype(cuffs, /obj/item/restraints/handcuffs/outpost_police/used))
 		return FALSE
-	log_game("OUTPOST POLICE: the used police cuffs came off [key_name(suspect)] with no officer to take them off ([AREACOORD(suspect)]).")
+	log_game(format_text("OUTPOST POLICE: the used police cuffs came off [key_name(suspect)] with no officer to take them off ([AREACOORD(suspect)])."))
 	suspect.dropItemToGround(cuffs, TRUE)
 	return TRUE
 

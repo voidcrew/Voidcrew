@@ -234,7 +234,7 @@
 			floor[next] = TRUE
 			queue += next
 			if(length(floor) > RECOVERY_ROOM_MAX)
-				log_game("OUTPOST RECOVERY: [outpost] has no closed room round [AREACOORD(start)]")
+				log_game(format_text("OUTPOST RECOVERY: [outpost] has no closed room round [AREACOORD(start)]"))
 				return
 	return floor
 

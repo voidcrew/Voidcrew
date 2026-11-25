@@ -449,7 +449,7 @@
 	if(!npc.mind && !npc.ckey && !npc.client && !(iscarbon(npc) && carbon_npc.last_mind))
 		return FALSE
 	if(why)
-		log_game("OUTPOST POLICE: [key_name(npc)] was not deleted ([why]): a player is or was in that body.")
+		log_game(format_text("OUTPOST POLICE: [key_name(npc)] was not deleted ([why]): a player is or was in that body."))
 	return TRUE
 
 /**
@@ -571,7 +571,7 @@
 	if(!length(stuck))
 		return
 	dispatch_skipped[wave.point] = world.time + OUTPOST_POLICE_LIFT_SKIP
-	log_game("OUTPOST POLICE: [outpost] lift point [AREACOORD(wave.point)] is blocked; skipped for a while.")
+	log_game(format_text("OUTPOST POLICE: [outpost] lift point [AREACOORD(wave.point)] is blocked; skipped for a while."))
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/member as anything in stuck)
 		if(human_npc_watched(member))
 			// Watched through its own door: it takes the lift back down, and is no longer counted as on the scene, so

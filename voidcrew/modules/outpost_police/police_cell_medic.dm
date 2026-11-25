@@ -118,7 +118,7 @@
 	medic.set_place(place)
 	medic.fade_in()
 	cell_medics[WEAKREF(patient)] = WEAKREF(medic)
-	log_game("OUTPOST POLICE: a medic was called for [key_name(patient)] in a cell at [outpost] ([AREACOORD(patient)]).")
+	log_game(format_text("OUTPOST POLICE: a medic was called for [key_name(patient)] in a cell at [outpost] ([AREACOORD(patient)])."))
 	if(istype(speaker) && speaker.police_say(POLICE_LINE_MEDIC, null, TRUE))
 		return TRUE
 	cell_station_say(POLICE_LINE_MEDIC)

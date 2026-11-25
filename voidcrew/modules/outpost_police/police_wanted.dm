@@ -187,7 +187,7 @@
 	var/witnessed = perception.witness_of(offender, crime, victim, source)
 	if(witnessed == POLICE_WITNESS_NONE)
 		recent_reports[mind_ref] = list(world.time, POLICE_REPORT_UNSEEN, crime, victim ? WEAKREF(victim) : null, null, base_heat)
-		log_game("OUTPOST POLICE: [key_name(offender)] committed [crime] at [outpost] ([AREACOORD(offender)]) and nobody saw.")
+		log_game(format_text("OUTPOST POLICE: [key_name(offender)] committed [crime] at [outpost] ([AREACOORD(offender)]) and nobody saw."))
 		return null
 	var/atom/witness = perception.last_witness
 	var/list/witnesses = perception.last_witnesses
@@ -316,7 +316,7 @@
 		note_evidence(warrant, source)
 	if(isliving(victim) && victim != offender)
 		record_victim(warrant, victim)
-	log_game("OUTPOST POLICE: [key_name(offender)] committed [crime][victim ? " against [victim]" : ""][source ? " with [source] ([source.type])" : ""] at [outpost] ([AREACOORD(offender)]): [warrant.heat] heat.")
+	log_game(format_text("OUTPOST POLICE: [key_name(offender)] committed [crime][victim ? " against [victim]" : ""][source ? " with [source] ([source.type])" : ""] at [outpost] ([AREACOORD(offender)]): [warrant.heat] heat."))
 	var/new_stars = stars_of(warrant.heat)
 	if(new_stars >= 3)
 		warrant.barred_until = max(warrant.barred_until, world.time + OUTPOST_POLICE_BAR_TIME)
@@ -469,7 +469,7 @@
 			continue
 		if(QDELETED(offender) || !any_alive || world.time >= report.expires)
 			pending_reports -= report
-			log_game("OUTPOST POLICE: a report of [report.crime] at [outpost] was never made.")
+			log_game(format_text("OUTPOST POLICE: a report of [report.crime] at [outpost] was never made."))
 			qdel(report)
 
 /// Counts a pending report that was made, and what followed it while it waited
@@ -625,7 +625,7 @@
 		note_evidence(warrant, source)
 	if(isliving(victim) && victim != offender)
 		record_victim(warrant, victim)
-	log_game("OUTPOST POLICE: [key_name(offender)] committed [crime][victim ? " against [victim]" : ""][source ? " with [source] ([source.type])" : ""] at [outpost] ([AREACOORD(offender)]): [warrant.heat] heat.")
+	log_game(format_text("OUTPOST POLICE: [key_name(offender)] committed [crime][victim ? " against [victim]" : ""][source ? " with [source] ([source.type])" : ""] at [outpost] ([AREACOORD(offender)]): [warrant.heat] heat."))
 	var/new_stars = stars_of(warrant.heat)
 	if(new_stars >= 3)
 		warrant.barred_until = max(warrant.barred_until, world.time + OUTPOST_POLICE_BAR_TIME)

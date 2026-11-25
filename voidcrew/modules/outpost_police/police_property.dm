@@ -486,11 +486,11 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		if(locker.flags_1 & INITIALIZED_1)
 			locker.free_up()
 	if(length(locker_list) != OUTPOST_POLICE_LOCKERS)
-		log_mapping("OUTPOST POLICE: [outpost] has [length(locker_list)] property lockers, not [OUTPOST_POLICE_LOCKERS].")
+		log_mapping(format_text("OUTPOST POLICE: [outpost] has [length(locker_list)] property lockers, not [OUTPOST_POLICE_LOCKERS]."))
 	if(locker_for_evidence)
 		locker_for_evidence.police_ref = WEAKREF(src)
 	else
-		log_mapping("OUTPOST POLICE: [outpost] has no evidence locker.")
+		log_mapping(format_text("OUTPOST POLICE: [outpost] has no evidence locker."))
 
 /// Marks any property locker owned by `who` as released from now so locker recycling orders it accurately
 /datum/outpost_police/proc/mark_locker_released(datum/mind/who)
@@ -726,7 +726,7 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		locker.record(keepsake)
 
 	locker.finish_assignment(card)
-	log_game("OUTPOST POLICE: [key_name(prisoner)] was stripped at [outpost]: [stored] items to a property locker.")
+	log_game(format_text("OUTPOST POLICE: [key_name(prisoner)] was stripped at [outpost]: [stored] items to a property locker."))
 	return TRUE
 
 /**
@@ -787,7 +787,7 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		return 0
 	var/obj/structure/closet/secure_closet/personal/outpost_police/locker = property_locker_for(prisoner, must_shut = TRUE)
 	if(!locker || !locker.reserve_for(prisoner))
-		log_game("OUTPOST POLICE: [key_name(prisoner)] kept [length(weapons)] weapons on a paid hold at [outpost]: no property locker free.")
+		log_game(format_text("OUTPOST POLICE: [key_name(prisoner)] kept [length(weapons)] weapons on a paid hold at [outpost]: no property locker free."))
 		return 0
 	var/stored = 0
 	for(var/obj/item/thing as anything in weapons)
@@ -807,7 +807,7 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 	locker.finish_assignment(card)
 	if(stored && !QDELETED(officer))
 		officer.visible_message(span_notice("[officer] takes [prisoner]'s weapons and locks them away."))
-	log_game("OUTPOST POLICE: [key_name(prisoner)] is on a paid hold at [outpost]: [stored] weapons to a property locker.")
+	log_game(format_text("OUTPOST POLICE: [key_name(prisoner)] is on a paid hold at [outpost]: [stored] weapons to a property locker."))
 	return stored
 
 /// Stores a non-disposable restraint removed right after `store_property()` so it never stays loose on the cell floor
@@ -988,9 +988,9 @@ GLOBAL_VAR_INIT(outpost_police_property_time_scale, 1)
 		var/from = LAZYACCESS(case.taken_from, WEAKREF(thing)) || "the floor"
 		destroyed++
 		if(store?.take_evidence(thing))
-			log_game("OUTPOST POLICE: [thing] ([thing.type]) put in the evidence locker at [outpost]; taken from [from].")
+			log_game(format_text("OUTPOST POLICE: [thing] ([thing.type]) put in the evidence locker at [outpost]; taken from [from]."))
 			continue
-		log_game("OUTPOST POLICE: [thing] ([thing.type]) destroyed at [outpost] with no evidence locker to hold it; taken from [from].")
+		log_game(format_text("OUTPOST POLICE: [thing] ([thing.type]) destroyed at [outpost] with no evidence locker to hold it; taken from [from]."))
 		qdel(thing)
 	return destroyed
 
