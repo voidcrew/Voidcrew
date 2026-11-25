@@ -85,7 +85,7 @@
 		if(!opened && !QDELETED(warden))
 			warden.bribe_say(POLICE_LINE_BRIBE_DOOR)
 		return FALSE
-	log_game("OUTPOST POLICE: [key_name(prisoner)] paid the warden [price] cr to leave a cell at [AREACOORD(cell.door)].")
+	log_game(format_text("OUTPOST POLICE: [key_name(prisoner)] paid the warden [price] cr to leave a cell at [AREACOORD(cell.door)]."))
 	cell.release(mind, prisoner, POLICE_LINE_BRIBE_TAKEN)
 	return TRUE
 

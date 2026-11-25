@@ -175,7 +175,7 @@
 	var/datum/outpost_warrant/warrant = warrants[payer]
 	if(warrant)
 		warrant.barred_until = 0
-	log_game("OUTPOST POLICE: [key_name(user)] paid the checkpoint guard [price] cr to lift a [kind] at [outpost] ([AREACOORD(guard)]), pay-off [times] of their crew here.")
+	log_game(format_text("OUTPOST POLICE: [key_name(user)] paid the checkpoint guard [price] cr to lift a [kind] at [outpost] ([AREACOORD(guard)]), pay-off [times] of their crew here."))
 	record_metric(METRIC_COMBAT, "police_payoff", actor = user, subject = kind, points = quote["stars"], quantity = times)
 	guard.payoff_say(POLICE_LINE_PAYOFF_TAKEN)
 	return TRUE

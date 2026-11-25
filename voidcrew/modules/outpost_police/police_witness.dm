@@ -101,7 +101,7 @@
 /datum/outpost_police/proc/witness_told(datum/outpost_pending_report/report, mob/living/carbon/human/npc/ambient_npc/teller, datum/weakref/teller_ref, atom/listener)
 	LAZYREMOVE(report.telling, teller_ref)
 	LAZYOR(report.told, teller_ref)
-	log_game("OUTPOST POLICE: [teller] told [listener] about [report.crime] at [outpost].")
+	log_game(format_text("OUTPOST POLICE: [teller] told [listener] about [report.crime] at [outpost]."))
 	if(perception.is_officer(listener))
 		var/datum/weakref/officer_ref = WEAKREF(listener)
 		if(!(officer_ref in report.witnesses))

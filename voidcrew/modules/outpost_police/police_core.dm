@@ -219,7 +219,7 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 			lift_turfs |= get_turf(mark)
 		else if(istype(mark, /obj/effect/landmark/outpost_police_desk))
 			if(desk_turf)
-				log_mapping("OUTPOST POLICE: [outpost] has more than one desk landmark ([AREACOORD(mark)]).")
+				log_mapping(format_text("OUTPOST POLICE: [outpost] has more than one desk landmark ([AREACOORD(mark)])."))
 			desk_turf = get_turf(mark)
 		else if(istype(mark, /obj/effect/landmark/outpost_police_cell))
 			cell_landmarks += mark
@@ -231,7 +231,7 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 		lockers |= locker
 	if(new_evidence)
 		if(evidence_locker && evidence_locker != new_evidence)
-			log_mapping("OUTPOST POLICE: [outpost] has more than one evidence locker ([AREACOORD(new_evidence)]).")
+			log_mapping(format_text("OUTPOST POLICE: [outpost] has more than one evidence locker ([AREACOORD(new_evidence)])."))
 		evidence_locker = new_evidence
 	// The cells read their landmarks' tiles, so the landmarks go only after
 	build_cells(cell_landmarks, cell_doors, signs) // P6, police_cell.dm

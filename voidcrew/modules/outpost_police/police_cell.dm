@@ -154,7 +154,7 @@
 			break
 	if(!inside_dir)
 		if(!quiet)
-			log_mapping("OUTPOST POLICE: cell '[cell_id]' has a door at [AREACOORD(door_turf)] that does not touch its floor.")
+			log_mapping(format_text("OUTPOST POLICE: cell '[cell_id]' has a door at [AREACOORD(door_turf)] that does not touch its floor."))
 		return
 	var/turf/across = get_step(door_turf, turn(inside_dir, 180))
 	if(across && !(across in tiles) && !across.density)
@@ -167,7 +167,7 @@
 			outside_turf = neighbor
 			return
 	if(!quiet)
-		log_mapping("OUTPOST POLICE: cell '[cell_id]' has no open floor outside its door at [AREACOORD(door_turf)].")
+		log_mapping(format_text("OUTPOST POLICE: cell '[cell_id]' has no open floor outside its door at [AREACOORD(door_turf)]."))
 
 /// The body `prisoner` was booked in, or null once it is gone
 /datum/outpost_police_cell/proc/body_of(datum/mind/prisoner)
@@ -534,7 +534,7 @@
 		schedule_close_check(CELL_OFFICER_PASS)
 		return
 	open_door(OUTPOST_POLICE_CELL_OPEN, take_over = FALSE)
-	log_game("OUTPOST POLICE: [opener ? key_name(opener) : "nobody known"] opened [door] at [AREACOORD(door)].")
+	log_game(format_text("OUTPOST POLICE: [opener ? key_name(opener) : "nobody known"] opened [door] at [AREACOORD(door)]."))
 	if(!length(prisoners))
 		return
 	playsound(door, 'sound/machines/warning-buzzer.ogg', 60, FALSE, MEDIUM_RANGE_SOUND_EXTRARANGE)
@@ -1133,26 +1133,26 @@
 	for(var/obj/effect/landmark/outpost_police_cell/mark in cell_landmarks)
 		var/turf/tile = get_turf(mark)
 		if(isnull(mark.cell_id) || !tile)
-			log_mapping("OUTPOST POLICE: [outpost] has a cell landmark with no cell_id or no floor ([AREACOORD(mark)]).")
+			log_mapping(format_text("OUTPOST POLICE: [outpost] has a cell landmark with no cell_id or no floor ([AREACOORD(mark)])."))
 			continue
 		LAZYADD(tiles_by_id["[mark.cell_id]"], tile)
 	for(var/obj/machinery/door/airlock/outpost/glass/police_cell/cell_door in cell_doors)
 		if(isnull(cell_door.cell_id))
-			log_mapping("OUTPOST POLICE: [outpost] has a cell door with no cell_id ([AREACOORD(cell_door)]).")
+			log_mapping(format_text("OUTPOST POLICE: [outpost] has a cell door with no cell_id ([AREACOORD(cell_door)])."))
 			continue
 		LAZYADD(doors_by_id["[cell_door.cell_id]"], cell_door)
 	for(var/obj/machinery/status_display/outpost_berth/police_cell/cell_sign in cell_signs)
 		if(isnull(cell_sign.cell_id))
-			log_mapping("OUTPOST POLICE: [outpost] has a cell sign with no cell_id ([AREACOORD(cell_sign)]).")
+			log_mapping(format_text("OUTPOST POLICE: [outpost] has a cell sign with no cell_id ([AREACOORD(cell_sign)])."))
 			continue
 		LAZYADD(signs_by_id["[cell_sign.cell_id]"], cell_sign)
 	for(var/cell_id in tiles_by_id)
 		var/list/cell_doors_here = doors_by_id[cell_id]
 		if(!length(cell_doors_here))
-			log_mapping("OUTPOST POLICE: [outpost] has cell '[cell_id]' floor and no door for it.")
+			log_mapping(format_text("OUTPOST POLICE: [outpost] has cell '[cell_id]' floor and no door for it."))
 			continue
 		if(length(cell_doors_here) > 1)
-			log_mapping("OUTPOST POLICE: [outpost] has [length(cell_doors_here)] doors for cell '[cell_id]'; only the first is used.")
+			log_mapping(format_text("OUTPOST POLICE: [outpost] has [length(cell_doors_here)] doors for cell '[cell_id]'; only the first is used."))
 		var/datum/outpost_police_cell/cell = new(src, cell_id)
 		cell.tiles = tiles_by_id[cell_id]
 		cell.door = cell_doors_here[1]
@@ -1163,16 +1163,16 @@
 			cell.sign.set_messages("CELL", "")
 		cell.find_outside()
 		if(!cell.outside_turf)
-			log_mapping("OUTPOST POLICE: [outpost]'s cell '[cell_id]' cannot be used.")
+			log_mapping(format_text("OUTPOST POLICE: [outpost]'s cell '[cell_id]' cannot be used."))
 		cells += cell
 	for(var/cell_id in doors_by_id)
 		if(!(cell_id in tiles_by_id))
-			log_mapping("OUTPOST POLICE: [outpost] has a cell door for '[cell_id]' and no floor for it.")
+			log_mapping(format_text("OUTPOST POLICE: [outpost] has a cell door for '[cell_id]' and no floor for it."))
 	for(var/cell_id in signs_by_id)
 		if(!(cell_id in tiles_by_id))
-			log_mapping("OUTPOST POLICE: [outpost] has a cell sign for '[cell_id]' and no cell.")
+			log_mapping(format_text("OUTPOST POLICE: [outpost] has a cell sign for '[cell_id]' and no cell."))
 	if(!length(cells))
-		log_mapping("OUTPOST POLICE: [outpost] has no holding cell; a one or two star arrest is fined and let go, three or more is held cuffed at the desk.")
+		log_mapping(format_text("OUTPOST POLICE: [outpost] has no holding cell; a one or two star arrest is fined and let go, three or more is held cuffed at the desk."))
 
 /// The usable cell with the fewest prisoners, the one with free standing room and nearest `near` of equals. Null if there is none.
 /datum/outpost_police/proc/cell_best(atom/near)

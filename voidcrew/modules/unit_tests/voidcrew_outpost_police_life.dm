@@ -472,6 +472,8 @@
 
 	// A bystander two tiles ahead
 	partner.forceMove(pa_tile(4, 0))
+	// The suspect behind him, as one walked along is: facing them, he looks back at them, not along his way
+	suspect.forceMove(pa_tile(0, 1))
 	var/mob/living/carbon/human/bystander = police_line_person(pa_tile(2, 2))
 	officer.setDir(EAST)
 	TEST_ASSERT(case.make_way(officer, suspect), "An officer walking a suspect said nothing to someone in the way")

@@ -84,7 +84,7 @@
 		return
 	unseen_since = 0
 	paused_at = 0
-	log_game("OUTPOST RECOVERY: [outpost.name] recovered with nobody there ([length(npc_bodies())] NPC bodies, [length(player_bodies())] player bodies).")
+	log_game(format_text("OUTPOST RECOVERY: [outpost.name] recovered with nobody there ([length(npc_bodies())] NPC bodies, [length(player_bodies())] player bodies)."))
 	// Unbuilt escort waves will not come now; living escorts leave with the crews
 	var/datum/outpost_police/police = outpost.police
 	for(var/datum/weakref/wave_ref as anything in escort_waves.Copy())

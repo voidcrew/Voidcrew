@@ -708,12 +708,18 @@
 	if(spot)
 		step(src, get_dir(src, spot))
 
-/// A tile beside this officer, no further from `target`, free to step onto (police_step_round_ok()), with a clear shot at `target` from it. The nearest to `target` of those; null if none.
+/**
+ * A tile beside this officer, no further from `target`, free to step onto (police_step_round_ok()), with a clear shot
+ * at `target` from it. The nearest to `target` of those; null if none. Never nearer `target` than the officer keeps
+ * away (BB_HUMAN_NPC_KEEP_AWAY) unless it already stands nearer: the step back (outpost_police_step_back) only took
+ * it off that tile again, twice a second (pass 14 soak, the Undertow shot_down_crawl, a colleague down in the line).
+ */
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_clear_shot_spot(atom/target)
 	var/turf/here = get_turf(src)
 	var/turf/aim = get_turf(target)
 	if(!here || !aim || here.z != aim.z || !isturf(loc))
 		return null
+	var/least_dist = min(ai_controller?.blackboard[BB_HUMAN_NPC_KEEP_AWAY] || 0, get_dist(here, aim))
 	var/turf/best
 	var/best_dist
 	for(var/direction in GLOB.alldirs)
@@ -721,7 +727,7 @@
 		if(isnull(spot) || spot == aim)
 			continue
 		var/dist = get_dist(spot, aim)
-		if(dist > get_dist(here, aim) || (best && dist >= best_dist))
+		if(dist > get_dist(here, aim) || dist < least_dist || (best && dist >= best_dist))
 			continue
 		if(!police_step_round_ok(here, spot) || bystander_in_line(target, 0, spot) || shot_obstacle(target, spot))
 			continue
