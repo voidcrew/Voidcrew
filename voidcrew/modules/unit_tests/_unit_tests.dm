@@ -220,6 +220,7 @@
 #include "voidcrew_outpost_police_arrest_hold.dm"
 #include "voidcrew_outpost_police_arrest_spot.dm"
 #include "voidcrew_outpost_police_blocking.dm"
+#include "voidcrew_outpost_police_booking.dm"
 #include "voidcrew_outpost_police_bribe.dm"
 #include "voidcrew_outpost_police_cell.dm"
 #include "voidcrew_outpost_police_cell_breakout.dm"
