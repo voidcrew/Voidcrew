@@ -13,7 +13,8 @@
 		check_takeover(outpost, heat)
 
 /datum/unit_test/voidcrew_outpost_police_fallen_escort/proc/check_takeover(obj/structure/overmap/trader_outpost/outpost, heat)
-	var/list/parts = police_arrest_setup(outpost, heat)
+	// At three stars and up an arrest is only opened on someone who went down (open_case()): the takedown
+	var/list/parts = police_arrest_setup(outpost, heat, heat >= 50)
 	if(!parts)
 		return
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = parts[1]

@@ -38,9 +38,10 @@
 
 /**
  * A new officer with their kit and a suspect beside them, the suspect pinned at `heat`, the case open and the
- * police tick stopped. Returns list(officer, suspect, case), or null (and the test has failed).
+ * police tick stopped. Returns list(officer, suspect, case), or null (and the test has failed). `takedown`: open it as
+ * dispatch opens one on a suspect who went down (open_case()), which is how an arrest at three stars and up starts.
  */
-/datum/unit_test/proc/police_arrest_setup(obj/structure/overmap/trader_outpost/outpost, heat = POLICE_ARREST_TEST_HEAT_1)
+/datum/unit_test/proc/police_arrest_setup(obj/structure/overmap/trader_outpost/outpost, heat = POLICE_ARREST_TEST_HEAT_1, takedown = FALSE)
 	var/datum/outpost_police/police = outpost.police
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_officer(outpost)
 	if(!officer)
@@ -53,7 +54,7 @@
 		return null
 	var/mob/living/carbon/human/suspect = police_arrest_person(beside)
 	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, heat)
-	var/datum/outpost_police_case/case = police.open_case(warrant)
+	var/datum/outpost_police_case/case = police.open_case(warrant, takedown)
 	police.sleep_tick()
 	if(!case)
 		TEST_FAIL("No case opened on a suspect at [heat] heat")
