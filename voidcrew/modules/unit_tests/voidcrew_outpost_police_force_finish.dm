@@ -40,6 +40,10 @@
 	police_arrest_kit(officer)
 	officer.police_role = "lethal" // POLICE_ROLE_LETHAL
 	var/mob/living/carbon/human/suspect = visitor_at(2, 1)
+	// The room's people take no damage (person_at()); this one has to, from the blow and from staying down
+	suspect.physiology.brute_mod = 1
+	suspect.physiology.burn_mod = 1
+	suspect.physiology.stamina_mod = 1
 	police_pin_warrant(police, suspect.mind, 150) // five stars
 	var/obj/item/melee/baton/security/baton = officer.get_baton()
 	TEST_ASSERT(istype(baton), "Setup: the officer has no security baton")
@@ -71,29 +75,17 @@
 	officer.next_move = 0
 	var/brute = suspect.getBruteLoss()
 	var/stamina = suspect.getStaminaLoss()
+	// What it did before: the base's melee switches the baton on and stuns. Stamina on the floor, no harm
+	var/datum/ai_behavior/basic_melee_attack/human_npc/stun_blow = GET_AI_BEHAVIOR(/datum/ai_behavior/basic_melee_attack/human_npc)
+	stun_blow.perform(1, brain, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
+	TEST_ASSERT(suspect.getStaminaLoss() > stamina, "Fixture: the base's blow with the stun baton did no stamina (stamina [stamina] -> [suspect.getStaminaLoss()])")
+	TEST_ASSERT_EQUAL(suspect.getBruteLoss(), brute, "Fixture: the base's blow with the stun baton did brute")
+	brain.set_blackboard_key(BB_BASIC_MOB_MELEE_COOLDOWN_TIMER, world.time - 1)
+	officer.next_move = 0
+	stamina = suspect.getStaminaLoss()
 	var/datum/ai_behavior/basic_melee_attack/human_npc/outpost_police_finish/blow = GET_AI_BEHAVIOR(/datum/ai_behavior/basic_melee_attack/human_npc/outpost_police_finish)
 	blow.perform(1, brain, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
-	if(suspect.getBruteLoss() <= brute)
-		var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(brain.blackboard[BB_TARGETING_STRATEGY])
-		var/reach = officer.CanReach(suspect)
-		var/can = strategy?.can_attack(officer, suspect)
-		var/obj/item/active = officer.get_active_held_item()
-		var/cooldown = brain.blackboard[BB_BASIC_MOB_MELEE_COOLDOWN_TIMER]
-		officer.set_combat_mode(TRUE)
-		var/list/mods = list(RIGHT_CLICK = TRUE)
-		var/interact = suspect.base_item_interaction(officer, active, mods)
-		var/pre = active?.pre_attack_secondary(suspect, officer, mods, list())
-		var/by = suspect.attackby_secondary(active, officer, mods, list())
-		var/block = suspect.check_block(active, 10, "the baton", MELEE_ATTACK, 0, BRUTE)
-		var/armor = suspect.run_armor_check(BODY_ZONE_CHEST, MELEE)
-		var/list/worn = list()
-		for(var/obj/item/thing in suspect.get_equipped_items(INCLUDE_HELD))
-			worn += "[thing.type] ([thing.block_chance])"
-		var/applied = suspect.apply_damage(10, BRUTE, BODY_ZONE_CHEST)
-		var/brute_applied = suspect.getBruteLoss()
-		var/hit = active?.attack(suspect, officer, mods, list())
-		TEST_FAIL("block [block], armor [armor], worn [jointext(worn, ", ")], apply_damage(10) did [applied] (brute [brute_applied]), suspect type [suspect.type]")
-		TEST_FAIL("The officer's blow with the baton did no brute to the downed suspect (brute [brute]; reach [reach], can_attack [can], active [active] force [active?.force] damtype [active?.damtype], cooldown [cooldown] at [world.time], pacifist [HAS_TRAIT(officer, TRAIT_PACIFISM)]; interaction [interact], pre_attack_secondary [pre], attackby_secondary [by], attack [hit], brute after attack() [suspect.getBruteLoss()], health [suspect.health], godmode [HAS_TRAIT(suspect, TRAIT_GODMODE)])")
+	TEST_ASSERT(suspect.getBruteLoss() > brute, "The officer's blow with the baton did no brute to the downed suspect (brute [brute] -> [suspect.getBruteLoss()])")
 	TEST_ASSERT_EQUAL(suspect.getStaminaLoss(), stamina, "The officer's harm blow with the baton was a stun blow (stamina [stamina] -> [suspect.getStaminaLoss()])")
 	brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
 
