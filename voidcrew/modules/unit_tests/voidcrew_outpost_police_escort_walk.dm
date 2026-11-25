@@ -73,6 +73,28 @@
 	else if(side.x != prisoner.x && side.y != prisoner.y)
 		TEST_FAIL("The officer would lead its prisoner off another diagonal, from [tile_text(side)]")
 	qdel(bystander)
+
+	// One of the outpost's own people on that corner is asked to step off it, and the officer leads from where it stands
+	var/turf/open_corner = police_outpost_tile(outpost, 32, 19)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/local = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost, open_corner)
+	local.set_place(place)
+	ADD_TRAIT(local, TRAIT_AI_PAUSED, "ambient_paused") // AMBIENT_PAUSED_TRAIT: still moves out of the way
+	case.keep_pulling(officer, prisoner, TRUE)
+	if(get_turf(local) == open_corner || officer.pulling != prisoner || case.lead_goal)
+		TEST_FAIL("A townsperson on the open corner was not asked off it (they are at [tile_text(local)], the officer [officer.pulling == prisoner ? "holds" : "let go of"] the prisoner[case.lead_goal ? ", going round to [tile_text(case.lead_goal)]" : ""])")
+	qdel(local)
+
+	// A colleague holding its prisoner for it (while it goes round): it does not step aside for them
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/holder = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, open_corner)
+	officer.stop_pulling()
+	holder.start_pulling(prisoner)
+	TEST_ASSERT_EQUAL(holder.pulling, prisoner, "Fixture: the colleague did not take hold of the prisoner")
+	var/turf/officer_was = get_turf(officer)
+	officer.police_make_room(holder)
+	if(get_turf(officer) != officer_was)
+		TEST_FAIL("The officer stepped aside for its colleague holding its own prisoner, to [tile_text(officer)]")
+	holder.stop_pulling()
+	qdel(holder)
 	police.close_case(prisoner.mind)
 	officer.stop_pulling()
 	qdel(prisoner)
