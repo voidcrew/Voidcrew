@@ -716,7 +716,7 @@
 	// officer making the arrest (from its door, a solid one, it never saw who the scanner or a colleague was looking
 	// at) and the door for everyone else: a chamber has room for the two of them and little more
 	if(!warrant.unseen_since || !istype(officer) || !warrant.mind)
-		return (inside && officer?.case) ? inside : start
+		return (inside && (officer?.case || search_chamber_free(warrant, officer, inside))) ? inside : start
 	var/datum/outpost_police_search/search = searches[warrant.mind]
 	if(!search || search.stamp != warrant.last_seen_at || search.start != start)
 		search_prune()
@@ -728,6 +728,32 @@
 		search.sought_ref = WEAKREF(warrant.mind)
 		searches[warrant.mind] = search
 	return search.deal(src, officer) || start
+
+/**
+ * Whether `officer` is the one to go into the scan chamber at `inside` for `warrant`'s holder, seen in there now with
+ * no arrest to do it: three stars and up on their feet, where no arrest opens (open_case()). The scanner keeps them in
+ * sight, so without this every officer was sent to the door and stood there, the suspect a wall's width away (pass 11
+ * soak, Halcyon four_star_crawl). One officer goes in, as with the search's own `inside`: nobody else is in the chamber
+ * or on its way in.
+ */
+/datum/outpost_police/proc/search_chamber_free(datum/outpost_warrant/warrant, mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, turf/inside)
+	if(!istype(officer) || !warrant?.mind || get_stars(warrant.mind) < 3)
+		return FALSE
+	var/datum/outpost_police_case/arrest = cases[warrant.mind]
+	if(arrest && !QDELETED(arrest))
+		return FALSE
+	var/datum/outpost_checkpoint/post = search_gate(inside)
+	if(!post)
+		return FALSE
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/other in officers)
+		if(other == officer || other.stat != CONSCIOUS)
+			continue
+		if(post.holds_turf(get_turf(other)))
+			return FALSE
+		var/datum/ai_controller/basic_controller/human_npc/stealth/brain = other.ai_controller
+		if(istype(brain) && brain.stealth_state() == STEALTH_SEARCHING && post.holds_turf(brain.search_center))
+			return FALSE
+	return TRUE
 
 /// `officer` has looked about at `center` for `warrant`'s holder and not found them
 /datum/outpost_police/proc/search_looked(datum/outpost_warrant/warrant, mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, turf/center)
