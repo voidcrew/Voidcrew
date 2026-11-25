@@ -110,6 +110,7 @@
 		if(case && (officer in case.officers))
 			case.officers -= officer
 			case.officers.Insert(1, officer)
+	case?.set_step("cuff")
 	TEST_FAIL("Case [case ? case.step : "none"], arresting [case?.arresting() == officer ? "the officer at 15,6" : "someone else"]")
 	police_arrest_kit(officer)
 	RegisterSignal(officer, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
@@ -118,12 +119,17 @@
 	var/end = world.time + 20 SECONDS
 	var/next_tick = world.time
 	var/list/rows = list()
-	while(world.time < end && !QDELETED(case))
+	while(world.time < end)
+		if(QDELETED(case))
+			rows += "[world.time] CASE GONE, officer at [txt(officer)]"
+			break
 		if(world.time >= next_tick)
 			next_tick = world.time + 1 SECONDS
 			SSambient_npcs.update_outpost(place, 1)
 			officer.ai_controller.reset_ai_status()
 			case.process_case()
+			if(QDELETED(case))
+				continue
 			var/datum/move_loop/has_target/jps/loop = GLOB.move_manager.processing_on(officer, SSai_movement)
 			var/list/path = list()
 			if(istype(loop))
