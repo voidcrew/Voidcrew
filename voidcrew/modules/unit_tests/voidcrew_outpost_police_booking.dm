@@ -6,7 +6,8 @@
 /// Sets up a three-star arrest in used police cuffs, searched and with the evidence handed in. list(officer, suspect, case, ships, cell) or null.
 /datum/unit_test/proc/police_booking_setup(obj/structure/overmap/trader_outpost/outpost)
 	var/datum/outpost_police/police = outpost.police
-	var/list/parts = police_arrest_setup(outpost, 55) // three stars (OUTPOST_POLICE_STAR_HEAT 50)
+	// A case opens at one star (three at large is the squad's), and the stars rise once they are in cuffs
+	var/list/parts = police_arrest_setup(outpost, 12) // one star (OUTPOST_POLICE_STAR_HEAT 10)
 	if(!parts)
 		return null
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = parts[1]
@@ -18,6 +19,11 @@
 	case.searched = TRUE
 	case.cuffs_on(suspect)
 	case.disposed_at = world.time
+	police_pin_warrant(police, suspect.mind, 55) // three stars (OUTPOST_POLICE_STAR_HEAT 50): no fine, the jail strip
+	if(QDELETED(case) || police.cases[suspect.mind] != case)
+		TEST_FAIL("The arrest did not survive the stars rising with the suspect in cuffs")
+		wanted_cleanup(ships)
+		return null
 	var/datum/outpost_police_cell/cell = police.cell_best(officer)
 	if(!cell?.outside_turf)
 		TEST_FAIL("The outpost has no usable cell")
