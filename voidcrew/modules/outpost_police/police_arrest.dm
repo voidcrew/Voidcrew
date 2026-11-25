@@ -2672,6 +2672,13 @@
 		return off_door ? queue_walk(controller, officer, off_door, 0) : FALSE
 	if(officer.dispatch_riding)
 		return FALSE
+	// Near enough across the line between the concourse and the lobby: it stays. Its walk took it into the checkpoint's
+	// inner door, where the near walk above stepped it back off the doorway, twice a second (pass 15 soak "pacing",
+	// Quartermain gate_emag_stay, the cover at 19,11/19,12 while the arresting officer cuffed in the chamber)
+	if(here.z == there.z && get_dist(here, there) <= CASE_COVER_DISTANCE)
+		if(brain.goto_dest)
+			brain.stealth_drop_walk()
+		return FALSE
 	var/before = length(controller.planned_behaviors)
 	brain.stealth_walk(there, STEALTH_GOTO_SEARCH)
 	return length(controller.planned_behaviors) > before

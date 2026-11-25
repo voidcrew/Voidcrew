@@ -372,7 +372,9 @@
 	var/gap = here == from ? 0 : get_dist(here, from)
 	for(var/direction in list(away, turn(away, 45), turn(away, -45)))
 		var/turf/spot = get_step(here, direction)
-		if(isnull(spot) || get_dist(spot, from) <= gap || outpost_doorway_of(spot))
+		// Nor the exit gate: one way, it lets nobody in from the lobby side, and the backstep walk went round and round
+		// beside it (pass 15 soak "pacing", Halcyon four_star_crawl, B1 at 32,27/33,27 by the gate at 31,28)
+		if(isnull(spot) || get_dist(spot, from) <= gap || outpost_doorway_of(spot) || (locate(/obj/structure/outpost_exit_gate) in spot))
 			continue
 		if(spot.is_blocked_turf(exclude_mobs = FALSE, source_atom = officer) || !outpost_police_way_step_ok(here, spot))
 			continue

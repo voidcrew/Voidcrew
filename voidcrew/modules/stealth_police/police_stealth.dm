@@ -787,6 +787,12 @@
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_came_round()
 	if(police_held_touch_at && world.time - police_held_touch_at <= OUTPOST_POLICE_HELD_TOUCH_MEMORY)
 		return
+	// Up again after a wound whose author is dead or held: nobody to look round for. An officer sutured back on its feet
+	// searched the concourse with the suspect long in a cell (pass 15 soak "alert_after_clear", Quartermain four_star_crawl)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = pawn
+	if(istype(officer) && officer.police?.police_fall_known(officer, TRUE))
+		stealth_set_wary()
+		return
 	return ..()
 
 // Health slipping away while it bleeds is its own wound, from a fight it was in: nothing to look round for or shout
@@ -877,14 +883,15 @@
  * Whether `member`, an officer found fallen, fell from a wound whose author is known and dealt with: someone the police
  * hold (has_secured()), someone dead or gone, or a colleague's stray shot, within OUTPOST_POLICE_WOUND_MEMORY. An
  * officer shot in an arrest that bled out walking its prisoner to the cell was found by the sergeant, who searched
- * the empty desk for its killer and called the squad in after the all clear.
+ * the empty desk for its killer and called the squad in after the all clear. With `came_round`, `member` is the officer
+ * itself, just back on its feet from that fall (stealth_came_round()).
  */
-/datum/outpost_police/proc/police_fall_known(mob/living/member)
+/datum/outpost_police/proc/police_fall_known(mob/living/member, came_round = FALSE)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/fallen = member
 	if(!istype(fallen) || !fallen.wounded_by_ref || world.time - fallen.wounded_at > OUTPOST_POLICE_WOUND_MEMORY)
 		return FALSE
 	// Awake in cuffs is somebody's doing now, not the wound's
-	if(fallen.stat == CONSCIOUS && !HAS_TRAIT(fallen, TRAIT_CRITICAL_CONDITION))
+	if(!came_round && fallen.stat == CONSCIOUS && !HAS_TRAIT(fallen, TRAIT_CRITICAL_CONDITION))
 		return FALSE
 	var/mob/living/hurter = fallen.wounded_by_ref.resolve()
 	if(QDELETED(hurter) || hurter.stat == DEAD || (hurter in officers))
