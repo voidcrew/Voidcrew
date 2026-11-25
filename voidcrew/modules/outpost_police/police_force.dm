@@ -450,14 +450,52 @@
 	return is_holding(baton)
 
 /**
+ * Whether this officer, its gun dry and its baton in hand, finishes `person` with the baton: they are down where the
+ * zone finishes the downed (owner decision 39). A stun baton's blow there only adds stamina to someone already on the
+ * floor, so the Undertow's officers stood over a dying suspect batoning them for half a minute (pass 13); tg's harm
+ * blow (a right click: the baton's brute, no stun) is what a player in their boots would use.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_finish_with_baton(mob/living/person)
+	if(!police || !isliving(person) || !police_suspect_down(person) || !police.finishes_downed(person, src))
+		return FALSE
+	return istype(human_npc_held_melee_weapon(src), /obj/item/melee/baton)
+
+/// The human NPC base's melee with the baton's harm blow (tg's right click) on someone police_finish_with_baton() is for
+/datum/ai_behavior/basic_melee_attack/human_npc/outpost_police_finish
+
+/datum/ai_behavior/basic_melee_attack/human_npc/outpost_police_finish/perform(seconds_per_tick, datum/ai_controller/controller, target_key, targeting_strategy_key, hiding_location_key)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = controller.pawn
+	var/mob/living/target = controller.blackboard[target_key]
+	if(!istype(officer) || !isliving(target) || !officer.police_finish_with_baton(target))
+		return ..()
+	if(!officer.CanReach(target) || world.time < officer.next_move)
+		return ..()
+	var/attack_at = controller.blackboard[BB_BASIC_MOB_MELEE_COOLDOWN_TIMER]
+	if(isnull(attack_at) || attack_at > world.time)
+		return ..()
+	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(controller.blackboard[targeting_strategy_key])
+	if(!strategy?.can_attack(officer, target))
+		return ..()
+	if(!human_npc_ready_item(officer, human_npc_held_melee_weapon(officer)))
+		return ..()
+	officer.zone_selected = human_npc_pick_aim_zone()
+	controller.ai_interact(target = target, combat_mode = TRUE, modifiers = list(RIGHT_CLICK = TRUE))
+	return AI_BEHAVIOR_DELAY
+
+/**
  * Whether this officer holds its fire, and its baton, for `person`: someone of two stars (as it knows them) who has
  * been given an arrest's order and is in the time to comply, or who is giving up (gives_up()). At three stars and up
- * only someone down is taken alive (owner decision 37); at one star nobody is fought in the first place.
+ * only someone down is taken alive (owner decision 37), and the cuffs going on them stay that taking: tg's stamina
+ * lets them up again under the arresting officer's hands, and while they give up nobody fires on them (pass 13,
+ * Quartermain's force_on_the_held). At one star nobody is fought in the first place.
  */
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_holds_fire(mob/living/person)
 	if(!police || !isliving(person) || !person.mind)
 		return FALSE
-	if(police.force_level(person, src) != POLICE_FORCE_STUN)
+	var/level = police.force_level(person, src)
+	if(level >= POLICE_FORCE_LETHAL)
+		return police.arrest_cuffing(person) && police.gives_up(person)
+	if(level != POLICE_FORCE_STUN)
 		return FALSE
 	return police.order_pending(person) || police.gives_up(person)
 
@@ -559,11 +597,11 @@
 			officer.face_atom(target)
 		controller.queue_behavior(/datum/ai_behavior/outpost_police_watch)
 		return SUBTREE_RETURN_FINISH_PLANNING
-	// Two stars and doing as told (in the time to comply with an arrest's order, or staying put with empty hands):
-	// nobody fires on them or goes at them with a baton. The arresting officer has them; everyone else, the arrest's
-	// cover included, keeps its aim on them from close by.
+	// Two stars and doing as told (in the time to comply with an arrest's order, or staying put with empty hands), or
+	// three and up with the cuffs going on them and giving up: nobody fires on them or goes at them with a baton. The
+	// arresting officer has them; everyone else, the arrest's cover included, keeps its aim on them from close by.
 	var/mob/living/person = officer.police_mech_suspect(target)
-	if(level == POLICE_FORCE_STUN && isliving(person) && officer.police_holds_fire(person))
+	if(level >= POLICE_FORCE_STUN && isliving(person) && officer.police_holds_fire(person))
 		officer.police_hold_aim(controller, target, person)
 		return SUBTREE_RETURN_FINISH_PLANNING
 	if(level < POLICE_FORCE_STUN || HAS_TRAIT(officer, TRAIT_HANDS_BLOCKED) || LAZYLEN(officer.do_afters))
@@ -577,6 +615,10 @@
 		// weapon that is not for this target (police_units_heavy.dm), which human_npc_arm would draw as a backup
 		if(level == POLICE_FORCE_STUN || officer.police_heavy_barred(target))
 			controller.queue_behavior(/datum/ai_behavior/basic_melee_attack/human_npc, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
+			return SUBTREE_RETURN_FINISH_PLANNING
+		// Gun dry, baton out, someone down where the zone finishes the downed: the baton's harm blow, not its stun
+		if(officer.police_finish_with_baton(person))
+			controller.queue_behavior(/datum/ai_behavior/basic_melee_attack/human_npc/outpost_police_finish, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
 			return SUBTREE_RETURN_FINISH_PLANNING
 		return
 	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(controller.blackboard[BB_TARGETING_STRATEGY])
