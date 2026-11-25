@@ -284,8 +284,19 @@
 	// door: cell_walk_in() lets go there a moment before the cell admits them)
 	var/held_now = !QDELETED(suspect) && is_outpost_police_npc(suspect.pulledby)
 	if(was_held && !held_now && !QDELETED(suspect) && police.in_custody(suspect) && !police.cell_holding(suspect.mind) && !police.cell_at(get_turf(suspect)) && world.time - own_step_at > 5 SECONDS)
-		hold_losses += world.time
-		note(">>", "the officer's hold on the suspect is gone at [where(suspect)]")
+		// Who stood round them: the townsfolk are not in the trace, and someone on a corner is what stops a pulled step
+		var/list/round_them = list()
+		for(var/mob/living/someone in orange(1, get_turf(suspect)))
+			if(someone.density)
+				round_them += "[who(someone)] at [where(someone)]"
+		var/beside = length(round_them) ? round_them.Join(", ") : "nobody"
+		// Let go on purpose to lead them off from a side they can follow it from (police_arrest.dm go_round()): not a lost hold
+		var/datum/outpost_police_case/case = police.cases[suspect.mind]
+		if(!QDELETED(case) && case.lead_goal)
+			note(">>", "the officer lets go of the suspect at [where(suspect)] to lead them from [where(case.lead_goal)] (standing beside them: [beside])")
+		else
+			hold_losses += world.time
+			note(">>", "the officer's hold on the suspect is gone at [where(suspect)] (standing beside them: [beside])")
 	was_held = held_now
 	sample_suspect(now)
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police.officers)
