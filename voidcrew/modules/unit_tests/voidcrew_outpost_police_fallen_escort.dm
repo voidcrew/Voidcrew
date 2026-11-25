@@ -33,6 +33,11 @@
 	TEST_ASSERT_NOTNULL(near, "[heat] heat: no floor beside the suspect")
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/colleague = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, near)
 	police_arrest_kit(colleague)
+	// No cover on this walk (a far one from the roster would take over by the cover rule, wherever it stands)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/far_cover = case.cover()
+	if(far_cover)
+		case.drop_officer(far_cover)
+		case.officers.Cut(2)
 	// The arresting officer goes down on the walk
 	officer.adjustBruteLoss(officer.health + 20)
 	TEST_ASSERT(officer.stat != CONSCIOUS, "[heat] heat: setup: the arresting officer is still up at [officer.health] health")
@@ -171,15 +176,18 @@
 	if(!outpost.police.dispatch_send_home(unit) && !unit.npc_exit)
 		unit.npc_walk_out(police_floor(outpost))
 	TEST_ASSERT(unit.npc_exit, "Setup: the response unit is not on its way out")
+	var/was = "stat [unit.stat], paused_at [unit.paused_at], fading [unit.fading], exit [unit.npc_exit ? "yes" : "no"]"
+	case.process_case()
+	TEST_ASSERT(QDELETED(case) || unit.case == case, "The response unit walking out was not called back to the cuffed prisoner ([was])")
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/taker
 	for(var/tick in 1 to 10)
-		case.process_case()
 		if(QDELETED(case))
 			break
 		taker = case.arresting()
 		if(taker == unit && unit.pulling == suspect)
 			break
 		sleep(1 SECONDS)
+		case.process_case()
 	TEST_ASSERT(!QDELETED(case), "The arrest ended when its officer fell")
 	if(QDELETED(case))
 		return

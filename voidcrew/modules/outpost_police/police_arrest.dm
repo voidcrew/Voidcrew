@@ -648,14 +648,15 @@
 		return FALSE
 	return case.unstaffed_since && world.time - case.unstaffed_since >= CASE_UNSTAFFED_CALL
 
-/// The nearest officer walking out to a lift who can be called back (dispatch_can_recall()), stopped from leaving;
-/// or null. Beat officers and the sergeant never leave, so this is a response unit.
+/// The nearest officer walking out to a lift who can be called back, stopped from leaving; or null. Beat officers and the sergeant never leave, so this is a response unit.
 /datum/outpost_police_case/proc/recall_leaving_officer(mob/living/carbon/suspect)
 	var/turf/where = get_turf(suspect)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/best
 	var/best_score = INFINITY
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police?.officers)
-		if(officer.case || !police.dispatch_can_recall(officer))
+		// dispatch_can_recall() less its empty-outpost rule: one held still by that pause is woken by take_officer(),
+		// as officer_fit() allows
+		if(officer.case || officer.stat != CONSCIOUS || !officer.npc_exit || officer.fading || human_npc_out_of_fight(officer))
 			continue
 		// Fit but for the leaving (officer_fit()): nobody is stopped who could not take it on anyway
 		if(officer.usable_hands <= 0 || HAS_TRAIT(officer, TRAIT_RESTRAINED) || HAS_TRAIT_NOT_FROM(officer, TRAIT_AI_PAUSED, AMBIENT_PAUSED_TRAIT))
