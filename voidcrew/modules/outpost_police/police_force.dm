@@ -418,6 +418,38 @@
 	return FALSE
 
 /**
+ * Whether this officer, at `level` on `target`, takes its baton to them rather than firing: stun force, no case of
+ * its own (the arrest's officer has its own steps), and `target` an unarmed, uncuffed person on their feet beside it,
+ * whom it may fight now (police_holds_fire()). A disabler every few seconds may never put down someone in armour or
+ * on stimulants, and an officer who stands beside them firing plugs a one-tile lane for the rest of the squad
+ * (Quartermain's checkpoint, pass 11 F); the baton is what tg's security officer would use from there.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_baton_reach(atom/target, level)
+	if(level != POLICE_FORCE_STUN || case || HAS_TRAIT(src, TRAIT_HANDS_BLOCKED) || LAZYLEN(do_afters))
+		return FALSE
+	var/mob/living/person = target
+	if(!isliving(person) || person != police_mech_suspect(target) || person.stat != CONSCIOUS || person.body_position != STANDING_UP)
+		return FALSE
+	if(!isturf(person.loc) || !isturf(loc) || !Adjacent(person))
+		return FALSE
+	if(HAS_TRAIT(person, TRAIT_RESTRAINED) || outpost_police_armed(person) || police_holds_fire(person))
+		return FALSE
+	return outpost_police_baton_usable(get_baton())
+
+/// Puts any gun away and takes the baton in hand, switched on. TRUE if it is ready.
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_take_baton()
+	var/obj/item/baton = get_baton()
+	var/obj/item/gun/energy/gun = get_sidearm()
+	var/obj/item/gun/longgun = get_longgun()
+	if(longgun && is_holding(longgun))
+		police_put_away(longgun)
+	if(!police_draw(baton, gun || longgun))
+		return FALSE
+	human_npc_ready_weapon(src, baton)
+	force = POLICE_FORCE_STUN
+	return is_holding(baton)
+
+/**
  * Whether this officer holds its fire, and its baton, for `person`: someone of two stars (as it knows them) who has
  * been given an arrest's order and is in the time to comply, or who is giving up (gives_up()). At three stars and up
  * only someone down is taken alive (owner decision 37); at one star nobody is fought in the first place.
@@ -516,6 +548,10 @@
 			officer.set_force(POLICE_FORCE_NONE)
 		return
 	var/level = officer.force_for(target)
+	// Within arm's reach of someone unarmed at stun force: the baton, not another disabler shot (police_baton_reach())
+	if(officer.police_baton_reach(target, level) && officer.police_take_baton())
+		controller.queue_behavior(/datum/ai_behavior/basic_melee_attack/human_npc, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
+		return SUBTREE_RETURN_FINISH_PLANNING
 	officer.sync_force(level)
 	if(level == POLICE_FORCE_ARREST && !officer.case)
 		officer.police_let_arrest_past(officer.police_mech_suspect(target))

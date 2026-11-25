@@ -6848,6 +6848,7 @@
 #include "voidcrew\edits\components\tether_pulling.dm"
 #include "voidcrew\edits\controllers\subsystem\air.dm"
 #include "voidcrew\edits\controllers\subsystem\mapping.dm"
+#include "voidcrew\edits\controllers\subsystem\movement_types.dm"
 #include "voidcrew\edits\controllers\subsystem\shuttle.dm"
 #include "voidcrew\edits\controllers\subsystem\time_track.dm"
 #include "voidcrew\edits\controllers\subsystem\weather.dm"
