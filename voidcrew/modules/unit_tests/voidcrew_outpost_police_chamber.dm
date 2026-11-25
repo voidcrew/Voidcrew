@@ -568,8 +568,8 @@
 	dispatch_clear(police)
 
 /**
- * Halcyon's working lobby gate, three stars: someone wanted stands in the scan chamber, on its tile furthest from the
- * outer door. No arrest opens on someone on their feet at three stars, and the scanner keeps them in the police's sight
+ * Halcyon's working lobby gate, three stars: someone wanted stands in the scan chamber, on a tile nobody in front of
+ * its outer door can see. No arrest opens on someone on their feet at three stars, and the scanner keeps them in the police's sight
  * the whole time. An officer still comes into the chamber, or gets them in its own sight, within 40 s. The pass 11 soak
  * (four_star_crawl): every officer stood at the outer door for 45 s and more while the suspect stood 2 tiles off.
  */
@@ -582,11 +582,13 @@
 	var/datum/outpost_police/police = outpost.police
 	var/datum/outpost_checkpoint/post = outpost.lobby_checkpoint()
 	TEST_ASSERT_NOTNULL(post?.sensor, "Halcyon has no lobby checkpoint with a scanner")
+	// Where the soak's suspect stood: a free tile of the chamber that nobody in front of the outer door can see
 	var/turf/stand
 	for(var/turf/tile as anything in post.chamber_turfs)
-		if(!tile.is_blocked_turf(exclude_mobs = TRUE) && (!stand || get_dist(tile, post.outer_door) > get_dist(stand, post.outer_door)))
+		if(!tile.is_blocked_turf(exclude_mobs = TRUE) && !can_see(post.lobby_turf, tile, 7))
 			stand = tile
-	TEST_ASSERT_NOTNULL(stand, "Halcyon: no free tile in the scan chamber")
+			break
+	TEST_ASSERT_NOTNULL(stand, "Fixture: Halcyon's scan chamber has no free tile out of sight of the front of its outer door")
 	duty_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant, police.desk_turf)
 	beat_officers(outpost)
 	// Heat 60 is three stars
@@ -595,10 +597,17 @@
 
 	var/started = world.time
 	var/reached_after = -1
+	var/next_note = 0
+	var/turf/corner = outpost.template_bottom_left
+	var/how = ""
 	while(world.time - started < 40 SECONDS)
+		if(world.time >= next_note)
+			next_note = world.time + 5 SECONDS
+			log_test("[(world.time - started) / 10] s: [officers_report(outpost)]")
 		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police.officers)
 			if(officer.stat == CONSCIOUS && (in_gate(post, officer) || police.perception.sees(officer, suspect)))
 				reached_after = world.time - started
+				how = "[officer.unit_kind] at [officer.x - corner.x + 1],[officer.y - corner.y + 1], [in_gate(post, officer) ? "in the chamber" : "seeing them"]; the suspect at [stand.x - corner.x + 1],[stand.y - corner.y + 1]"
 				break
 		if(reached_after >= 0)
 			break
@@ -606,5 +615,5 @@
 	var/datum/outpost_police_case/case = police.cases[suspect.mind]
 	police.sleep_tick()
 	TEST_ASSERT(reached_after >= 0, "Halcyon, three stars, standing in the scan chamber: no officer came into it or had them in its own sight in 40 s ([police.get_stars(suspect.mind)] stars, arrest [case ? "on its \"[case.step]\" step" : "none"], [gate_report(post)]). [officers_report(outpost)]")
-	log_test("Halcyon, three stars in the scan chamber: an officer in it or with them in sight after [reached_after / 10] s")
+	log_test("Halcyon, three stars in the scan chamber: an officer in it or with them in sight after [reached_after / 10] s ([how])")
 	dispatch_clear(police)
