@@ -149,6 +149,8 @@
 	var/list/stray_events = list()
 	/// How many of them the friendly fire invariant has looked at
 	var/stray_checked = 0
+	/// Each officer's last pull of a trigger: officer -> list(world.time, held_state() then, at whom)
+	var/list/trigger_pulls = list()
 	/// world.time of the suspect's last step of their own (own_step())
 	var/own_step_at = 0
 	/// Until when a failed struggle against a grip keeps the suspect from trying again (tg's client move_delay after resist_grab())
@@ -333,6 +335,8 @@
 	RegisterSignal(body, COMSIG_QDELETING, PROC_REF(on_tracked_deleted))
 	RegisterSignal(body, COMSIG_ATOM_BULLET_ACT, PROC_REF(on_tracked_shot))
 	RegisterSignal(body, COMSIG_ATOM_AFTER_ATTACKEDBY, PROC_REF(on_tracked_struck))
+	if(istype(officer))
+		RegisterSignal(body, COMSIG_MOB_FIRED_GUN, PROC_REF(on_officer_fired))
 	var/datum/ai_controller/brain = body.ai_controller
 	if(brain?.can_idle)
 		brain.can_idle = FALSE
@@ -421,17 +425,37 @@
 
 /datum/police_soak/proc/on_suspect_shot(mob/living/source, obj/projectile/shot, def_zone, piercing_hit, blocked)
 	SIGNAL_HANDLER
-	force_used(shot.firer, shot.name)
+	force_used(shot.firer, shot.name, trigger_pulls[shot.firer])
+
+/**
+ * An officer pulled the trigger (tg's process_fire(), once for a whole burst or a shell's pellets): what the suspect
+ * was to the police at that moment. The shot is the officer's choice then, not when it lands.
+ */
+/datum/police_soak/proc/on_officer_fired(mob/living/source, obj/item/gun/gun, atom/target, params, zone_override, list/bonus_spread_values)
+	SIGNAL_HANDLER
+	if(finished || QDELETED(suspect))
+		return
+	trigger_pulls[source] = list(world.time, held_state(), target)
 
 /datum/police_soak/proc/on_suspect_struck(mob/living/source, obj/item/weapon, mob/user, list/modifiers)
 	SIGNAL_HANDLER
 	force_used(user, weapon.name)
 
-/// An officer hit the suspect: written to the trace with what the suspect was to the police at that moment
-/datum/police_soak/proc/force_used(atom/by, what_with)
+/**
+ * An officer hit the suspect: written to the trace with what the suspect was to the police at that moment. A shot
+ * (`pull`, the officer's last trigger pull) is judged by what they were when the trigger was pulled: the rest of a burst
+ * or a shell's pellets after the first round put them down, or a round in the air as they fell, was fired at someone
+ * standing and fighting.
+ */
+/datum/police_soak/proc/force_used(atom/by, what_with, list/pull)
 	if(!is_outpost_police_npc(by) || QDELETED(suspect) || finished)
 		return
 	var/state = held_state()
+	// Two seconds: a burst's last round, or a slow pellet across the concourse, lands within this of the pull
+	if(state && pull && world.time - pull[1] <= 2 SECONDS && isnull(pull[2]))
+		note(">>", "is hit by [who(by)]'s [what_with] while [state], from a shot fired [round((world.time - pull[1]) / (1 SECONDS), 0.1)]s before, at [who(pull[3])], when they were not held")
+		force_events += list(list(world.time, by, what_with, null))
+		return
 	// A prisoner who strikes an officer in the cell is struck back once by that officer (police_cell.dm struck_officer()):
 	// the one use of force on someone held that is meant
 	var/datum/outpost_police_cell/cell = police.cell_holding(suspect.mind)
