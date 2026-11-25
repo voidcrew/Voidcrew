@@ -51,7 +51,7 @@ POLICE_SOAK_SCENARIO(quiet_visit)
 POLICE_SOAK_SCENARIO(seen_crime_stand_still)
 
 /datum/police_soak_scenario/seen_crime_stand_still/play(datum/police_soak/run)
-	if(!run.punch_townsperson(2))
+	if(!run.punch_townsperson(2, TRUE))
 		return
 	run.give_up()
 	run.stand(100 SECONDS)
@@ -169,7 +169,7 @@ POLICE_SOAK_SCENARIO(jailed_shove_walk_out)
 	limit = 7 MINUTES
 
 /datum/police_soak_scenario/jailed_shove_walk_out/play(datum/police_soak/run)
-	if(!run.punch_townsperson(2))
+	if(!run.punch_townsperson(2, TRUE))
 		return
 	run.give_up()
 	if(!run.wait_for("uncuffed in a cell", 240 SECONDS))

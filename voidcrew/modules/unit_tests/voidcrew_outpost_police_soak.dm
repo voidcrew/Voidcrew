@@ -280,9 +280,10 @@
 			found.moved_at = world.time
 	if(length(at_large()))
 		ever_wanted = TRUE
-	// An officer walking someone in who lets go of them, with the suspect standing where they were put
+	// An officer walking someone in who lets go of them, with the suspect standing where they were put (not on a cell's floor or
+	// door: cell_walk_in() lets go there a moment before the cell admits them)
 	var/held_now = !QDELETED(suspect) && is_outpost_police_npc(suspect.pulledby)
-	if(was_held && !held_now && !QDELETED(suspect) && police.in_custody(suspect) && !police.cell_holding(suspect.mind) && world.time - own_step_at > 5 SECONDS)
+	if(was_held && !held_now && !QDELETED(suspect) && police.in_custody(suspect) && !police.cell_holding(suspect.mind) && !police.cell_at(get_turf(suspect)) && world.time - own_step_at > 5 SECONDS)
 		hold_losses += world.time
 		note(">>", "the officer's hold on the suspect is gone at [where(suspect)]")
 	was_held = held_now
