@@ -73,6 +73,8 @@
 #define CASE_BOOK_TRIES 3
 /// After a case closes on timeouts, no new case opens on that person for this long (the warrant may fade)
 #define CASE_REOPEN_HOLD (2 MINUTES)
+/// A prisoner in our cuffs with nobody fit on their arrest this long: dispatch sends officers for them
+#define CASE_UNSTAFFED_CALL (5 SECONDS)
 /// How far the cover officer keeps from the arresting one
 #define CASE_COVER_DISTANCE 2
 /// Within this many tiles (and seen) the response is over and the order is given
@@ -632,6 +634,19 @@
 			best = officer
 			best_score = score
 	return best
+
+/**
+ * Whether `body` is in our cuffs on an arrest nobody fit has been on for CASE_UNSTAFFED_CALL: the officer walking them
+ * in fell and nobody was free or walking out to be called back. They are in custody to everyone (nobody shoots them),
+ * but dispatch sends officers for them (police_dispatch.dm dispatch_active_suspects()), as it would for anyone at large.
+ */
+/datum/outpost_police/proc/prisoner_unattended(mob/living/body)
+	if(!body?.mind)
+		return FALSE
+	var/datum/outpost_police_case/case = cases[body.mind]
+	if(QDELETED(case) || !case.cuffed || case.suspect_lost || case.step == CASE_STEP_RELEASE || case.get_suspect() != body)
+		return FALSE
+	return case.unstaffed_since && world.time - case.unstaffed_since >= CASE_UNSTAFFED_CALL
 
 /// The nearest officer walking out to a lift who can be called back (dispatch_can_recall()), stopped from leaving;
 /// or null. Beat officers and the sergeant never leave, so this is a response unit.
@@ -2710,6 +2725,7 @@
 #undef CASE_RECOVER_TRIES
 #undef CASE_BOOK_TRIES
 #undef CASE_REOPEN_HOLD
+#undef CASE_UNSTAFFED_CALL
 #undef CASE_COVER_DISTANCE
 #undef CASE_CONTACT_RANGE
 #undef CASE_STRIPPER_WINDOW

@@ -111,6 +111,14 @@
 	case.process_case()
 	TEST_ASSERT_EQUAL(case.unstaffed_since, fell_at, "Another second with nobody on it moved unstaffed_since")
 	TEST_ASSERT_EQUAL(case.step_started_at, world.time, "The step's clock ran with nobody on the arrest")
+	var/datum/outpost_warrant/warrant = outpost.police.get_warrant(suspect.mind)
+	TEST_ASSERT(!(warrant in outpost.police.dispatch_active_suspects()), "Dispatch sent for a prisoner two seconds after their officer fell")
+	// Five seconds with nobody (CASE_UNSTAFFED_CALL): dispatch sends officers for them, and they are still in custody
+	sleep(4 SECONDS)
+	case.process_case()
+	TEST_ASSERT(outpost.police.prisoner_unattended(suspect), "A prisoner with nobody on their arrest for [(world.time - fell_at) / 10]s is not unattended")
+	TEST_ASSERT(warrant in outpost.police.dispatch_active_suspects(), "Dispatch sends nobody for a prisoner in our cuffs with nobody on their arrest")
+	TEST_ASSERT(outpost.police.in_custody(suspect), "A prisoner left in our cuffs is no longer in custody (fair game to the officers sent)")
 	// A colleague is free again: the arrest has an officer and the note clears
 	for(var/mob/living/other as anything in held)
 		REMOVE_TRAIT(other, TRAIT_AI_PAUSED, TRAIT_SOURCE_UNIT_TESTS)
@@ -122,6 +130,7 @@
 	if(!QDELETED(case))
 		TEST_ASSERT_NOTNULL(case.arresting(), "Nobody took the arrest on once officers were free again")
 		TEST_ASSERT_EQUAL(case.unstaffed_since, 0, "An arrest with an officer on it again still says it has had nobody")
+		TEST_ASSERT(!(warrant in outpost.police.dispatch_active_suspects()), "Dispatch still sends for a prisoner with an officer walking them in")
 	police_pin_warrant(outpost.police, suspect.mind, 0)
 	outpost.police.close_case(suspect.mind)
 
