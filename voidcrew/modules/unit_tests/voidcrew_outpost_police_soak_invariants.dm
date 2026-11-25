@@ -420,13 +420,29 @@
 	var/limit = 45
 	/// Tiles between where they stand and where the police last saw them within which the police know where they are
 	var/known = 2
+	/// Seconds since an officer last fired or landed a blow within which the stand is the fight, not a wait (two waves reaching a suspect who shoots each one down come about 20 s apart)
+	var/fight_gap = 30
 
 /datum/police_soak_invariant/standing_suspect_not_taken/check(datum/police_soak/run)
+	// A fight going on: an officer fired or landed a blow lately. The rule keeps no state of its own (invariants are shared across runs).
+	var/last_exchange = 0
+	for(var/list/event as anything in run.force_events)
+		last_exchange = max(last_exchange, event[1])
+	for(var/officer in run.trigger_pulls)
+		var/list/pull = run.trigger_pulls[officer]
+		last_exchange = max(last_exchange, pull[1])
+	var/fighting = last_exchange && world.time - last_exchange < fight_gap SECONDS
 	for(var/mob/living/body as anything in run.at_large())
 		var/turf/scene = run.police.get_warrant(body.mind)?.last_seen_turf
 		// Holding a hostage they are stood off from on purpose, for up to OUTPOST_POLICE_STANDOFF_MAX (a minute)
-		var/waiting = scene && body.z == scene.z && get_dist(body, scene) <= known && length(run.officers_up()) && !stealth_hostage_of(body)
-		if(run.held("[name]|[REF(body)]|[run.where(body)]", waiting) > limit)
+		var/waiting = scene && body.z == scene.z && get_dist(body, scene) <= known && length(run.officers_up()) && !stealth_hostage_of(body) && !fighting
+		var/prefix = "[name]|[REF(body)]|"
+		var/key = "[prefix][run.where(body)]"
+		// Off a tile its clock is done: back on it, the clock starts again
+		for(var/old_key in run.held_since.Copy())
+			if(old_key != key && findtext(old_key, prefix) == 1)
+				run.held_since -= old_key
+		if(run.held(key, waiting) > limit)
 			var/datum/outpost_police_case/case = run.police.cases[body.mind]
 			run.breach(src, REF(body), "[run.who(body)] ([run.police.get_stars(body.mind)] stars) has stood at [run.where(body)], where the police last saw them, for over [limit]s and nobody has them (arrest: [case ? "\"[case.step]\", [case.resets] resets" : "none open"])", run.officers_up())
 
