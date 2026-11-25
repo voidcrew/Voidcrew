@@ -350,6 +350,8 @@
 /datum/unit_test/voidcrew_stealth_live/police/innocent_rustle/Run()
 	TEST_ASSERT(police_room(16, 7), "No room for the test")
 	allocate(/obj/effect/landmark/stealth_group, at(0, 6))
+	// A player on the level, or the officers sleep
+	person_at(15, 6)
 	police_stop(7, 3, "a", 1, 10 MINUTES, null)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(7, 3, WEST)
 	officer.resume_routine()
