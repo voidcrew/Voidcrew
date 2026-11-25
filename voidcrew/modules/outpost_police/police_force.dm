@@ -429,6 +429,14 @@
 		return FALSE
 	return police.order_pending(person) || police.gives_up(person)
 
+// Down in soft crit, an elite fires wild from the floor (human_npc_soft_crit.dm): only at someone it would fight and
+// is not holding its fire for, never at the cuffed suspect a colleague walks past it
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/human_npc_may_fire_wild(atom/target)
+	if(!police_will_fight(target))
+		return FALSE
+	var/mob/living/person = police_mech_suspect(target)
+	return !(isliving(person) && police_holds_fire(person))
+
 /**
  * Holds its aim on `target` without firing: weapon out, facing them, within OUTPOST_POLICE_COVER_RANGE and in sight of
  * them. The first officer to do so before the arrest has spoken to them tells them to stay where they are.
