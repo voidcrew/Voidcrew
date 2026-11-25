@@ -185,7 +185,10 @@
 		return FALSE
 	COOLDOWN_START(src, police_swap_cooldown, POLICE_SWAP_COOLDOWN)
 	if(!pirate_crew_swap_places(src, other))
-		return FALSE
+		// Someone who may not take this tile (one at work keeps to their own corner, never a doorway:
+		// outpost_ambient_work.dm on_pre_move()) steps aside instead. The Undertow's barback, wiping down in front of Bar
+		// Access, refused the trade every second and the officer stood in the doorway (pass 14 soak, crowded_gate).
+		return outpost_npc_step_aside(other, src, list())
 	police_note_trade(other)
 	return TRUE
 
