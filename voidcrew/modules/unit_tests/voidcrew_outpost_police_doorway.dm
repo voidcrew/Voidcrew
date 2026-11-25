@@ -141,3 +141,34 @@
 		TEST_ASSERT(leg != at, "A leg of the walk to the park goes nowhere from [where]")
 		at = leg
 	TEST_ASSERT(get_dist(at, park) <= 40, "Six legs did not bring the walk within a leg of the park; legs [legs.Join(" ")]") // STEALTH_WALK_LEG
+
+/**
+ * An officer in a doorway walking out into one of the outpost's people at work just beyond it. Someone at work keeps to
+ * their own corner and never steps into a doorway (outpost_ambient_work.dm), so the trade of places failed every second
+ * and the officer stood in the doorway (pass 14 soak, the Undertow's barback outside Bar Access). They step aside.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/doorway_worker
+
+/datum/unit_test/voidcrew_stealth_live/police/doorway_worker/Run()
+	TEST_ASSERT(police_room(6, 5), "No room for the test")
+	// A wall down x 2 with a door in it at (2, 2)
+	for(var/dy in 0 to 4)
+		if(dy == 2)
+			continue
+		var/turf/wall_spot = at(2, dy)
+		wall_spot.ChangeTurf(/turf/closed/wall)
+	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, at(2, 2))
+	INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door, open))
+	var/until = world.time + 5 SECONDS
+	while(door.density && world.time < until)
+		sleep(1)
+	TEST_ASSERT(!door.density, "Fixture: the door would not open")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(2, 2, WEST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/worker = local_at(1, 2)
+	worker.AddComponent(/datum/component/outpost_ambient_worker, list(), TRUE)
+	ADD_TRAIT(worker, TRAIT_AI_PAUSED, "ambient_paused")
+	TEST_ASSERT(!worker.Move(at(2, 2)), "Fixture: someone at work could step into the doorway")
+	officer.police_make_room(worker)
+	TEST_ASSERT(get_turf(worker) != at(1, 2) || get_turf(officer) != at(2, 2), "Nobody moved: the officer in the doorway is stuck behind someone at work")
+	TEST_ASSERT_NOTEQUAL(get_turf(worker), at(2, 2), "Someone at work was put in the doorway")
+	REMOVE_TRAIT(worker, TRAIT_AI_PAUSED, "ambient_paused")
