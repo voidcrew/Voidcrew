@@ -145,3 +145,27 @@
 	TEST_ASSERT(police_plans_shot(officer, suspect), "A red zone officer plans no shot at a downed five-star suspect")
 	police_pin_warrant(police, suspect.mind, 0)
 	dispatch_clear(police)
+
+/**
+ * Items C and E: an officer's shot hit a colleague (soak five_star_heavy, Quartermain: M1's rubber shot on H1) or a
+ * suspect down under arrest that lay on the line to someone else. bystander_in_line() let every shot pass over the
+ * lying, but tg's combat-mode shot hits anyone on the floor in its first ten tiles who is not out cold
+ * (projectile can_hit_target(), hit_prone_targets).
+ */
+/datum/unit_test/voidcrew_stealth_live/police/prone_in_line
+
+/datum/unit_test/voidcrew_stealth_live/police/prone_in_line/Run()
+	TEST_ASSERT(police_room(12, 5), "No room for the test")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(2, 2, EAST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/colleague = officer_at(4, 2, EAST)
+	var/mob/living/carbon/human/suspect = visitor_at(8, 2)
+	police_pin_warrant(police, suspect.mind, 25) // two stars
+	TEST_ASSERT_EQUAL(officer.bystander_in_line(suspect), colleague, "Fixture: a colleague standing in the line is not in the way")
+	colleague.adjustStaminaLoss(200)
+	TEST_ASSERT_EQUAL(colleague.body_position, LYING_DOWN, "Fixture: 200 stamina damage did not floor the colleague")
+	TEST_ASSERT_EQUAL(officer.bystander_in_line(suspect), colleague, "An officer fires over a colleague lying in stamina crit, whom its shot hits")
+	// Out cold, tg's shot passes over them
+	colleague.Unconscious(1 MINUTES)
+	TEST_ASSERT(HAS_TRAIT(colleague, TRAIT_IMMOBILIZED) && HAS_TRAIT(colleague, TRAIT_FLOORED) && HAS_TRAIT(colleague, TRAIT_HANDS_BLOCKED), "Fixture: the unconscious colleague is not out cold to a bullet")
+	TEST_ASSERT_NULL(officer.bystander_in_line(suspect), "An officer holds fire for a colleague out cold, whom its shot passes over")
+	police_pin_warrant(police, suspect.mind, 0)
