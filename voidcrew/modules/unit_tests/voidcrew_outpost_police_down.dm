@@ -452,3 +452,41 @@
 	var/list/seen = other_brain.blackboard["stealth_bodies_seen"] // BB_STEALTH_BODIES_SEEN
 	seen |= REF(colleague)
 	TEST_ASSERT(body_look(other_brain) != "unaware", "An officer walked past a colleague down from a wound by someone still free")
+
+/**
+ * Soak (Quartermain kill_then_hide): the suspect lay in stamina crit below a window. The arresting officer walked round
+ * to them; the cover, standing at the glass two tiles off, counted as nearer and took the arrest, then lost it again,
+ * and the cuffs never came before the suspect got up. A cover across a wall is not nearer than the officer walking
+ * round; one with a straight walk to them is.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/down_nearer_through_glass
+
+/datum/unit_test/voidcrew_stealth_live/police/down_nearer_through_glass/Run()
+	TEST_ASSERT(police_room(20, 9), "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, at(0, 8))
+	person_at(19, 8)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/walker = ready_officer(10, 3, WEST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/behind_glass = ready_officer(6, 6, SOUTH)
+	var/mob/living/carbon/human/suspect = visitor_at(6, 4)
+	suspect.physiology.stamina_mod = 1
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 25) // two stars
+	var/datum/outpost_police_case/case = police.open_case(warrant)
+	TEST_ASSERT_NOTNULL(case, "Fixture: no arrest opened at two stars")
+	TEST_ASSERT(walker.case == case && behind_glass.case == case, "Fixture: the two officers are not both on the arrest")
+	// The wall between the cover and the suspect, and the arrest the walker's
+	for(var/dx in 3 to 9)
+		var/turf/wall_spot = at(dx, 5)
+		wall_spot.ChangeTurf(/turf/closed/wall)
+	case.officers = list(WEAKREF(walker), WEAKREF(behind_glass))
+	suspect.adjustStaminaLoss(200)
+	TEST_ASSERT(HAS_TRAIT(suspect, TRAIT_INCAPACITATED), "Fixture: 200 stamina damage did not put the suspect in stamina crit")
+	TEST_ASSERT(get_dist(behind_glass, suspect) < get_dist(walker, suspect), "Fixture: the officer across the wall is not the nearer in tiles")
+	case.staff()
+	TEST_ASSERT_EQUAL(case.arresting(), walker, "An officer across a wall from a downed suspect took the arrest from the one walking up to them")
+	// With the wall gone it has a straight walk to them, and is nearer
+	for(var/dx in 3 to 9)
+		var/turf/floor_spot = at(dx, 5)
+		floor_spot.ChangeTurf(/turf/open/floor/iron)
+	case.staff()
+	TEST_ASSERT_EQUAL(case.arresting(), behind_glass, "The nearer officer with a straight walk to a downed suspect did not take the arrest")
+	police.close_case(suspect.mind)

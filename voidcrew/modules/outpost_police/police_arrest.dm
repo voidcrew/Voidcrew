@@ -578,11 +578,13 @@
 	if(QDELETED(suspect))
 		suspect = null
 	// A suspect on the floor with the cuffs still to come is up again in seconds: of the two, the nearer one on its
-	// feet cuffs them (an arresting officer back up beside them takes the arrest back from a cover further off)
+	// feet cuffs them (an arresting officer back up beside them takes the arrest back from a cover further off).
+	// Nearer is a straight walk: a cover behind glass two tiles from them is not nearer than the arresting officer
+	// walking round to them, and the arrest went back and forth between the two until the suspect got up.
 	if(length(kept) >= 2 && suspect && !cuffed && !acting && step != CASE_STEP_RELEASE && (police_suspect_down(suspect) || suspect.body_position == LYING_DOWN) && !(handed_ref && handed_ref.resolve() == kept[1]))
 		var/mob/living/first = kept[1]
 		var/mob/living/second = kept[2]
-		if(!HAS_TRAIT(second, TRAIT_INCAPACITATED) && first.z == suspect.z && second.z == suspect.z && get_dist(second, suspect) < get_dist(first, suspect))
+		if(!HAS_TRAIT(second, TRAIT_INCAPACITATED) && first.z == suspect.z && second.z == suspect.z && get_dist(second, suspect) < get_dist(first, suspect) && outpost_police_straight_walk(second, suspect))
 			kept.Swap(1, 2)
 	while(length(kept) < 2)
 		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/found = nearest_free_officer(suspect, kept)
@@ -610,6 +612,23 @@
 		approach_target_turf = null
 		// A new arresting officer starts the step's clock afresh
 		step_started_at = world.time
+
+/// Whether `officer` can walk straight up to `target`: no wall, window, counter, rail or furniture on the tiles between
+/proc/outpost_police_straight_walk(mob/living/officer, atom/target)
+	var/turf/here = get_turf(officer)
+	var/turf/there = get_turf(target)
+	if(!here || !there || here.z != there.z)
+		return FALSE
+	var/turf/last = here
+	for(var/turf/tile as anything in get_line(here, there))
+		if(tile == here)
+			continue
+		if(!last.Adjacent(tile, mover = officer))
+			return FALSE
+		if(tile != there && tile.is_blocked_turf(TRUE, officer))
+			return FALSE
+		last = tile
+	return TRUE
 
 /// The nearest officer with no case, beat and response officers before the desk sergeant; at three stars and up a
 /// stun officer before anyone else (owner decision 37)
