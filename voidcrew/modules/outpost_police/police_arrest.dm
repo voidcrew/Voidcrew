@@ -1917,7 +1917,7 @@
 		return
 	check_evidence_stall(officer, desk)
 
-/// Whether a step from `from` onto `to_tile` is open to walk across, mobs aside (no wall, shut door, window, table or rail)
+/// Whether a step from `from` onto `to_tile` is open to walk across, mobs aside (no wall, shut door, window, table, rail or invisible wall)
 /proc/outpost_police_way_step_ok(turf/from, turf/to_tile)
 	if(!from || !to_tile || to_tile == from || from.z != to_tile.z || get_dist(from, to_tile) > 1 || to_tile.density)
 		return FALSE
@@ -1932,6 +1932,10 @@
 			return FALSE
 	for(var/obj/blocker in to_tile)
 		if(!blocker.density)
+			// A map's invisible wall stops anyone though it is not dense: someone stepping out of an escort's way in
+			// Quartermain's stock-room hall chose the row of them along it, never moved, and the escort stood (pass 12)
+			if(istype(blocker, /obj/effect/invisible_wall))
+				return FALSE
 			continue
 		if(blocker.flags_1 & ON_BORDER_1)
 			if((blocker.dir & in_dir) || (blocker.dir & (blocker.dir - 1)))
@@ -2273,8 +2277,10 @@
 	if(QDELETED(src))
 		return
 	if(!arrived)
-		// Busy elevator car: try again shortly; otherwise walk for a while
-		ride_failed_until = world.time + (police.elevator_busy(police.sector_of(officer)) ? 2 SECONDS : 30 SECONDS)
+		// Busy elevator car: try again shortly; otherwise walk for a while. From a hangar berth there is no walk: the lift
+		// is the only way out, so it is tried again shortly too (a walk to the desk from there stood still for 30 s)
+		var/from_sector = police.sector_of(officer)
+		ride_failed_until = world.time + ((police.elevator_busy(from_sector) || istype(from_sector, /datum/outpost_berth)) ? 2 SECONDS : 30 SECONDS)
 	lift_goal = null
 	ride_sector = null
 

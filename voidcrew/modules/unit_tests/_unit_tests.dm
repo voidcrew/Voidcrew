@@ -230,6 +230,7 @@
 #include "voidcrew_outpost_police_dispatch.dm"
 #include "voidcrew_outpost_police_down.dm"
 #include "voidcrew_outpost_police_escort_detour.dm"
+#include "voidcrew_outpost_police_escort_hall.dm"
 #include "voidcrew_outpost_police_escort_route.dm"
 #include "voidcrew_outpost_police_fallen_escort.dm"
 #include "voidcrew_outpost_police_force.dm"

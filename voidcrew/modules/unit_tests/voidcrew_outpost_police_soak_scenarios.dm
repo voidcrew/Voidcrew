@@ -73,6 +73,11 @@ POLICE_SOAK_SCENARIO(crime_then_hide)
 		run.script_failed("no far corner of the concourse out of the officers' sight to run to")
 		return
 	if(!run.go_to(corner, 0, 60 SECONDS))
+		// Put down, held or cuffed by the police on the way: their answer, not the script's fault
+		if(!run.suspect_able() || HAS_TRAIT(run.suspect, TRAIT_RESTRAINED) || run.suspect.pulledby || run.suspect.body_position == LYING_DOWN)
+			run.note(">>", "is taken before they reach the far corner at [run.where(corner)] (got to [run.where(run.suspect)])")
+			run.stand(90 SECONDS)
+			return
 		run.script_failed("could not run to the far corner at [run.where(corner)] (got to [run.where(run.suspect)])")
 	run.note(">>", "stands at [run.where(run.suspect)], [get_dist(run.suspect, run.police.get_warrant(run.suspect.mind)?.last_seen_turf)] tiles from where the police last saw them")
 	run.stand(90 SECONDS)
