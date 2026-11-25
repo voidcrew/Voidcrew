@@ -343,8 +343,10 @@
 	suspect.forceMove(at(12, 6))
 	TEST_ASSERT(police.gives_up(suspect), "Someone nobody had looked at for five seconds was held to where they stood then")
 
-	// Three stars: no holding fire, whatever they do
+	// Three stars: no holding fire for someone who only stands still; with the cuffs going on them and giving up, held
 	police_pin_warrant(police, suspect.mind, 55) // three stars
+	TEST_ASSERT(watcher.police_holds_fire(suspect), "An officer fires on a three-star suspect lying still under the cuffs")
+	case.set_step("respond")
 	TEST_ASSERT(!watcher.police_holds_fire(suspect), "An officer holds its fire for a three-star suspect who stands still")
 	police_pin_warrant(police, suspect.mind, 25)
 

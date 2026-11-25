@@ -62,8 +62,10 @@
 	TEST_ASSERT(officer.is_holding(baton), "With its gun dry at lethal force the officer did not take its baton in hand")
 	TEST_ASSERT(police_plans_finish(officer, suspect), "A red zone officer with a dry gun plans no harm blow on a downed five-star suspect beside it")
 
-	// The blow itself: tg's harm baton, brute and no stun
+	// The blow itself: tg's harm baton, brute and no stun. An Undertow officer is built to target down to hard crit
+	// (HUMAN_NPC_FINISHES_DOWNED); this one was built before the room's profile was set
 	var/datum/ai_controller/brain = officer.ai_controller
+	brain.set_blackboard_key(BB_TARGET_MINIMUM_STAT, HARD_CRIT)
 	brain.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, suspect)
 	brain.set_blackboard_key(BB_BASIC_MOB_MELEE_COOLDOWN_TIMER, world.time - 1)
 	officer.next_move = 0
@@ -106,7 +108,7 @@
 	TEST_ASSERT(police_suspect_down(suspect), "Fixture: a paralysed suspect is not down")
 	var/datum/outpost_police_case/case = police.open_case(warrant, TRUE)
 	TEST_ASSERT_NOTNULL(case, "Fixture: no arrest opened on a downed three-star suspect")
-	case.set_step("cuff")
+	case.enter_cuff(suspect)
 	TEST_ASSERT(police.arrest_cuffing(suspect), "Fixture: the arrest is not cuffing the suspect")
 
 	// Up again under the cuffs, staying put
