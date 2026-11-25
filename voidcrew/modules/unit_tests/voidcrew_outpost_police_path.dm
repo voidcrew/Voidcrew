@@ -50,6 +50,9 @@
 	var/datum/move_loop/has_target/jps/loop = walker.move_packet?.existing_loops[SSai_movement]
 	TEST_ASSERT(istype(loop), "Setup: the officer has no path loop ([loop?.type])")
 	loop.movement_path = list(trip, at(2, 1), at(3, 1), at(4, 1), dest)
+	// Its last path was asked for a while ago, as on any step but the first
+	COOLDOWN_RESET(loop, repath_cooldown)
+	loop.is_pathing = FALSE
 	RegisterSignal(trip, COMSIG_ATOM_ENTERED, PROC_REF(on_trip))
 
 	// The step: onto the trip tile, where it goes alert
