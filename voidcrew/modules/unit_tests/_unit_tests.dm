@@ -234,6 +234,7 @@
 #include "voidcrew_outpost_police_escort_route.dm"
 #include "voidcrew_outpost_police_fallen_escort.dm"
 #include "voidcrew_outpost_police_force.dm"
+#include "voidcrew_outpost_police_force_finish.dm"
 #include "voidcrew_outpost_police_force_held.dm"
 #include "voidcrew_outpost_police_hatch.dm"
 #include "voidcrew_outpost_police_heavy.dm"
