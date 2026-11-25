@@ -164,23 +164,43 @@
 	panel.berth = berth
 	berth.panel = panel
 
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/escort = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, berth.alcove_turfs[5])
-	var/mob/living/carbon/human/consistent/prisoner = allocate(/mob/living/carbon/human/consistent, berth.alcove_turfs[2])
-	escort.start_pulling(prisoner)
-	TEST_ASSERT_EQUAL(escort.pulling, prisoner, "Setup: the escort could not take hold of the prisoner")
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cover = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, outpost.lobby_alcove_turfs[1])
-	// Both cars called in the same moment: the escort's first
-	INVOKE_ASYNC(police, TYPE_PROC_REF(/datum/outpost_police, ride), escort, "lobby")
-	INVOKE_ASYNC(police, TYPE_PROC_REF(/datum/outpost_police, ride), cover, berth)
-	var/until = world.time + 15 SECONDS
-	while(world.time < until && (escort.dispatch_riding || cover.dispatch_riding))
-		sleep(1)
-	TEST_ASSERT(!escort.dispatch_riding && !cover.dispatch_riding, "Setup: the rides never ended")
-	TEST_ASSERT(get_turf(escort) in outpost.lobby_alcove_turfs, "The escort was taken back down to the hangar by the car its cover sent")
-	TEST_ASSERT(get_turf(prisoner) in outpost.lobby_alcove_turfs, "The prisoner was taken back down to the hangar by the car the cover sent")
-	TEST_ASSERT_EQUAL(escort.pulling, prisoner, "The escort lost hold of its prisoner on the ride")
-	escort.stop_pulling()
+	for(var/escort_first in list(TRUE, FALSE))
+		crossing(outpost, berth, escort_first)
+		dispatch_clear(police)
 	qdel(panel)
 	qdel(berth)
 	outpost.berths = old_berths
-	dispatch_clear(police)
+
+/// One officer rides `sector`'s way and notes whether it got there
+/datum/unit_test/voidcrew_outpost_police_crossing_rides/proc/ride_noted(datum/outpost_police/police, mob/living/officer, sector, list/results)
+	results[REF(officer)] = police.ride(officer, sector)
+
+/**
+ * The escort, with its prisoner, sends the berth's car up as its cover sends the lobby's car down, in the same moment,
+ * one or the other first
+ */
+/datum/unit_test/voidcrew_outpost_police_crossing_rides/proc/crossing(obj/structure/overmap/trader_outpost/outpost, datum/outpost_berth/berth, escort_first)
+	var/datum/outpost_police/police = outpost.police
+	var/order = escort_first ? "escort first" : "cover first"
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/escort = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, berth.alcove_turfs[5])
+	var/mob/living/carbon/human/consistent/prisoner = allocate(/mob/living/carbon/human/consistent, berth.alcove_turfs[2])
+	escort.start_pulling(prisoner)
+	TEST_ASSERT_EQUAL(escort.pulling, prisoner, "Setup ([order]): the escort could not take hold of the prisoner")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cover = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, outpost.lobby_alcove_turfs[1])
+	var/list/results = list()
+	if(escort_first)
+		INVOKE_ASYNC(src, PROC_REF(ride_noted), police, escort, "lobby", results)
+		INVOKE_ASYNC(src, PROC_REF(ride_noted), police, cover, berth, results)
+	else
+		INVOKE_ASYNC(src, PROC_REF(ride_noted), police, cover, berth, results)
+		INVOKE_ASYNC(src, PROC_REF(ride_noted), police, escort, "lobby", results)
+	var/until = world.time + 15 SECONDS
+	while(world.time < until && length(results) < 2)
+		sleep(1)
+	TEST_ASSERT_EQUAL(length(results), 2, "Setup ([order]): the rides never ended")
+	var/where = "escort [(get_turf(escort) in outpost.lobby_alcove_turfs) ? "in the lobby" : ((get_turf(escort) in berth.alcove_turfs) ? "in the hangar" : "elsewhere")] (ride [results[REF(escort)]]), cover [(get_turf(cover) in outpost.lobby_alcove_turfs) ? "in the lobby" : ((get_turf(cover) in berth.alcove_turfs) ? "in the hangar" : "elsewhere")] (ride [results[REF(cover)]])"
+	TEST_ASSERT(get_turf(escort) in outpost.lobby_alcove_turfs, "[order]: the escort did not end in the lobby: [where]")
+	TEST_ASSERT(get_turf(prisoner) in outpost.lobby_alcove_turfs, "[order]: the prisoner did not end in the lobby: [where]")
+	TEST_ASSERT_EQUAL(escort.pulling, prisoner, "[order]: the escort lost hold of its prisoner on the ride")
+	escort.stop_pulling()
+	qdel(prisoner)
