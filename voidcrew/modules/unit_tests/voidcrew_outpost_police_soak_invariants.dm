@@ -128,34 +128,59 @@
 
 // ----- 4 -----
 
-/// An officer or one of the outpost's people standing still in a doorway
+/// An officer standing still in a doorway with no work there
 /datum/police_soak_invariant/door_loiter
 	name = "door_loiter"
 	rank = 2
-	/// Seconds anyone awake may stand still on a door's tile
+	/// Seconds an officer awake may stand still on a door's tile
 	var/limit = 10
+	/// Seconds since an officer's last trigger pull within which it is in a fight, shooting from the doorway (officers fire about every 3 s)
+	var/firing_gap = 5
 
 /datum/police_soak_invariant/door_loiter/check(datum/police_soak/run)
 	for(var/mob/living/body as anything in run.tracks)
 		var/datum/police_soak_track/found = run.tracks[body]
 		var/turf/here = get_turf(body)
 		var/obj/machinery/door/airlock/door = (here && body.stat == CONSCIOUS && isturf(body.loc)) ? (locate(/obj/machinery/door/airlock) in here) : null
-		// An officer in a doorway of the scan chamber the police are at work in (someone wanted or held is in it) is
-		// at that work: in a chamber one tile wide the doorway is the only place beside the suspect to cuff them from.
-		// So is an officer of an arrest (making it or covering it: the two swap parts as it goes) in a checkpoint's
-		// doorway with its suspect beside it or in its hand: someone who steps out of the chamber past it is ordered,
-		// cuffed and searched there, and the suspect on the one tile outside a doorway in a wall leaves the officer in it
-		// no way past them to another tile beside them
-		var/obj/machinery/door/airlock/outpost/checkpoint/gate_door = door
-		if(istype(gate_door) && is_outpost_police_npc(body))
-			if(gate_door.checkpoint?.police_at_work())
-				continue
-			var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = body
-			var/mob/living/suspect = QDELETED(officer.case) ? null : officer.case.get_suspect()
-			if(suspect && (officer.case.arresting() == officer || officer.case.cover() == officer) && (officer.pulling == suspect || officer.Adjacent(suspect)))
-				continue
-		if(door && world.time - found.moved_at > limit SECONDS)
+		// The clock counts only the seconds spent there with no reason to be, on this tile: a spell excused (below) is
+		// not loitering, and once it ends the officer gets its own `limit` to move on (it used to fire the second an
+		// arrest moved off, on a clock that had run through the cuffing and the search)
+		var/prefix = "[name]|[REF(body)]|"
+		var/key = "[prefix][run.where(here)]"
+		for(var/old_key in run.held_since)
+			if(old_key != key && findtext(old_key, prefix) == 1)
+				run.held_since -= old_key
+		if(door && door_loiter_excused(run, body, door))
+			door = null
+		if(run.held(key, door && world.time - found.moved_at >= 1 SECONDS) > limit)
 			run.breach(src, REF(body), "[found.id] ([body.real_name]) has stood still in the doorway of [door] at [run.where(here)] for over [limit]s", list(body))
+
+/// Whether `body` standing in `door` is at work there, not loitering
+/datum/police_soak_invariant/door_loiter/proc/door_loiter_excused(datum/police_soak/run, mob/living/body, obj/machinery/door/airlock/door)
+	// One of the outpost's people in a doorway is the townsfolk's routine, not the squad's (as tile_trading has it). One
+	// stood in an officer's way shows on the officer as frozen_walk.
+	if(!is_outpost_police_npc(body))
+		return TRUE
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = body
+	// An officer in a doorway of the scan chamber the police are at work in (someone wanted or held is in it) is at that
+	// work: in a chamber one tile wide the doorway is the only place beside the suspect to cuff them from
+	var/obj/machinery/door/airlock/outpost/checkpoint/gate_door = door
+	if(istype(gate_door) && gate_door.checkpoint?.police_at_work())
+		return TRUE
+	// Shooting from the doorway: a fight, not a wait (Quartermain kill_then_hide, O1 firing on S every 3 s from Locker Rentals)
+	var/list/pull = run.trigger_pulls[officer]
+	if(pull && world.time - pull[1] < firing_gap SECONDS)
+		return TRUE
+	// Stood off from someone holding a hostage, aim on them, as the standoff means (Halcyon hostage, the Potting Shed)
+	var/mob/living/target = officer.ai_controller?.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	if(isliving(target) && stealth_hostage_of(target) && run.police.perception.sees(officer, target))
+		return TRUE
+	// Making or covering an arrest with its suspect beside it or in its hand: cuffing and searching are done where the
+	// suspect was caught, a doorway or not
+	var/mob/living/suspect = QDELETED(officer.case) ? null : officer.case.get_suspect()
+	if(suspect && (officer.case.arresting() == officer || officer.case.cover() == officer) && (officer.pulling == suspect || officer.Adjacent(suspect)))
+		return TRUE
+	return FALSE
 
 // ----- 5 -----
 

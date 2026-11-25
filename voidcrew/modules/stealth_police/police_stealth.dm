@@ -552,7 +552,7 @@
 					stealth_closet_alerted(who)
 		return
 	if(!officer.Adjacent(box) && officer.bystander_in_line(box))
-		human_npc_sidestep(officer, box)
+		officer.police_reposition(box)
 		return
 	return ..()
 

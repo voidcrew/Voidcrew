@@ -225,10 +225,10 @@
 /**
  * Whoever stands in this officer's line of fire at `target` and is not someone they would shoot: anyone living and
  * up, or lying where its shot would hit them (outpost_police_shot_hits_lying()), or aboard a mech in the way.
- * `within` > 0 looks only that many tiles out. Null if clear.
+ * `within` > 0 looks only that many tiles out. `from_turf`: as if it stood there (police_clear_shot_spot()). Null if clear.
  */
-/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/bystander_in_line(atom/target, within = 0)
-	var/turf/from = get_turf(src)
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/bystander_in_line(atom/target, within = 0, turf/from_turf)
+	var/turf/from = from_turf || get_turf(src)
 	var/turf/end_turf = get_turf(target)
 	if(!from || !end_turf)
 		return null
@@ -239,7 +239,7 @@
 		if(within && get_dist(from, line_turf) > within)
 			continue
 		for(var/mob/living/other in line_turf)
-			if(other == target || other.stat == DEAD)
+			if(other == target || other == src || other.stat == DEAD)
 				continue
 			if(other.body_position == LYING_DOWN && !outpost_police_shot_hits_lying(other, get_dist(from, line_turf)))
 				continue
@@ -636,8 +636,8 @@
  * door. Glass and grilles are left to the gun (a beam goes through them); rails, tables and anything a round passes
  * over are not in the way; people are bystander_in_line()'s.
  */
-/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/shot_obstacle(atom/target)
-	var/turf/from = get_turf(src)
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/shot_obstacle(atom/target, turf/from_turf)
+	var/turf/from = from_turf || get_turf(src)
 	var/turf/end_turf = get_turf(target)
 	if(!from || !end_turf || from == end_turf)
 		return null
@@ -654,9 +654,38 @@
 			return thing
 	return null
 
-/// A bystander spoils this officer's shot at `target`: one step aside for a clear line (a heavy weapons officer may step back instead)
+/**
+ * A bystander spoils this officer's shot at `target`: one step aside onto a tile with a clear line (a heavy weapons
+ * officer may step back instead). With no such tile beside it, it holds where it is until the line clears. The base's
+ * sidestep (human_npc_sidestep()) took any free tile no further off, clear line or not, every half second: an officer
+ * behind a colleague in a hall two tiles wide stepped from one side to the other and back for as long as the colleague
+ * stood there (soak "pacing": Quartermain 16-17,7, the Undertow 21-23,25, Halcyon 36-38,32).
+ */
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_reposition(atom/target)
-	human_npc_sidestep(src, target)
+	var/turf/spot = police_clear_shot_spot(target)
+	if(spot)
+		step(src, get_dir(src, spot))
+
+/// A tile beside this officer, no further from `target`, free to step onto (police_step_round_ok()), with a clear shot at `target` from it. The nearest to `target` of those; null if none.
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_clear_shot_spot(atom/target)
+	var/turf/here = get_turf(src)
+	var/turf/aim = get_turf(target)
+	if(!here || !aim || here.z != aim.z || !isturf(loc))
+		return null
+	var/turf/best
+	var/best_dist
+	for(var/direction in GLOB.alldirs)
+		var/turf/spot = get_step(here, direction)
+		if(isnull(spot) || spot == aim)
+			continue
+		var/dist = get_dist(spot, aim)
+		if(dist > get_dist(here, aim) || (best && dist >= best_dist))
+			continue
+		if(!police_step_round_ok(here, spot) || bystander_in_line(target, 0, spot) || shot_obstacle(target, spot))
+			continue
+		best = spot
+		best_dist = dist
+	return best
 
 /// Whether this officer carries a heavy weapon that is not for `target` (police_units_heavy.dm); nobody else does
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_heavy_barred(atom/target)
