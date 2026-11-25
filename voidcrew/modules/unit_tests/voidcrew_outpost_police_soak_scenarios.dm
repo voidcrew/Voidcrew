@@ -146,7 +146,14 @@ POLICE_SOAK_SCENARIO(shove_officers)
 POLICE_SOAK_SCENARIO(stunned_then_up)
 
 /datum/police_soak_scenario/stunned_then_up/play(datum/police_soak/run)
-	if(!run.punch_townsperson(2))
+	// In an officer's sight: punches nobody saw bring no stars, and nobody comes to put them down
+	for(var/round in 1 to 3)
+		if(!run.punch_townsperson(2, TRUE))
+			return
+		if(run.wait_for("wanted", 10 SECONDS))
+			break
+	if(!run.is_now("wanted"))
+		run.script_failed("no officer saw three punches in a row")
 		return
 	// Does not give up: fists stay up and they keep stepping about until an officer puts them down
 	var/until = world.time + 75 SECONDS

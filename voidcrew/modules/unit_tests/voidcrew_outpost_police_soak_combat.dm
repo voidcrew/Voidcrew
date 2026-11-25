@@ -280,7 +280,14 @@
 	name = "jailbreak_shootout"
 
 /datum/police_soak_scenario/combat/jailbreak_shootout/play(datum/police_soak/run)
-	if(!run.punch_townsperson(2))
+	// In an officer's sight: punches nobody saw left the suspect at no stars, and nobody came to jail them
+	for(var/round in 1 to 3)
+		if(!run.punch_townsperson(2, TRUE))
+			return
+		if(run.wait_for("wanted", 10 SECONDS))
+			break
+	if(!run.is_now("wanted"))
+		run.script_failed("no officer saw three punches in a row")
 		return
 	run.give_up()
 	if(!run.wait_for("uncuffed in a cell", 240 SECONDS))

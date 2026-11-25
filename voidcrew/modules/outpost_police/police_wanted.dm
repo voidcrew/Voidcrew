@@ -1227,6 +1227,11 @@
 		return
 	if(!source && !armed)
 		source = held_weapon_of(hitter)
+	// What later puts them down from this wound has a name (police_stealth.dm police_fall_known())
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/wounded = officer
+	if(istype(wounded) && (attack_flags & ATTACKER_DAMAGING_ATTACK))
+		wounded.wounded_by_ref = WEAKREF(hitter)
+		wounded.wounded_at = world.time
 	var/crime
 	if(attack_flags & ATTACKER_STAMINA_ATTACK)
 		crime = OUTPOST_CRIME_ASSAULT_OFFICER

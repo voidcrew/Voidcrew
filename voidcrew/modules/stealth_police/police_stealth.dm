@@ -863,12 +863,33 @@
 		return ..()
 	if(police_covered())
 		return TRUE
+	// Down from a wound whose author the police hold, or who is dead: nobody to search for
+	if(officer.police.police_fall_known(member))
+		return TRUE
 	var/list/datum/mind/sought = list(police_hunt?.resolve(), officer.dispatch_mind?.resolve())
 	for(var/datum/mind/mind as anything in sought)
 		var/mob/living/quarry = mind?.current
 		if(isliving(quarry) && quarry.stat != DEAD && officer.police.get_stars(mind) >= 1 && officer.police.force_level(quarry, officer) != POLICE_FORCE_NONE && !officer.police.has_in_hand(quarry, officer))
 			return TRUE
 	return ..()
+
+/**
+ * Whether `member`, an officer found fallen, fell from a wound whose author is known and dealt with: someone the police
+ * hold (has_secured()), someone dead or gone, or a colleague's stray shot, within OUTPOST_POLICE_WOUND_MEMORY. An
+ * officer shot in an arrest that bled out walking its prisoner to the cell was found by the sergeant, who searched
+ * the empty desk for its killer and called the squad in after the all clear.
+ */
+/datum/outpost_police/proc/police_fall_known(mob/living/member)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/fallen = member
+	if(!istype(fallen) || !fallen.wounded_by_ref || world.time - fallen.wounded_at > OUTPOST_POLICE_WOUND_MEMORY)
+		return FALSE
+	// Awake in cuffs is somebody's doing now, not the wound's
+	if(fallen.stat == CONSCIOUS && !HAS_TRAIT(fallen, TRAIT_CRITICAL_CONDITION))
+		return FALSE
+	var/mob/living/hurter = fallen.wounded_by_ref.resolve()
+	if(QDELETED(hurter) || hurter.stat == DEAD || (hurter in officers))
+		return TRUE
+	return has_secured(hurter)
 
 /// The fallen of trouble that is over are known to it: it does not find them afresh and search for whoever did it
 /datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/proc/police_know_fallen()

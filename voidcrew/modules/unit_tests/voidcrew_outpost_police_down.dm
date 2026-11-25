@@ -412,3 +412,83 @@
 	TEST_ASSERT(!QDELETED(case), "No arrest opened on a four-star suspect in crit")
 	TEST_ASSERT_EQUAL(case.arresting(), stunner, "A stun officer beside a downed four-star suspect did not take the arrest")
 	police.close_case(suspect.mind)
+
+/**
+ * Soak (Quartermain four_star_crawl): an officer shot in the arrest bled into crit at the desk while walking the cuffed
+ * suspect in. The sergeant found it, called the squad and searched the empty desk for its killer long after the all
+ * clear. A colleague down from a wound dealt by someone dead or held is called in where it lies, with no search; one
+ * down from a wound by someone still free is looked into as before.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/fallen_from_known_wound
+
+/datum/unit_test/voidcrew_stealth_live/police/fallen_from_known_wound/Run()
+	TEST_ASSERT(police_room(20, 9), "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, at(0, 8))
+	person_at(19, 8)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/watcher = ready_officer(4, 4, EAST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/colleague = ready_officer(7, 4, WEST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/other = ready_officer(4, 6, EAST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/hurt = ready_officer(7, 6, WEST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/watcher_brain = watcher.ai_controller
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/other_brain = other.ai_controller
+
+	// Shot by a suspect who is dead by the time the wound puts the officer down
+	var/mob/living/carbon/human/shooter = visitor_at(12, 2)
+	police.officer_struck(colleague, shooter, ATTACKER_DAMAGING_ATTACK)
+	shooter.death()
+	colleague.adjustToxLoss(colleague.maxHealth - colleague.crit_threshold + 10) // bled down: the damage kind does not matter here
+	TEST_ASSERT(colleague.stat != CONSCIOUS, "Fixture: the colleague is not down")
+	TEST_ASSERT(police.perception.sees(watcher, colleague), "Fixture: the officer does not see its fallen colleague")
+	// The call it made about the shot itself is not this one
+	watcher_brain.stealth_drop_call()
+	TEST_ASSERT_EQUAL(body_look(watcher_brain), "unaware", "An officer went searching over a colleague down from a wound by someone dead")
+	TEST_ASSERT(watcher_brain.bark_ready_at["stealth_body"] > world.time, "An officer did not call in a fallen colleague") // STEALTH_BARK_BODY
+	TEST_ASSERT_NULL(watcher_brain.pending_call, "An officer called the squad to a colleague down from a wound by someone dead")
+
+	// Shot by someone still free: looked into as before
+	var/mob/living/carbon/human/free = visitor_at(12, 8)
+	police.officer_struck(hurt, free, ATTACKER_DAMAGING_ATTACK)
+	hurt.adjustToxLoss(hurt.maxHealth - hurt.crit_threshold + 10)
+	TEST_ASSERT(hurt.stat != CONSCIOUS, "Fixture: the second colleague is not down")
+	// The first colleague is called in already: it looks past them to the second
+	var/list/seen = other_brain.blackboard["stealth_bodies_seen"] // BB_STEALTH_BODIES_SEEN
+	seen |= REF(colleague)
+	TEST_ASSERT(body_look(other_brain) != "unaware", "An officer walked past a colleague down from a wound by someone still free")
+
+/**
+ * Soak (Quartermain kill_then_hide): the suspect lay in stamina crit below a window. The arresting officer walked round
+ * to them; the cover, standing at the glass two tiles off, counted as nearer and took the arrest, then lost it again,
+ * and the cuffs never came before the suspect got up. A cover across a wall is not nearer than the officer walking
+ * round; one with a straight walk to them is.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/down_nearer_through_glass
+
+/datum/unit_test/voidcrew_stealth_live/police/down_nearer_through_glass/Run()
+	TEST_ASSERT(police_room(20, 9), "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, at(0, 8))
+	person_at(19, 8)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/walker = ready_officer(10, 3, WEST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/behind_glass = ready_officer(6, 6, SOUTH)
+	var/mob/living/carbon/human/suspect = visitor_at(6, 4)
+	suspect.physiology.stamina_mod = 1
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 25) // two stars
+	var/datum/outpost_police_case/case = police.open_case(warrant)
+	TEST_ASSERT_NOTNULL(case, "Fixture: no arrest opened at two stars")
+	TEST_ASSERT(walker.case == case && behind_glass.case == case, "Fixture: the two officers are not both on the arrest")
+	// The wall between the cover and the suspect, and the arrest the walker's
+	for(var/dx in 3 to 9)
+		var/turf/wall_spot = at(dx, 5)
+		wall_spot.ChangeTurf(/turf/closed/wall)
+	case.officers = list(WEAKREF(walker), WEAKREF(behind_glass))
+	suspect.adjustStaminaLoss(200)
+	TEST_ASSERT(HAS_TRAIT(suspect, TRAIT_INCAPACITATED), "Fixture: 200 stamina damage did not put the suspect in stamina crit")
+	TEST_ASSERT(get_dist(behind_glass, suspect) < get_dist(walker, suspect), "Fixture: the officer across the wall is not the nearer in tiles")
+	case.staff()
+	TEST_ASSERT_EQUAL(case.arresting(), walker, "An officer across a wall from a downed suspect took the arrest from the one walking up to them")
+	// With the wall gone it has a straight walk to them, and is nearer
+	for(var/dx in 3 to 9)
+		var/turf/floor_spot = at(dx, 5)
+		floor_spot.ChangeTurf(/turf/open/floor/iron)
+	case.staff()
+	TEST_ASSERT_EQUAL(case.arresting(), behind_glass, "The nearer officer with a straight walk to a downed suspect did not take the arrest")
+	police.close_case(suspect.mind)
