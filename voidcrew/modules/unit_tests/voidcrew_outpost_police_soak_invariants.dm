@@ -171,12 +171,12 @@
 	var/list/pull = run.trigger_pulls[officer]
 	if(pull && world.time - pull[1] < firing_gap SECONDS)
 		return TRUE
-	// Alert on its target with them in sight: in the fight, holding its aim from the doorway (a standoff with someone
-	// holding a hostage, Halcyon's Potting Shed; or its line spoiled by a colleague until it clears, Quartermain's
-	// Locker Rentals). One stuck on a walk shows as frozen_walk.
+	// Alert on its target with them in sight, holding its aim from the doorway: a standoff with someone holding a
+	// hostage (Halcyon's Potting Shed), or its line spoiled by someone until it clears (police_reposition() holds when
+	// no tile beside it has a clear shot; Quartermain's Locker Rentals). One stuck on a walk shows as frozen_walk.
 	var/datum/ai_controller/brain = officer.ai_controller
 	var/mob/living/target = brain?.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
-	if(isliving(target) && brain.blackboard["stealth_state"] == "alert" && run.police.perception.sees(officer, target))
+	if(isliving(target) && brain.blackboard["stealth_state"] == "alert" && run.police.perception.sees(officer, target) && (stealth_hostage_of(target) || officer.bystander_in_line(target)))
 		return TRUE
 	// Making or covering an arrest with its suspect beside it or in its hand: cuffing and searching are done where the
 	// suspect was caught, a doorway or not
