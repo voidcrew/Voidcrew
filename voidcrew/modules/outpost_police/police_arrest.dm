@@ -806,6 +806,19 @@
 	return istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police)
 
 /**
+ * The usable cell whose floor `suspect` is on, or null. The officer booking them fell in the cell (pass 13): they are
+ * booked where they are, from the door. Nobody walks to them, since no walker plans a route into a cell.
+ */
+/datum/outpost_police_case/proc/cell_in(mob/living/carbon/suspect)
+	if(!suspect || !isturf(suspect.loc) || !police)
+		return null
+	var/turf/spot = get_turf(suspect)
+	var/datum/outpost_police_cell/cell = police.cell_at(spot)
+	if(!cell || !(spot in cell.tiles) || !cell.usable())
+		return null
+	return cell
+
+/**
  * Someone starts taking the suspect's cuffs off through the strip menu. COMSIG_TRY_STRIP is the same string,
  * sent when the suspect strips someone else: then `item` is not their cuffs and nothing happens.
  */
@@ -2079,7 +2092,8 @@
 		else
 			// The suspect comes along to the desk, as on the escort: a hold that slipped is taken again before the walk
 			// goes on. Walked off from, they stood there alone in the cuffs, and the steps they took were a bolt.
-			if(!suspect_lost)
+			// Left in a cell by an officer who fell booking them, they wait there
+			if(!suspect_lost && !cell_in(get_suspect()))
 				var/mob/living/carbon/led = get_suspect()
 				if(!led || !keep_pulling(officer, led, TRUE))
 					return
@@ -2094,7 +2108,15 @@
 		close()
 		return
 	var/mob/living/carbon/suspect = get_suspect()
-	if(!suspect || !keep_pulling(officer, suspect, TRUE))
+	if(!suspect)
+		return
+	// Already on a cell floor, the booking broken off by the officer's fall: the next one finishes it from the door
+	var/datum/outpost_police_cell/inside = cell_in(suspect)
+	if(inside)
+		if(route_to(officer, inside.outside_turf, 0))
+			set_step(CASE_STEP_BOOK)
+		return
+	if(!keep_pulling(officer, suspect, TRUE))
 		return
 	make_way(officer, suspect)
 	var/turf/door = police.cell_door_turf(officer)
@@ -2110,6 +2132,15 @@
 	if(!disposed_at)
 		// The evidence goes before anything else
 		set_step(CASE_STEP_DESK)
+		return
+	// Already on a cell floor: booked from the door, with nobody in hand
+	var/datum/outpost_police_cell/inside = cell_in(suspect)
+	if(inside)
+		if(get_turf(officer) != inside.outside_turf)
+			set_step(CASE_STEP_DESK)
+			return
+		set_goal(null)
+		begin_action(CASE_ACT_BOOKING)
 		return
 	// Booked only when brought to the door in hand. Got away and caught somewhere else, they are walked back to it
 	// first: booking never moves anyone further than through the door (review-1 S2)
@@ -2128,6 +2159,12 @@
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = arresting()
 	var/mob/living/carbon/suspect = get_suspect()
 	if(!officer || !suspect)
+		return
+	// On a cell floor nobody walks to them: the booking is tried again from the door
+	if(cell_in(suspect))
+		if(world.time >= hold_retry_at)
+			hold_retry_at = world.time + CASE_HOLD_RETRY
+			set_step(CASE_STEP_DESK)
 		return
 	if(!keep_pulling(officer, suspect, TRUE))
 		return
@@ -2305,10 +2342,20 @@
 	if(booked_at || !suspect)
 		return
 	booked_at = world.time
-	officer.police_say(POLICE_LINE_BOOK, line_values(suspect))
-	var/shut = police.book(suspect, officer)
+	// Held already, and still in the cuffs: the officer booking them fell before the cuffs came off, so this one
+	// takes them off. Otherwise the booking itself.
+	var/datum/outpost_police_cell/held_in = police.cell_holding(suspect.mind)
+	var/shut
+	if(held_in)
+		shut = held_in.uncuff_in(suspect, officer)
+	else
+		officer.police_say(POLICE_LINE_BOOK, line_values(suspect))
+		shut = police.book(suspect, officer)
 	if(QDELETED(src))
 		return
+	if(shut && !QDELETED(suspect) && suspect.stat != DEAD && suspect.handcuffed && police.cell_holding(suspect.mind))
+		// Booked, but the officer fell before the cuffs came off: another one comes to the door for them
+		shut = FALSE
 	if(shut && !QDELETED(suspect) && !police.cell_holding(suspect.mind) && istype(suspect.handcuffed, /obj/item/restraints/handcuffs/outpost_police/used))
 		// Let go with no cell (fined on the spot) but the cuffs would not come off: the release step sees to them
 		booked_at = 0
@@ -2320,12 +2367,18 @@
 			police.call_cell_medic(suspect, officer)
 		close()
 		return
+	if(!QDELETED(suspect) && police.cell_holding(suspect.mind))
+		// Held with the cuffs still on: tried again from the door. Left on at the last try, the term's end drops them.
+		if(!suspect.handcuffed || suspect.stat == DEAD || book_tries + 1 >= CASE_BOOK_TRIES)
+			close()
+			return
+		booked_at = 0
+		book_tries++
+		set_step(CASE_STEP_DESK)
+		return
 	log_game("OUTPOST POLICE: [key_name(suspect)] was not put in a cell at [police.outpost] ([AREACOORD(suspect)]).")
 	if(!get_suspect() || suspect.stat == DEAD || !warrant?.mind || police.get_warrant(warrant.mind) != warrant)
 		booked_at = 0
-		return
-	if(police.cell_holding(suspect.mind))
-		close()
 		return
 	if(!police.cell_best(officer))
 		if(hold_for_cell())
@@ -2559,6 +2612,9 @@
 	if(!unheld_since || (!lead_goal && world.time - unheld_since < CASE_COVER_HOLD_AFTER) || suspect.pulledby || !suspect.handcuffed || !isturf(suspect.loc) || acting || step == CASE_STEP_RELEASE)
 		return FALSE
 	if(officer.pulling || HAS_TRAIT(officer, TRAIT_INCAPACITATED) || HAS_TRAIT(officer, TRAIT_HANDS_BLOCKED) || !isturf(officer.loc))
+		return FALSE
+	// Shut in a cell (the booking broken off) they are going nowhere, and nobody walks into a cell for them
+	if(cell_in(suspect))
 		return FALSE
 	if(officer.Adjacent(suspect))
 		officer.start_pulling(suspect)

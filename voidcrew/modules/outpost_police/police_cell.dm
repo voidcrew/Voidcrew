@@ -1075,6 +1075,46 @@
 	SEND_SIGNAL(police, COMSIG_OUTPOST_POLICE_BOOKED, suspect, !paid)
 	return TRUE
 
+/**
+ * The end of a booking whose officer fell before the cuffs came off (pass 13): `officer` comes in through the door,
+ * takes `suspect`'s cuffs off as book_in() does, and steps out. Sleeps. TRUE once the cuffs are off.
+ */
+/datum/outpost_police_cell/proc/uncuff_in(mob/living/carbon/suspect, mob/living/officer)
+	var/datum/mind/prisoner = suspect?.mind
+	if(!holds(prisoner, suspect) || !(get_turf(suspect) in tiles) || QDELETED(officer))
+		return FALSE
+	if(!suspect.handcuffed && !suspect.legcuffed)
+		return TRUE
+	if(!cell_walk_in(suspect, officer))
+		cell_walk_out(officer)
+		shut_door(TRUE)
+		return FALSE
+	if(!doorway_blocked())
+		shut_door(TRUE)
+	var/list/worn_restraints = list()
+	if(suspect.handcuffed)
+		worn_restraints += suspect.handcuffed
+	if(suspect.legcuffed)
+		worn_restraints += suspect.legcuffed
+	police.cell_remove_cuffs(suspect, officer)
+	if(QDELETED(src) || QDELETED(police))
+		return FALSE
+	// Where book_in() puts them: back in the hands of one who paid, into the property locker of one jailed
+	var/paid = !jailed[prisoner]
+	for(var/obj/item/restraint as anything in worn_restraints)
+		if(QDELETED(restraint) || restraint == suspect.handcuffed || restraint == suspect.legcuffed)
+			continue
+		if(paid)
+			if(isturf(restraint.loc) && !QDELETED(suspect))
+				suspect.put_in_hands(restraint)
+		else if(!police.store_extra_property(suspect, restraint) && isturf(restraint.loc) && !outpost_police_untouchable(restraint) && usable())
+			restraint.forceMove(outside_turf)
+	cell_walk_out(officer)
+	if(QDELETED(src))
+		return FALSE
+	shut_door(TRUE)
+	return !QDELETED(suspect) && !suspect.handcuffed && !suspect.legcuffed
+
 // =========================================================================
 // THE STATION'S CELLS
 // =========================================================================
@@ -1203,8 +1243,12 @@
 		return FALSE
 	if(cell_holding(prisoner))
 		return FALSE
-	// The emptiest cell, however many it holds already: a cell takes more than one (lead decision L-A2)
-	var/datum/outpost_police_cell/cell = cell_best(officer)
+	// The cell they are already in (a booking broken off by the officer's fall), else the emptiest cell, however many
+	// it holds already: a cell takes more than one (lead decision L-A2)
+	var/turf/standing = get_turf(suspect)
+	var/datum/outpost_police_cell/cell = cell_at(standing)
+	if(!cell || !(standing in cell.tiles) || !cell.usable())
+		cell = cell_best(officer)
 	if(cell)
 		return cell.book_in(suspect, officer, warrant)
 	// No cell at three stars and up: no fine and no letting go (owner decision 37). The arrest holds them until a
