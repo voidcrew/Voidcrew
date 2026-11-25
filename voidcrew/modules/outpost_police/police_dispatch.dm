@@ -416,11 +416,12 @@
 	dispatch_check_strays()
 	dispatch_check_waves()
 	dispatch_collect_bodies()
-	if(dispatch_recall_when_empty())
-		return
-	dispatch_update_holds()
-	dispatch_respond(alert_level())
-	dispatch_open_cases()
+	// Nobody at the outpost: nobody is sent and no case opens. The officers still stand down below: an officer
+	// searching when the last wanted person's stars faded with nobody about searched on, all clear or not.
+	if(!dispatch_recall_when_empty())
+		dispatch_update_holds()
+		dispatch_respond(alert_level())
+		dispatch_open_cases()
 	// The all clear, the tick the last wanted person is in hand (police_stealth.dm)
 	stealth_tick_squad()
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in officers)

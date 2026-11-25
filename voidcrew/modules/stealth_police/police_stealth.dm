@@ -789,6 +789,17 @@
 		return
 	return ..()
 
+// Health slipping away while it bleeds is its own wound, from a fight it was in: nothing to look round for or shout
+// "Who threw that?" about. An officer cut in the arrest searched on as it walked its prisoner to the cell, and on
+// after the all clear, until it bled out.
+/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/stealth_judge_harm()
+	var/mob/living/officer = pawn
+	if(!harm_felt && isliving(officer) && officer.get_bleed_rate())
+		harm_pending = FALSE
+		harm_turf = null
+		return
+	return ..()
+
 // A colleague awake on the floor (shoved over, stunned, out of stamina, lying down) is not found as the fallen are:
 // what put them there is a crime against an officer, and the police answer that (police_witness_saw()). Out cold or
 // dead they are a body; awake in cuffs, someone to see to.
