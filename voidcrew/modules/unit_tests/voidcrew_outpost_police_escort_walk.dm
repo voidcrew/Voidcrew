@@ -122,102 +122,30 @@
 	TEST_ASSERT(walked >= 8, "The prisoner was walked [walked] tiles toward the desk in 25 s ([seen.Join(" | ")])")
 	TEST_ASSERT(!lost, "The officer was off its prisoner for [lost] ticks of the walk ([seen.Join(" | ")])")
 
-/// DIAGNOSTIC (temporary): the Quartermain four_star_crawl crowd by the public lift, O10 walking to cuff S at 18,7
-/datum/unit_test/voidcrew_outpost_police_crowd_diag
-	var/listed_z
-	var/list/moves = list()
-	var/turf/corner
+/**
+ * An officer whose diagonal step had someone on its first leg, who could not make way (a colleague at a body), took the
+ * other leg and got past them. A tick later its straight try at them ran anyway (police_bump_straight()), found them
+ * beside it, and walked it round them: back onto the tile it had just left. Its pathfinder planned the same diagonal
+ * again, and it went to and fro by a crowd of fallen officers for 20 s on its way to cuff (pass 14 soak, Quartermain
+ * four_star_crawl, O10 at 15,6 with O9 standing at 15,7). Past them, it walks on.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/crowd/diagonal_passed
 
-/datum/unit_test/voidcrew_outpost_police_crowd_diag/Destroy()
-	if(listed_z)
-		SSmobs.clients_by_zlevel[listed_z] = list()
-	return ..()
-
-/datum/unit_test/voidcrew_outpost_police_crowd_diag/proc/txt(atom/thing)
-	var/turf/tile = get_turf(thing)
-	return tile ? "[tile.x - corner.x],[tile.y - corner.y]" : "-"
-
-/datum/unit_test/voidcrew_outpost_police_crowd_diag/proc/on_moved(mob/living/source, atom/old_loc, dir, forced, list/old_locs)
-	SIGNAL_HANDLER
-	var/list/chain = list()
-	var/callee/frame = caller
-	var/depth = 0
-	while(frame && depth < 9)
-		chain += "[frame.proc]"
-		frame = frame.caller
-		depth++
-	moves += "[world.time] [txt(old_loc)]>[txt(source)] forced=[forced] diag=[source.moving_diagonally] via [chain.Join("<")]"
-
-/datum/unit_test/voidcrew_outpost_police_crowd_diag/Run()
-	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost(/obj/structure/overmap/trader_outpost/outfitter)
-	if(!outpost)
-		return
-	corner = outpost.template_bottom_left
-	var/datum/outpost_police/police = outpost.police
-	var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(outpost)
-	var/list/found = list()
-	for(var/dx in 13 to 19)
-		for(var/dy in 5 to 8)
-			var/turf/tile = police_outpost_tile(outpost, dx, dy)
-			var/list/stuff = list()
-			for(var/atom/movable/thing in tile)
-				if(thing.density || ismob(thing) || istype(thing, /obj/structure) || istype(thing, /obj/machinery))
-					stuff += "[thing.type][thing.density ? "(dense)" : ""][thing.flags_1 & ON_BORDER_1 ? "(border [thing.dir])" : ""]"
-			found += "[dx],[dy]: [tile.type] [stuff.Join(" ")]"
-	TEST_FAIL("Tiles: [found.Join(" ; ")]")
-	var/turf/spot = police_outpost_tile(outpost, 18, 7)
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, police_outpost_tile(outpost, 15, 6))
-	var/mob/living/carbon/human/suspect = police_arrest_person(spot)
-	listed_z = spot.z
-	SSmobs.clients_by_zlevel[listed_z] |= suspect
-	suspect.adjustBruteLoss(110)
-	suspect.updatehealth()
-	var/list/lying = list(list(14, 6), list(14, 6), list(15, 7), list(15, 7), list(16, 6), list(16, 7), list(16, 7), list(19, 7), list(19, 6))
-	for(var/list/at in lying)
-		var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human/consistent, police_outpost_tile(outpost, at[1], at[2]))
-		body.adjustBruteLoss(110)
-		body.updatehealth()
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/standing = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, police_outpost_tile(outpost, 15, 7))
-	ADD_TRAIT(standing, TRAIT_AI_PAUSED, "diag")
-	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/standing2 = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, police_outpost_tile(outpost, 14, 6))
-	ADD_TRAIT(standing2, TRAIT_AI_PAUSED, "diag")
-	var/datum/outpost_warrant/warrant = police_pin_warrant(police, suspect.mind, 12)
-	police.note_seen(suspect.mind, spot)
-	var/datum/outpost_police_case/case = police.open_case(warrant)
-	police.sleep_tick()
-	if(case?.arresting() != officer)
-		if(case && (officer in case.officers))
-			case.officers -= officer
-			case.officers.Insert(1, officer)
-	TEST_FAIL("Case [case ? case.step : "none"], arresting [case?.arresting() == officer ? "the officer at 15,6" : "someone else"]")
-	police_arrest_kit(officer)
-	RegisterSignal(officer, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
-	SSambient_npcs.wake_outpost(place)
-	officer.ai_controller.reset_ai_status()
-	var/end = world.time + 20 SECONDS
-	var/next_tick = world.time
-	var/list/rows = list()
-	while(world.time < end)
-		if(QDELETED(case))
-			rows += "[world.time] CASE GONE, officer at [txt(officer)]"
-			break
-		if(world.time >= next_tick)
-			next_tick = world.time + 1 SECONDS
-			SSambient_npcs.update_outpost(place, 1)
-			officer.ai_controller.reset_ai_status()
-			case.process_case()
-			if(QDELETED(case))
-				continue
-			var/datum/move_loop/has_target/jps/loop = GLOB.move_manager.processing_on(officer, SSai_movement)
-			var/list/path = list()
-			if(istype(loop))
-				for(var/turf/tile as anything in loop.movement_path)
-					path += txt(tile)
-			var/list/behaviors = list()
-			for(var/datum/ai_behavior/behavior as anything in officer.ai_controller.current_behaviors)
-				behaviors += "[behavior.type]"
-			rows += "[world.time] at [txt(officer)] step [case.step] tgt [txt(officer.ai_controller.current_movement_target)] loop [loop ? "[loop.type] path [path.Join(" ")] avoid [istype(loop) ? txt(loop.avoid) : "-"]" : "none"] doing [behaviors.Join(",")]"
-		sleep(world.tick_lag)
-	TEST_FAIL("Rows: [rows.Join(" | ")]")
-	TEST_FAIL("Moves: [moves.Join(" | ")]")
-	UnregisterSignal(officer, COMSIG_MOVABLE_MOVED)
+/datum/unit_test/voidcrew_stealth_live/police/crowd/diagonal_passed/Run()
+	TEST_ASSERT(police_room(9, 6), "No room for the test")
+	open_place()
+	allocate(/obj/effect/landmark/stealth_group, at(8, 5))
+	police_stop(1, 1, "a", 1, 1 SECONDS, null)
+	// The only two-step way on is (2, 2) then (3, 3), and so on to the stop: a diagonal every step
+	police_stop(5, 5, "a", 2, 30 SECONDS, null)
+	// Someone on the list of players keeps the level awake
+	suspect = person_at(8, 5, TRUE)
+	// At work and not making way, on the first leg of the officer's first diagonal step
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/busy = local_at(1, 2)
+	ADD_TRAIT(busy, TRAIT_AI_PAUSED, "test_busy")
+	TEST_ASSERT(!outpost_npc_can_make_room(busy), "Fixture: the one at work could make way")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = squad_officer(1, 1, NORTH)
+	var/turf/stop = at(5, 5)
+	watch(20, CALLBACK(src, PROC_REF(walked_to), officer, stop))
+	TEST_ASSERT(get_dist(officer, stop) <= 1, "The officer never got on past someone it had stepped by on a diagonal (it is at [officer.x - at(0, 0).x],[officer.y - at(0, 0).y], [steps] steps taken)")
+	REMOVE_TRAIT(busy, TRAIT_AI_PAUSED, "test_busy")
