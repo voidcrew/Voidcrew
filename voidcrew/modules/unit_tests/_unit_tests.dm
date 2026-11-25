@@ -245,6 +245,7 @@
 #include "voidcrew_outpost_police_life.dm"
 #include "voidcrew_outpost_police_lift_choice.dm"
 #include "voidcrew_outpost_police_lift_contact.dm"
+#include "voidcrew_outpost_police_pacing.dm"
 #include "voidcrew_outpost_police_payoff.dm"
 #include "voidcrew_outpost_police_path.dm"
 #include "voidcrew_outpost_police_playtest2.dm"
