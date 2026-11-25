@@ -158,7 +158,7 @@
 		var/turf/wall_spot = at(2, dy)
 		wall_spot.ChangeTurf(/turf/closed/wall)
 	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, at(2, 2))
-	INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door, open))
+	INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door, open), BYPASS_DOOR_CHECKS)
 	var/until = world.time + 5 SECONDS
 	while(door.density && world.time < until)
 		sleep(1)
