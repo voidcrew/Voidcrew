@@ -158,8 +158,13 @@
 	// Bringing someone in: the other one makes way
 	if(isliving(pulling))
 		return they_can_move && outpost_npc_step_aside(other, src, list())
-	// They are bringing someone in: we make way
+	// They are bringing someone in: we make way. Not for our own suspect, held by a colleague while we go round to lead
+	// them from another side (police_arrest.dm go_round()): we are the one bringing them in. Stepping aside for the one
+	// holding them for us sent an officer to and fro between two tiles eight times a second (pass 15 soak, Quartermain
+	// jailed_shove_walk_out); it waits, or its pathfinder goes round them (police_note_blocked())
 	if(isliving(other.pulling))
+		if(!QDELETED(case) && case.arresting() == src && other.pulling == case.get_suspect())
+			return FALSE
 		return they_can_move && outpost_npc_step_aside(src, other, list())
 	if(pulling || other.pulling)
 		return FALSE

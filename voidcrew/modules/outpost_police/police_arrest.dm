@@ -1538,7 +1538,7 @@
 		lead_goal = null
 		if(!suspect.pulledby)
 			pull_breaks++
-	if(lead && (lead_goal || officer.pulling == suspect || officer.Adjacent(suspect)) && !lead_ready(officer, suspect))
+	if(lead && (lead_goal || officer.pulling == suspect || officer.Adjacent(suspect)) && !lead_ready(officer, suspect) && (lead_goal || !clear_draw_corner(officer, suspect)))
 		return go_round(officer, suspect)
 	lead_goal = null
 	if(officer.pulling == suspect)
@@ -1620,6 +1620,25 @@
 	if(locate(/obj/structure/outpost_exit_gate) in here)
 		return TRUE
 	return outpost_police_can_draw(suspect, here) && outpost_police_draw_corner_clear(suspect, here)
+
+/**
+ * Only someone standing on the corner keeps `suspect` from following `officer` off the diagonal: one of the outpost's
+ * people nobody plays (a colleague on the arrest, a townsperson) is asked to step off it, and TRUE if they can now be
+ * led from here. Players are never moved: for them it goes round (go_round()).
+ */
+/datum/outpost_police_case/proc/clear_draw_corner(mob/living/officer, mob/living/carbon/suspect)
+	var/turf/here = get_turf(officer)
+	var/turf/there = get_turf(suspect)
+	if(isnull(here) || isnull(there) || !outpost_police_can_draw(suspect, here) || outpost_police_draw_corner_clear(suspect, here))
+		return FALSE
+	var/datum/can_pass_info/pass = new(suspect, list(), TRUE)
+	for(var/turf/corner in list(locate(there.x, here.y, there.z), locate(here.x, there.y, there.z)))
+		if(!CAN_STEP(there, corner, FALSE, pass, null) || !CAN_STEP(corner, here, FALSE, pass, null))
+			continue
+		for(var/mob/living/someone in corner)
+			if(someone.density && istype(someone, /mob/living/carbon/human/npc) && !someone.client && !someone.mind)
+				outpost_npc_step_aside(someone, officer, list(corner, here, there))
+	return lead_ready(officer, suspect)
 
 /// Whether `spot` is a tile the arresting officer could lead `suspect` off from: beside them, free of furniture, one they can step onto
 /datum/outpost_police_case/proc/lead_spot_ok(mob/living/carbon/suspect, turf/spot)
