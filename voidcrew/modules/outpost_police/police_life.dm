@@ -113,12 +113,102 @@
 /datum/outpost_police/proc/life_has_station()
 	return !!desk_turf || length(lift_turfs) > 0
 
-/// The first free tile behind a police door, or null
-/datum/outpost_police/proc/life_free_lift_turf()
+/**
+ * A free tile behind a police door, or null. With `toward` given, the one with the shortest walk from it to `toward`
+ * for `walker` (with their own access) or, with no walker yet, for anyone holding `access`; with none given, or no
+ * walk found from any of them, any free one. `walker` never blocks a tile they stand on themselves.
+ */
+/datum/outpost_police/proc/life_free_lift_turf(atom/toward, mob/living/walker, list/access)
+	var/list/turf/free = list()
+	var/list/ignore = walker ? list(walker) : null
 	for(var/turf/lift as anything in shuffle(lift_turfs.Copy()))
-		if(!lift.is_blocked_turf(exclude_mobs = FALSE))
-			return lift
-	return null
+		if(!lift.is_blocked_turf(exclude_mobs = FALSE, ignore_atoms = ignore))
+			free += lift
+	if(!length(free))
+		return null
+	var/turf/goal = get_turf(toward)
+	if(!goal || length(free) == 1)
+		return free[1]
+	return outpost_police_shortest_walk(free, goal, walker, access) || free[1]
+
+/**
+ * `walker`, just made on a police lift tile, steps off the free one with the shortest walk to `toward` instead (before
+ * anyone can see them: call it before fade_in()). Nothing happens off a police lift or with no `toward`.
+ */
+/datum/outpost_police/proc/life_step_off_nearest(mob/living/walker, atom/toward)
+	var/turf/here = get_turf(walker)
+	if(!here || !toward || !(here in lift_turfs))
+		return
+	var/turf/best = life_free_lift_turf(toward, walker)
+	if(best && best != here)
+		walker.forceMove(best)
+
+/**
+ * The tile of `starts` with the shortest walk to `goal` (to it or to a tile beside it), by tg's own pathing rules for
+ * `walker` or, with no walker, for anyone holding `access`; null if none walks there within OUTPOST_POLICE_LIFT_WALK_CAP.
+ * Ties keep the order of `starts`. Tiles beside one already measured share its walk (a lift's tiles stand together), so
+ * this runs one search per lift; each search is capped at the best walk found so far.
+ */
+/proc/outpost_police_shortest_walk(list/turf/starts, turf/goal, mob/living/walker, list/access)
+	if(!goal || !length(starts))
+		return null
+	if(!access && walker)
+		access = walker.get_access()
+	var/list/by_distance = list()
+	for(var/turf/start as anything in starts)
+		if(start?.z == goal.z)
+			by_distance[start] = get_dist(start, goal)
+	// Nearest first, so the first walk found caps the searches after it (sortTim is stable: ties keep their order)
+	by_distance = sortTim(by_distance, GLOBAL_PROC_REF(cmp_numeric_asc), associative = TRUE)
+	var/list/turf/measured = list()
+	var/turf/best
+	var/best_walk = OUTPOST_POLICE_LIFT_WALK_CAP + 1
+	for(var/turf/start as anything in by_distance)
+		// A walk to beside the goal is never shorter than one less than the straight line
+		if(by_distance[start] - 1 >= best_walk)
+			break
+		var/shared = FALSE
+		for(var/turf/done as anything in measured)
+			if(get_dist(done, start) <= 1)
+				shared = TRUE
+				break
+		if(shared)
+			continue
+		measured += start
+		var/walk = outpost_police_walk_length(start, goal, walker, access, best_walk - 1)
+		if(!isnull(walk) && walk < best_walk)
+			best = start
+			best_walk = walk
+	return best
+
+/**
+ * The number of steps from `start` to `goal` (or to a tile beside it) for `walker` (or anyone holding `access`) by tg's
+ * single-source pathing (/datum/pathfind/sssp), run here and now rather than queued, so it never sleeps; null if there
+ * is no walk of `cap` steps or fewer.
+ */
+/proc/outpost_police_walk_length(turf/start, turf/goal, mob/living/walker, list/access, cap)
+	if(!start || !goal || start.z != goal.z || cap < 0)
+		return null
+	if(start == goal || get_dist(start, goal) <= 1)
+		return 0
+	if(get_dist(start, goal) > cap)
+		return null
+	var/datum/pathfind/sssp/search = new
+	search.setup(walker, access, start, cap, TRUE, null, null)
+	if(!search.start())
+		qdel(search)
+		return null
+	while(search.working_index < length(search.working_queue))
+		if(!search.search_step())
+			break
+	var/list/queue = search.working_queue
+	var/list/distances = search.working_distances
+	. = null
+	for(var/turf/beside as anything in RANGE_TURFS(1, goal))
+		var/index = queue.Find(beside)
+		if(index && (isnull(.) || distances[index] < .))
+			. = distances[index]
+	qdel(search)
 
 /// Officers on the roster of this unit kind that are alive and not leaving
 /datum/outpost_police/proc/life_standing(unit_kind)
@@ -861,7 +951,11 @@
 			return null
 		lift = where
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = outpost_police_make(role, place, lift)
-	officer?.fade_in()
+	if(!officer)
+		return null
+	// Off the lift nearest their post: the desk, or the first stop of the beat they will take
+	police.life_step_off_nearest(officer, officer.unit_kind == POLICE_UNIT_SERGEANT ? police.desk_turf : police.free_route_start())
+	officer.fade_in()
 	return officer
 
 // ----- the crowd and the cap -----

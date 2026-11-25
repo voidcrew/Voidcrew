@@ -278,6 +278,8 @@
 #define OUTPOST_POLICE_LIFT_BLOCKED (10 SECONDS)
 /// ...for this long
 #define OUTPOST_POLICE_LIFT_SKIP (2 MINUTES)
+/// Someone sent somewhere comes up the lift with the shortest walk there; walks longer than this many steps are not measured
+#define OUTPOST_POLICE_LIFT_WALK_CAP 120
 /// A unit built out of sight is at least this far from every player
 #define OUTPOST_POLICE_UNSEEN_SPAWN_DIST 12
 /// A case step stuck this long goes back to the start

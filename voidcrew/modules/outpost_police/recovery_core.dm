@@ -853,6 +853,8 @@
 		return null
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/worker = new crew_type(where)
 	worker.outpost_recovery = src
+	// Off the staff lift with the shortest walk to their first job, if there is one yet
+	outpost.police?.life_step_off_nearest(worker, crew_first_job(worker))
 	worker.wave = wave_number
 	worker.dialogue_section = outpost.police?.profile?.voice_section || "halcyon"
 	worker.set_place(place)
@@ -861,6 +863,18 @@
 	crew += worker_ref
 	wave_workers += worker_ref
 	return worker
+
+/// Where `worker`, just made, has their first job: the body, the patient or the mess they would go to first. Null for none.
+/datum/outpost_recovery/proc/crew_first_job(mob/living/worker)
+	if(istype(worker, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/morgue))
+		return next_body(worker)
+	if(istype(worker, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/medic))
+		return next_patient(worker)
+	if(istype(worker, /mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor))
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/janitor/janitor = worker
+		var/list/job = janitor.find_job()
+		return length(job) ? job[1] : null
+	return null
 
 /**
  * The wave's escort: officers who stand watch while the crews work. Built through the police's own dispatch (one

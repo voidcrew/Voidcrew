@@ -187,9 +187,10 @@
  * A lift point serving `sector`: one no suspect at the outpost (nor `avoid_sight_of`) sees, the farthest from
  * them first; if every point is watched, the farthest (abuse M13). Points skipped for being blocked (M2) are
  * left out. When `rider` is pulling someone onto a multi-tile elevator alcove, interior alcove tiles come first
- * so the pulled person steps inside the alcove too. Null if the sector has none left.
+ * so the pulled person steps inside the alcove too. Null if the sector has none left. With `toward` given (where the
+ * unit is going), of the points nobody watches the one with the shortest walk there comes first.
  */
-/datum/outpost_police/proc/lift_point(sector, atom/avoid_sight_of, mob/living/rider)
+/datum/outpost_police/proc/lift_point(sector, atom/avoid_sight_of, mob/living/rider, atom/toward)
 	var/list/watchers = dispatch_suspect_mobs()
 	if(isliving(avoid_sight_of))
 		watchers |= avoid_sight_of
@@ -199,6 +200,7 @@
 	var/best_watched = TRUE
 	var/best_neighbors = -1
 	var/best_distance = -1
+	var/list/turf/unwatched = list()
 	for(var/turf/point as anything in tiles)
 		if(!point || dispatch_skipped[point] > world.time)
 			continue
@@ -218,6 +220,8 @@
 			var/turf/watcher_turf = get_turf(watcher)
 			if(watcher_turf?.z == point.z)
 				distance = min(distance, get_dist(watcher_turf, point))
+		if(!watched)
+			unwatched += point
 		var/better = FALSE
 		if(!best)
 			better = TRUE
@@ -233,6 +237,11 @@
 			best_watched = watched
 			best_neighbors = neighbors
 			best_distance = distance
+	// Sent somewhere, out of the nearest door nobody watches (owner playtest 2026-11-24: not the far lift round the
+	// north side). Every door watched: the farthest, as above (M13).
+	var/turf/goal = get_turf(toward)
+	if(goal && !prefer_inner && length(unwatched) > 1)
+		return outpost_police_shortest_walk(unwatched, goal, null, list(ACCESS_OUTPOST_POLICE)) || best
 	return best
 
 /// Whether someone on their feet other than `rider`, or whoever `rider` pulls, stands on `point`
@@ -662,7 +671,9 @@
  * The kinds fill the level's make-up: a marshal at five stars, tactical at four and five, officers otherwise.
  */
 /datum/outpost_police/proc/dispatch_send_wave(level, size, sector, datum/outpost_warrant/top)
-	var/datum/outpost_police_wave/wave = dispatch_new_wave(sector, lift_point(sector, top?.mind?.current))
+	// Up the lift nearest where the search for them starts (as dispatch_respond() reads the sector from)
+	var/turf/toward = search_start(top?.last_seen_turf) || get_turf(top?.mind?.current)
+	var/datum/outpost_police_wave/wave = dispatch_new_wave(sector, lift_point(sector, top?.mind?.current, null, toward))
 	for(var/i in 1 to size)
 		if(!dispatch_queue_unit(dispatch_next_kind(level), wave, top))
 			break

@@ -108,6 +108,9 @@
 	if(!place || !where)
 		return FALSE
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/recovery/medic/cell/medic = new(where)
+	// Off the lift with the shortest walk to the cell (owner playtest 2026-11-24: not the far one round the north side)
+	var/datum/outpost_police_cell/cell = cell_of_patient(patient)
+	life_step_off_nearest(medic, cell?.outside_turf || patient)
 	medic.outpost_recovery = recovery
 	medic.dialogue_section = profile?.voice_section || "halcyon"
 	medic.cell_patient_ref = WEAKREF(patient)
