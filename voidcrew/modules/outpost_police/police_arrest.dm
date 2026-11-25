@@ -1969,7 +1969,14 @@
 		return null
 	var/list/turf/path = list()
 	var/turf/prev = here
+	// Facing the one it leads (taking the evidence off them, turned to them as it waits) it looks back at them, not along
+	// its way: whoever stands behind them was moved on a tile every second, and walked straight back (pass 14 soak,
+	// the Undertow crime_then_hide, the cover at the desk)
+	var/turf/led_at = get_turf(suspect)
+	var/facing_led = led_at && led_at != here && (get_dir(here, led_at) & officer.dir)
 	for(var/i in 1 to 2)
+		if(facing_led)
+			break
 		var/turf/ahead = get_step(prev, officer.dir)
 		if(!outpost_police_way_step_ok(prev, ahead))
 			break
