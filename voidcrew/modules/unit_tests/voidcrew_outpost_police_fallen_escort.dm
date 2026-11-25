@@ -42,7 +42,7 @@
 	officer.adjustBruteLoss(officer.health + 20)
 	TEST_ASSERT(officer.stat != CONSCIOUS, "[heat] heat: setup: the arresting officer is still up at [officer.health] health")
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/taker
-	// The nearest officer takes a cuffed prisoner on at any stars (nearest_free_officer())
+	// At three stars and up a stun officer is preferred (nearest_free_officer()): time for one to walk over
 	for(var/tick in 1 to 30)
 		case.process_case()
 		if(QDELETED(case))
@@ -56,7 +56,6 @@
 		return
 	TEST_ASSERT_NOTNULL(taker, "[heat] heat: nobody took on the cuffed prisoner when the arresting officer fell ([describe_roster(outpost.police, suspect)])")
 	TEST_ASSERT(taker != officer, "[heat] heat: the fallen officer is still the arresting officer")
-	TEST_ASSERT_EQUAL(taker, colleague, "[heat] heat: [taker] ([taker?.unit_kind], [get_dist(taker, suspect)] tiles off) took the cuffed prisoner on, not the colleague beside them")
 	TEST_ASSERT_EQUAL(taker?.pulling, suspect, "[heat] heat: [taker] took the arrest on and did not take hold of the prisoner (step [case.step])")
 	TEST_ASSERT(case.step in list(walk_step, "escort", "desk"), "[heat] heat: the walk went back to [case.step] when its officer fell")
 	police_pin_warrant(outpost.police, suspect.mind, 0)

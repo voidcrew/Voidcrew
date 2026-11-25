@@ -612,11 +612,10 @@
 		step_started_at = world.time
 
 /// The nearest officer with no case, beat and response officers before the desk sergeant; at three stars and up a
-/// stun officer before anyone else until the cuffs are on (owner decision 37)
+/// stun officer before anyone else (owner decision 37)
 /datum/outpost_police_case/proc/nearest_free_officer(mob/living/carbon/suspect, list/exclude)
 	var/turf/where = get_turf(suspect)
-	// In cuffs there is nobody left to take alive: whoever is nearest walks them in
-	var/high = !cuffed && warrant?.mind && police?.get_stars(warrant.mind) >= 3
+	var/high = warrant?.mind && police?.get_stars(warrant.mind) >= 3
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/best
 	var/best_score = INFINITY
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police?.officers)
