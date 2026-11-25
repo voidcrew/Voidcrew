@@ -155,11 +155,13 @@
 	TEST_ASSERT_NOTNULL(near, "No floor beside the suspect")
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/unit = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, near)
 	police_arrest_kit(unit)
+	officer.adjustBruteLoss(officer.health + 20)
+	TEST_ASSERT(officer.stat != CONSCIOUS, "Setup: the arresting officer is still up at [officer.health] health")
+	// Sent home in the same tick as the first check: with no player about to see it, a leaving NPC goes at once
+	// (npc_may_vanish()), which in a round with the prisoner watching it does not
 	if(!outpost.police.dispatch_send_home(unit) && !unit.npc_exit)
 		unit.npc_walk_out(police_floor(outpost))
 	TEST_ASSERT(unit.npc_exit, "Setup: the response unit is not on its way out")
-	officer.adjustBruteLoss(officer.health + 20)
-	TEST_ASSERT(officer.stat != CONSCIOUS, "Setup: the arresting officer is still up at [officer.health] health")
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/taker
 	for(var/tick in 1 to 10)
 		case.process_case()
@@ -172,6 +174,7 @@
 	TEST_ASSERT(!QDELETED(case), "The arrest ended when its officer fell")
 	if(QDELETED(case))
 		return
+	TEST_ASSERT(!QDELETED(unit), "The response unit left the outpost instead of taking the cuffed prisoner on")
 	TEST_ASSERT_EQUAL(taker, unit, "Nobody took the cuffed prisoner on: the response unit walking out was not called back (it is [unit.npc_exit ? "still leaving" : "not leaving"], case [unit.case ? "yes" : "no"])")
 	TEST_ASSERT_NULL(unit.npc_exit, "The response unit on the arrest is still walking out")
 	TEST_ASSERT_EQUAL(unit.pulling, suspect, "The recalled unit took the arrest on and did not take hold of the prisoner (step [case.step])")
