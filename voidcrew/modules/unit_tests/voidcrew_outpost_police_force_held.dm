@@ -117,8 +117,8 @@
 	officer.setDir(get_dir(row[1], row[3]))
 	var/mob/living/carbon/human/suspect = police_arrest_person(row[3])
 	police_pin_warrant(police, suspect.mind, 145) // five stars
-	suspect.adjustBruteLoss(110)
-	TEST_ASSERT(suspect.stat != CONSCIOUS && suspect.stat != DEAD, "110 brute did not put the suspect into crit")
+	suspect.adjustToxLoss(suspect.maxHealth - suspect.crit_threshold + 10)
+	TEST_ASSERT_EQUAL(suspect.stat, SOFT_CRIT, "Fixture: the suspect is not in soft crit (health [suspect.health])")
 	TEST_ASSERT_NULL(suspect.ckey, "Setup: the suspect has a ckey")
 	TEST_ASSERT(police.finishes_downed(suspect, officer), "Setup: the red zone does not finish a downed five-star suspect")
 
