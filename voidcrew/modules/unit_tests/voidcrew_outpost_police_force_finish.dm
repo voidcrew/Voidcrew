@@ -80,8 +80,10 @@
 	stun_blow.perform(1, brain, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
 	TEST_ASSERT(suspect.getStaminaLoss() > stamina, "Fixture: the base's blow with the stun baton did no stamina (stamina [stamina] -> [suspect.getStaminaLoss()])")
 	TEST_ASSERT_EQUAL(suspect.getBruteLoss(), brute, "Fixture: the base's blow with the stun baton did brute")
+	// The next blow, as if a moment later (tg takes one click a tick)
 	brain.set_blackboard_key(BB_BASIC_MOB_MELEE_COOLDOWN_TIMER, world.time - 1)
 	officer.next_move = 0
+	officer.next_click = 0
 	stamina = suspect.getStaminaLoss()
 	var/datum/ai_behavior/basic_melee_attack/human_npc/outpost_police_finish/blow = GET_AI_BEHAVIOR(/datum/ai_behavior/basic_melee_attack/human_npc/outpost_police_finish)
 	blow.perform(1, brain, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
