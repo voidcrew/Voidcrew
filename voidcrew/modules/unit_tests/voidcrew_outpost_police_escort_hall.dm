@@ -132,3 +132,55 @@
 	seen = walk_past(outpost, escort, prisoner, local)
 	if(seen)
 		TEST_FAIL("Quartermain hall: the escort stood behind a townsperson: [seen.Join(" | ")]")
+
+/**
+ * The hangar elevator called both ways at once: the arresting officer sends the berth's car up with its prisoner as the
+ * cover, come down to follow, sends the lobby's car down. The car that came second took everyone standing in its alcove
+ * back where they came from, the escort and its prisoner with it, and the escort then stood in the hangar with a walk
+ * to the desk no walk can make (pass 12 soak, Halcyon hangar_wait, 2 of 3 runs). The escort and its prisoner arrive in
+ * the lobby, and stay there.
+ */
+/datum/unit_test/voidcrew_outpost_police_crossing_rides
+
+/datum/unit_test/voidcrew_outpost_police_crossing_rides/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	dispatch_clear(police)
+	TEST_ASSERT(length(outpost.lobby_alcove_turfs), "The outpost has no lobby lift alcove")
+	TEST_ASSERT(length(outpost.lobby_panels), "The outpost has no lobby lift panel")
+	var/datum/turf_reservation/claimed = SSmapping.request_turf_block_reservation(3, 3, 1, requester = "police crossing rides test")
+	TEST_ASSERT_NOTNULL(claimed, "Could not reserve a 3x3 hangar alcove")
+	var/datum/outpost_berth/berth = new(outpost, 1, null)
+	berth.reservation = claimed
+	for(var/turf/tile as anything in berth.get_block())
+		tile.ChangeTurf(/turf/open/floor/iron)
+	berth.alcove_turfs = berth.get_block()
+	var/list/old_berths = outpost.berths
+	outpost.berths = list(berth)
+	var/obj/machinery/outpost_elevator/panel = allocate(/obj/machinery/outpost_elevator, berth.alcove_turfs[1])
+	panel.outpost = outpost
+	panel.berth = berth
+	berth.panel = panel
+
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/escort = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, berth.alcove_turfs[5])
+	var/mob/living/carbon/human/consistent/prisoner = allocate(/mob/living/carbon/human/consistent, berth.alcove_turfs[2])
+	escort.start_pulling(prisoner)
+	TEST_ASSERT_EQUAL(escort.pulling, prisoner, "Setup: the escort could not take hold of the prisoner")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/cover = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, outpost.lobby_alcove_turfs[1])
+	// Both cars called in the same moment: the escort's first
+	INVOKE_ASYNC(police, TYPE_PROC_REF(/datum/outpost_police, ride), escort, "lobby")
+	INVOKE_ASYNC(police, TYPE_PROC_REF(/datum/outpost_police, ride), cover, berth)
+	var/until = world.time + 15 SECONDS
+	while(world.time < until && (escort.dispatch_riding || cover.dispatch_riding))
+		sleep(1)
+	TEST_ASSERT(!escort.dispatch_riding && !cover.dispatch_riding, "Setup: the rides never ended")
+	TEST_ASSERT(get_turf(escort) in outpost.lobby_alcove_turfs, "The escort was taken back down to the hangar by the car its cover sent")
+	TEST_ASSERT(get_turf(prisoner) in outpost.lobby_alcove_turfs, "The prisoner was taken back down to the hangar by the car the cover sent")
+	TEST_ASSERT_EQUAL(escort.pulling, prisoner, "The escort lost hold of its prisoner on the ride")
+	escort.stop_pulling()
+	qdel(panel)
+	qdel(berth)
+	outpost.berths = old_berths
+	dispatch_clear(police)
