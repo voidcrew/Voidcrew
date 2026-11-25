@@ -1000,6 +1000,9 @@
 		STEALTH_NOISE_THUD = TRUE,
 		STEALTH_NOISE_CRUNCH = TRUE,
 		STEALTH_NOISE_THROWN = TRUE,
+		// Pushing through a bush or a big potted plant: on the live server a visitor walking back and forth through one
+		// kept bringing officers over to look
+		STEALTH_NOISE_RUSTLE = TRUE,
 	)
 	return everyday[kind]
 
