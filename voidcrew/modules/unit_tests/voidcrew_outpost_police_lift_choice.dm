@@ -76,6 +76,8 @@
 		return
 	var/datum/outpost_police/police = outpost.police
 	test_police = police
+	// The outpost's ambient place, which a round makes when the outpost first wakes: the recovery's medics need it
+	SSambient_npcs.outpost_place(outpost)
 	TEST_ASSERT(length(police.lift_turfs) >= 2, "Fixture: Quartermain has [length(police.lift_turfs)] police lift tiles")
 	TEST_ASSERT(length(police.cells), "Fixture: Quartermain has no cells")
 	var/datum/outpost_police_cell/cell = police.cells[1]
@@ -201,6 +203,7 @@
 			return
 		var/datum/outpost_police/police = outpost.police
 		test_police = police
+		SSambient_npcs.outpost_place(outpost)
 		TEST_ASSERT(length(police.lift_turfs) >= 2, "Fixture: [outpost_type] has [length(police.lift_turfs)] police lift tiles")
 		TEST_ASSERT(length(police.cells), "Fixture: [outpost_type] has no cells")
 		dispatch_clear(police)
