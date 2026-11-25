@@ -79,10 +79,13 @@
 		var/can = strategy?.can_attack(officer, suspect)
 		var/obj/item/active = officer.get_active_held_item()
 		var/cooldown = brain.blackboard[BB_BASIC_MOB_MELEE_COOLDOWN_TIMER]
-		officer.next_move = 0
 		officer.set_combat_mode(TRUE)
-		active?.melee_attack_chain(officer, suspect, list(RIGHT_CLICK = TRUE))
-		TEST_FAIL("The officer's blow with the baton did no brute to the downed suspect (brute [brute] -> [suspect.getBruteLoss()]; reach [reach], can_attack [can], active [active], cooldown [cooldown] at [world.time], next_move [officer.next_move]; a direct harm blow from the active item leaves brute [suspect.getBruteLoss()])")
+		var/list/mods = list(RIGHT_CLICK = TRUE)
+		var/interact = suspect.base_item_interaction(officer, active, mods)
+		var/pre = active?.pre_attack_secondary(suspect, officer, mods, list())
+		var/by = suspect.attackby_secondary(active, officer, mods, list())
+		var/hit = active?.attack(suspect, officer, mods, list())
+		TEST_FAIL("The officer's blow with the baton did no brute to the downed suspect (brute [brute]; reach [reach], can_attack [can], active [active] force [active?.force] damtype [active?.damtype], cooldown [cooldown] at [world.time], pacifist [HAS_TRAIT(officer, TRAIT_PACIFISM)]; interaction [interact], pre_attack_secondary [pre], attackby_secondary [by], attack [hit], brute after attack() [suspect.getBruteLoss()], health [suspect.health], godmode [HAS_TRAIT(suspect, TRAIT_GODMODE)])")
 	TEST_ASSERT_EQUAL(suspect.getStaminaLoss(), stamina, "The officer's harm blow with the baton was a stun blow (stamina [stamina] -> [suspect.getStaminaLoss()])")
 	brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
 
