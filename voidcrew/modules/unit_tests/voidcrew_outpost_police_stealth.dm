@@ -327,6 +327,9 @@
 	brain.on_handled(officer, visitor)
 	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "An officer went [brain.stealth_state()] at a clean visitor bumping into it")
 	TEST_ASSERT_EQUAL(stealth_noise(get_turf(visitor), "voice", null, visitor), 0, "An officer heard a clean visitor talk")
+	// Pushing through a bush or a big potted plant beside it (a player walked back and forth through one on the live
+	// server, and the officers kept coming over to look)
+	TEST_ASSERT_EQUAL(stealth_noise(get_turf(visitor), "rustle", null, visitor), 0, "An officer heard a clean visitor push through a bush")
 	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, at(11, 3))
 	TEST_ASSERT_EQUAL(stealth_door_moved(door, TRUE), 0, "A door opening in front of an officer sent it to look")
 	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "An officer went [brain.stealth_state()] at a door or a voice")
@@ -339,6 +342,7 @@
 	visitor.forceMove(at(7, 3))
 	stealth_scans(officer, 1)
 	TEST_ASSERT(brain.stealth_state() != "unaware", "An officer did not hear a wanted person run up behind it")
+	TEST_ASSERT(stealth_noise(get_turf(visitor), "rustle", null, visitor) > 0, "An officer did not hear a wanted person push through a bush beside it")
 	police_pin_warrant(police, visitor.mind, 0)
 
 // ===== THE BEAT =====
