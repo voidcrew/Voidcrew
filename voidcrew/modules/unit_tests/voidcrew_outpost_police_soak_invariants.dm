@@ -169,6 +169,8 @@
 	var/own_limit = 120
 	/// Times an arrest may go back to the start
 	var/resets = 1
+	/// Seconds an arrest may have nobody on it (its own clock stands still then); dispatch calls at 5 s, a wave forms up for up to 15 s and walks from its lift
+	var/unstaffed_limit = 45
 
 /datum/police_soak_invariant/case_stuck/check(datum/police_soak/run)
 	for(var/datum/mind/mind as anything in run.police.cases)
@@ -184,6 +186,8 @@
 		var/on_clock = (world.time - case.step_started_at) / (1 SECONDS)
 		if(case.step != "hold" && !case.acting && on_clock > 60 + grace)
 			run.breach(src, "[REF(case)]|clock|[case.step]", "the arrest of [run.who(mind.current)] has sat in \"[case.step]\" for [round(on_clock)]s by its own clock, past its 60s timeout", officers)
+		if(case.unstaffed_since && (world.time - case.unstaffed_since) / (1 SECONDS) > unstaffed_limit)
+			run.breach(src, "[REF(case)]|unstaffed", "the arrest of [run.who(mind.current)] has had nobody on it for [round((world.time - case.unstaffed_since) / (1 SECONDS))]s (step \"[case.step]\")", run.officers_up())
 		if(case.step != "hold" && run.held("[name]|[REF(case)]|[case.step]|[case.resets]", TRUE) > own_limit)
 			run.breach(src, "[REF(case)]|own|[case.step]", "the arrest of [run.who(mind.current)] has been on \"[case.step]\" for over [own_limit]s", officers)
 		if(case.resets > resets)

@@ -558,7 +558,7 @@
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police.officers)
 		if(officer.stat == CONSCIOUS && police.perception.sees(officer, suspect))
 			seen_by += who(officer)
-	rows += list(list(now, "S", "stars=[police.get_stars(suspect.mind)] heat=[warrant ? round(warrant.heat) : 0] at=[where(suspect)] [length(flags) ? flags.Join(",") : "up"] seen_by=[length(seen_by) ? seen_by.Join(",") : "-"] last_seen=[where(warrant?.last_seen_turf)] case=[case ? "[case.step]/[round((world.time - case.step_started_at) / (1 SECONDS))]s/r[case.resets]" : "-"] hp=[round(suspect.health)] stam=[round(suspect.getStaminaLoss())]"))
+	rows += list(list(now, "S", "stars=[police.get_stars(suspect.mind)] heat=[warrant ? round(warrant.heat) : 0] at=[where(suspect)] [length(flags) ? flags.Join(",") : "up"] seen_by=[length(seen_by) ? seen_by.Join(",") : "-"] last_seen=[where(warrant?.last_seen_turf)] case=[case ? "[case.step]/[round((world.time - case.step_started_at) / (1 SECONDS))]s/r[case.resets][case.unstaffed_since ? "/unstaffed[round((world.time - case.unstaffed_since) / (1 SECONDS))]s" : ""]" : "-"] hp=[round(suspect.health)] stam=[round(suspect.getStaminaLoss())]"))
 
 /// One officer's line for this second
 /datum/police_soak/proc/sample_officer(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, now)
@@ -602,7 +602,7 @@
 	var/case_text = "-"
 	if(case && !QDELETED(case))
 		var/part = case.arresting() == officer ? "arresting" : "cover"
-		case_text = "[case.step]/[round((world.time - case.step_started_at) / (1 SECONDS))]s/[part][case.acting ? "/[case.acting]" : ""]"
+		case_text = "[case.step]/[round((world.time - case.step_started_at) / (1 SECONDS))]s/[part][case.acting ? "/[case.acting]" : ""][case.unstaffed_since ? "/unstaffed[round((world.time - case.unstaffed_since) / (1 SECONDS))]s" : ""]"
 	var/turf/walking_to = istype(brain) ? get_turf(brain.current_movement_target) : null
 	var/walk_text = "-"
 	if(walking_to)
