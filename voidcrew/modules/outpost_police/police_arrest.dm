@@ -588,6 +588,14 @@
 			break
 		take_officer(found)
 		kept += found
+	// Nobody free at all: a response unit already walking back to its lift is called back. A prisoner in our cuffs
+	// counts as in custody to dispatch, which sends the units home and calls no more (police_dispatch.dm
+	// dispatch_check_idle()), so with the arresting officer down they were left in the cuffs with nobody (pass 6 G)
+	if(!length(kept))
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/police/recalled = recall_leaving_officer(suspect)
+		if(recalled)
+			take_officer(recalled)
+			kept += recalled
 	officers = list()
 	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer as anything in kept)
 		officers += WEAKREF(officer)
@@ -622,6 +630,34 @@
 		if(score < best_score)
 			best = officer
 			best_score = score
+	return best
+
+/// The nearest officer walking out to a lift who can be called back (dispatch_can_recall()), stopped from leaving;
+/// or null. Beat officers and the sergeant never leave, so this is a response unit.
+/datum/outpost_police_case/proc/recall_leaving_officer(mob/living/carbon/suspect)
+	var/turf/where = get_turf(suspect)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/best
+	var/best_score = INFINITY
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police?.officers)
+		if(officer.case || !police.dispatch_can_recall(officer))
+			continue
+		// Fit but for the leaving (officer_fit()): nobody is stopped who could not take it on anyway
+		if(officer.usable_hands <= 0 || HAS_TRAIT(officer, TRAIT_RESTRAINED) || HAS_TRAIT_NOT_FROM(officer, TRAIT_AI_PAUSED, AMBIENT_PAUSED_TRAIT))
+			continue
+		if(get_trader_outpost_for_turf(get_turf(officer)) != police.outpost)
+			continue
+		if(release_tried && (WEAKREF(officer) in release_tried))
+			continue
+		var/turf/officer_turf = get_turf(officer)
+		var/score = (where && officer_turf?.z == where.z) ? get_dist(officer_turf, where) : 500
+		if(score < best_score)
+			best = officer
+			best_score = score
+	if(!best)
+		return null
+	best.npc_stop_leaving()
+	if(!officer_fit(best))
+		return null
 	return best
 
 /// `officer` joins the case: whatever they were doing stops, and one who can see the suspect is on them (spec-stealth P5)
