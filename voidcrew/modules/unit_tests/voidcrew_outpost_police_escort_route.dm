@@ -88,7 +88,8 @@
 				var/obj/item/outpost_sealed_case/evidence/box = allocate(/obj/item/outpost_sealed_case/evidence)
 				officer.put_in_hands(box)
 				case.evidence_ref = WEAKREF(box)
-				var/list/short_way = get_path_to(officer, police.get_evidence_locker(), 120, 1, officer.ai_controller.get_access())
+				// In straight steps, as an officer walks someone it holds (police_stealth.dm police_straight_steps())
+				var/list/short_way = get_path_to(officer, police.get_evidence_locker(), 120, 1, officer.ai_controller.get_access(), diagonal_handling = DIAGONAL_REMOVE_ALL)
 				shortest = length(short_way)
 				steps += "SHORTEST:[shortest]"
 		var/turf/here = get_turf(officer)
