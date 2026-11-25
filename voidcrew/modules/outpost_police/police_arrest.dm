@@ -2639,12 +2639,48 @@
 		if(brain.goto_dest)
 			brain.stealth_drop_walk()
 		police?.clear_checkpoint_crossing(officer)
-		return queue_walk(controller, officer, follow, CASE_COVER_DISTANCE)
+		if(queue_walk(controller, officer, follow, CASE_COVER_DISTANCE))
+			return TRUE
+		// Near enough, and standing in a doorway: a step on off it, where it covers from as well
+		var/turf/off_door = cover_off_doorway(officer, follow)
+		return off_door ? queue_walk(controller, officer, off_door, 0) : FALSE
 	if(officer.dispatch_riding)
 		return FALSE
 	var/before = length(controller.planned_behaviors)
 	brain.stealth_walk(there, STEALTH_GOTO_SEARCH)
 	return length(controller.planned_behaviors) > before
+
+/**
+ * The cover's walk ends as soon as it is within CASE_COVER_DISTANCE of the officer it covers, and through a door
+ * that is the doorway (the Undertow's Bar Access, hostage soak: it stood in it from then on). Standing in a doorway,
+ * the tile a step off it that is as near the officer it covers and has the suspect in sight, nearest that officer
+ * first. Null when it is not in a doorway, or the doorway is the only place near enough to see the suspect from.
+ */
+/datum/outpost_police_case/proc/cover_off_doorway(mob/living/carbon/human/npc/ambient_npc/outpost/police/officer, atom/follow)
+	var/turf/here = get_turf(officer)
+	var/turf/there = get_turf(follow)
+	if(isnull(here) || isnull(there) || here.z != there.z || !outpost_doorway_of(here))
+		return null
+	var/mob/living/carbon/suspect = get_suspect()
+	if(suspect && suspect.z != here.z)
+		suspect = null
+	var/turf/best
+	var/best_sees = FALSE
+	var/best_distance = INFINITY
+	for(var/direction in GLOB.alldirs)
+		var/turf/spot = get_step(here, direction)
+		if(isnull(spot) || get_dist(spot, there) > CASE_COVER_DISTANCE || !officer.police_step_round_ok(here, spot))
+			continue
+		var/sees = !suspect || outpost_police_clear_line(spot, suspect)
+		var/distance = get_dist(spot, there)
+		if((sees && !best_sees) || (sees == best_sees && distance < best_distance))
+			best = spot
+			best_sees = sees
+			best_distance = distance
+	// Only the doorway sees them: it covers from there
+	if(best && !best_sees && suspect && outpost_police_clear_line(here, suspect))
+		return null
+	return best
 
 /// Queues the walk to `where` (null, or there already: nothing queued, so any walk stops). TRUE if it queued one.
 /datum/outpost_police_case/proc/queue_walk(datum/ai_controller/controller, mob/living/officer, atom/where, distance)

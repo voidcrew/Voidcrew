@@ -115,9 +115,30 @@
 	if(isnull(loop) || !(loop.status & MOVELOOP_STATUS_RUNNING) || (loop.status & MOVELOOP_STATUS_PAUSED))
 		return
 	if(istype(blocker, /mob/living/carbon/human/npc) && !blocker.client && !blocker.mind)
-		police_make_room(blocker)
+		if(!police_make_room(blocker))
+			police_bump_other_leg(way)
 	else
 		Move(get_turf(blocker), way)
+
+/**
+ * The one it took up straight on a leg of its diagonal could not make way (seated, held), nor could it walk round
+ * them: whoever stands on the diagonal's other leg is taken up straight instead. Only the first leg's blocker ever
+ * was (POLICE_STRAIGHT_BUMP_GAP), and an officer at the Undertow's tables stood behind a seated patron for good with a
+ * townsperson it could have passed on the other leg (pass 13 soak, hangar_wait).
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/police_bump_other_leg(tried_way)
+	var/turf/here = get_turf(src)
+	var/turf/next = outpost_npc_path_next(src)
+	if(isnull(here) || isnull(next) || next.z != here.z || get_dist(here, next) != 1)
+		return FALSE
+	var/diagonal = get_dir(here, next)
+	if(!(diagonal & (diagonal - 1)) || !(diagonal & tried_way))
+		return FALSE
+	var/turf/other_leg = get_step(here, diagonal & ~tried_way)
+	for(var/mob/living/other in other_leg)
+		if(other != src && istype(other, /mob/living/carbon/human/npc) && !other.client && !other.mind)
+			return police_make_room(other)
+	return FALSE
 
 /**
  * `other`, an outpost NPC, is in this officer's way. An officer bringing someone in has the NPC step aside; an
