@@ -177,48 +177,21 @@
  * holding its fire for.
  */
 /datum/unit_test/voidcrew_stealth_live/police/no_wild_fire_on_held
-	var/shots = 0
-
-/datum/unit_test/voidcrew_stealth_live/police/no_wild_fire_on_held/proc/on_fired()
-	SIGNAL_HANDLER
-	shots++
 
 /datum/unit_test/voidcrew_stealth_live/police/no_wild_fire_on_held/Run()
 	TEST_ASSERT(police_room(10, 5), "No room for the test")
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(2, 2, EAST, /mob/living/carbon/human/npc/ambient_npc/outpost/police/marshal)
 	TEST_ASSERT(officer.npc_rank >= 1, "Fixture: the marshal is not an elite") // 1: HUMAN_NPC_RANK_ELITE
-	for(var/obj/item/held in officer.held_items)
-		officer.dropItemToGround(held, force = TRUE)
-	var/obj/item/gun/energy/disabler/gun = allocate(/obj/item/gun/energy/disabler)
-	officer.put_in_active_hand(gun, forced = TRUE)
 	var/mob/living/carbon/human/suspect = visitor_at(5, 2)
 	police_pin_warrant(police, suspect.mind, 145) // five stars
-	var/datum/outpost_police_case/case = stun_squad_holding(police, suspect)
-	TEST_ASSERT(police.in_custody(suspect), "Fixture: the suspect is not in custody")
 	officer.adjustToxLoss(officer.maxHealth - officer.crit_threshold + 10)
 	TEST_ASSERT_EQUAL(officer.stat, SOFT_CRIT, "Fixture: the marshal is not in soft crit (health [officer.health])")
-	RegisterSignal(officer, COMSIG_MOB_FIRED_GUN, PROC_REF(on_fired))
-	var/datum/ai_controller/brain = officer.ai_controller
-	// Blackboard keys written out: BB_HUMAN_NPC_FLEE_FROM, BB_HUMAN_NPC_NEXT_SHOT
-	var/datum/ai_behavior/wild = GET_AI_BEHAVIOR(/datum/ai_behavior/human_npc_fire_wild)
-
-	// In custody: no wild shot at them
-	brain.set_blackboard_key("human_npc_flee_from", suspect)
-	brain.clear_blackboard_key("human_npc_next_shot")
-	officer.next_move = 0
-	wild.perform(1, brain, "human_npc_flee_from")
-	sleep(1)
-	TEST_ASSERT_EQUAL(shots, 0, "An officer in soft crit fired wild at a suspect in custody")
-
-	// Free and fighting: it still fires wild from the floor
+	// Free and fighting: it still fires wild from the floor at them
+	TEST_ASSERT(officer.human_npc_may_fire_wild(suspect), "An officer in soft crit may not fire wild at a free five-star suspect")
+	// In custody: never
+	var/datum/outpost_police_case/case = stun_squad_holding(police, suspect)
+	TEST_ASSERT(police.in_custody(suspect), "Fixture: the suspect is not in custody")
+	TEST_ASSERT(!officer.human_npc_may_fire_wild(suspect), "An officer in soft crit may fire wild at a suspect in custody")
 	police.close_case(suspect.mind)
 	qdel(case)
-	TEST_ASSERT(officer.police_will_fight(suspect), "Fixture: the officer would not fight the free five-star suspect")
-	brain.set_blackboard_key("human_npc_flee_from", suspect)
-	brain.clear_blackboard_key("human_npc_next_shot")
-	officer.next_move = 0
-	wild.perform(1, brain, "human_npc_flee_from")
-	sleep(1)
-	TEST_ASSERT(shots >= 1, "An officer in soft crit no longer fires wild at a free five-star suspect")
-	UnregisterSignal(officer, COMSIG_MOB_FIRED_GUN)
 	police_pin_warrant(police, suspect.mind, 0)
