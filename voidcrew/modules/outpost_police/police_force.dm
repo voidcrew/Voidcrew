@@ -278,7 +278,7 @@
 		if(blocker && !blocker.mind)
 			blocker = null
 		// Abuse SF2: only someone who chose to stand there resists, never the stunned, the tied up, the dragged or the logged off
-		if(blocker && (blocker.incapacitated || HAS_TRAIT(blocker, TRAIT_RESTRAINED) || blocker.pulledby || blocker.buckled || blocker.body_position == LYING_DOWN || (blocker.mind.key && !blocker.client)))
+		if(blocker && (blocker.incapacitated || HAS_TRAIT(blocker, TRAIT_RESTRAINED) || blocker.pulledby || blocker.buckled || (blocker.mind.key && !blocker.client)))
 			blocker = null
 	if(!blocker)
 		dispatch_block_ref = null
