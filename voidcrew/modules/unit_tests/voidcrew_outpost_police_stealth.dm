@@ -327,9 +327,6 @@
 	brain.on_handled(officer, visitor)
 	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "An officer went [brain.stealth_state()] at a clean visitor bumping into it")
 	TEST_ASSERT_EQUAL(stealth_noise(get_turf(visitor), "voice", null, visitor), 0, "An officer heard a clean visitor talk")
-	// Pushing through a bush or a big potted plant beside it (a player walked back and forth through one on the live
-	// server, and the officers kept coming over to look)
-	TEST_ASSERT_EQUAL(stealth_noise(get_turf(visitor), "rustle", null, visitor), 0, "An officer heard a clean visitor push through a bush")
 	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, at(11, 3))
 	TEST_ASSERT_EQUAL(stealth_door_moved(door, TRUE), 0, "A door opening in front of an officer sent it to look")
 	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "An officer went [brain.stealth_state()] at a door or a voice")
@@ -342,7 +339,34 @@
 	visitor.forceMove(at(7, 3))
 	stealth_scans(officer, 1)
 	TEST_ASSERT(brain.stealth_state() != "unaware", "An officer did not hear a wanted person run up behind it")
-	TEST_ASSERT(stealth_noise(get_turf(visitor), "rustle", null, visitor) > 0, "An officer did not hear a wanted person push through a bush beside it")
+	police_pin_warrant(police, visitor.mind, 0)
+
+/**
+ * A clean visitor pushing through a bush or a big potted plant beside an officer is not looked into; a wanted one is.
+ * A player walking back and forth through a bush on the live server kept bringing the officers over to look.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/innocent_rustle
+
+/datum/unit_test/voidcrew_stealth_live/police/innocent_rustle/Run()
+	TEST_ASSERT(police_room(16, 7), "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, at(0, 6))
+	police_stop(7, 3, "a", 1, 10 MINUTES, null)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(7, 3, WEST)
+	officer.resume_routine()
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = wake(officer)
+	brain.stealth_setup()
+	TEST_ASSERT_EQUAL(brain.group?.outpost_police(), police, "Fixture: the officer's patrol group does not know it is the police's")
+	var/mob/living/carbon/human/visitor = visitor_at(9, 3)
+
+	// Clean, two tiles behind it
+	var/heard = stealth_noise(get_turf(visitor), "rustle", null, visitor)
+	TEST_ASSERT_EQUAL(heard, 0, "An officer heard a clean visitor push through a bush (state [brain.stealth_state()])")
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "An officer went [brain.stealth_state()] at a clean visitor's rustle")
+
+	// Wanted, the same rustle is heard (the check above is not passing for want of an ear)
+	police_pin_warrant(police, visitor.mind, 12) // one star
+	heard = stealth_noise(get_turf(visitor), "rustle", null, visitor)
+	TEST_ASSERT(heard > 0, "An officer did not hear a wanted person push through a bush two tiles off (heard [heard], state [brain.stealth_state()], AI [brain.ai_status], held still [officer.paused_at], players on the level [length(SSmobs.clients_by_zlevel[officer.z])])")
 	police_pin_warrant(police, visitor.mind, 0)
 
 // ===== THE BEAT =====
