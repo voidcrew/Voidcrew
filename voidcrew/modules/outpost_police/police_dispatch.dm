@@ -889,12 +889,14 @@
 			continue
 		dispatch_send_home(officer)
 
-/// Suspects at the outpost who are not in custody (cuffed by us or in a cell)
+/// Suspects at the outpost who are not in custody (cuffed by us or in a cell) and not dead. A dead one is no reason to
+/// keep a response here: kept, every officer stayed sent to the body and idled about the lift doors (the warrant stays,
+/// for anyone who gets them up again)
 /datum/outpost_police/proc/dispatch_active_suspects()
 	. = list()
 	for(var/datum/outpost_warrant/warrant as anything in suspects_at_outpost())
 		var/mob/living/body = warrant.mind?.current
-		if(isliving(body) && in_custody(body))
+		if(isliving(body) && (body.stat == DEAD || in_custody(body)))
 			continue
 		. += warrant
 
