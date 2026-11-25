@@ -72,3 +72,27 @@
 	TEST_ASSERT(wave.released_at, "A wave stood frozen at its lift with someone wanted and armed in sight")
 	TEST_ASSERT(!HAS_TRAIT_FROM(member, TRAIT_AI_PAUSED, "outpost_police_wave"), "The officer facing an armed suspect at the lift stayed frozen")
 	dispatch_clear(police)
+
+/// A dead suspect stands the response down: the units sent for them are no longer sent, and go back to the lift to leave
+/datum/unit_test/voidcrew_outpost_police_dead_suspect_stands_down
+
+/datum/unit_test/voidcrew_outpost_police_dead_suspect_stands_down/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost()
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	dispatch_clear(police)
+	police.dispatch_build_now = TRUE
+	dispatch_two_lifts(outpost)
+	var/mob/living/suspect = dispatch_suspect(outpost, 140) // OUTPOST_POLICE_STAR_HEAT, five stars
+	var/datum/outpost_police_wave/wave = police.dispatch_send_wave(5, 1, "concourse", police.get_warrant(suspect.mind))
+	TEST_ASSERT_NOTNULL(wave, "No wave was sent")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/unit = wave.living_members()[1]
+	police.dispatch_release_wave(wave)
+	TEST_ASSERT(unit.dispatch_responding(), "Setup: the unit is not sent to the suspect")
+	suspect.death()
+	TEST_ASSERT_EQUAL(suspect.stat, DEAD, "Setup: the suspect did not die")
+	police.dispatch_respond(police.alert_level())
+	TEST_ASSERT(!unit.dispatch_responding(), "A unit is still sent to a suspect who is dead")
+	TEST_ASSERT(unit.npc_exit || unit.dispatch_no_lift_since, "A unit sent for a suspect now dead was not stood down")
+	dispatch_clear(police)
