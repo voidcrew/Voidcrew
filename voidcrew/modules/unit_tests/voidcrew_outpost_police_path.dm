@@ -9,8 +9,8 @@
  */
 
 /**
- * An officer walking by its path loop steps onto a tile where it goes alert (as on sighting its suspect, or being
- * shot, on that step): the walk is dropped and the loop deleted inside its own step. The loop must not then ask the
+ * An officer walking by its path loop steps onto a tile where it goes alert on its suspect: the walk is dropped and
+ * the loop deleted inside its own step. The loop must not then ask the
  * pathfinder for a path from nowhere ("Invalid pathfinding start", the soak's path.dm runtime).
  */
 /datum/unit_test/voidcrew_stealth_live/police/step_ends_walk
