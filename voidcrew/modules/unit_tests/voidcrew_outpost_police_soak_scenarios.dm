@@ -128,7 +128,8 @@ POLICE_SOAK_SCENARIO(shove_officers)
 			run.script_failed("could not walk up to [run.who(officer)] at [run.where(officer)]")
 			continue
 		if(!run.shove_down(officer))
-			if(turn > 1 && (!run.suspect_able() || HAS_TRAIT(run.suspect, TRAIT_RESTRAINED)))
+			// Put down, held or cuffed by the police first, on either shove: their answer, not the script's fault
+			if(!run.suspect_able() || HAS_TRAIT(run.suspect, TRAIT_RESTRAINED) || run.suspect.pulledby || run.suspect.body_position == LYING_DOWN)
 				run.note(">>", "is taken before [run.who(officer)] goes down")
 				break
 			run.script_failed("could not shove [run.who(officer)] down")
