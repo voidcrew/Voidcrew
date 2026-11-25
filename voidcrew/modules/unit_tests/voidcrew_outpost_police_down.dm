@@ -412,3 +412,43 @@
 	TEST_ASSERT(!QDELETED(case), "No arrest opened on a four-star suspect in crit")
 	TEST_ASSERT_EQUAL(case.arresting(), stunner, "A stun officer beside a downed four-star suspect did not take the arrest")
 	police.close_case(suspect.mind)
+
+/**
+ * Soak (Quartermain four_star_crawl): an officer shot in the arrest bled into crit at the desk while walking the cuffed
+ * suspect in. The sergeant found it, called the squad and searched the empty desk for its killer long after the all
+ * clear. A colleague down from a wound dealt by someone dead or held is called in where it lies, with no search; one
+ * down from a wound by someone still free is looked into as before.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/fallen_from_known_wound
+
+/datum/unit_test/voidcrew_stealth_live/police/fallen_from_known_wound/Run()
+	TEST_ASSERT(police_room(20, 9), "No room for the test")
+	allocate(/obj/effect/landmark/stealth_group, at(0, 8))
+	person_at(19, 8)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/watcher = ready_officer(4, 4, EAST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/colleague = ready_officer(7, 4, WEST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/other = ready_officer(4, 6, EAST)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/hurt = ready_officer(7, 6, WEST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/watcher_brain = watcher.ai_controller
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/other_brain = other.ai_controller
+
+	// Shot by a suspect who is dead by the time the wound puts the officer down
+	var/mob/living/carbon/human/shooter = visitor_at(12, 2)
+	police.officer_struck(colleague, shooter, ATTACKER_DAMAGING_ATTACK)
+	shooter.death()
+	colleague.adjustToxLoss(colleague.maxHealth - colleague.crit_threshold + 10) // bled down: the damage kind does not matter here
+	TEST_ASSERT(colleague.stat != CONSCIOUS, "Fixture: the colleague is not down")
+	TEST_ASSERT(police.perception.sees(watcher, colleague), "Fixture: the officer does not see its fallen colleague")
+	TEST_ASSERT_EQUAL(body_look(watcher_brain), "unaware", "An officer went searching over a colleague down from a wound by someone dead")
+	TEST_ASSERT(watcher_brain.bark_ready_at["stealth_body"] > world.time, "An officer did not call in a fallen colleague") // STEALTH_BARK_BODY
+	TEST_ASSERT_NULL(watcher_brain.pending_call, "An officer called the squad to a colleague down from a wound by someone dead")
+
+	// Shot by someone still free: looked into as before
+	var/mob/living/carbon/human/free = visitor_at(12, 8)
+	police.officer_struck(hurt, free, ATTACKER_DAMAGING_ATTACK)
+	hurt.adjustToxLoss(hurt.maxHealth - hurt.crit_threshold + 10)
+	TEST_ASSERT(hurt.stat != CONSCIOUS, "Fixture: the second colleague is not down")
+	// The first colleague is called in already: it looks past them to the second
+	var/list/seen = other_brain.blackboard["stealth_bodies_seen"] // BB_STEALTH_BODIES_SEEN
+	seen |= REF(colleague)
+	TEST_ASSERT(body_look(other_brain) != "unaware", "An officer walked past a colleague down from a wound by someone still free")

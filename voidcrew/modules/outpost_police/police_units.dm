@@ -482,6 +482,9 @@
 	var/datum/weakref/struck_source_ref
 	/// world.time struck_source_ref was noted
 	var/struck_source_at = -1
+	/// Who last wounded them (a damaging blow, shot or bomb; police_wanted.dm officer_struck()), and when
+	var/datum/weakref/wounded_by_ref
+	var/wounded_at = -1
 	// Nothing drops (abuse M8): the base NPC's cash and loot, and the human NPC base's
 	death_cash_low = 0
 	death_cash_high = 0
