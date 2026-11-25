@@ -1589,6 +1589,28 @@
 	var/datum/can_pass_info/pass = new(led, list(), TRUE)
 	return CAN_STEP(from, onto, FALSE, pass, null)
 
+/**
+ * Whether `led`, drawn diagonally onto `onto`, has a corner to go round that nobody stands on. tg's pull takes them
+ * round one of the two corners, and a diagonal step trades no places: someone standing on the one open corner stops
+ * them, and the hold is gone. A straight draw needs no corner.
+ */
+/proc/outpost_police_draw_corner_clear(mob/living/led, turf/onto)
+	var/turf/from = get_turf(led)
+	if(isnull(from) || isnull(onto) || from.z != onto.z || from.x == onto.x || from.y == onto.y)
+		return TRUE
+	var/datum/can_pass_info/pass = new(led, list(), TRUE)
+	for(var/turf/corner in list(locate(from.x, onto.y, from.z), locate(onto.x, from.y, from.z)))
+		if(!CAN_STEP(from, corner, FALSE, pass, null) || !CAN_STEP(corner, onto, FALSE, pass, null))
+			continue
+		var/someone_there = FALSE
+		for(var/mob/living/someone in corner)
+			if(someone != led && someone.density)
+				someone_there = TRUE
+				break
+		if(!someone_there)
+			return TRUE
+	return FALSE
+
 /// Whether `officer` stands where `suspect` can follow it off: beside them (or with them) on a tile they can step onto
 /datum/outpost_police_case/proc/lead_ready(mob/living/officer, mob/living/carbon/suspect)
 	var/turf/here = get_turf(officer)
@@ -1597,7 +1619,7 @@
 	// An exit gate walks whoever is on it straight through, and whoever they hold after them (police_movement.dm)
 	if(locate(/obj/structure/outpost_exit_gate) in here)
 		return TRUE
-	return outpost_police_can_draw(suspect, here)
+	return outpost_police_can_draw(suspect, here) && outpost_police_draw_corner_clear(suspect, here)
 
 /// Whether `spot` is a tile the arresting officer could lead `suspect` off from: beside them, free of furniture, one they can step onto
 /datum/outpost_police_case/proc/lead_spot_ok(mob/living/carbon/suspect, turf/spot)
@@ -1610,7 +1632,7 @@
 	for(var/atom/movable/thing as anything in spot)
 		if(thing.density && !ismob(thing) && !(thing.flags_1 & ON_BORDER_1))
 			return FALSE
-	return outpost_police_can_draw(suspect, spot)
+	return outpost_police_can_draw(suspect, spot) && outpost_police_draw_corner_clear(suspect, spot)
 
 /// The tile beside `suspect` to lead them off from that is nearest `officer`: a free one before one someone stands on. Null if there is none.
 /datum/outpost_police_case/proc/lead_turf_for(mob/living/officer, mob/living/carbon/suspect)

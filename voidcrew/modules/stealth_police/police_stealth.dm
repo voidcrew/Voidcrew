@@ -355,6 +355,56 @@
 	// left an officer pushing at the queue rails and the lockers (owner playtest 3).
 	human_npc_set_ai_movement(src, /datum/ai_movement/jps/stealth)
 
+// ----- walking someone it holds -----
+
+/**
+ * An officer leading someone by tg's pull walks them in straight steps. The pull draws them onto the tile the officer
+ * leaves, so after a diagonal step of the officer's they are a diagonal behind, and its next step has them take a
+ * diagonal of their own. With someone standing on the one open corner (a table on the other) they cannot, and the hold
+ * is gone: an officer at the Undertow's poker tables let go of its prisoner every few seconds that way (pass 14 soak,
+ * jailbreak_shootout). Straight steps keep them a straight step behind, onto a tile it has just stood on. Every path it
+ * is given while it holds someone has each diagonal taken as two straight steps.
+ */
+/datum/ai_movement/jps/stealth/start_moving_towards(datum/ai_controller/controller, atom/current_movement_target, min_distance)
+	. = ..()
+	var/datum/move_loop/has_target/jps/loop = .
+	if(istype(loop))
+		RegisterSignal(loop, COMSIG_MOVELOOP_JPS_FINISHED_PATHING, PROC_REF(police_path_found))
+
+/// A path came back: an officer holding someone takes its diagonals straight
+/datum/ai_movement/jps/stealth/proc/police_path_found(datum/move_loop/has_target/jps/source, list/path)
+	SIGNAL_HANDLER
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = source.moving
+	if(!istype(officer) || !isliving(officer.pulling) || !length(source.movement_path))
+		return
+	source.movement_path = police_straight_steps(officer, source.movement_path, source.access, source.simulated_only)
+
+/// `path` (the tiles after `walker`'s own) with a corner tile put in before each diagonal step: one both straight steps are clear through, nobody standing on it if it can be had
+/proc/police_straight_steps(mob/living/walker, list/path, list/access, simulated_only)
+	var/datum/can_pass_info/pass = new(walker, access)
+	var/list/straight = list()
+	var/turf/from = get_turf(walker)
+	for(var/turf/next as anything in path)
+		if(from && next && from.z == next.z && from.x != next.x && from.y != next.y && get_dist(from, next) == 1)
+			var/turf/taken
+			for(var/turf/corner in list(locate(from.x, next.y, from.z), locate(next.x, from.y, from.z)))
+				if(!CAN_STEP(from, corner, simulated_only, pass, null) || !CAN_STEP(corner, next, simulated_only, pass, null))
+					continue
+				var/someone_there = FALSE
+				for(var/mob/living/someone in corner)
+					if(someone != walker && someone != walker.pulling && someone.density)
+						someone_there = TRUE
+						break
+				if(!someone_there)
+					taken = corner
+					break
+				taken ||= corner
+			if(taken)
+				straight += taken
+		straight += next
+		from = next
+	return straight
+
 // ----- the search (police_search.dm) -----
 
 // Every search starts with its spots still to look at
