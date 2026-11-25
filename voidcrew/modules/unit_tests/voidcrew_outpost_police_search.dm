@@ -705,3 +705,61 @@
 
 	qdel(berth)
 	outpost.berths = old_berths
+
+/**
+ * The last wanted person's stars fade while nobody at all is at the outpost (a suspect hiding with no client, or one
+ * who left): the officer still searching for them stands down. The police's tick used to stop at the empty outpost
+ * before the all clear and the officers' stand-downs, so it searched on.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/search_ends_empty_outpost
+
+/datum/unit_test/voidcrew_stealth_live/police/search_ends_empty_outpost/Run()
+	TEST_ASSERT(police_room(40, 9), "No room for the test")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(4, 4)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	brain.stealth_setup()
+	var/mob/living/carbon/human/suspect = unseen_suspect(2, 4, 38, 7)
+	var/datum/outpost_warrant/warrant = police.get_warrant(suspect.mind)
+	officer.dispatch_mind = WEAKREF(suspect.mind)
+	police.stealth_tick_officer(officer)
+	police.stealth_tick_squad()
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "Fixture: the officer sent after the suspect is not searching")
+	TEST_ASSERT_EQUAL(brain.police_hunt?.resolve(), suspect.mind, "Fixture: the searching officer is not after the suspect")
+	TEST_ASSERT(!length(police.dispatch_players_at_outpost()), "Fixture: someone with a client is at the outpost")
+	// Sent back to its beat as one too many, then the stars fade with nobody about
+	officer.dispatch_mind = null
+	warrant.heat = 0
+	police.tick_dispatch()
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "An officer searched on after the last wanted person's stars faded at an empty outpost")
+	TEST_ASSERT_NULL(brain.police_hunt?.resolve(), "An officer kept hunting someone with no stars at an empty outpost")
+
+/**
+ * An officer's own bleeding (a wound from the fight it was in) is no harm to look round for: it used to go searching
+ * and shout "Who threw that?" as it walked its prisoner to the cell, and searched on after the all clear. A blow it
+ * feels land while it bleeds is still looked into.
+ */
+/datum/unit_test/voidcrew_stealth_live/police/own_bleed_no_search
+
+/datum/unit_test/voidcrew_stealth_live/police/own_bleed_no_search/Run()
+	TEST_ASSERT(police_room(8, 5), "No room for the test")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(2, 2)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	brain.stealth_setup()
+	brain.stealth_ready = TRUE
+	var/datum/wound/slash/flesh/severe/gash = new
+	gash.apply_wound(officer.get_bodypart(BODY_ZONE_L_ARM), silent = TRUE)
+	TEST_ASSERT(officer.get_bleed_rate() > 0, "Fixture: the officer is not bleeding")
+	brain.harm_pending = FALSE
+	brain.next_harm_at = 0
+	brain.explained_at = 0
+	brain.stealth_go_unaware()
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "Fixture: the officer is not unaware")
+	// Health slipping away as it bleeds (stealth_check_health())
+	brain.stealth_note_harm(5 SECONDS, FALSE) // STEALTH_HARM_WINDOW
+	brain.stealth_judge_harm()
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "unaware", "An officer went searching because it was bleeding")
+	TEST_ASSERT(!brain.harm_pending, "An officer's own bleeding left harm pending")
+	// A blow it felt land, bleeding or not: it looks
+	brain.stealth_note_harm()
+	brain.stealth_judge_harm()
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "searching", "A bleeding officer did not look into a blow it could not name")
