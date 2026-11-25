@@ -73,7 +73,16 @@
 	var/stamina = suspect.getStaminaLoss()
 	var/datum/ai_behavior/basic_melee_attack/human_npc/outpost_police_finish/blow = GET_AI_BEHAVIOR(/datum/ai_behavior/basic_melee_attack/human_npc/outpost_police_finish)
 	blow.perform(1, brain, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
-	TEST_ASSERT(suspect.getBruteLoss() > brute, "The officer's blow with the baton did no brute to the downed suspect (brute [brute] -> [suspect.getBruteLoss()])")
+	if(suspect.getBruteLoss() <= brute)
+		var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(brain.blackboard[BB_TARGETING_STRATEGY])
+		var/reach = officer.CanReach(suspect)
+		var/can = strategy?.can_attack(officer, suspect)
+		var/obj/item/active = officer.get_active_held_item()
+		var/cooldown = brain.blackboard[BB_BASIC_MOB_MELEE_COOLDOWN_TIMER]
+		officer.next_move = 0
+		officer.set_combat_mode(TRUE)
+		active?.melee_attack_chain(officer, suspect, list(RIGHT_CLICK = TRUE))
+		TEST_FAIL("The officer's blow with the baton did no brute to the downed suspect (brute [brute] -> [suspect.getBruteLoss()]; reach [reach], can_attack [can], active [active], cooldown [cooldown] at [world.time], next_move [officer.next_move]; a direct harm blow from the active item leaves brute [suspect.getBruteLoss()])")
 	TEST_ASSERT_EQUAL(suspect.getStaminaLoss(), stamina, "The officer's harm blow with the baton was a stun blow (stamina [stamina] -> [suspect.getStaminaLoss()])")
 	brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
 
