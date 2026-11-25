@@ -192,6 +192,7 @@
 #include "voidcrew_npc_boarding_docking.dm"
 #include "voidcrew_npc_disarm.dm"
 #include "voidcrew_npc_fire_over_allies.dm"
+#include "voidcrew_npc_ricochet_over_allies.dm"
 #include "voidcrew_npc_zone_profiles.dm"
 #include "voidcrew_ore_balance.dm"
 #include "voidcrew_outpost_admin.dm"
