@@ -566,3 +566,45 @@
 	TEST_ASSERT(charged_at - told_at >= 4 SECONDS, "The friend in the doorway was charged [(charged_at - told_at) / 10] s after being told, with no time to step aside") // CASE_BLOCK_GRACE
 	police.sleep_tick()
 	dispatch_clear(police)
+
+/**
+ * Halcyon's working lobby gate, three stars: someone wanted stands in the scan chamber, on its tile furthest from the
+ * outer door. No arrest opens on someone on their feet at three stars, and the scanner keeps them in the police's sight
+ * the whole time. An officer still comes into the chamber, or gets them in its own sight, within 40 s. The pass 11 soak
+ * (four_star_crawl): every officer stood at the outer door for 45 s and more while the suspect stood 2 tiles off.
+ */
+/datum/unit_test/voidcrew_outpost_police_search/chamber/halcyon_three_stars
+
+/datum/unit_test/voidcrew_outpost_police_search/chamber/halcyon_three_stars/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = search_outpost(/obj/structure/overmap/trader_outpost/general)
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	var/datum/outpost_checkpoint/post = outpost.lobby_checkpoint()
+	TEST_ASSERT_NOTNULL(post?.sensor, "Halcyon has no lobby checkpoint with a scanner")
+	var/turf/stand
+	for(var/turf/tile as anything in post.chamber_turfs)
+		if(!tile.is_blocked_turf(exclude_mobs = TRUE) && (!stand || get_dist(tile, post.outer_door) > get_dist(stand, post.outer_door)))
+			stand = tile
+	TEST_ASSERT_NOTNULL(stand, "Halcyon: no free tile in the scan chamber")
+	duty_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/sergeant, police.desk_turf)
+	beat_officers(outpost)
+	// Heat 60 is three stars
+	var/mob/living/carbon/human/suspect = wanted_at(outpost, stand, stand, 60)
+	police.wake()
+
+	var/started = world.time
+	var/reached_after = -1
+	while(world.time - started < 40 SECONDS)
+		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer in police.officers)
+			if(officer.stat == CONSCIOUS && (in_gate(post, officer) || police.perception.sees(officer, suspect)))
+				reached_after = world.time - started
+				break
+		if(reached_after >= 0)
+			break
+		sleep(0.5 SECONDS)
+	var/datum/outpost_police_case/case = police.cases[suspect.mind]
+	police.sleep_tick()
+	TEST_ASSERT(reached_after >= 0, "Halcyon, three stars, standing in the scan chamber: no officer came into it or had them in its own sight in 40 s ([police.get_stars(suspect.mind)] stars, arrest [case ? "on its \"[case.step]\" step" : "none"], [gate_report(post)]). [officers_report(outpost)]")
+	log_test("Halcyon, three stars in the scan chamber: an officer in it or with them in sight after [reached_after / 10] s")
+	dispatch_clear(police)
