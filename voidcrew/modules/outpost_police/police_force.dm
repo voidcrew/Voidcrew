@@ -223,9 +223,9 @@
 	return TRUE
 
 /**
- * Whoever stands in this officer's line of fire at `target` and is not someone they would shoot: anyone up
- * and living (shots pass over the lying), or aboard a mech in the way. `within` > 0 looks only that many tiles out.
- * Null if clear.
+ * Whoever stands in this officer's line of fire at `target` and is not someone they would shoot: anyone living and
+ * up, or lying where its shot would hit them (outpost_police_shot_hits_lying()), or aboard a mech in the way.
+ * `within` > 0 looks only that many tiles out. Null if clear.
  */
 /mob/living/carbon/human/npc/ambient_npc/outpost/police/proc/bystander_in_line(atom/target, within = 0)
 	var/turf/from = get_turf(src)
@@ -239,7 +239,9 @@
 		if(within && get_dist(from, line_turf) > within)
 			continue
 		for(var/mob/living/other in line_turf)
-			if(other == target || other.stat == DEAD || other.body_position == LYING_DOWN)
+			if(other == target || other.stat == DEAD)
+				continue
+			if(other.body_position == LYING_DOWN && !outpost_police_shot_hits_lying(other, get_dist(from, line_turf)))
 				continue
 			if(police_would_shoot(other, shot_force))
 				continue
@@ -251,6 +253,17 @@
 				if(occupant != target && occupant.stat != DEAD && !police_would_shoot(occupant, shot_force))
 					return occupant
 	return null
+
+/**
+ * Whether a shot fired in combat mode, as officers fire, hits `other` lying `dist` tiles out: tg's projectile
+ * (ammo_casing ready_proj() sets hit_prone_targets; projectile can_hit_target()) hits anyone on the floor in its first
+ * MAX_RANGE_HIT_PRONE_TARGETS tiles who is not out cold. A colleague in stamina crit or a suspect down in soft crit is
+ * hit; someone unconscious is passed over.
+ */
+/proc/outpost_police_shot_hits_lying(mob/living/other, dist)
+	if(dist > MAX_RANGE_HIT_PRONE_TARGETS)
+		return FALSE
+	return !(HAS_TRAIT(other, TRAIT_IMMOBILIZED) && HAS_TRAIT(other, TRAIT_FLOORED) && HAS_TRAIT(other, TRAIT_HANDS_BLOCKED))
 
 /**
  * Abuse M11, once a second from dispatch: a person in the line of fire within 2 tiles of an officer firing to
@@ -415,6 +428,14 @@
 	if(police.force_level(person, src) != POLICE_FORCE_STUN)
 		return FALSE
 	return police.order_pending(person) || police.gives_up(person)
+
+// Down in soft crit, an elite fires wild from the floor (human_npc_soft_crit.dm): only at someone it would fight and
+// is not holding its fire for, never at the cuffed suspect a colleague walks past it
+/mob/living/carbon/human/npc/ambient_npc/outpost/police/human_npc_may_fire_wild(atom/target)
+	if(!police_will_fight(target))
+		return FALSE
+	var/mob/living/person = police_mech_suspect(target)
+	return !(isliving(person) && police_holds_fire(person))
 
 /**
  * Holds its aim on `target` without firing: weapon out, facing them, within OUTPOST_POLICE_COVER_RANGE and in sight of

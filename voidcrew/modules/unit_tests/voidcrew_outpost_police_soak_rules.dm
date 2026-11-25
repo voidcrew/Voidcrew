@@ -325,3 +325,43 @@
 	TEST_ASSERT(!police.perception.sees(officer, suspect), "Fixture: the officer facing away still sees the suspect")
 	found = breaks_after(/datum/police_soak_invariant/downed_in_sight)
 	TEST_ASSERT(!length(found), "downed_in_sight fired with no officer seeing the downed suspect: [jointext(found, "; ")]")
+
+// ----- force_on_the_held: judged at the trigger pull, and a fresh blow is no giving up -----
+
+/datum/unit_test/voidcrew_stealth_live/police/soak_rule/force_on_the_held
+
+/datum/unit_test/voidcrew_stealth_live/police/soak_rule/force_on_the_held/Run()
+	TEST_ASSERT(rule_room(), "No room for the test")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = officer_at(2, 2, EAST)
+	var/mob/living/carbon/human/suspect = wanted_visitor(5, 2)
+	probe.suspect = suspect
+	var/datum/outpost_police_case/case = new(police, police.warrants[suspect.mind])
+	police.cases[suspect.mind] = case
+	var/obj/projectile/beam/disabler/shot = allocate(/obj/projectile/beam/disabler, at(4, 2))
+	shot.firer = officer
+
+	// The trigger pulled while they stood; the shot lands once they are down with the arrest on them (the rest of a
+	// shell's pellets, a burst's last rounds)
+	TEST_ASSERT_NULL(probe.held_state(), "Fixture: a two-star suspect standing with an arrest on them is held: [probe.held_state()]")
+	probe.on_officer_fired(officer, null, suspect)
+	suspect.Paralyze(5 MINUTES)
+	TEST_ASSERT_EQUAL(probe.held_state(), "down with an arrest on them", "Fixture: the paralysed suspect is not down with an arrest on them")
+	probe.on_suspect_shot(suspect, shot, BODY_ZONE_CHEST, FALSE, 0)
+	var/list/found = breaks_after(/datum/police_soak_invariant/force_on_the_held, 0)
+	TEST_ASSERT(!length(found), "force_on_the_held blamed a shot fired at someone still standing: [jointext(found, "; ")]")
+	// The trigger pulled with them already down
+	probe.on_officer_fired(officer, null, suspect)
+	probe.on_suspect_shot(suspect, shot, BODY_ZONE_CHEST, FALSE, 0)
+	found = breaks_after(/datum/police_soak_invariant/force_on_the_held, 0)
+	TEST_ASSERT(length(found), "force_on_the_held stayed quiet about a shot fired at a suspect down with an arrest on them")
+
+	// Being cuffed after giving up, then a shove of theirs: fair game for OUTPOST_POLICE_YIELD_TIME
+	suspect.SetParalyzed(0)
+	TEST_ASSERT(!police_suspect_down(suspect), "Fixture: the suspect is still down")
+	case.step = "cuff" // CASE_STEP_CUFF
+	case.step_started_at = world.time - 10 SECONDS
+	TEST_ASSERT_EQUAL(probe.held_state(), "being cuffed after giving up", "Fixture: the suspect on the cuff step is not being cuffed after giving up")
+	police.note_fought(suspect)
+	TEST_ASSERT_NULL(probe.held_state(), "A suspect who hit out a moment ago is still read as giving up")
+	police.close_case(suspect.mind)
+	probe.suspect = null
