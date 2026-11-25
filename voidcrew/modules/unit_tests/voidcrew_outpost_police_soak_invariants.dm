@@ -554,6 +554,8 @@
 	rank = 1
 	/// Seconds a downed wanted person may lie in an officer's sight without being taken or finished (a cuffing is 4 s, a walk across a room 10)
 	var/limit = 30
+	/// Seconds since an officer's last trigger pull at the body within which it is being finished (officers fire about every 3 s)
+	var/finishing_gap = 4
 
 /datum/police_soak_invariant/downed_in_sight/check(datum/police_soak/run)
 	for(var/mob/living/body as anything in run.at_large())
@@ -562,6 +564,13 @@
 			for(var/mob/living/officer as anything in run.officers_up())
 				if(run.police.perception.sees(officer, body))
 					seer = officer
+					break
+			// Still being shot where they lie is finishing, if slowly (the Undertow, M1 into a Nuclear Operative suit
+			// every 3 s for 36 s, 1125002653bdc): those seconds don't count
+			for(var/officer in run.trigger_pulls)
+				var/list/pull = run.trigger_pulls[officer]
+				if(pull[3] == body && world.time - pull[1] < finishing_gap SECONDS)
+					seer = null
 					break
 		if(run.held("[name]|[REF(body)]", !!seer) > limit)
 			run.breach(src, REF(body), "[run.who(body)] ([run.police.get_stars(body.mind)] stars) has lain down at [run.where(body)] in sight of [run.who(seer)] for over [limit]s, neither taken nor finished ([run.police.finishes_downed(body, null) ? "a zone that finishes the downed" : "a zone that takes them alive"])", run.officers_up())
