@@ -93,3 +93,55 @@
 	TEST_ASSERT(officer.Adjacent(suspect), "The officer is not beside the suspect")
 	case.step_desk()
 	TEST_ASSERT_EQUAL(officer.pulling, suspect, "On the way to the evidence locker the officer left the cuffed suspect standing alone")
+
+/**
+ * Item B (soak five_star_heavy, Undertow): a downed five-star suspect lay beside searching officers for a minute and
+ * nobody finished them. stealth_candidates() (stealth_perception.dm) dropped anyone down or tied up with no ckey, the
+ * rule for an NPC captive; a body with a mind is a person's, whether or not their player is at the keys (ghosted,
+ * disconnected, or the soak's scripted suspect). An NPC down or in cuffs is still nobody's to notice.
+ */
+/datum/unit_test/voidcrew_outpost_police_downed_person_seen
+
+/datum/unit_test/voidcrew_outpost_police_downed_person_seen/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = police_loaded_outpost(/obj/structure/overmap/trader_outpost/black_market)
+	if(!outpost)
+		return
+	var/datum/outpost_police/police = outpost.police
+	TEST_ASSERT(!police.profile.spares_downed, "Setup: the red zone's police spare the downed")
+	police.sleep_tick()
+	stun_squad_isolate(police)
+	var/list/turf/row = dispatch_row(outpost)
+	TEST_ASSERT_NOTNULL(row, "No three free tiles in a row on the concourse")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = stun_squad_officers(outpost, 1)[1]
+	officer.forceMove(row[1])
+	officer.setDir(get_dir(row[1], row[3]))
+	var/mob/living/carbon/human/suspect = police_arrest_person(row[3])
+	police_pin_warrant(police, suspect.mind, 145) // five stars
+	suspect.adjustBruteLoss(110)
+	TEST_ASSERT(suspect.stat != CONSCIOUS && suspect.stat != DEAD, "110 brute did not put the suspect into crit")
+	TEST_ASSERT_NULL(suspect.ckey, "Setup: the suspect has a ckey")
+	TEST_ASSERT(police.finishes_downed(suspect, officer), "Setup: the red zone does not finish a downed five-star suspect")
+
+	TEST_ASSERT(suspect in stealth_candidates(officer, 9), "A downed person with no player at the keys is not someone an officer can notice") // 9: HUMAN_NPC_SIGHT_RANGE
+	// A body with no mind and no player, down: nobody's to notice, as before
+	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human/consistent, row[2])
+	body.adjustStaminaLoss(200)
+	TEST_ASSERT(HAS_TRAIT(body, TRAIT_INCAPACITATED), "200 stamina damage did not put the body down")
+	TEST_ASSERT(!(body in stealth_candidates(officer, 9)), "A downed body with no mind is someone an officer can notice") // 9: HUMAN_NPC_SIGHT_RANGE
+	qdel(body)
+
+	// Searching, with them lying two tiles in front of it: alert on them and a shot planned
+	var/datum/ai_controller/basic_controller/human_npc/stealth/outpost_police/brain = officer.ai_controller
+	brain.stealth_setup()
+	brain.stealth_go_searching(get_turf(officer))
+	officer.setDir(get_dir(row[1], row[3]))
+	for(var/i in 1 to 8)
+		if(brain.stealth_state() == "alert") // STEALTH_ALERT
+			break
+		brain.stealth_look()
+		sleep(5)
+	TEST_ASSERT_EQUAL(brain.stealth_state(), "alert", "A searching red zone officer did not go on alert at a downed five-star suspect two tiles in front of it")
+	TEST_ASSERT_EQUAL(brain.blackboard[BB_BASIC_MOB_CURRENT_TARGET], suspect, "The officer is alert on someone else")
+	TEST_ASSERT(police_plans_shot(officer, suspect), "A red zone officer plans no shot at a downed five-star suspect")
+	police_pin_warrant(police, suspect.mind, 0)
+	dispatch_clear(police)
