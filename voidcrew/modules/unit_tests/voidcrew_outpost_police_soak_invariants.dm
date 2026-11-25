@@ -152,7 +152,7 @@
 				run.held_since -= old_key
 		if(door && door_loiter_excused(run, body, door))
 			door = null
-		if(run.held(key, door && world.time - found.moved_at >= 1 SECONDS) > limit)
+		if(run.held(key, door) > limit)
 			run.breach(src, REF(body), "[found.id] ([body.real_name]) has stood still in the doorway of [door] at [run.where(here)] for over [limit]s", list(body))
 
 /// Whether `body` standing in `door` is at work there, not loitering
