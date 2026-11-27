@@ -1,0 +1,234 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"apJ" = (
+/obj/structure/closet/secure_closet/medical3,
+/obj/item/clothing/suit/toggle/labcoat/paramedic,
+/obj/item/clothing/suit/hooded/wintercoat/medical/paramedic,
+/obj/item/clothing/head/soft/paramedic,
+/obj/item/reagent_containers/hypospray/combat,
+/obj/item/defibrillator/compact/loaded,
+/obj/item/healthanalyzer,
+/obj/item/flashlight/seclite,
+/obj/item/clothing/mask/bandana/blue,
+/obj/item/clothing/glasses/hud/health/sunglasses,
+/obj/item/storage/belt/medical,
+/obj/item/clothing/suit/armor/vest{
+	icon_state = "marine_medic"
+	},
+/obj/effect/turf_decal/trimline/neutral,
+/obj/machinery/light/floor,
+/turf/open/floor/iron/textured_large,
+/area/template_noop)
+"bHs" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"foy" = (
+/obj/effect/turf_decal/trimline/blue/warning{
+	dir = 1
+	},
+/obj/item/pickaxe{
+	pixel_x = 5
+	},
+/obj/structure/closet/cardboard,
+/obj/item/shovel{
+	pixel_x = -2
+	},
+/obj/item/mining_scanner{
+	pixel_x = 6;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/large,
+/area/template_noop)
+"fzz" = (
+/obj/effect/turf_decal/trimline/blue/warning{
+	dir = 1
+	},
+/obj/machinery/sleeper{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/south,
+/obj/machinery/light_switch/directional/south{
+	pixel_x = 9
+	},
+/turf/open/floor/iron/large,
+/area/template_noop)
+"fCd" = (
+/obj/effect/turf_decal/trimline/blue/warning,
+/obj/effect/turf_decal/caution/white,
+/turf/open/floor/iron/large,
+/area/template_noop)
+"gWQ" = (
+/obj/machinery/vending/medical,
+/turf/open/floor/catwalk_floor/iron,
+/area/template_noop)
+"hIp" = (
+/obj/effect/turf_decal/trimline/blue/warning,
+/obj/structure/chair/sofa/bench/right,
+/turf/open/floor/iron/large,
+/area/template_noop)
+"icW" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/flora/bush/large{
+	pixel_y = -4
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/turf/open/floor/grass,
+/area/template_noop)
+"juJ" = (
+/obj/effect/turf_decal/trimline/blue/warning,
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/item/defibrillator/loaded{
+	pixel_y = 15
+	},
+/turf/open/floor/iron/large,
+/area/template_noop)
+"kmE" = (
+/obj/structure/table/optable,
+/obj/machinery/defibrillator_mount/directional/north,
+/obj/effect/turf_decal/delivery/white,
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/iron/large,
+/area/template_noop)
+"lQM" = (
+/obj/effect/turf_decal/trimline/blue/warning{
+	dir = 1
+	},
+/obj/machinery/stasis,
+/obj/machinery/power/apc/auto_name/directional/south,
+/turf/open/floor/iron/large,
+/area/template_noop)
+"mTX" = (
+/obj/structure/table/reinforced/rglass,
+/obj/item/reagent_containers/cup/bottle/epinephrine{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/cup/bottle/multiver{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/turf/open/floor/iron/large,
+/area/template_noop)
+"odR" = (
+/obj/effect/turf_decal/trimline/blue/warning{
+	dir = 1
+	},
+/turf/open/floor/iron/large,
+/area/template_noop)
+"poZ" = (
+/obj/effect/turf_decal/trimline/blue/warning,
+/obj/structure/table/reinforced,
+/obj/effect/spawner/surgery_tray/full,
+/turf/open/floor/iron/large,
+/area/template_noop)
+"tWw" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/structure/table/reinforced/rglass,
+/obj/item/storage/medkit/brute{
+	pixel_x = -3;
+	pixel_y = -3
+	},
+/obj/item/storage/medkit/fire{
+	pixel_x = 12;
+	pixel_y = -3
+	},
+/obj/item/storage/medkit/toxin{
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/item/storage/medkit/o2{
+	pixel_x = 13;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/large,
+/area/template_noop)
+"vcm" = (
+/turf/template_noop,
+/area/template_noop)
+"vBm" = (
+/obj/structure/railing{
+	dir = 4
+	},
+/obj/structure/closet/crate/freezer/blood,
+/turf/open/floor/iron/large,
+/area/template_noop)
+"vXd" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/machinery/computer/operating,
+/turf/open/floor/iron/large,
+/area/template_noop)
+"wdH" = (
+/obj/machinery/suit_storage_unit/medical,
+/turf/open/floor/catwalk_floor/iron,
+/area/template_noop)
+"xka" = (
+/obj/effect/turf_decal/trimline/blue/warning,
+/obj/structure/chair/sofa/bench/left,
+/turf/open/floor/iron/large,
+/area/template_noop)
+
+(1,1,1) = {"
+vcm
+hIp
+vcm
+vcm
+vcm
+fzz
+bHs
+"}
+(2,1,1) = {"
+icW
+xka
+vcm
+gWQ
+vcm
+foy
+vBm
+"}
+(3,1,1) = {"
+vcm
+vcm
+vcm
+apJ
+vcm
+vcm
+vcm
+"}
+(4,1,1) = {"
+vXd
+juJ
+vcm
+wdH
+vcm
+odR
+tWw
+"}
+(5,1,1) = {"
+kmE
+fCd
+vcm
+vcm
+vcm
+odR
+mTX
+"}
+(6,1,1) = {"
+vcm
+poZ
+vcm
+vcm
+vcm
+lQM
+vcm
+"}

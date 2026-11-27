@@ -1,0 +1,267 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"chH" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"czm" = (
+/obj/structure/closet/wall/cargo/directional/south,
+/obj/item/clothing/under/costume/mech_suit,
+/obj/item/clothing/mask/gas/sechailer{
+	pixel_y = -9;
+	pixel_x = -2
+	},
+/obj/item/clothing/mask/bandana/skull{
+	pixel_x = 10;
+	pixel_y = 3
+	},
+/obj/item/clothing/glasses/hud/diagnostic/night{
+	pixel_y = -3;
+	pixel_x = -3
+	},
+/obj/item/clothing/shoes/combat/swat{
+	pixel_y = -6;
+	pixel_x = 9
+	},
+/obj/item/clothing/suit/jacket/miljacket{
+	pixel_x = 3
+	},
+/obj/item/clothing/gloves/color/light_brown{
+	pixel_y = -13
+	},
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"eTs" = (
+/obj/machinery/autolathe,
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"gJA" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"gOm" = (
+/obj/effect/turf_decal/arrows{
+	pixel_y = 15;
+	pixel_x = 10
+	},
+/obj/effect/turf_decal/arrows{
+	pixel_y = 15;
+	pixel_x = -10
+	},
+/obj/effect/turf_decal/arrows{
+	pixel_y = -2;
+	pixel_x = 10
+	},
+/obj/effect/turf_decal/arrows{
+	pixel_y = -2;
+	pixel_x = -10
+	},
+/obj/effect/turf_decal/siding/thinplating/dark/end{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/textured_large,
+/area/template_noop)
+"iou" = (
+/turf/template_noop,
+/area/template_noop)
+"jjl" = (
+/obj/machinery/computer/mech_bay_power_console{
+	dir = 1
+	},
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"kgY" = (
+/obj/machinery/mecha_part_fabricator,
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"lAQ" = (
+/obj/effect/turf_decal/arrows{
+	pixel_y = 15
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/ash{
+	pixel_x = 7;
+	pixel_y = 12
+	},
+/obj/effect/decal/cleanable/glass/plastitanium/screws,
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"nHy" = (
+/obj/effect/turf_decal/arrows{
+	pixel_y = 15;
+	pixel_x = 10
+	},
+/obj/effect/turf_decal/arrows{
+	pixel_y = 15;
+	pixel_x = -10
+	},
+/obj/effect/turf_decal/arrows{
+	pixel_y = -2;
+	pixel_x = -10
+	},
+/obj/effect/turf_decal/arrows{
+	pixel_y = -2;
+	pixel_x = 10
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured_large,
+/area/template_noop)
+"oOt" = (
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/machinery/rnd/production/circuit_imprinter/department/science,
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/machinery/light_switch/directional/north{
+	pixel_x = -11
+	},
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"qdz" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"qEh" = (
+/obj/structure/rack,
+/obj/item/storage/toolbox/electrical{
+	pixel_x = -1;
+	pixel_y = 4
+	},
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = 2;
+	pixel_y = -1
+	},
+/obj/item/storage/belt/utility/full{
+	pixel_y = 6
+	},
+/obj/item/clothing/glasses/meson/engine{
+	pixel_x = 2;
+	pixel_y = 4
+	},
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"qJZ" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/obj/machinery/door/poddoor{
+	id = "gemogee_mech";
+	name = "Mech Bay Blast Door"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/iron/dark/textured_large,
+/area/template_noop)
+"rzz" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/wrapping,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"tiy" = (
+/obj/vehicle/sealed/mecha/ripley/paddy,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/iron/dark/textured_large,
+/area/template_noop)
+"wfC" = (
+/obj/structure/table/reinforced,
+/obj/item/clothing/gloves/combat{
+	pixel_y = 13
+	},
+/obj/item/clothing/glasses/welding{
+	pixel_y = 5;
+	pixel_x = 6
+	},
+/obj/item/stack/cable_coil,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"wjU" = (
+/obj/machinery/mech_bay_recharge_port,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"xpn" = (
+/obj/item/mecha_parts/mecha_equipment/thrusters/ion,
+/obj/structure/closet/crate/secure/gear,
+/obj/item/mecha_parts/mecha_equipment/weapon/energy/laser{
+	pixel_y = -8
+	},
+/obj/item/mecha_parts/mecha_equipment/generator{
+	pixel_x = 4;
+	pixel_y = -9
+	},
+/obj/item/mecha_parts/mecha_equipment/repair_droid,
+/obj/effect/decal/cleanable/greenglow,
+/obj/machinery/button/door{
+	dir = 4;
+	id = "gemogee_mech";
+	name = "Blast Door Control";
+	pixel_x = -22
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+qEh
+wfC
+xpn
+wjU
+chH
+"}
+(2,1,1) = {"
+qdz
+gOm
+nHy
+tiy
+qJZ
+"}
+(3,1,1) = {"
+oOt
+rzz
+gJA
+jjl
+iou
+"}
+(4,1,1) = {"
+kgY
+lAQ
+czm
+iou
+iou
+"}
+(5,1,1) = {"
+iou
+eTs
+iou
+iou
+iou
+"}

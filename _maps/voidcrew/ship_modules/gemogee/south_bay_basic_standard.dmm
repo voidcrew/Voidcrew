@@ -1,0 +1,245 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aMG" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"bHd" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 9
+	},
+/turf/template_noop,
+/area/template_noop)
+"bNG" = (
+/obj/effect/turf_decal/trimline/neutral/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/neutral/mid_joiner{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/template_noop,
+/area/template_noop)
+"esf" = (
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/turf/template_noop,
+/area/template_noop)
+"eUn" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 10
+	},
+/turf/template_noop,
+/area/template_noop)
+"gJc" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 6
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/template_noop,
+/area/template_noop)
+"hMK" = (
+/obj/effect/turf_decal/trimline/neutral/line,
+/obj/effect/turf_decal/trimline/neutral/mid_joiner,
+/turf/template_noop,
+/area/template_noop)
+"lJw" = (
+/turf/template_noop,
+/area/template_noop)
+"lXg" = (
+/obj/structure/rack,
+/obj/item/restraints/handcuffs{
+	pixel_y = 3;
+	pixel_x = -3
+	},
+/obj/item/restraints/handcuffs{
+	pixel_y = -1;
+	pixel_x = -3
+	},
+/obj/item/restraints/handcuffs{
+	pixel_y = -5;
+	pixel_x = -3
+	},
+/obj/item/crowbar/power{
+	pixel_y = -6
+	},
+/obj/effect/turf_decal/trimline/neutral/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/neutral/mid_joiner{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"nqW" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/machinery/suit_storage_unit/standard_unit,
+/obj/effect/turf_decal/trimline/neutral/line,
+/obj/effect/turf_decal/trimline/neutral/mid_joiner,
+/obj/effect/turf_decal/bot_white/right,
+/turf/template_noop,
+/area/template_noop)
+"nxF" = (
+/obj/machinery/suit_storage_unit/mining/eva,
+/obj/effect/turf_decal/trimline/neutral/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot_white/left,
+/turf/template_noop,
+/area/template_noop)
+"pAO" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/mechanical{
+	pixel_y = 11
+	},
+/obj/item/binoculars{
+	pixel_x = -1;
+	pixel_y = 4
+	},
+/obj/effect/turf_decal/trimline/neutral/corner,
+/turf/template_noop,
+/area/template_noop)
+"rqX" = (
+/obj/structure/table/reinforced,
+/obj/item/restraints/legcuffs/bola/energy,
+/obj/machinery/recharger{
+	pixel_x = -6;
+	pixel_y = 9
+	},
+/obj/item/clothing/glasses/night{
+	pixel_y = 5;
+	pixel_x = 4
+	},
+/obj/effect/turf_decal/trimline/neutral/corner{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"stC" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/belt/bandolier{
+	pixel_x = -5;
+	pixel_y = 2
+	},
+/obj/item/shrapnel/bullet{
+	pixel_x = 11;
+	pixel_y = 5
+	},
+/obj/item/shrapnel/bullet{
+	pixel_x = 7;
+	pixel_y = 3
+	},
+/obj/item/shrapnel/bullet{
+	pixel_x = 8
+	},
+/obj/item/shrapnel/bullet{
+	pixel_x = 2;
+	pixel_y = 2
+	},
+/obj/item/shrapnel/bullet{
+	pixel_x = 8;
+	pixel_y = 8
+	},
+/obj/effect/turf_decal/trimline/neutral/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/neutral/mid_joiner{
+	dir = 1
+	},
+/turf/template_noop,
+/area/template_noop)
+"tMX" = (
+/obj/structure/table/reinforced,
+/obj/machinery/computer/records/security/laptop{
+	dir = 4;
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/trimline/neutral/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/neutral/mid_joiner{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"uJZ" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/structure/guncase,
+/obj/item/gun/energy/disabler/smg{
+	pixel_y = 7
+	},
+/obj/item/gun/energy/e_gun/mini{
+	pixel_x = -4;
+	pixel_y = -5
+	},
+/obj/effect/turf_decal/trimline/neutral/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/neutral/mid_joiner{
+	dir = 1
+	},
+/obj/effect/turf_decal/box/red,
+/turf/template_noop,
+/area/template_noop)
+"wXK" = (
+/obj/machinery/vending/security,
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"xrK" = (
+/obj/effect/turf_decal/trimline/neutral/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/neutral/mid_joiner{
+	dir = 8
+	},
+/obj/item/kirbyplants/fern,
+/turf/template_noop,
+/area/template_noop)
+"xzz" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+pAO
+lXg
+tMX
+rqX
+aMG
+"}
+(2,1,1) = {"
+hMK
+bHd
+eUn
+stC
+esf
+"}
+(3,1,1) = {"
+nqW
+xzz
+gJc
+uJZ
+lJw
+"}
+(4,1,1) = {"
+nxF
+bNG
+xrK
+lJw
+lJw
+"}
+(5,1,1) = {"
+lJw
+wXK
+lJw
+lJw
+lJw
+"}

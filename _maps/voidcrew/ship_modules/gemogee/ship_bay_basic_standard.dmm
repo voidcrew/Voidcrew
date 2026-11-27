@@ -1,0 +1,247 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aWO" = (
+/obj/structure/closet/body_bag,
+/obj/effect/mob_spawn/corpse/human,
+/turf/open/floor/pod/dark,
+/area/template_noop)
+"cou" = (
+/obj/structure/chair/office/light{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/herringbone,
+/area/template_noop)
+"dNk" = (
+/obj/structure/closet/cardboard,
+/obj/machinery/firealarm/directional/south,
+/obj/machinery/light_switch/directional/south{
+	pixel_x = 9
+	},
+/turf/open/floor/pod/dark,
+/area/template_noop)
+"fCo" = (
+/obj/structure/rack,
+/obj/item/reagent_containers/spray/pepper{
+	pixel_x = 7;
+	pixel_y = -1
+	},
+/obj/item/restraints/handcuffs{
+	pixel_y = 2;
+	pixel_x = -4
+	},
+/obj/item/restraints/handcuffs{
+	pixel_y = -1;
+	pixel_x = -4
+	},
+/obj/item/restraints/handcuffs{
+	pixel_y = -6;
+	pixel_x = -4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/template_noop)
+"hho" = (
+/obj/item/gun/ballistic/automatic/pistol/m1911,
+/obj/item/gun/energy/disabler{
+	pixel_y = -5
+	},
+/obj/structure/guncase,
+/obj/effect/turf_decal/bot_white,
+/turf/open/floor/pod/dark,
+/area/template_noop)
+"iEj" = (
+/obj/structure/table/reinforced,
+/obj/item/binoculars{
+	pixel_x = 4
+	},
+/obj/item/storage/belt/military{
+	pixel_x = -6;
+	pixel_y = 10
+	},
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/iron/dark/herringbone,
+/area/template_noop)
+"iZK" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"jGe" = (
+/turf/open/floor/pod/dark,
+/area/template_noop)
+"kpC" = (
+/obj/structure/table/reinforced,
+/obj/machinery/recharger{
+	pixel_x = -5;
+	pixel_y = 10
+	},
+/obj/item/storage/backpack/duffelbag/sec{
+	pixel_x = -1;
+	pixel_y = 3
+	},
+/turf/open/floor/iron/dark/herringbone,
+/area/template_noop)
+"mMb" = (
+/obj/structure/table/reinforced,
+/obj/item/flashlight/lamp{
+	pixel_y = 10;
+	pixel_x = -7
+	},
+/obj/item/ammo_box/c45,
+/obj/structure/railing{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/herringbone,
+/area/template_noop)
+"mVx" = (
+/obj/structure/rack,
+/obj/item/ammo_box/magazine/m45{
+	pixel_x = -4
+	},
+/obj/item/ammo_box/magazine/m45{
+	pixel_x = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/template_noop)
+"oNJ" = (
+/obj/structure/railing{
+	dir = 4
+	},
+/obj/structure/closet/crate/medical,
+/obj/item/defibrillator/loaded,
+/obj/item/storage/medkit/surgery,
+/obj/item/storage/medkit/toxin{
+	pixel_y = -6;
+	pixel_x = 3
+	},
+/obj/item/clothing/neck/stethoscope,
+/obj/item/clothing/gloves/latex,
+/turf/open/floor/pod/dark,
+/area/template_noop)
+"oRN" = (
+/obj/structure/weightmachine,
+/turf/open/floor/pod/dark,
+/area/template_noop)
+"pec" = (
+/obj/structure/window/reinforced/spawner{
+	dir = 4
+	},
+/obj/machinery/door/window/brigdoor/security/cell,
+/turf/open/floor/iron/dark/herringbone,
+/area/template_noop)
+"pvO" = (
+/obj/structure/window/reinforced/spawner{
+	dir = 4
+	},
+/obj/structure/bed,
+/obj/item/bedsheet/grey,
+/turf/open/floor/iron/dark/herringbone,
+/area/template_noop)
+"rEU" = (
+/obj/structure/closet/crate/cargo,
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/item/pickaxe,
+/obj/item/mining_scanner,
+/turf/open/floor/pod/dark,
+/area/template_noop)
+"ttx" = (
+/turf/template_noop,
+/area/template_noop)
+"uvi" = (
+/obj/structure/window/reinforced/spawner,
+/obj/structure/toilet{
+	dir = 4
+	},
+/obj/structure/sink{
+	pixel_y = 14;
+	pixel_x = 10
+	},
+/turf/open/floor/iron/dark/herringbone,
+/area/template_noop)
+"uvu" = (
+/obj/effect/turf_decal/trimline/neutral,
+/obj/machinery/light/floor,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"xmU" = (
+/obj/structure/closet/secure_closet{
+	icon_state = "sec";
+	name = "gear locker";
+	req_access_txt = "1";
+	req_ship_access = 1;
+	anchored = 1
+	},
+/obj/item/clothing/head/helmet/alt{
+	pixel_y = 9;
+	pixel_x = 4
+	},
+/obj/item/clothing/mask/russian_balaclava{
+	pixel_x = -7;
+	pixel_y = 4
+	},
+/obj/item/clothing/shoes/combat{
+	pixel_y = -9
+	},
+/obj/item/clothing/suit/armor/vest/marine/sulaco,
+/obj/item/clothing/gloves/fingerless{
+	pixel_y = -6
+	},
+/obj/effect/turf_decal/delivery/white,
+/turf/open/floor/iron/dark/herringbone,
+/area/template_noop)
+
+(1,1,1) = {"
+ttx
+uvi
+ttx
+ttx
+ttx
+dNk
+iZK
+"}
+(2,1,1) = {"
+pvO
+pec
+ttx
+fCo
+ttx
+aWO
+oNJ
+"}
+(3,1,1) = {"
+ttx
+ttx
+ttx
+uvu
+ttx
+ttx
+ttx
+"}
+(4,1,1) = {"
+mMb
+kpC
+ttx
+mVx
+ttx
+jGe
+rEU
+"}
+(5,1,1) = {"
+iEj
+cou
+ttx
+ttx
+ttx
+jGe
+oRN
+"}
+(6,1,1) = {"
+ttx
+xmU
+ttx
+ttx
+ttx
+hho
+ttx
+"}

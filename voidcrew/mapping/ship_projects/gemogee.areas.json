@@ -1,0 +1,36 @@
+{
+  "Version": 1,
+  "Ship": "/datum/map_template/shuttle/voidcrew/gemogee",
+  "Areas": [
+    {
+      "Path": "/area/shuttle/voidcrew/gemogee/bridge",
+      "Name": "Bridge",
+      "IconState": "bridge"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/gemogee/main_bay",
+      "Name": "Main Bay",
+      "IconState": "quart"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/gemogee/engine_bays",
+      "Name": "Engine Bays",
+      "IconState": "quart"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/gemogee/north_module",
+      "Name": "North Module",
+      "IconState": "station"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/gemogee/south_module",
+      "Name": "South Module",
+      "IconState": "station"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/gemogee/modular_wwings",
+      "Name": "Modular wwings",
+      "IconState": "station"
+    }
+  ]
+}

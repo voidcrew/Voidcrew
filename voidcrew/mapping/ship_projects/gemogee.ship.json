@@ -1,15 +1,17 @@
 {
   "Version": 1,
   "ID": "gemogee",
-  "Description": "",
+  "Description": "A smaller ship, design for speed and modularity. You often find it in the hands of aspiring salvager, medic, pirate and bounty hunter crews. ",
   "Hull": {
     "Type": "/datum/map_template/shuttle/voidcrew/gemogee",
-    "Name": "Gemogee",
+    "Name": "Gemogee-Class Runner",
     "Prefix": "_maps/voidcrew/ships/",
     "Port": "ship",
     "Suffix": "gemogee_bounty_hunter_black",
     "Slots": [
-      "cargo_load"
+      "ship_bay",
+      "south_bay",
+      "wing_modules"
     ],
     "Themes": [
       {
@@ -17,7 +19,11 @@
         "Name": "Bounty Hunter Black",
         "Suffix": "gemogee_bounty_hunter_black",
         "Description": "The standard variation of the ship. \nYou often see this in the hands of \nwell off pirates and bounty hunters",
-        "Slots": [],
+        "Slots": [
+          "ship_bay",
+          "south_bay",
+          "wing_modules"
+        ],
         "Default": true
       },
       {
@@ -33,31 +39,186 @@
         "Name": "Industrial Cracker",
         "Suffix": "gemogee_industrial_cracker",
         "Description": "A converted Gemogee, designed to assist in salvaging, mining and industrial work. Also a great disguise for bounty hunters!",
-        "Slots": [
-          "cargo_load"
-        ],
+        "Slots": [],
         "Default": false
       }
     ],
     "Modules": [
       {
-        "ID": "cargo_load_basic",
-        "Name": "cargo load",
-        "Slot": "cargo_load",
-        "File": "gemogee/cargo_load_basic.dmm",
+        "ID": "ship_bay_basic",
+        "Name": "Ship Bay",
+        "Slot": "ship_bay",
+        "File": "gemogee/ship_bay_basic.dmm",
         "Themes": [
-          "industrial_cracker"
+          "standard"
         ],
         "Default": true
+      },
+      {
+        "ID": "hunter_bay",
+        "Name": "Hunter Bay",
+        "Slot": "ship_bay",
+        "File": "gemogee/hunter_bay.dmm",
+        "Description": "Used by most bounty runners worth their salt. Comes with everything you need to catch those criminals.",
+        "Themes": [
+          "standard"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "medical_bay",
+        "Name": "Medical Bay",
+        "Slot": "ship_bay",
+        "File": "gemogee/medical_bay.dmm",
+        "Description": "A standard bay for all your medical needs. Run in there and save those lives!",
+        "Themes": [
+          "standard"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "salvager_bay",
+        "Name": "Salvager Bay",
+        "Slot": "ship_bay",
+        "File": "gemogee/salvager_bay.dmm",
+        "Description": "For your asteroid cracking and spelunking needs. Tools to deconstruct any rock or ship",
+        "Themes": [
+          "standard"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "science_bay",
+        "Name": "Science Bay",
+        "Slot": "ship_bay",
+        "File": "gemogee/science_bay.dmm",
+        "Description": "Ever wanted to do science on the run? felt the need to conduct your experiments out of anyones sight? Try out our new top of the line science runner!",
+        "Themes": [
+          "standard"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "south_bay_basic",
+        "Name": "South Bay",
+        "Slot": "south_bay",
+        "File": "gemogee/south_bay_basic.dmm",
+        "Themes": [
+          "standard"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "surgical_suite",
+        "Name": "Surgical Suite",
+        "Slot": "south_bay",
+        "File": "gemogee/surgical_suite.dmm",
+        "Description": "a surgical suite, containing everything you need to perhaps re-attatch limbs",
+        "Themes": [
+          "standard"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "mech_suite",
+        "Name": "Mech Suite",
+        "Slot": "south_bay",
+        "File": "gemogee/mech_suite.dmm",
+        "Description": "A miniature Mech bay, loaded with your very own Paddy! This can be useful for anyone from the bounty hunter, salvager or paramedic",
+        "Themes": [
+          "standard"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "chemical_suite",
+        "Name": "Chemical Suite",
+        "Slot": "south_bay",
+        "File": "gemogee/chemical_suite.dmm",
+        "Description": "Feel like making some \"medicine\"? or mabye you actually do. I wont judge either way.",
+        "Themes": [
+          "standard"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "xenobiological_suite",
+        "Name": "Xenobiological Suite",
+        "Slot": "south_bay",
+        "File": "gemogee/xenobiological_suite.dmm",
+        "Description": "For the ones who loved to play with slime - a chance to do it all over again!",
+        "Themes": [
+          "standard"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "wing_modules_basic",
+        "Name": "Wing Modules",
+        "Slot": "wing_modules",
+        "File": "gemogee/wing_modules_basic.dmm",
+        "Themes": [
+          "standard"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "cargo_wings",
+        "Name": "Cargo Wings",
+        "Slot": "wing_modules",
+        "File": "gemogee/cargo_wings.dmm",
+        "Description": "Ever wished to be a space trucker? Now's your chance!\n",
+        "Themes": [
+          "standard"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "leisure_wings",
+        "Name": "Leisure Wings",
+        "Slot": "wing_modules",
+        "File": "gemogee/leisure_wings.dmm",
+        "Description": "Tired of monotonous work? Mabye you just want to lay down for a bit, eat some food, read a book... Well we've got you covered with our brand new relux(TM) wing modules!",
+        "Themes": [
+          "standard"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "science_wings",
+        "Name": "Science Wings",
+        "Slot": "wing_modules",
+        "File": "gemogee/science_wings.dmm",
+        "Description": "Need to keep your research moving for legal purpouses? We've got you covered!",
+        "Themes": [
+          "standard"
+        ],
+        "Default": false
       }
     ]
   },
-  "Crew": 4,
+  "Crew": 5,
   "Hidden": false,
   "Cost": 0,
   "PartCosts": {
-    "theme/industrial_cracker": {},
-    "theme/medical_runner": {}
+    "module/cargo_wings": {},
+    "module/chemical_suite": {},
+    "module/hunter_bay": {},
+    "module/leisure_wings": {},
+    "module/mech_suite": {},
+    "module/medical_bay": {},
+    "module/salvager_bay": {},
+    "module/science_bay": {},
+    "module/science_wings": {},
+    "module/surgical_suite": {},
+    "module/xenobiological_suite": {},
+    "ship": {},
+    "theme/industrial_cracker": {
+      "combat": 100
+    },
+    "theme/medical_runner": {
+      "combat": 100
+    }
   },
   "PortDirection": 2
 }

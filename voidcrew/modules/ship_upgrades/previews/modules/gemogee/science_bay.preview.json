@@ -1,21 +1,21 @@
 {
  "hulls": {},
  "modules": {
-  "gemogee/cargo_load_basic.dmm": {
+  "gemogee/science_bay.dmm": {
    "connector": [
     1,
     1
    ],
    "height": 7,
    "themes": {
-    "industrial_cracker": {
+    "standard": {
      "connector": [
       1,
       1
      ],
      "height": 7,
-     "png": "gemogee_cargo_load_basic_industrial_cracker.png",
-     "src_md5": "9952b5acad62981f9c4b21aba6fdf211",
+     "png": "gemogee_science_bay_standard.png",
+     "src_md5": "be1d138d8cd0f363f48f7cd502f78153",
      "width": 6
     }
    },

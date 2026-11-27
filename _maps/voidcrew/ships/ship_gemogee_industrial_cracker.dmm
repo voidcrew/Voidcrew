@@ -16,6 +16,9 @@
 	dir = 1
 	},
 /obj/structure/ore_box,
+/obj/effect/turf_decal/stripes{
+	dir = 5
+	},
 /turf/open/floor/pod/light,
 /area/template_noop)
 "aiH" = (
@@ -49,6 +52,12 @@
 	dir = 1
 	},
 /obj/structure/reagent_dispensers/fueltank,
+/obj/structure/railing{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
 /turf/open/floor/pod/light,
 /area/template_noop)
 "att" = (
@@ -109,6 +118,9 @@
 /obj/item/storage/toolbox/emergency{
 	pixel_y = 2
 	},
+/obj/effect/turf_decal/stripes{
+	dir = 10
+	},
 /turf/open/floor/pod/light,
 /area/template_noop)
 "bli" = (
@@ -120,11 +132,24 @@
 	dir = 1
 	},
 /obj/structure/table/reinforced,
-/obj/item/reagent_containers/cup/glass/coffee_cup{
-	pixel_y = 7;
+/obj/machinery/microwave{
+	pixel_y = 16;
+	pixel_x = -1
+	},
+/obj/item/storage/box/donkpockets{
+	pixel_x = 5
+	},
+/obj/item/reagent_containers/cup/glass/waterbottle{
+	pixel_x = -7;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/condiment/saltshaker{
+	pixel_y = 29;
 	pixel_x = 7
 	},
-/obj/machinery/cell_charger,
+/obj/item/reagent_containers/condiment/peppermill{
+	pixel_y = 28
+	},
 /turf/open/floor/iron/dark/small,
 /area/template_noop)
 "bCd" = (
@@ -156,14 +181,15 @@
 /turf/open/floor/pod,
 /area/template_noop)
 "bTf" = (
-/obj/modular_map_root/ship_upgrade{
-	footprint = ".#.##./##.###/....../.###../....../##.###/.#.##.";
-	key = "cargo_load"
+/obj/effect/turf_decal/tile/brown/opposingcorners{
+	dir = 1
 	},
-/turf/closed/wall/mineral/titanium/survival/nodiagonal,
+/obj/item/stack/ore/iron,
+/obj/effect/turf_decal/stripes,
+/turf/open/floor/pod/light,
 /area/template_noop)
 "bTj" = (
-/turf/open/floor/mineral/plastitanium/red,
+/turf/open/floor/mineral/titanium/yellow,
 /area/template_noop)
 "bXS" = (
 /obj/effect/turf_decal/trimline/brown/line{
@@ -299,6 +325,7 @@
 	},
 /obj/item/gun/energy/plasmacutter,
 /obj/item/storage/belt/utility/full/engi,
+/obj/effect/turf_decal/stripes,
 /turf/open/floor/pod/light,
 /area/template_noop)
 "gfJ" = (
@@ -372,6 +399,12 @@
 /obj/item/clothing/suit/jacket/bomber{
 	pixel_x = 6
 	},
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
 /turf/open/floor/pod/light,
 /area/template_noop)
 "hFl" = (
@@ -388,6 +421,7 @@
 	},
 /obj/effect/turf_decal/siding/dark,
 /obj/structure/rack,
+/obj/machinery/vending/wallmed/directional/south,
 /turf/open/floor/iron/dark/small,
 /area/template_noop)
 "hNj" = (
@@ -530,6 +564,9 @@
 /obj/item/stack/ore/gold,
 /obj/item/stack/ore/gold,
 /obj/item/stack/ore/iron,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
 /turf/open/floor/pod/light,
 /area/template_noop)
 "jqQ" = (
@@ -545,6 +582,12 @@
 /obj/item/stack/ore/plasma,
 /obj/item/stack/ore/plasma,
 /obj/item/stack/ore/plasma,
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
 /turf/open/floor/pod/light,
 /area/template_noop)
 "juZ" = (
@@ -577,6 +620,7 @@
 	id = "gemogee_hangar"
 	},
 /obj/structure/fans/tiny,
+/obj/structure/fans/tiny,
 /turf/open/floor/pod/dark,
 /area/template_noop)
 "ksZ" = (
@@ -601,6 +645,7 @@
 /obj/item/banner/cargo/mundane{
 	pixel_y = 11
 	},
+/obj/effect/turf_decal/stripes,
 /turf/open/floor/pod/light,
 /area/template_noop)
 "lqw" = (
@@ -611,6 +656,8 @@
 /area/template_noop)
 "luv" = (
 /obj/machinery/light/floor,
+/obj/machinery/light/floor,
+/obj/structure/ore_box,
 /turf/open/floor/iron/smooth_large,
 /area/template_noop)
 "lVH" = (
@@ -677,9 +724,13 @@
 	dir = 1
 	},
 /obj/item/stack/ore/iron,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
 /turf/open/floor/pod/light,
 /area/template_noop)
 "ncy" = (
+/obj/structure/ore_box,
 /turf/open/floor/catwalk_floor/iron_smooth,
 /area/template_noop)
 "nxw" = (
@@ -725,7 +776,7 @@
 "nGk" = (
 /obj/structure/bed/dogbed/renault,
 /mob/living/basic/mouse,
-/turf/open/floor/mineral/plastitanium/red,
+/turf/open/floor/mineral/titanium/yellow,
 /area/template_noop)
 "nTc" = (
 /turf/template_noop,
@@ -740,7 +791,7 @@
 	name = "tactical chair";
 	dir = 4
 	},
-/turf/open/floor/mineral/plastitanium/red,
+/turf/open/floor/mineral/titanium/yellow,
 /area/template_noop)
 "ogY" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
@@ -875,6 +926,7 @@
 	id = "gemogee_hangar"
 	},
 /obj/structure/fans/tiny,
+/obj/structure/fans/tiny,
 /turf/open/floor/pod/dark,
 /area/template_noop)
 "qKF" = (
@@ -918,10 +970,10 @@
 	dir = 1
 	},
 /obj/item/stack/ore/iron,
+/obj/effect/turf_decal/stripes{
+	dir = 6
+	},
 /turf/open/floor/pod/light,
-/area/template_noop)
-"szp" = (
-/turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/template_noop)
 "sSC" = (
 /obj/machinery/power/smes/engineering,
@@ -952,12 +1004,18 @@
 	pixel_x = 5
 	},
 /obj/structure/rack,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
 /turf/open/floor/pod/light,
 /area/template_noop)
 "tFg" = (
 /obj/structure/closet/secure_closet/miner,
 /obj/effect/turf_decal/tile/brown/opposingcorners{
 	dir = 1
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
 	},
 /turf/open/floor/pod/light,
 /area/template_noop)
@@ -983,6 +1041,9 @@
 	dir = 1
 	},
 /obj/structure/closet/crate/miningcar,
+/obj/effect/turf_decal/stripes{
+	dir = 9
+	},
 /turf/open/floor/pod/light,
 /area/template_noop)
 "uGe" = (
@@ -1025,6 +1086,22 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/effect/turf_decal/trimline/brown/warning,
 /turf/open/floor/pod,
+/area/template_noop)
+"vfy" = (
+/obj/item/storage/bag/ore{
+	pixel_x = -8;
+	pixel_y = 8
+	},
+/obj/item/storage/bag/ore{
+	pixel_x = 5;
+	pixel_y = 5
+	},
+/obj/item/storage/bag/ore{
+	pixel_x = -8;
+	pixel_y = -3
+	},
+/obj/structure/rack,
+/turf/open/floor/catwalk_floor/iron_smooth,
 /area/template_noop)
 "vgE" = (
 /obj/machinery/door/airlock/maintenance/external,
@@ -1107,7 +1184,7 @@
 /obj/machinery/holopad,
 /obj/effect/turf_decal/tile/neutral/diagonal_centre,
 /obj/effect/turf_decal/tile/neutral/diagonal_centre,
-/turf/open/floor/mineral/plastitanium/red,
+/turf/open/floor/mineral/titanium/yellow,
 /area/template_noop)
 "vQB" = (
 /obj/effect/turf_decal/siding/dark/corner{
@@ -1295,7 +1372,7 @@ gfJ
 qbn
 peO
 mib
-szp
+peO
 uKm
 uKm
 peO
@@ -1325,7 +1402,7 @@ vql
 hFl
 vkE
 twF
-bTf
+peO
 peO
 peO
 peO
@@ -1343,7 +1420,7 @@ peO
 tFg
 rWa
 aiH
-ncy
+vfy
 vmC
 adY
 aoJ
@@ -1404,7 +1481,7 @@ ajm
 vVF
 peO
 nEP
-myM
+bTf
 uQe
 bLf
 vQB

@@ -1,0 +1,518 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ajP" = (
+/obj/effect/turf_decal/siding/wood,
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"atq" = (
+/obj/item/flashlight/lamp{
+	pixel_x = -6;
+	pixel_y = 8
+	},
+/obj/item/paper_bin{
+	pixel_x = 8
+	},
+/obj/item/pen{
+	pixel_y = 4;
+	pixel_x = 8
+	},
+/obj/item/phone{
+	pixel_x = -4;
+	pixel_y = -4
+	},
+/obj/structure/table/wood,
+/turf/open/floor/wood/tile,
+/area/template_noop)
+"aQO" = (
+/obj/structure/chair/greyscale{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 8
+	},
+/turf/open/floor/carpet/purple,
+/area/template_noop)
+"blj" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/purple,
+/area/template_noop)
+"bwd" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/plaque{
+	pixel_x = 28
+	},
+/turf/open/floor/wood/tile,
+/area/template_noop)
+"dny" = (
+/obj/structure/hedge,
+/obj/structure/flora/bush/flowers_pp{
+	pixel_y = 5
+	},
+/turf/open/floor/wood/parquet,
+/area/template_noop)
+"drH" = (
+/obj/structure/table/wood,
+/obj/item/storage/photo_album{
+	pixel_x = -5;
+	pixel_y = 12
+	},
+/obj/item/radio{
+	desc = "An old handheld radio. You could use it, if you really wanted to.";
+	icon_state = "radio";
+	name = "old radio";
+	pixel_x = 2
+	},
+/turf/open/floor/wood/tile,
+/area/template_noop)
+"dtw" = (
+/obj/effect/spawner/random/vending/snackvend{
+	pixel_x = 15
+	},
+/obj/machinery/vending/dinnerware{
+	pixel_x = -6
+	},
+/turf/open/floor/carpet/purple,
+/area/template_noop)
+"dMY" = (
+/obj/machinery/jukebox/no_access,
+/turf/open/floor/wood/parquet,
+/area/template_noop)
+"etN" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"eFK" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"eHM" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood/tile,
+/area/template_noop)
+"gEZ" = (
+/obj/structure/closet/secure_closet{
+	icon_state = "cap";
+	name = "\proper captain's locker";
+	req_access_txt = "20"
+	},
+/obj/item/clothing/shoes/cowboy{
+	pixel_x = 2;
+	pixel_y = -8
+	},
+/obj/item/clothing/glasses/hud/security/sunglasses/eyepatch,
+/obj/item/clothing/gloves/combat{
+	pixel_y = -5
+	},
+/obj/item/clothing/neck/scarf/black{
+	pixel_x = -5
+	},
+/obj/item/clothing/under/syndicate/camo,
+/obj/item/clothing/mask/gas/atmos{
+	name = "tactical gas mask";
+	desc = "Improved gas mask utilized by pirates. Still not very good at blocking gas flow, but it's flameproof!";
+	pixel_y = 4;
+	pixel_x = 3
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 6
+	},
+/obj/item/melee/baton/telescopic,
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"gIo" = (
+/turf/template_noop,
+/area/template_noop)
+"ikH" = (
+/obj/item/melee/baton{
+	pixel_x = 2
+	},
+/obj/item/clothing/suit/armor/vest{
+	pixel_x = 9;
+	pixel_y = -4
+	},
+/obj/item/clothing/suit/armor/vest{
+	pixel_x = 4;
+	pixel_y = -8
+	},
+/turf/template_noop,
+/area/template_noop)
+"jLX" = (
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 8
+	},
+/obj/structure/noticeboard{
+	pixel_y = 32
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"jYD" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"kdB" = (
+/obj/effect/turf_decal/siding/wood/corner,
+/obj/effect/spawner/random/vending/colavend{
+	pixel_x = 5
+	},
+/turf/open/floor/carpet/purple,
+/area/template_noop)
+"lNy" = (
+/obj/structure/chair/greyscale{
+	dir = 8
+	},
+/obj/machinery/power/apc/auto_name/directional/north,
+/turf/open/floor/wood/parquet,
+/area/template_noop)
+"mpl" = (
+/obj/machinery/light_switch{
+	pixel_x = 6;
+	pixel_y = 22
+	},
+/obj/effect/turf_decal/siding/wood/corner,
+/obj/structure/fireplace{
+	dir = 4;
+	pixel_x = -8
+	},
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"mBn" = (
+/obj/structure/table/wood,
+/obj/machinery/chem_dispenser/drinks{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/dark/opposingcorners,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/small,
+/area/template_noop)
+"mUV" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood/parquet,
+/area/template_noop)
+"mWF" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/machinery/oven/range,
+/obj/effect/turf_decal/tile/dark/opposingcorners,
+/turf/open/floor/iron/small,
+/area/template_noop)
+"nmn" = (
+/obj/structure/sign/poster/official/fruit_bowl{
+	pixel_y = 32
+	},
+/obj/effect/turf_decal/siding/wood,
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"ntp" = (
+/obj/structure/table/wood,
+/obj/machinery/reagentgrinder{
+	pixel_y = 18;
+	pixel_x = 7
+	},
+/obj/item/reagent_containers/condiment/enzyme{
+	pixel_x = 18;
+	pixel_y = 8
+	},
+/obj/item/reagent_containers/condiment/saltshaker{
+	pixel_x = -8;
+	pixel_y = 14
+	},
+/obj/item/reagent_containers/condiment/peppermill{
+	pixel_x = -3;
+	pixel_y = 14
+	},
+/obj/effect/turf_decal/tile/dark/opposingcorners,
+/obj/item/storage/bag/tray{
+	pixel_x = -4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/food/burger{
+	pixel_x = -5
+	},
+/turf/open/floor/iron/small,
+/area/template_noop)
+"oZq" = (
+/obj/structure/table/wood,
+/obj/item/storage/fancy/cigarettes/cigars{
+	pixel_x = 4;
+	pixel_y = 4
+	},
+/obj/item/storage/fancy/cigarettes/cigars{
+	pixel_x = 4;
+	pixel_y = 7
+	},
+/obj/item/lighter{
+	pixel_x = -7;
+	pixel_y = -5
+	},
+/obj/structure/bedsheetbin{
+	pixel_x = -13;
+	pixel_y = 3
+	},
+/turf/open/floor/wood/tile,
+/area/template_noop)
+"pvA" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/poster/official/anniversary_vintage_reprint/directional/south,
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"pyL" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/machinery/door/airlock/grunge,
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"pVU" = (
+/obj/machinery/vending/boozeomat{
+	pixel_y = -32;
+	density = 0
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood/parquet,
+/area/template_noop)
+"qtW" = (
+/obj/structure/table/wood,
+/obj/machinery/chem_dispenser/drinks/beer{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/dark/opposingcorners,
+/turf/open/floor/iron/small,
+/area/template_noop)
+"rmB" = (
+/obj/structure/chair/comfy/black{
+	dir = 8
+	},
+/turf/open/floor/wood/tile,
+/area/template_noop)
+"rqY" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/carpet/purple,
+/area/template_noop)
+"suT" = (
+/obj/structure/bookcase/random/fiction,
+/obj/item/radio/intercom{
+	pixel_y = 22;
+	pixel_x = -6
+	},
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"uvJ" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/structure/table/wood,
+/obj/item/trash/chips{
+	pixel_x = 7;
+	pixel_y = 6
+	},
+/obj/item/stack/spacecash/c1000{
+	pixel_y = -1;
+	pixel_x = 3
+	},
+/obj/item/toy/cards/deck{
+	pixel_x = -7;
+	pixel_y = 5
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/purple,
+/area/template_noop)
+"vIU" = (
+/obj/structure/closet/wall/directional/south,
+/obj/effect/turf_decal/tile/dark/opposingcorners,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/storage/box/ingredients/wildcard,
+/obj/item/storage/box/ingredients/random,
+/obj/item/storage/box/ingredients/random,
+/turf/open/floor/iron/small,
+/area/template_noop)
+"wOB" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/structure/sink/kitchen/directional/south{
+	pixel_x = -16
+	},
+/obj/structure/closet/wall/directional/south,
+/obj/effect/turf_decal/tile/dark/opposingcorners,
+/obj/structure/steps/directional/west,
+/obj/item/storage/box/ingredients/carnivore,
+/obj/item/storage/box/ingredients/fruity,
+/turf/open/floor/iron/small,
+/area/template_noop)
+"xvY" = (
+/obj/structure/bed,
+/obj/item/bedsheet/hos,
+/obj/structure/curtain{
+	color = "#5c131b"
+	},
+/obj/structure/sign/poster/official/cohiba_robusto_ad/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood/tile,
+/area/template_noop)
+"yih" = (
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/turf/open/floor/plating,
+/area/template_noop)
+
+(1,1,1) = {"
+gIo
+eFK
+eFK
+dMY
+gIo
+gIo
+gIo
+gIo
+gIo
+gIo
+gIo
+mpl
+eFK
+eFK
+etN
+"}
+(2,1,1) = {"
+gIo
+dtw
+aQO
+rqY
+gIo
+gIo
+gIo
+gIo
+gIo
+gIo
+gIo
+nmn
+atq
+drH
+gIo
+"}
+(3,1,1) = {"
+gIo
+kdB
+uvJ
+blj
+gIo
+gIo
+gIo
+gIo
+gIo
+gIo
+gIo
+ajP
+rmB
+oZq
+gIo
+"}
+(4,1,1) = {"
+gIo
+eFK
+lNy
+mUV
+gIo
+gIo
+gIo
+gIo
+gIo
+ikH
+gIo
+jLX
+jYD
+eFK
+gIo
+"}
+(5,1,1) = {"
+gIo
+yih
+dny
+pVU
+gIo
+gIo
+gIo
+gIo
+gIo
+gIo
+gIo
+suT
+pvA
+eFK
+gIo
+"}
+(6,1,1) = {"
+gIo
+yih
+mWF
+wOB
+gIo
+gIo
+gIo
+gIo
+gIo
+gIo
+gIo
+eFK
+pyL
+eFK
+gIo
+"}
+(7,1,1) = {"
+gIo
+eFK
+ntp
+vIU
+gIo
+gIo
+gIo
+gIo
+gIo
+gIo
+gIo
+gEZ
+eHM
+yih
+gIo
+"}
+(8,1,1) = {"
+gIo
+eFK
+mBn
+qtW
+gIo
+gIo
+gIo
+gIo
+gIo
+gIo
+gIo
+xvY
+bwd
+yih
+gIo
+"}
+(9,1,1) = {"
+gIo
+eFK
+eFK
+eFK
+gIo
+gIo
+gIo
+gIo
+gIo
+gIo
+gIo
+eFK
+eFK
+eFK
+gIo
+"}

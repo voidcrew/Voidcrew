@@ -1,0 +1,26 @@
+{
+ "hulls": {
+  "gemogee_bounty_hunter_black": {
+   "height": 19,
+   "png": "ship_gemogee_bounty_hunter_black.png",
+   "slots": {
+    "ship_bay": [
+     6,
+     7
+    ],
+    "south_bay": [
+     7,
+     1
+    ],
+    "wing_modules": [
+     12,
+     3
+    ]
+   },
+   "src_md5": "5af60591adf5f61c05563662f426c6ec",
+   "width": 20
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}
