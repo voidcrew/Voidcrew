@@ -765,6 +765,77 @@
 	wanted_cleanup(list(ship))
 
 /**
+ * Live round 276: a crewmate hidden aboard the docked ship was charged as an accomplice once a second for minutes. Their
+ * two stars drained to one unseen, and the same tick's sweep charged them back to two: a log line, two star signals and
+ * an embargo restart every second. The sweep charges once per stand and holds the record at two while it lasts; once
+ * the leader is in custody or dead, it fades as usual. A crewmate who turns up later in the stand is charged once.
+ */
+/datum/unit_test/voidcrew_outpost_police_abet_once
+	/// Star changes of each mind: mind -> count (COMSIG_OUTPOST_POLICE_STARS)
+	var/list/star_changes = list()
+
+/datum/unit_test/voidcrew_outpost_police_abet_once/proc/on_stars(datum/source, datum/mind/mind, old_stars, new_stars)
+	SIGNAL_HANDLER
+	star_changes[mind] = star_changes[mind] + 1
+
+/datum/unit_test/voidcrew_outpost_police_abet_once/Run()
+	var/obj/structure/overmap/trader_outpost/outpost = wanted_outpost()
+	var/datum/outpost_police/police = outpost.police
+	var/mob/living/carbon/human/leader = wanted_person(wanted_spot(0, 0))
+	var/mob/living/carbon/human/mate = wanted_person(wanted_spot(1, 0))
+	var/mob/living/carbon/human/late = wanted_person(wanted_spot(1, 1))
+	var/obj/structure/overmap/ship/ship = wanted_ship(leader)
+	ship.ship_team.join_member(mate.mind)
+	ship.ship_team.join_member(late.mind)
+	late.moveToNullspace()
+	var/datum/outpost_warrant/warrant = police_pin_warrant(police, leader.mind, 100) // four stars
+	warrant.crew = leader.mind.get_reputation_crew()
+	RegisterSignal(police, "outpost_police_stars", PROC_REF(on_stars)) // COMSIG_OUTPOST_POLICE_STARS
+
+	// The stand starts: the crewmate is charged once, at two stars
+	police.tick_warrants()
+	var/datum/outpost_warrant/mate_warrant = police.get_warrant(mate.mind)
+	TEST_ASSERT_NOTNULL(mate_warrant, "A crewmate at the outpost was not made an accomplice")
+	TEST_ASSERT_EQUAL(mate_warrant.heat, 25, "The accomplice is not at the two-star floor") // OUTPOST_POLICE_STAR_HEAT[2]
+	star_changes.Cut()
+
+	// Hidden long past the two-star hide time while the leader stands: no charge again, no flicker, no drain
+	mate_warrant.unseen_since = world.time - 10 MINUTES // OUTPOST_POLICE_HIDE_2 is 45 seconds
+	mate_warrant.last_crime_at = 0
+	for(var/i in 1 to 5)
+		police.tick_warrants()
+	TEST_ASSERT_EQUAL(mate_warrant.last_crime_at, 0, "The sweep charged the accomplice again during one stand")
+	TEST_ASSERT_EQUAL(star_changes[mate.mind] || 0, 0, "The accomplice's stars flicked during one stand")
+	TEST_ASSERT_EQUAL(mate_warrant.heat, 25, "The accomplice's record did not hold at two stars during the stand")
+
+	// A crewmate who walks in during the stand is charged once
+	late.forceMove(wanted_spot(2, 0))
+	for(var/i in 1 to 3)
+		police.tick_warrants()
+	TEST_ASSERT_EQUAL(police.get_stars(late.mind), 2, "A crewmate who turned up during the stand is not an accomplice")
+	TEST_ASSERT_EQUAL(star_changes[late.mind], 1, "A crewmate who turned up during the stand was not charged exactly once")
+
+	// The leader in custody: the stand is over, and the record fades by the usual rules
+	var/datum/outpost_police_case/case = new(police, warrant)
+	police.cases[leader.mind] = case
+	case.cuffed = TRUE
+	TEST_ASSERT(police.in_custody(leader), "Setup: the leader is not in custody")
+	for(var/i in 1 to 3)
+		police.tick_warrants()
+	TEST_ASSERT(mate_warrant.heat < 25, "The accomplice's record did not fade with the leader in custody")
+	police.close_case(leader.mind)
+
+	// Free again, a new stand charges them again; the leader dead, it fades
+	police.tick_warrants()
+	TEST_ASSERT_EQUAL(mate_warrant.heat, 25, "A new stand did not charge the accomplice again")
+	leader.death()
+	for(var/i in 1 to 3)
+		police.tick_warrants()
+	TEST_ASSERT(mate_warrant.heat < 25, "The accomplice's record did not fade with the leader dead")
+	UnregisterSignal(police, "outpost_police_stars")
+	wanted_cleanup(list(ship))
+
+/**
  * Owner decisions 34 and 37: someone in crit with an arrest on its way to cuff them keeps their stars until the cuffs
  * are on. Before, crit counted as away: a one-star warrant drained to nothing and the arrest closed with them left
  * lying, and three stars fell to two and were fined instead of jailed. With no arrest on them, crit still fades.
