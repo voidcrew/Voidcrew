@@ -1,0 +1,26 @@
+{
+ "hulls": {},
+ "modules": {
+  "gemogee/salvager_bay.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 7,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "gemogee_salvager_bay_standard.png",
+     "src_md5": "1f1053d5d76247006632705d4adf47a0",
+     "width": 6
+    }
+   },
+   "width": 6
+  }
+ },
+ "tile_px": 32
+}

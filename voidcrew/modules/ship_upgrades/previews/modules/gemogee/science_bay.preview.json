@@ -1,0 +1,26 @@
+{
+ "hulls": {},
+ "modules": {
+  "gemogee/science_bay.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 7,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "gemogee_science_bay_standard.png",
+     "src_md5": "be1d138d8cd0f363f48f7cd502f78153",
+     "width": 6
+    }
+   },
+   "width": 6
+  }
+ },
+ "tile_px": 32
+}

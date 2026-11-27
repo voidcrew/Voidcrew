@@ -1,0 +1,26 @@
+{
+ "hulls": {},
+ "modules": {
+  "gemogee/wing_modules_basic.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 15,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 15,
+     "png": "gemogee_wing_modules_basic_standard.png",
+     "src_md5": "8797ec0e125b35367928f32bc069adab",
+     "width": 9
+    }
+   },
+   "width": 9
+  }
+ },
+ "tile_px": 32
+}

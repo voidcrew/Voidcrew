@@ -1,0 +1,192 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ayG" = (
+/obj/structure/closet/crate/medical,
+/obj/item/defibrillator/loaded,
+/obj/item/storage/medkit/regular,
+/obj/item/storage/medkit/toxin{
+	pixel_y = -6;
+	pixel_x = 3
+	},
+/turf/open/floor/pod/dark,
+/area/template_noop)
+"bcK" = (
+/obj/structure/hedge,
+/obj/structure/flora/bush/flowers_pp{
+	pixel_y = 5
+	},
+/obj/structure/flora/bush/flowers_yw{
+	pixel_y = 5
+	},
+/turf/open/floor/pod/dark,
+/area/template_noop)
+"bJM" = (
+/obj/machinery/rnd/server,
+/obj/machinery/door/window/brigdoor/left/directional/east,
+/obj/structure/window/reinforced/spawner/directional/south,
+/turf/open/floor/pod/dark,
+/area/template_noop)
+"dEX" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"dFr" = (
+/obj/machinery/rnd/production/protolathe/department/science,
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"dGD" = (
+/obj/machinery/rnd/production/circuit_imprinter/department/science,
+/obj/effect/turf_decal/siding/purple,
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"hpQ" = (
+/turf/template_noop,
+/area/template_noop)
+"hRp" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/belt/utility/full,
+/obj/item/experi_scanner{
+	pixel_y = 5;
+	pixel_x = -6
+	},
+/turf/open/floor/pod/dark,
+/area/template_noop)
+"kJQ" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 10
+	},
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"nqV" = (
+/obj/effect/turf_decal/siding/purple,
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"oGC" = (
+/obj/structure/closet/crate/cargo,
+/obj/item/pickaxe,
+/obj/item/mining_scanner{
+	pixel_x = 8;
+	pixel_y = -7
+	},
+/obj/machinery/firealarm/directional/south,
+/obj/machinery/light_switch/directional/south{
+	pixel_x = 9
+	},
+/turf/open/floor/pod/dark,
+/area/template_noop)
+"pQp" = (
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/siding/purple{
+	dir = 8
+	},
+/obj/item/modular_computer/laptop/preset/civilian{
+	pixel_y = 6
+	},
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"qNO" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 9
+	},
+/obj/structure/closet/crate/freezer,
+/obj/item/storage/box/monkeycubes{
+	pixel_y = -3;
+	pixel_x = -3
+	},
+/obj/item/storage/pill_bottle/mutadone{
+	pixel_x = 8;
+	pixel_y = -4
+	},
+/obj/item/clothing/gloves/latex{
+	pixel_x = 1;
+	pixel_y = -8
+	},
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"rmK" = (
+/obj/machinery/dna_scannernew,
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"scV" = (
+/obj/machinery/computer/dna_console{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/purple{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"skM" = (
+/turf/open/floor/pod/dark,
+/area/template_noop)
+"sVD" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"ttl" = (
+/obj/structure/table/reinforced/rglass,
+/obj/effect/turf_decal/siding/purple{
+	dir = 8
+	},
+/obj/item/flesh_shears{
+	pixel_y = 2
+	},
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+
+(1,1,1) = {"
+hpQ
+bcK
+hpQ
+hpQ
+hpQ
+oGC
+dEX
+"}
+(2,1,1) = {"
+bJM
+hRp
+hpQ
+hpQ
+hpQ
+skM
+ayG
+"}
+(3,1,1) = {"
+hpQ
+hpQ
+hpQ
+hpQ
+hpQ
+hpQ
+hpQ
+"}
+(4,1,1) = {"
+pQp
+kJQ
+hpQ
+hpQ
+hpQ
+qNO
+ttl
+"}
+(5,1,1) = {"
+dFr
+nqV
+hpQ
+hpQ
+hpQ
+sVD
+rmK
+"}
+(6,1,1) = {"
+hpQ
+dGD
+hpQ
+hpQ
+hpQ
+scV
+hpQ
+"}

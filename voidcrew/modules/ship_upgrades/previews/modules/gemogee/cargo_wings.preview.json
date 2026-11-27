@@ -1,0 +1,26 @@
+{
+ "hulls": {},
+ "modules": {
+  "gemogee/cargo_wings.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 15,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 15,
+     "png": "gemogee_cargo_wings_standard.png",
+     "src_md5": "1b6b95bfa38ca7a390edb61e0f9941bb",
+     "width": 9
+    }
+   },
+   "width": 9
+  }
+ },
+ "tile_px": 32
+}

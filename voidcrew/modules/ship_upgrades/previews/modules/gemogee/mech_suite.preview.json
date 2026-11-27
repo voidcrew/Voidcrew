@@ -1,0 +1,26 @@
+{
+ "hulls": {},
+ "modules": {
+  "gemogee/mech_suite.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 5,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "gemogee_mech_suite_standard.png",
+     "src_md5": "73d93b6bfa6d7a6606257f6883e60802",
+     "width": 5
+    }
+   },
+   "width": 5
+  }
+ },
+ "tile_px": 32
+}

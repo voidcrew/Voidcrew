@@ -1,0 +1,571 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aFs" = (
+/obj/structure/table,
+/obj/item/seeds/coffee/robusta{
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/cup/glass/coffee{
+	pixel_y = 10;
+	pixel_x = -5
+	},
+/obj/item/storage/box/coffeepack{
+	pixel_x = 7
+	},
+/obj/item/storage/box/coffeepack/robusta{
+	pixel_x = -4
+	},
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"bmr" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"bre" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"bKc" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/caution/stand_clear/white{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"cRq" = (
+/obj/effect/turf_decal/trimline/yellow/warning{
+	dir = 9
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"ddL" = (
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/blood/oil,
+/obj/structure/fans/tiny,
+/obj/machinery/door/poddoor/shutters{
+	id = "gemogee_cargo_2"
+	},
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"fpV" = (
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/yellow/warning{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/glass{
+	pixel_x = -17;
+	pixel_y = 8
+	},
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"hQP" = (
+/obj/effect/spawner/random/maintenance,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"hZS" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"ikC" = (
+/obj/effect/turf_decal/box/white/corners{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"iKW" = (
+/obj/effect/turf_decal/box/white/corners,
+/obj/effect/spawner/random/structure/crate,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"jRE" = (
+/obj/structure/closet/crate,
+/obj/item/stack/wrapping_paper,
+/obj/item/sales_tagger,
+/obj/item/pushbroom,
+/obj/effect/turf_decal/box/white/corners,
+/obj/item/storage/wallet/random,
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"kMv" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/random/maintenance,
+/obj/machinery/button/door{
+	dir = 8;
+	id = "gemogee_cargo_1";
+	name = "Blast Door Control";
+	pixel_y = 23
+	},
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"kMR" = (
+/obj/structure/chair/greyscale{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/vomit/old,
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"lfC" = (
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/blood/oil,
+/obj/structure/fans/tiny,
+/obj/machinery/door/poddoor/shutters{
+	id = "gemogee_cargo_1"
+	},
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"ljV" = (
+/obj/structure/frame/machine,
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"lHs" = (
+/obj/structure/table,
+/obj/item/storage/fancy/donut_box{
+	pixel_y = 11
+	},
+/obj/item/coffee_cartridge{
+	pixel_x = -4
+	},
+/obj/item/reagent_containers/cup/glass/coffee_cup{
+	pixel_x = 11;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"lUy" = (
+/turf/template_noop,
+/area/template_noop)
+"mEl" = (
+/obj/effect/turf_decal/box/white/corners{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/power/apc/auto_name/directional/north,
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"mMS" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"nsl" = (
+/obj/structure/chair/stool/bar{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/yellow/warning{
+	dir = 1
+	},
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"nCe" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/glass{
+	pixel_x = -17;
+	pixel_y = 8
+	},
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"nMp" = (
+/obj/effect/turf_decal/delivery/white,
+/obj/structure/closet/crate/large,
+/obj/effect/spawner/random/maintenance,
+/obj/effect/spawner/random/medical/medkit,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"nRX" = (
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/yellow/warning{
+	dir = 5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"ocn" = (
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"pGg" = (
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 4
+	},
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"pVK" = (
+/obj/effect/turf_decal/siding/thinplating/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/delivery/white,
+/obj/structure/closet/crate/large,
+/obj/effect/spawner/random/maintenance,
+/obj/effect/spawner/random/maintenance,
+/obj/effect/spawner/random/maintenance,
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"qKz" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"rpJ" = (
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/obj/structure/sign/warning/electric_shock/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/fans/tiny,
+/obj/machinery/door/poddoor/shutters{
+	id = "gemogee_cargo_2"
+	},
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"sis" = (
+/obj/effect/spawner/random/structure/crate_abandoned,
+/obj/structure/extinguisher_cabinet/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"sIs" = (
+/obj/effect/turf_decal/box/white/corners{
+	dir = 8
+	},
+/obj/structure/closet/crate/science,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/matter_bin/adv,
+/obj/item/stock_parts/matter_bin/adv{
+	pixel_y = -9;
+	pixel_x = 9
+	},
+/obj/item/stock_parts/micro_laser/high{
+	pixel_x = -8;
+	pixel_y = -5
+	},
+/obj/item/stock_parts/scanning_module/phasic{
+	pixel_y = -8
+	},
+/obj/item/stock_parts/servo/pico{
+	pixel_x = -5;
+	pixel_y = -10
+	},
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"sSO" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/random/maintenance,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 8
+	},
+/obj/machinery/button/door{
+	dir = 8;
+	id = "gemogee_cargo_2";
+	name = "Blast Door Control";
+	pixel_y = 23
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"ujI" = (
+/obj/effect/turf_decal/siding/thinplating/corner,
+/obj/structure/table,
+/obj/machinery/coffeemaker/impressa{
+	pixel_y = 11;
+	pixel_x = 5
+	},
+/obj/item/storage/fancy/coffee_cart_rack{
+	pixel_x = 9;
+	pixel_y = -4
+	},
+/obj/item/storage/fancy/coffee_condi_display{
+	pixel_y = -2;
+	pixel_x = -5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"uPn" = (
+/obj/effect/turf_decal/box/white/corners{
+	dir = 4
+	},
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"vTq" = (
+/obj/effect/turf_decal/box/white/corners{
+	dir = 8
+	},
+/obj/structure/closet/crate/cargo,
+/obj/item/clothing/glasses/meson{
+	pixel_x = 5
+	},
+/obj/item/gps/mining,
+/obj/item/pickaxe/drill{
+	pixel_y = -12
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"wgO" = (
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/obj/structure/sign/warning/electric_shock/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/fans/tiny,
+/obj/machinery/door/poddoor/shutters{
+	id = "gemogee_cargo_1"
+	},
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"wqC" = (
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/turf/open/floor/plating,
+/area/template_noop)
+"xnd" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"ydh" = (
+/obj/effect/turf_decal/box/white/corners{
+	dir = 1
+	},
+/obj/item/crowbar{
+	pixel_x = -12;
+	pixel_y = -9
+	},
+/obj/machinery/power/apc/auto_name/directional/north,
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+
+(1,1,1) = {"
+lUy
+bre
+bre
+aFs
+lUy
+lUy
+lUy
+lUy
+lUy
+lUy
+lUy
+ljV
+lUy
+lUy
+bmr
+"}
+(2,1,1) = {"
+lUy
+lHs
+kMR
+qKz
+lUy
+lUy
+lUy
+lUy
+lUy
+lUy
+lUy
+nsl
+cRq
+nMp
+wqC
+"}
+(3,1,1) = {"
+lUy
+ujI
+pGg
+ocn
+lUy
+lUy
+lUy
+lUy
+lUy
+lUy
+lUy
+nRX
+fpV
+pVK
+wqC
+"}
+(4,1,1) = {"
+lUy
+bre
+ydh
+vTq
+lUy
+lUy
+lUy
+lUy
+lUy
+lUy
+lUy
+mEl
+sIs
+lUy
+lUy
+"}
+(5,1,1) = {"
+lUy
+hZS
+sis
+nCe
+lUy
+lUy
+lUy
+lUy
+lUy
+lUy
+lUy
+hQP
+mMS
+lUy
+lUy
+"}
+(6,1,1) = {"
+lUy
+bre
+ikC
+jRE
+lUy
+lUy
+lUy
+lUy
+lUy
+lUy
+lUy
+uPn
+iKW
+lUy
+lUy
+"}
+(7,1,1) = {"
+lUy
+bre
+kMv
+bKc
+lUy
+lUy
+lUy
+lUy
+lUy
+lUy
+lUy
+sSO
+bKc
+lUy
+lUy
+"}
+(8,1,1) = {"
+lUy
+bre
+wgO
+lfC
+lUy
+lUy
+lUy
+lUy
+lUy
+lUy
+lUy
+rpJ
+ddL
+lUy
+lUy
+"}
+(9,1,1) = {"
+lUy
+bre
+xnd
+xnd
+lUy
+lUy
+lUy
+lUy
+lUy
+lUy
+lUy
+xnd
+xnd
+lUy
+lUy
+"}

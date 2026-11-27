@@ -1,0 +1,206 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"dHN" = (
+/obj/machinery/monkey_recycler,
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/iron/small,
+/area/template_noop)
+"gWI" = (
+/obj/structure/table/glass,
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 6
+	},
+/obj/item/reagent_containers/dropper{
+	pixel_w = -2;
+	pixel_z = 5;
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/syringe{
+	pixel_w = 1;
+	pixel_z = -1;
+	pixel_y = 6;
+	pixel_x = -5
+	},
+/obj/item/storage/bag/xeno{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/iron/dark/diagonal,
+/area/template_noop)
+"irh" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 8
+	},
+/turf/open/floor/iron/small,
+/area/template_noop)
+"irX" = (
+/obj/machinery/computer/camera_advanced/xenobio,
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 5
+	},
+/obj/structure/sign/xenobio_guide/directional/north,
+/turf/open/floor/iron/dark/diagonal,
+/area/template_noop)
+"kzs" = (
+/obj/structure/window/reinforced/spawner/directional/south{
+	dir = 4
+	},
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/effect/turf_decal/trimline/purple,
+/turf/open/floor/engine,
+/area/template_noop)
+"lMz" = (
+/obj/structure/window/reinforced/spawner/directional/south{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/purple,
+/turf/open/floor/engine,
+/area/template_noop)
+"mNn" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 8
+	},
+/obj/machinery/processor/slime{
+	pixel_y = 5;
+	pixel_x = 7
+	},
+/obj/structure/table/glass,
+/obj/machinery/reagentgrinder{
+	pixel_y = 9;
+	pixel_x = -8
+	},
+/turf/open/floor/iron/small,
+/area/template_noop)
+"nHs" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"oZv" = (
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/turf/open/floor/plating,
+/area/template_noop)
+"pdn" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 9
+	},
+/obj/structure/table/glass,
+/obj/item/extinguisher{
+	pixel_y = 11;
+	pixel_x = -8
+	},
+/obj/item/reagent_containers/spray/cleaner{
+	pixel_x = -6;
+	pixel_y = 2
+	},
+/obj/item/reagent_containers/cup/beaker/large{
+	pixel_w = -5;
+	pixel_z = 10;
+	pixel_y = -6;
+	pixel_x = 10
+	},
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/machinery/light_switch/directional/north{
+	pixel_x = -11
+	},
+/turf/open/floor/iron/dark/diagonal,
+/area/template_noop)
+"phc" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/diagonal,
+/area/template_noop)
+"pTi" = (
+/obj/machinery/smartfridge/extract/preloaded,
+/turf/open/floor/iron/small,
+/area/template_noop)
+"pTS" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 8
+	},
+/obj/item/kirbyplants/organic/plant5{
+	pixel_y = 24;
+	pixel_x = -11
+	},
+/turf/open/floor/iron/small,
+/area/template_noop)
+"sEj" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 10
+	},
+/obj/structure/closet/crate/science,
+/obj/item/storage/box/gloves{
+	pixel_x = -4;
+	pixel_y = 8
+	},
+/obj/item/storage/box/masks{
+	pixel_x = 4;
+	pixel_y = 4
+	},
+/obj/item/storage/box/beakers{
+	pixel_x = -6;
+	pixel_y = -4
+	},
+/obj/item/storage/box/monkeycubes{
+	pixel_w = -4;
+	pixel_z = 7;
+	pixel_x = 12;
+	pixel_y = -13
+	},
+/obj/item/storage/box/monkeycubes{
+	pixel_x = -5;
+	pixel_y = 2
+	},
+/turf/open/floor/iron/dark/diagonal,
+/area/template_noop)
+"tMn" = (
+/turf/template_noop,
+/area/template_noop)
+"vdR" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/diagonal,
+/area/template_noop)
+"wZD" = (
+/obj/effect/turf_decal/trimline/purple,
+/obj/machinery/door/window/brigdoor/right/directional/east,
+/turf/open/floor/engine,
+/area/template_noop)
+
+(1,1,1) = {"
+wZD
+kzs
+wZD
+lMz
+nHs
+"}
+(2,1,1) = {"
+irh
+irh
+pTS
+mNn
+oZv
+"}
+(3,1,1) = {"
+pdn
+vdR
+sEj
+dHN
+tMn
+"}
+(4,1,1) = {"
+irX
+phc
+gWI
+tMn
+tMn
+"}
+(5,1,1) = {"
+tMn
+pTi
+tMn
+tMn
+tMn
+"}

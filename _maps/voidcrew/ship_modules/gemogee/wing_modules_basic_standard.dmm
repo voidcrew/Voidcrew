@@ -1,0 +1,554 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aiM" = (
+/obj/effect/spawner/random/structure/crate,
+/turf/open/floor/engine/hull/reinforced,
+/area/template_noop)
+"aBO" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"aDJ" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/random/maintenance,
+/obj/machinery/button/door{
+	dir = 4;
+	id = "gemogee_weapon_2";
+	name = "Blast Door Control";
+	pixel_x = -9;
+	pixel_y = 20
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"boB" = (
+/obj/effect/turf_decal/trimline/yellow/corner,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/delivery/white,
+/turf/open/floor/engine/hull/reinforced,
+/area/template_noop)
+"bys" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/greenglow,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"cGd" = (
+/obj/machinery/space_heater,
+/obj/effect/turf_decal/delivery/white,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"dAz" = (
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/turf/open/floor/plating,
+/area/template_noop)
+"evm" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/random/structure/crate,
+/obj/effect/turf_decal/caution/stand_clear/white{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"eKo" = (
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/obj/structure/sign/warning/electric_shock/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/fans/tiny,
+/obj/machinery/door/poddoor{
+	id = "gemogee_weapon_2";
+	name = "Cargo Bay Blast Door"
+	},
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"fOv" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/clothing/suit/space/nasavoid/old{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/clothing/head/helmet/space/nasavoid/old{
+	pixel_x = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"gGG" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"hrx" = (
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/blood/oil,
+/obj/structure/fans/tiny,
+/obj/machinery/door/poddoor{
+	id = "gemogee_weapon_2";
+	name = "Cargo Bay Blast Door"
+	},
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"hSC" = (
+/obj/structure/frame/machine,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"iCE" = (
+/obj/effect/turf_decal/trimline/yellow/warning{
+	dir = 6
+	},
+/obj/effect/decal/cleanable/glass/titanium,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood/hitsplatter{
+	dir = 4
+	},
+/obj/structure/sign/poster/contraband/missing_gloves/directional/north,
+/turf/open/floor/engine/hull/reinforced,
+/area/template_noop)
+"jqV" = (
+/obj/effect/turf_decal/trimline/yellow/warning{
+	dir = 5
+	},
+/obj/effect/decal/cleanable/fuel_pool,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood/footprints{
+	dir = 4
+	},
+/obj/effect/spawner/random/structure/grille,
+/turf/open/floor/engine/hull/reinforced,
+/area/template_noop)
+"kDR" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/random/maintenance,
+/obj/structure/table/reinforced,
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"kKN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/smooth_corner{
+	dir = 4
+	},
+/area/template_noop)
+"kWE" = (
+/obj/structure/sign/poster/contraband/imperial_propaganda/directional/north,
+/obj/effect/spawner/random/structure/tank_holder,
+/obj/effect/turf_decal/delivery/white,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"kYb" = (
+/obj/item/stack/cable_coil/thirty,
+/obj/item/stack/cable_coil/thirty{
+	pixel_x = 12;
+	pixel_y = -13
+	},
+/turf/open/floor/iron/dark/smooth_corner,
+/area/template_noop)
+"lDa" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "gemogee_general_shutters";
+	name = "blast windows"
+	},
+/turf/template_noop,
+/area/template_noop)
+"mvI" = (
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/obj/structure/sign/warning/electric_shock/directional/south,
+/obj/effect/decal/cleanable/glass/plastitanium,
+/obj/effect/decal/cleanable/glass/plastitanium/screws{
+	pixel_x = 13;
+	pixel_y = 7
+	},
+/obj/structure/fans/tiny,
+/obj/machinery/door/poddoor{
+	id = "gemogee_weapon_1";
+	name = "Cargo Bay Blast Door"
+	},
+/obj/effect/spawner/random/structure/grille,
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"mGY" = (
+/obj/machinery/computer/camera_advanced/ship_combat,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"owC" = (
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/turf/template_noop,
+/area/template_noop)
+"oJu" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/random/structure/crate_abandoned,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"oQc" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/cable_coil/cut,
+/turf/open/floor/iron/dark/smooth_corner{
+	dir = 8
+	},
+/area/template_noop)
+"pQA" = (
+/obj/effect/turf_decal/trimline/yellow/warning{
+	dir = 5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine/hull/reinforced,
+/area/template_noop)
+"qMB" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/engine/hull/reinforced,
+/area/template_noop)
+"qQf" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/ammobox{
+	pixel_y = 10
+	},
+/obj/item/storage/toolbox/electrical,
+/turf/open/floor/iron/dark/smooth_corner{
+	dir = 4
+	},
+/area/template_noop)
+"rru" = (
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/neutral/filled/warning{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/obj/effect/spawner/random/structure/barricade,
+/obj/structure/fans/tiny,
+/obj/machinery/door/poddoor{
+	id = "gemogee_weapon_1";
+	name = "Cargo Bay Blast Door"
+	},
+/turf/open/floor/iron/smooth,
+/area/template_noop)
+"rzR" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"sua" = (
+/obj/effect/decal/cleanable/blood/oil,
+/obj/item/clothing/suit/utility/fire/firefighter,
+/obj/item/bot_assembly/firebot{
+	pixel_x = 9;
+	pixel_y = -9
+	},
+/turf/open/floor/iron/dark/smooth_corner{
+	dir = 8
+	},
+/area/template_noop)
+"sLr" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood/oil,
+/turf/open/floor/engine/hull/reinforced,
+/area/template_noop)
+"sMs" = (
+/obj/structure/frame/machine,
+/obj/effect/turf_decal/trimline/yellow/corner{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/delivery/white,
+/turf/open/floor/engine/hull/reinforced,
+/area/template_noop)
+"tGU" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/smooth_corner{
+	dir = 1
+	},
+/area/template_noop)
+"ucQ" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/obj/effect/spawner/random/structure/barricade,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"udl" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/restraints/handcuffs/cable,
+/obj/effect/turf_decal/caution/stand_clear/white{
+	dir = 8
+	},
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/machinery/button/door{
+	dir = 4;
+	id = "gemogee_weapon_1";
+	name = "Blast Door Control";
+	pixel_x = -11;
+	pixel_y = 20
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"uIu" = (
+/turf/template_noop,
+/area/template_noop)
+"vfX" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/fuel_pool,
+/obj/effect/decal/cleanable/blood/oil,
+/obj/structure/closet/crate/large,
+/obj/effect/spawner/random/medical/medkit,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"vmF" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood/footprints{
+	dir = 4
+	},
+/obj/effect/spawner/random/structure/grille,
+/turf/open/floor/engine/hull/reinforced,
+/area/template_noop)
+"vBU" = (
+/obj/structure/sign/poster/contraband/hacking_guide/directional/north,
+/turf/open/floor/iron/dark/smooth_corner,
+/area/template_noop)
+"wJh" = (
+/obj/effect/turf_decal/trimline/yellow/warning{
+	dir = 6
+	},
+/turf/open/floor/engine/hull/reinforced,
+/area/template_noop)
+"yjT" = (
+/obj/structure/frame/machine,
+/obj/effect/turf_decal/trimline/yellow/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/delivery/white,
+/turf/open/floor/engine/hull/reinforced,
+/area/template_noop)
+
+(1,1,1) = {"
+uIu
+uIu
+gGG
+kWE
+uIu
+uIu
+uIu
+uIu
+uIu
+uIu
+uIu
+cGd
+uIu
+uIu
+aBO
+"}
+(2,1,1) = {"
+uIu
+mGY
+kYb
+kKN
+uIu
+uIu
+uIu
+uIu
+uIu
+uIu
+uIu
+vBU
+qQf
+fOv
+uIu
+"}
+(3,1,1) = {"
+uIu
+hSC
+oQc
+tGU
+uIu
+uIu
+uIu
+uIu
+uIu
+uIu
+uIu
+sua
+tGU
+kDR
+uIu
+"}
+(4,1,1) = {"
+uIu
+gGG
+udl
+ucQ
+uIu
+uIu
+uIu
+uIu
+uIu
+uIu
+uIu
+aDJ
+evm
+uIu
+uIu
+"}
+(5,1,1) = {"
+uIu
+dAz
+rru
+mvI
+uIu
+uIu
+uIu
+uIu
+uIu
+uIu
+uIu
+eKo
+hrx
+uIu
+uIu
+"}
+(6,1,1) = {"
+uIu
+owC
+bys
+vfX
+uIu
+lDa
+uIu
+uIu
+uIu
+lDa
+uIu
+rzR
+oJu
+owC
+uIu
+"}
+(7,1,1) = {"
+uIu
+uIu
+boB
+sMs
+uIu
+lDa
+lDa
+lDa
+lDa
+lDa
+uIu
+boB
+yjT
+owC
+uIu
+"}
+(8,1,1) = {"
+uIu
+uIu
+iCE
+jqV
+uIu
+uIu
+uIu
+uIu
+uIu
+uIu
+uIu
+wJh
+pQA
+uIu
+uIu
+"}
+(9,1,1) = {"
+uIu
+uIu
+sLr
+vmF
+uIu
+uIu
+uIu
+uIu
+uIu
+uIu
+uIu
+aiM
+qMB
+uIu
+uIu
+"}

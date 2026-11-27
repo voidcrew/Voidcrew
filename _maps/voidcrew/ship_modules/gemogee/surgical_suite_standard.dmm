@@ -1,0 +1,192 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aGu" = (
+/obj/machinery/vending/drugs,
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"bpy" = (
+/obj/structure/table/optable,
+/turf/open/floor/iron/large,
+/area/template_noop)
+"bzO" = (
+/obj/effect/turf_decal/trimline/blue/corner{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"dxt" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/blue,
+/obj/effect/turf_decal/trimline/blue/mid_joiner,
+/obj/effect/turf_decal/trimline/blue/mid_joiner{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/blue/mid_joiner{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/blue/mid_joiner{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/large,
+/area/template_noop)
+"dzM" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"fKF" = (
+/obj/structure/railing,
+/obj/structure/table/reinforced/rglass,
+/obj/item/storage/pill_bottle/penacid{
+	pixel_x = -8;
+	pixel_y = 4
+	},
+/obj/item/storage/pill_bottle/multiver,
+/obj/effect/turf_decal/trimline/blue/warning,
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"gAc" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 4
+	},
+/obj/effect/spawner/surgery_tray/full,
+/obj/structure/table/reinforced,
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/iron/large,
+/area/template_noop)
+"hhb" = (
+/obj/structure/railing,
+/obj/effect/turf_decal/trimline/blue/warning,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"hkX" = (
+/obj/effect/turf_decal/siding/blue{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"hlY" = (
+/obj/effect/turf_decal/siding/blue/corner{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/machinery/light_switch/directional/north{
+	pixel_x = -11
+	},
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"jLa" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/large,
+/area/template_noop)
+"pqS" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/structure/closet/crate/medical/department,
+/obj/item/storage/medkit/surgery,
+/obj/effect/turf_decal/trimline/blue/warning{
+	dir = 8
+	},
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"pEf" = (
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/turf/open/floor/plating,
+/area/template_noop)
+"pQt" = (
+/obj/structure/table/reinforced/rglass,
+/obj/item/storage/pill_bottle/iron{
+	pixel_x = 7;
+	pixel_y = 11
+	},
+/obj/item/storage/pill_bottle/epinephrine{
+	pixel_y = 6
+	},
+/obj/item/stack/medical/suture/medicated,
+/obj/item/stack/medical/suture{
+	pixel_y = -6;
+	pixel_x = 7
+	},
+/obj/effect/turf_decal/siding/blue/corner{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"pQN" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/flora/bush/large{
+	pixel_y = -4
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/turf/open/floor/grass,
+/area/template_noop)
+"qby" = (
+/obj/effect/turf_decal/trimline/blue/warning,
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"qtR" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 1
+	},
+/turf/open/floor/iron/large,
+/area/template_noop)
+"txv" = (
+/obj/machinery/computer/operating{
+	dir = 1
+	},
+/obj/machinery/defibrillator_mount/directional/south,
+/turf/open/floor/iron/large,
+/area/template_noop)
+"yfb" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+pQt
+fKF
+qtR
+txv
+dzM
+"}
+(2,1,1) = {"
+hkX
+qby
+dxt
+bpy
+pEf
+"}
+(3,1,1) = {"
+hlY
+hhb
+jLa
+gAc
+yfb
+"}
+(4,1,1) = {"
+pQN
+bzO
+pqS
+yfb
+yfb
+"}
+(5,1,1) = {"
+yfb
+aGu
+yfb
+yfb
+yfb
+"}

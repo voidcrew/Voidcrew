@@ -1,0 +1,221 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aLK" = (
+/obj/item/kirbyplants/organic/plant5{
+	pixel_y = 24;
+	pixel_x = -11
+	},
+/turf/open/floor/iron/dark/textured_large,
+/area/template_noop)
+"bGG" = (
+/obj/machinery/smartfridge/chemistry/preloaded,
+/turf/open/floor/iron/white/diagonal,
+/area/template_noop)
+"eyC" = (
+/obj/machinery/chem_master,
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"fwb" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/item/storage/portable_chem_mixer{
+	pixel_y = 4
+	},
+/obj/structure/rack,
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"gyP" = (
+/obj/structure/sink/directional/east,
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"iiU" = (
+/turf/open/floor/iron/dark/textured_large,
+/area/template_noop)
+"kUU" = (
+/obj/structure/chair/office{
+	name = "tactical swivel chair"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured_large,
+/area/template_noop)
+"kWr" = (
+/obj/structure/table/reinforced,
+/obj/item/paper_bin{
+	pixel_x = 5;
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = 5;
+	pixel_y = 4
+	},
+/obj/item/assembly/igniter{
+	pixel_x = -7
+	},
+/obj/effect/turf_decal/siding/dark/corner,
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/reagentgrinder{
+	pixel_x = -8;
+	pixel_y = 14
+	},
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"nqz" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"phU" = (
+/obj/structure/table/glass,
+/obj/item/storage/box/beakers{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/obj/item/storage/bag/chemistry{
+	pixel_x = 5;
+	pixel_y = 1
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"pYN" = (
+/turf/template_noop,
+/area/template_noop)
+"qee" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"qAt" = (
+/obj/effect/turf_decal/siding/dark,
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"tmc" = (
+/obj/structure/table/reinforced,
+/obj/machinery/chem_heater{
+	pixel_y = 8
+	},
+/obj/structure/sign/poster/official/safety_eye_protection{
+	pixel_x = -32
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"uyb" = (
+/obj/machinery/chem_dispenser,
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 4
+	},
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"vfh" = (
+/obj/structure/table/glass,
+/obj/item/reagent_containers/dropper{
+	pixel_w = -2;
+	pixel_z = 5;
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/syringe{
+	pixel_w = 1;
+	pixel_z = -1;
+	pixel_y = 6;
+	pixel_x = -5
+	},
+/obj/item/reagent_containers/cup/beaker/large{
+	pixel_w = -5;
+	pixel_z = 10;
+	pixel_y = -6;
+	pixel_x = 10
+	},
+/obj/item/clothing/glasses/science{
+	pixel_y = -2;
+	pixel_x = -13
+	},
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"vBM" = (
+/obj/structure/table/glass,
+/obj/item/stack/sheet/mineral/plasma/five{
+	pixel_y = 2
+	},
+/obj/effect/turf_decal/siding/dark,
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/machinery/light_switch/directional/north{
+	pixel_x = -11
+	},
+/turf/open/floor/iron/herringbone,
+/area/template_noop)
+"xbr" = (
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/turf/open/floor/plating,
+/area/template_noop)
+
+(1,1,1) = {"
+kWr
+gyP
+tmc
+uyb
+qee
+"}
+(2,1,1) = {"
+qAt
+iiU
+kUU
+phU
+xbr
+"}
+(3,1,1) = {"
+vBM
+aLK
+iiU
+eyC
+pYN
+"}
+(4,1,1) = {"
+vfh
+nqz
+fwb
+pYN
+pYN
+"}
+(5,1,1) = {"
+pYN
+bGG
+pYN
+pYN
+pYN
+"}
