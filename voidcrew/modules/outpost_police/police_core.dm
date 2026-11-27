@@ -270,6 +270,8 @@ GLOBAL_LIST_INIT(outpost_crimes, list(
 	var/barred_until = 0
 	/// The crew they were on at their first crime (abuse M7): fine, bail, embargo and accomplices use it
 	var/datum/voidcrew_crew_record/crew
+	/// Set by the last tick's accomplice sweep (abet_crew()): the next tick's fading stops at the accomplice floor
+	var/abet_held = FALSE
 	/// Officers they killed this incident
 	var/officers_killed = 0
 	/// Victims hit lately: weakref -> world.time of the last counted hit (for killings)

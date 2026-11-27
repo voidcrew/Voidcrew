@@ -999,6 +999,8 @@
 		tick_warrant(warrant)
 		if(QDELETED(warrant))
 			continue
+		// Spent on this tick's fading; this tick's sweep sets it again for whoever it still covers
+		warrant.abet_held = FALSE
 		var/stars = stars_of(warrant.heat)
 		if(stars >= 4)
 			// Holds the embargo while they stay at four or five (it lapses and is laid again after its time)
@@ -1076,8 +1078,13 @@
 			var/hide_time = old_stars >= 2 ? OUTPOST_POLICE_HIDE_2 : OUTPOST_POLICE_HIDE_1
 			if(world.time - warrant.unseen_since >= hide_time)
 				draining = TRUE
-		if(draining)
-			warrant.heat = max(0, warrant.heat - OUTPOST_POLICE_FADE_PER_SECOND)
+		// The accomplice sweep holds its crewmates at its floor while the stand lasts, or it charges them again each
+		// second they fade below it (live round 276)
+		var/list/star_heat = OUTPOST_POLICE_STAR_HEAT
+		var/list/abet_entry = GLOB.outpost_crimes[OUTPOST_CRIME_ACCOMPLICE]
+		var/fade_floor = warrant.abet_held ? star_heat[abet_entry[3]] : 0
+		if(draining && warrant.heat > fade_floor)
+			warrant.heat = max(fade_floor, warrant.heat - OUTPOST_POLICE_FADE_PER_SECOND)
 			if(warrant.heat <= 0)
 				warrant_faded(warrant)
 			var/new_stars = stars_of(warrant.heat)
@@ -1117,12 +1124,17 @@
 	if(QDELETED(crew))
 		return
 	for(var/datum/mind/mate as anything in crew.minds)
-		if(mate == leader.mind || get_stars(mate) >= 2)
+		if(mate == leader.mind)
 			continue
 		var/mob/living/body = mate.current
 		if(!isliving(body) || body.stat == DEAD || !holder_at_outpost(body))
 			continue
-		count_crime(body, OUTPOST_CRIME_ACCOMPLICE, derived = TRUE)
+		if(get_stars(mate) < 2)
+			count_crime(body, OUTPOST_CRIME_ACCOMPLICE, derived = TRUE)
+		// Charged once per stand: held at the floor, not charged again each second they fade below it
+		var/datum/outpost_warrant/mate_warrant = warrants[mate]
+		if(mate_warrant)
+			mate_warrant.abet_held = TRUE
 
 // =========================================================================
 // KILLINGS
