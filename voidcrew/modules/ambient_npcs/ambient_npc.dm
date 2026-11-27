@@ -16,9 +16,9 @@
  * - a leash they walk back to, or walk out from (they never vanish in front of players);
  * - killable: a body drops a little cash (and any `death_loot`) once, never again after a revive. It
  *   lies until nobody is watching (SShuman_npcs' corpse rules; a trader outpost takes it sooner, as
- *   carried off). At a trader outpost, hurting one is violence there (the outpost's strikes, and
- *   everyone near ducks), and turrets never shoot them (FACTION_TURRET while they belong to it);
- * - a passive AI: no targeting subtree, so outpost turrets never read them as wild hostiles;
+ *   carried off). At a trader outpost, hurting one is violence there (a crime for its police, and
+ *   everyone near ducks), and they carry its staff faction (FACTION_TURRET while they belong to it);
+ * - a passive AI: no targeting subtree, so outpost officers never read them as wild hostiles;
  * - dialogue from a JSON file with per-NPC and per-place cooldowns, replies to other NPCs, and an
  *   answer for a player who talks to them (an empty hand), which falls through to tg's help (shaking
  *   awake, patting out flames, helping up) while they are down, on fire or asleep;
@@ -655,6 +655,12 @@
 		return FALSE
 	LAZYSET(reaction_cooldowns, kind, world.time + cooldown)
 	return TRUE
+
+// relay_attackers skips non-mob projectile firers; a mecha's gun sets firer to the chassis
+/mob/living/carbon/human/npc/ambient_npc/bullet_act(obj/projectile/bullet, def_zone, piercing_hit = FALSE)
+	if(bullet?.is_hostile_projectile() && ismecha(bullet.firer))
+		SEND_SIGNAL(src, COMSIG_ATOM_WAS_ATTACKED, bullet.firer, bullet.damage_type == STAMINA ? ATTACKER_STAMINA_ATTACK : ATTACKER_DAMAGING_ATTACK)
+	return ..()
 
 /mob/living/carbon/human/npc/ambient_npc/proc/on_attacked(datum/source, atom/attacker, attack_flags)
 	SIGNAL_HANDLER

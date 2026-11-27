@@ -86,7 +86,9 @@
 	/// The outpost this shop belongs to
 	var/obj/structure/overmap/trader_outpost/outpost
 	/// The trader NPC fronting this shop, if one is placed (set on interior link)
-	var/mob/living/basic/outpost_trader/trader_npc
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader_npc
+	/// Weakref to the keeper at its counter (outpost recovery, R1: shop.set_keeper(), is_open())
+	var/datum/weakref/keeper
 	/// Personality lines, keyed by TRADER_LINE_* category
 	var/list/trader_lines = list()
 	/// Supply request table for the outpost mission board: list of
@@ -580,10 +582,10 @@
 	return null
 
 /// Recheck the live counter even when the caller has a stale interactive UI.
-/datum/shop_sku/proc/can_trade(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/proc/can_trade(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	if(QDELETED(src) || QDELETED(user))
 		return FALSE
-	if(shop && (QDELETED(shop) || !(src in shop.skus)))
+	if(shop && (QDELETED(shop) || !(src in shop.skus) || !shop.is_open()))
 		return FALSE
 	if(vendor && (QDELETED(vendor) || vendor.shop != shop || !vendor.check_menu(user)))
 		return FALSE
@@ -619,7 +621,7 @@
  * Attempts the purchase: validates, charges, decrements stock and dispenses
  * over the counter. Returns TRUE on success.
  */
-/datum/shop_sku/proc/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/proc/try_purchase(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	if(!can_trade(user, vendor))
 		return FALSE
 	if(stock <= 0 && shelf != SHELF_FAVOR)
@@ -663,7 +665,7 @@
  * Hands the goods over the counter. Items go to hand when possible; anything
  * bigger (crates, machines) lands at the buyer's feet.
  */
-/datum/shop_sku/proc/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/proc/dispense(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	var/atom/drop_loc = user.drop_location() || vendor?.drop_location()
 	var/atom/movable/goods = create_trader_goods(item_path, drop_loc, dispense_amount)
 	// Past a trader outpost's checkpoint a gun is handed over sealed (outpost_trespass.dm)
@@ -736,7 +738,7 @@
 		return "That isn't what I asked for."
 	return null
 
-/datum/shop_sku/barter/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/barter/try_purchase(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	if(!can_trade(user, vendor))
 		return FALSE
 	if(stock <= 0 && shelf != SHELF_FAVOR)
@@ -855,3 +857,89 @@
 
 // The rumor SKU and every other chart line now live in shop_catalog_charts.dm,
 // keeping this file to machinery as its header describes.
+
+// =========================================================================
+// THE KEEPER (outpost recovery, spec-rehydrate.md 1.2; owner R1, seams R0)
+// =========================================================================
+
+/// A keeper may stand this far from their counter tile and still trade (their leash, and is_open())
+#define OUTPOST_TRADER_COUNTER_REACH 1
+/// A stall sign this close to a counter tile, when it gets its first keeper, shows that counter open or shut
+#define OUTPOST_TRADER_SIGN_RANGE 4
+
+/datum/outpost_shop
+	/// The tile its keeper stands on (the first keeper's spot), or null while the counter has never had one
+	var/turf/counter_turf
+	/// How many keepers this counter has had; the first is the shop's named trader
+	var/keepers_had = 0
+	/// The counter's one death drop has been rolled (spec-rehydrate 1.3): replacements drop nothing
+	var/drop_spent = FALSE
+	/// Weakrefs to the stall signs (/obj/machinery/status_display/outpost_sign/stall) showing this counter open or shut
+	var/list/datum/weakref/signs
+	/// What the signs show now
+	var/signs_open = TRUE
+
+/**
+ * Whether the shop trades: TRUE only while its keeper is alive, conscious, within OUTPOST_TRADER_COUNTER_REACH of
+ * the counter tile and not held up (spec-rehydrate 1.2, 10). A shop that never had a keeper (no counter loaded
+ * yet) has nothing to shut. Every purchase, buyback, contract and favor path that asks is_user_barred() also asks
+ * this.
+ */
+/datum/outpost_shop/proc/is_open()
+	if(!counter_turf)
+		return TRUE
+	var/mob/living/current = keeper?.resolve()
+	if(QDELETED(current) || current.stat != CONSCIOUS || outpost_npc_played(current) || HAS_TRAIT(current, TRAIT_INCAPACITATED) || HAS_TRAIT(current, TRAIT_RESTRAINED))
+		return FALSE
+	var/mob/living/carbon/human/npc/ambient_npc/walker = current
+	if(istype(walker) && (walker.fading || istype(walker.activity, /datum/ambient_activity/leave)))
+		return FALSE
+	var/turf/standing = get_turf(current)
+	if(!standing || standing.z != counter_turf.z || get_dist(standing, counter_turf) > OUTPOST_TRADER_COUNTER_REACH)
+		return FALSE
+	if(current.has_status_effect(/datum/status_effect/grouped/heldup))
+		return FALSE
+	return TRUE
+
+/**
+ * `new_keeper` (a trader, or null) keeps this shop's counter now. A trader is linked to the shop and its outpost
+ * and sent to the counter (take_counter()); the counter tile is the first keeper's spot. The old keeper, if any,
+ * keeps their body and name but no longer serves here.
+ */
+/datum/outpost_shop/proc/set_keeper(mob/living/new_keeper)
+	var/mob/living/old_keeper = keeper?.resolve()
+	if(new_keeper && new_keeper == old_keeper)
+		return
+	keeper = new_keeper ? WEAKREF(new_keeper) : null
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/trader = new_keeper
+	if(istype(trader))
+		keepers_had++
+		if(!counter_turf)
+			counter_turf = get_turf(trader)
+			link_signs()
+		trader_npc = trader
+		trader.take_counter(src, counter_turf, keepers_had == 1)
+	update_signs()
+
+/// Finds the stall signs near the counter that nobody else has claimed
+/datum/outpost_shop/proc/link_signs()
+	if(!counter_turf)
+		return
+	for(var/obj/machinery/status_display/outpost_sign/stall/sign in range(OUTPOST_TRADER_SIGN_RANGE, counter_turf))
+		if(sign.shop_ref)
+			continue
+		sign.shop_ref = WEAKREF(src)
+		LAZYADD(signs, WEAKREF(sign))
+
+/// Shows the counter's state on its signs when it changed (or always, with `force`)
+/datum/outpost_shop/proc/update_signs(force = FALSE)
+	var/open = is_open()
+	if(!force && open == signs_open)
+		return
+	signs_open = open
+	for(var/datum/weakref/sign_ref as anything in signs?.Copy())
+		var/obj/machinery/status_display/outpost_sign/stall/sign = sign_ref.resolve()
+		if(QDELETED(sign))
+			LAZYREMOVE(signs, sign_ref)
+			continue
+		sign.show_open(open)

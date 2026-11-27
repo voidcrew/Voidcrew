@@ -2,10 +2,10 @@
 title: Trader Outposts
 category: Economy
 order: 3
-blurb: The three permanent markets on the overmap, who runs them, what they stock, and what happens if you start a fight there.
+blurb: The three permanent markets on the overmap, who runs them, what they stock, who guards them and what happens if you start a fight there.
 ---
 
-Three trader outposts sit permanently on the [overmap](overmap.md), one per zone band. They never move, never unload, and cannot be destroyed. Each is a market, a contract board, a repair stop and a safe room in one, and each stocks a different tier of goods depending on how dangerous the space around it is.
+Three trader outposts sit permanently on the [overmap](overmap.md), one per zone band. They never move, never unload, and the buildings cannot be destroyed. Each is a market, a contract board, a repair stop and a safe room in one, and each stocks a different tier of goods depending on how dangerous the space around it is.
 
 ## The three outposts
 
@@ -39,18 +39,21 @@ A loaded save or a new hull is built in a berth of its own, so a free berth is n
 
 ## The checkpoint
 
-No combat guns past the checkpoint. Work tools and disablers are fine, including kinetic accelerators and plasma cutters. Every way into an outpost, the lift lobby and the outer hatches alike, runs through a **scan chamber**: a small room between two doors, with a guard watching from a booth.
+No combat guns past the checkpoint. Work tools and disablers are fine, including kinetic accelerators and plasma cutters. Every way into an outpost, the lift lobby and the outer hatches alike, runs through a **scan chamber**: a small room between two doors, with a guard at a desk in a locked booth beside it. The booth door opens only for security, and an emag does nothing to it.
 
 - Walk in through the outer door and walk into the inner door. The outer door shuts behind you, the chamber scans everyone and everything inside it, and if you are clean the inner door opens. If anything in there is a combat gun or a mech weapon, the inner door stays shut and the outer door opens again so you can walk back out. Everyone in the chamber goes through together, or nobody does.
 - The scan looks everywhere: hands, pockets, bags inside bags, implants. Anything lying on the floor of the chamber counts too, and a gun left there keeps the chamber refusing everyone until someone carries it out.
 - **Lockers** line the lobby. Shut your guns in one and swipe your ID to lock it to yourself. It frees up again once you empty it.
 - You leave through the **exit gate**, a one-way light curtain beside the checkpoint. Nothing comes in through it.
+- The outer hatches onto the hull have no exit gate: walk into the inner door to go out. A hatch will not let anyone with stars out, and its outer door stays shut while one of them is in the chamber.
 
 **Weapons permit.** The guard sells a personal weapons permit at the booth window for 1,000 credits. It is good for twenty minutes, at that outpost only, and lets you through the scan and carry openly inside. It is yours alone: the outpost keeps the record, and the paper the guard hands you is just a receipt. A permit is no licence to shoot anyone; the usual rules on violence still apply.
 
 Combat guns bought inside the outpost, or paid out by a contract there, come in a **sealed case** (cache crates come with a sealed lid). The seal breaks once you are back outside the checkpoint.
 
-**Getting a gun in anyway.** It can be done, but the outpost does not take it lightly. Anyone seen inside with a combat gun in hand, or firing one, without a permit, and anyone who comes through a checkpoint door that was pried or hacked open, is an **armed trespasser**: the turrets treat you as hostile, and the traders, the guard and the checkpoint all refuse you for a good while after. Forcing the inner door takes a long time and sets off the alarm. This only applies to the person who did it, not their whole crew.
+**Getting a gun in anyway.** It can be done, but the outpost does not take it lightly. A combat gun in hand without a permit, or fired inside, counts as a crime and [outpost security](#outpost-security) answers it. So does coming through a checkpoint door that was pried or hacked open, which also takes a long time and sets off the alarm. This only applies to the person who did it, not their whole crew.
+
+**Emagging the scanner.** An emag on the wall scanner takes the whole gate down for three minutes. Both doors open for anyone who walks into them, nobody is scanned, and the scanner's light goes out. A guard who sees it sounds the alarm. Anyone who sees it reports you, and that is 2 stars. A downed scanner sees nothing, so with the guard dead or out cold and nobody else watching, not even a lift panel, nobody reports it. The gate comes back by itself, and the same scanner cannot be emagged again for five minutes after that. Walking through a gate someone else took down is no crime, but a gun in your hand past it is still one if anyone sees it.
 
 ## Shopping
 
@@ -165,19 +168,163 @@ Turn them in at any outpost trader or at your own mission pad. Except courier ru
 
 ## Violence
 
-Outposts are indestructible. Walls, doors, machines and traders all shrug off weapons fire, so there is nothing to break into and nothing to rob. The deterrent is economic instead.
+The walls, doors, glass and machines of an outpost cannot be broken, not even by a bomb. The people in it can, and so can anything they bring. A bomb that hurts someone is a crime like any other attack, and it is blamed on whoever armed it: lit, primed, wired, rigged or planted it. A bomb nobody armed blames nobody. Traders, checkpoint guards, officers, shoppers, drinkers and the odd regular are all people, and can be hurt, cuffed, wounded and killed like anyone. What stops you is **outpost security**: officers who live at each outpost and answer anything they see.
 
-Attacking outpost property (or attacking another visitor inside the outpost) earns you a **strike**. The first two only get you a warning, with the turrets swinging around to point at you. On the **third**, three things happen at once:
+Shoppers and regulars carry a little cash, and hurting them is a crime. Hurting a trader or a guard is a worse one.
 
-- You are personally marked. Every trader on the station refuses to serve you for 15 minutes.
-- Every ship your crew belongs to is put under a **trade embargo** for 15 minutes.
-- The outpost's turrets go lethal on you and anyone else aboard your embargoed ship.
+### Killing a trader
 
-The shoppers, drinkers, staff and odd regulars milling around each concourse can be hurt like anyone else, and doing it counts as violence at the outpost. They carry a little cash on them.
+A dead trader leaves an empty counter and a sign reading CLOSED. Nothing at that stall can be bought, sold or turned in while nobody stands behind it, and the contract board shuts with its trader. Prices, stock and your standing with the shop are not lost, and contracts you already accepted keep running. Convoys still restock a closed shop.
 
-!!! danger "The embargo covers your whole crew"
-    One person losing their temper bars everybody on the ship, including people who were still shopping. Embargoed crew are shot on sight, not merely refused service.
+The first trader behind each counter may drop one item from their shelf when they die, and the outpost only has so much to give in a round. Replacement traders drop nothing. A trader who dies, is knocked out or is dragged off the counter does not run the shop; a revived one goes back to work.
 
-Carrying a gun past the checkpoint without a permit is a separate matter from strikes: see [The checkpoint](#the-checkpoint). It marks only you, and the turrets go for you straight away.
+Killing a trader or a checkpoint guard that someone sees is 3 stars, and from there security shoots to kill, so it costs far more than the shelf ever pays. A guard who dies leaves the gate working; only the permit desk shuts until a new guard sits down.
+
+### Holding up a trader
+
+Point a gun at a trader behind their counter, the same way you hold anyone up, and they put their hands up, close the shop and hand over the till. It holds 200 credits at Halcyon, 300 at Quartermain and 400 at Undertow, and it is empty for the next half hour. An empty till gives up one cheap item from the shelf, then nothing. A stick-up and a trader's drop come out of the same small pot, so robbing a trader and then killing them does not pay twice. Checkpoint guards have no till.
+
+The trader raises the alarm when you leave their sight or half a minute after handing over, whichever comes first, and sooner if you fire or hit anyone. Anyone else who sees the gun reports it too. Robbery is 2 stars at the least. If you are caught, the gun goes into the evidence locker and the takings go back to the till.
+
+### Who comes to clean up
+
+When the shooting stops, the port sends crews up by the staff lifts a few minutes later: **morgue workers**, **janitors** and **medics**. Morgue workers bag the dead and drag them off. The bodies of locals go down the lift. Visitors who died, yours included, are taken to the **morgue** and slid into a tray there, and you can collect them from it. Nothing is taken from a body. Janitors mop up blood and pick up spent casings and litter. Medics patch up the outpost's own people who are down but alive; they do not treat visitors. The crews are people and they talk to each other and call things in by radio, and hurting them is a crime like any other.
+
+Hiding at the outpost does not hold the crews off. A minute after the officers last saw anyone wanted, the wait for the crews starts as if you had left. Show yourself and no more crews are called until it is quiet again.
+
+Once the dead are cleared and the floors are clean, new traders, guards and officers walk in from the lifts, each shop opens when its trader reaches the counter, and the regulars drift back. A shop is usually shut for ten to fifteen minutes. If crews keep getting killed, the next one is slower to come and brings more escort, and after four in a row the port sends nobody for a quarter of an hour.
+
+If nobody is at the outpost, its hangars and the ships docked there for ten minutes, and nobody wanted is holding things up, the whole cleanup is done at once while you are away. Come back sooner and you find the crews where they stood.
+
+## Outpost security
+
+Officers walk the concourse, stop for coffee and talk to each other, and a warden keeps the security desk and the cells by the lobby. They are people, not turrets: they can be stunned, cuffed, wounded and killed like anyone. They work the outpost, its hangars and any ship docked there, but they never break into a ship. They also shoot hostile wildlife and xenos that get loose in the outpost.
+
+Each force has its own manner. Halcyon's is polite, Quartermain's is gruff, and the Exchange's at the Undertow is the hardest.
+
+### Crimes and stars
+
+Crimes pile up against the person who did them, shown as **stars** on a wanted alert ("Wanted by Halcyon Security"). With any stars you are refused service: no shops, no permit and no way through the checkpoint.
+
+| Crime | Stars |
+|---|---|
+| One punch or shove | None yet, just a warning. Two make 1 star |
+| A combat gun in hand without a permit, where anyone can see it | 1 |
+| Vandalism, firing a gun, hitting a trader or guard | Up to 2 |
+| Hitting someone with a weapon or a thrown item | Up to 3 |
+| Shooting someone | 2 from one shot, up to 3 |
+| Hitting a shopper or regular | 1 from one hit, up to 3 |
+| Forcing the checkpoint, emagging the gate scanner, looting a locker | 2 |
+| Armed robbery | At least 2 |
+| Punching, shoving or grabbing an officer, pulling a suspect away from one, or staying in an arrest's way after being told to move | 1 at once, up to 3 |
+| Aiming a gun at an officer | 2 |
+| Opening a cell with someone in it, walking out of one, or carrying a prisoner out | At least 3 |
+| Attacking an officer with a weapon or a stun, or trying to cuff one | 3, and a little more for each blow after |
+| Killing a shopper or regular | At least 2, and more for each one after |
+| Killing a visitor or an officer | 3, and more for each one after |
+| Killing a trader or a checkpoint guard | 3, and more for each one after |
+
+No single crime takes you past 3 stars. The fourth and fifth come from keeping it up: roughly three officers dead for 4 stars and five for 5.
+
+Fighting back against someone who attacked you first is not a crime. Hunters going after a bounty fugitive are left alone for it.
+
+**Fading.** At 1-2 stars your stars start to fade once no officer has seen you for half a minute (45 seconds at 2 stars). At 3 stars and up they never fade while you are at the outpost. Leaving fades them at any level. A ship docked in a hangar still counts as the outpost, so you have to undock. After a warrant fades the officers remember you for up to 20 minutes, and a new crime there starts you off higher. Anyone who reached 3 stars is barred from that outpost for 15 minutes afterwards: no service, and arrested on sight past the checkpoint. The checkpoint guard can tell you how long is left, or be paid to clear it (see [The ban](#the-ban)).
+
+### Witnesses
+
+A crime counts only if someone saw it.
+
+- **At once:** traders at their counters, checkpoint guards, players from another crew, the checkpoint scanners and the lift panels.
+- **In person:** shoppers, drinkers, regulars and workers have no radio. They run to an officer, the police desk, a trader at a counter or a checkpoint guard and tell them. Until someone has been told, nobody is after you, and the police only learn where the witness last saw you.
+- **By radio:** officers, morgue workers, janitors and medics. An officer whose radio is down tells another officer or the desk in person instead.
+
+Hearing a shot or a scream never makes a crime, but it brings officers to look.
+
+Grabbing someone at the outpost by the neck is the same crime as punching them, and they will yell for help. Pulling someone along is not a crime.
+
+A report that hasn't gone out yet can be stopped. It is dropped if every witness dies, or if none of them can report for two minutes: knocked out, cuffed, held, or with a jammed or EMPed radio. A radio that comes back inside those two minutes still gets the call through, and a witness who gets free or comes round still goes and tells.
+
+### The response
+
+| Stars | What the officers do |
+|---|---|
+| 1 | Order you to stop, then cuff you |
+| 2 | As 1, and the other officers stun you if you run, fight or have a weapon out |
+| 3 | Mixed squad: some officers carry stun batons and disablers and take you alive, the rest shoot to kill |
+| 4 | As 3, with tactical officers. Your crewmates at the outpost are arrested and your crew is banned there |
+| 5 | As 4, with more tactical officers, the marshal and a heavy weapons team |
+
+More officers arrive through the staff lifts as your stars rise, and they keep coming.
+
+At 2 stars the officers around the one arresting you hold their fire while you stay where you are with empty hands and hit nobody. They keep their guns on you until you are cuffed. Walk off, pull away from the cuffs, draw a weapon or hit out, and they stun you until you stop or go down.
+
+**Losing them.** Out of sight, the officers search outward from where you were last seen, one officer to a place, and they keep at it for as long as you are wanted. Anyone who spots you brings the rest.
+
+**Heavy weapons.** At 5 stars two heavy weapons officers come up with the rest, carrying an ion rifle, a rocket launcher or a grenade launcher. Those are for mechs. Anyone on foot gets their pistol like any other officer.
+
+**Hostages.** Hold one of the outpost's people by the neck with a gun in your other hand, and every officer who can see it holds fire and keeps their distance. Tell them out loud to back off and they will. Tell them to drop it, and an officer who walked in on it puts their weapon away; one who was already after you, or already looking for you, keeps it. The hostage struggles, and once they get loose or you let go the officers carry on. They hold fire for one minute, counted from the first officer to do it, and say so when it is nearly up. Then they shoot, hostage or not, and a second hostage buys no more time while you are still wanted there. Hurt the hostage or attack an officer, and the officers who saw it never hold fire for you again. They do not hold fire for a hostage who is not one of the outpost's own, or for one who is out cold.
+
+At Halcyon and Quartermain a downed suspect is cuffed, never shot, at any stars. Nobody fires on someone who is cuffed and being taken in, or who is in a cell. Run off in the cuffs and the officers taking you in stun you and take hold of you again. Get out of the cuffs and you are fair game again.
+
+The Undertow is the exception. From 3 stars up every officer there shoots to kill, and keeps shooting a downed suspect until they are dead. Below 3 stars they arrest you like anyone else.
+
+### Being arrested
+
+When an officer gives the order you have a few seconds to stand still with empty hands and your guard down, or to lie down with `*surrender`. Halcyon gives you the longest and the Undertow the shortest. Do it and they cuff you without a fight. At 3 stars and up only a suspect who is down is taken alive.
+
+If you go down before the cuffs are on, you are cuffed and searched where you lie. Then an officer takes you to the security desk and books you into a cell, on your feet or dragged. If they cannot get you there, they keep hold of you until they can. At 1-2 stars, after a few minutes of that, you are fined where you stand and let go.
+
+The officer keeps a hand on you while the cuffs go on, and a firm grip if the baton put you on the floor. Walking or crawling away means breaking that grip first, and it gets you the baton again.
+
+- **What they take.** Every weapon or tool you used in a crime goes into the **evidence locker** at the security desk. Implants, cyberware, ship keys and mission items are never taken. Anything you stole from a prisoner's locker goes back to that locker.
+- **The fine** (1-2 stars). 300 credits at 1 star and 800 at 2 at Halcyon, half as much again at Quartermain and double at the Undertow. It is paid from your crew's ship accounts together, in full or not at all.
+- **If it is paid.** You wait in a cell, about half a minute at 1 star and a minute at 2, then the door opens onto the lobby. Your guns wait in a **property locker** outside the cells; you keep everything else.
+- **If it is not.** You go to jail, one minute at 1 star and two at 2. The fine is tried again every half minute, and paying it ends the term. There is no debt afterwards.
+- **At 3 stars and up.** There is no fine. You go straight to jail: 4 minutes at 3 stars, 7 at 4 and 10 at 5.
+
+In jail your gear comes off and goes into a **property locker** outside the cells, and you get an orange jumpsuit and shoes. You keep your ID, your implants, and any ship key or mission item, even one that was in your bag.
+
+A warden guards the cells, and he can be paid to let you out early. Say anything or try the cell door and he comes over, and he comes by once on his own soon after you are jailed. It costs at least 1,500 credits from your crew's ship accounts.
+
+A crime in the cell starts your time over, at the length for the stars you have by then, and after that no fine gets you out. Hit an officer in there and they hit back.
+
+If you are booked in a bad way, or go down in a cell, security sends a medic up to patch you where you lie. Your time keeps running while you are down. If no medic can come, the door opens so your crew can get to you. If you are carried out, you have 20 seconds to get back in once you can walk, or it counts as a breakout. Dying ends the term.
+
+### Your things
+
+**Property lockers.** Your locker opens for you, or for the ID you were booked in with. Take your gear any time after you are out. Lockers nobody collects stay shut for the rest of the round. If every locker is in use, the one left longest is emptied onto the floor.
+
+**The evidence locker.** Only a security ID opens it, and those never leave their owners. An emag breaks its lock for three minutes. Seized goods stay in it.
+
+### Looting
+
+Officers, guards, traders, medics and cleaning crews drop nothing they wear or carry (the warden's ID is the one thing you can take off them), and the morgue crew take nothing from a body. Shoppers and regulars carry a little cash, and the first trader behind a counter may drop something from the shelf (see [Killing a trader](#killing-a-trader)).
+
+Emagging a property locker or the evidence locker, or taking anything out of one that isn't yours, is theft: 2 stars if anyone sees it. Officers take the goods back when they arrest you.
+
+### Breaking out
+
+The cell doors are airlocks that open for the warden's ID. The warden's ID stops working five minutes after it leaves him. The doors can be hacked like any airlock, opened with an airlock override card, or pried with a crowbar once their power is out, and they put themselves right a few minutes later. A plain emag does nothing to them. Opening a cell with someone in it sets off an alarm and is 3 stars for whoever opened it. So is walking out of a cell before your time is up, or carrying a prisoner out. Taking police cuffs off someone is a crime too.
+
+### Accomplices
+
+At 4 stars and up, while you are free and alive at the outpost, every crewmate of yours there is wanted as an accomplice at 2 stars, and arrested like anyone at 2. What a crewmate did there before doesn't add to it.
+
+### The ban
+
+A killing there by anyone on your crew bans every ship of your crew from that outpost, and so does reaching 4 stars: no shops, no checkpoint, no trade. It lasts 15 minutes, 30 at 5 stars. Any crime there by anyone on your crew while it runs starts it over from the beginning. Crewmates who walk in anyway are arrested on sight; crewmates who were already inside are left alone until they leave. It only covers the outpost where it happened; the other two still trade with you.
+
+**How long is left.** Ask the checkpoint guard at the booth, the same way you would buy a permit. He tells anyone who is banned or barred roughly how long they have left, and what it costs to clear it now. He has nothing to say to anyone with stars.
+
+**Paying it off.** The guard lifts a ban for 2,000 credits if it is a 15 minute one and 4,000 if it is a 30 minute one. That is the price at Halcyon; it is half as much again at Quartermain and double at the Undertow. It is paid from your crew's ship accounts together, in full or not at all. It clears every ship of your crew, and your own 15 minute bar with it. If you are only barred yourself, clearing that costs 1,000.
+
+- Every time your crew pays at an outpost, the next time there costs double.
+- No refunds. A crime afterwards is treated like any other, and a killing or 4 stars bans the crew again.
+- Paying clears the bar of the person who paid. A crewmate with a bar of their own waits it out or pays for it.
+- The guard takes nothing from anyone with stars, or while one of your crew still has 4 or more there.
+- If the guard is dead, out cold or away from the booth, there is nobody to pay.
+
+!!! danger "The ban covers your whole crew"
+    One person losing their temper bars every ship of the crew, including people who were still shopping.
 
 Fuel and gas sold at outposts, and the exotic gases Vex buys by the tank, are covered on [Fuel & Gas](gas-economy.md). Deeds for founding your own station are sold at Halcyon and Quartermain and covered on [Player Outposts](player-outposts.md).

@@ -190,11 +190,11 @@
 // =========================================================================
 
 /datum/mission/drug_run/can_turn_in_at(atom/reward_anchor)
-	if(!istype(reward_anchor, /mob/living/basic/outpost_trader))
+	if(!istype(reward_anchor, /mob/living/carbon/human/npc/ambient_npc/outpost/trader))
 		return FALSE
 	if(!shop?.outpost) // made with no shop (an admin's, or no black market): any counter fences it
 		return TRUE
-	var/mob/living/basic/outpost_trader/npc = reward_anchor
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/npc = reward_anchor
 	return npc.outpost == shop.outpost
 
 /datum/mission/drug_run/get_wrong_location_reason(atom/reward_anchor)

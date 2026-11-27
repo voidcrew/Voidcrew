@@ -136,6 +136,10 @@
 	controller.clear_blackboard_key(item_key)
 	controller.set_blackboard_key(BB_HUMAN_NPC_NEXT_TREAT, world.time + (succeeded ? 30 SECONDS : 10 SECONDS))
 
+/// Whether this NPC, down in soft crit, may fire wild at `target` (the outpost police spare anyone they would not fight)
+/mob/living/carbon/human/npc/proc/human_npc_may_fire_wild(atom/target)
+	return TRUE
+
 /**
  * Fires its gun from the floor at the ground around `target`, not at the person: it can barely aim.
  * Half the rate of a standing shooter. Only for elites and bosses (the soft-crit subtree decides).
@@ -148,6 +152,9 @@
 	var/mob/living/carbon/npc = controller.pawn
 	var/atom/target = controller.blackboard[target_key]
 	if(npc.stat != SOFT_CRIT || QDELETED(target) || !can_see(npc, target, controller.blackboard[BB_HUMAN_NPC_FIRE_RANGE] || 7))
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+	var/mob/living/carbon/human/npc/human_npc = ishumannpc(npc) ? npc : null
+	if(human_npc && !human_npc.human_npc_may_fire_wild(target))
 		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
 	var/obj/item/gun/gun = human_npc_loaded_gun(npc)
 	if(isnull(gun))

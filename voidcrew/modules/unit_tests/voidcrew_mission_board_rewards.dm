@@ -254,7 +254,7 @@
 /// A cached window cannot act for visitors, former members or a displaced trader.
 /datum/unit_test/voidcrew_m1_counter_access/Run()
 	var/obj/structure/overmap/trader_outpost/m1_board_test/outpost = allocate(/obj/structure/overmap/trader_outpost/m1_board_test)
-	var/mob/living/basic/outpost_trader/npc = allocate(/mob/living/basic/outpost_trader, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/npc = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader, run_loc_floor_bottom_left)
 	outpost.counter_turf = get_turf(npc)
 	outpost.trader = npc
 	npc.outpost = outpost

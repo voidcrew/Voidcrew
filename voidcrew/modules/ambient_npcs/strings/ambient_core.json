@@ -25,7 +25,7 @@
 			"Get down!",
 			"Not again.",
 			"I'm out of here.",
-			"Somebody call the turrets!"
+			"Somebody call security!"
 		],
 		"storm": [
 			"Storm's coming! Get under something!",
@@ -58,6 +58,39 @@
 		"cover": [
 			"Heads down!",
 			"Not in here. Not again."
+		],
+		"report_run": [
+			"Somebody call security!",
+			"Police! I need the police!",
+			"Help! Somebody get help!",
+			"Security! Somebody!",
+			"Somebody get the cops!",
+			"I'm getting the police!"
+		],
+		"report_tell": [
+			"There's trouble back that way. Hurry.",
+			"You have to come. I saw it all.",
+			"Back there, just now. Somebody's gone crazy.",
+			"Please, you need to see this. Back that way.",
+			"I saw what happened. It was awful.",
+			"Get the police. Somebody's hurting people back there."
+		],
+		"pulled": [
+			"Hey, hands off.",
+			"Do you mind?",
+			"Let go of my arm.",
+			"Don't drag me around.",
+			"I can walk by myself, thanks.",
+			"Get your hands off me."
+		],
+		"grabbed": [
+			"Let go of me!",
+			"Help! Somebody!",
+			"Get off me! Help!",
+			"Somebody help me!",
+			"Police! Help!",
+			"Let me go!",
+			"Help! I can't breathe!"
 		],
 		"conversations": [
 			{

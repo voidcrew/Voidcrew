@@ -24,8 +24,5 @@
 /mob/living/basic/mission_survivor
 	gun_feel_bleeds = TRUE
 
-/mob/living/basic/outpost_trader
-	gun_feel_bleeds = TRUE
-
 /mob/living/basic/outpost_kessler_staff
 	gun_feel_bleeds = TRUE

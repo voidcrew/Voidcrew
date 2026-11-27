@@ -1,29 +1,35 @@
 /**
  * # Wick's routine
  *
- * Wick (/mob/living/basic/outpost_trader/suit_fitter) works on the mechs hanging in the Rig Bay
- * between customers. He walks to a stand, welds or ratchets at the mech for a while, walks back
- * to his counter and waits there before the next job. Nothing he does changes the mech: it is for
+ * Wick (/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter) works on the mechs hanging
+ * in the Rig Bay between customers. He walks to a stand, welds or ratchets at the mech for a while, walks
+ * back to his counter and waits there before the next job. Nothing he does changes the mech: it is for
  * show, like the rest of the ambient work loop (voidcrew/modules/player_outposts/outpost_ambient_work.dm).
  *
- * Serving comes first. While a player is within RIG_BAY_WICK_SERVE_RANGE tiles of him in the bay, or
- * has his shop window open, he drops what he is doing, faces them and stays put. He takes no new job
- * until RIG_BAY_WICK_RESUME after they have gone. A player waiting at the counter while he is out on
- * the floor calls him back.
+ * It runs on the ambient NPC routine (voidcrew/modules/ambient_npcs/ambient_activity.dm) in place of the
+ * plain trader's keep_counter: pick_activity() below chooses between a job on the floor
+ * (/datum/ambient_activity/rig_bay_job), the walk back, and minding the counter. Ducking, fleeing and
+ * every other trader reaction outrank these and replace them as for any trader.
  *
- * Nothing here knows the map. His room is the floor he can reach from his spawn tile, closed off by
- * walls, doors, windows and /obj/effect/landmark/outpost_work_threshold. Stands are found in it at
- * runtime. He never stands on a stand or on the tile in front of one (the lane a sold mech drives
- * out along), not even in passing: he walks his own cardinal path over his room, which leaves those
- * tiles out.
+ * Serving comes first. His shop only trades while he is at his counter (shop.is_open()), so while a
+ * player is in the bay within RIG_BAY_WICK_SERVE_RANGE tiles of him or of his counter, or has his shop
+ * window open, he drops what he is doing and walks back to the counter. He takes no new job until
+ * RIG_BAY_WICK_RESUME after the last of them has gone.
  *
- * Hooked up from setup_from_shop() below, which the outpost's interior link (or Initialize, on the
- * round-start pre-load) already calls. The shop and stand code need no call into this file.
+ * Nothing here knows the map. His room is the floor he can reach from his counter, closed off by walls,
+ * doors, windows and /obj/effect/landmark/outpost_work_threshold. Stands are found in it at runtime. He
+ * never stands on a stand or on the tile in front of one (the lane a sold mech drives out along), not
+ * even in passing: he walks his own cardinal path over his room, which leaves those tiles out. The room
+ * is kept by a /datum/component/outpost_ambient_worker/rig_bay_wick that stays on him; it holds him in
+ * only while he takes a step of that path, so grabs, shoves, fleeing and the trader's own walks are left
+ * alone.
+ *
+ * Hooked up from setup_from_shop() below. The shop and stand code need no call into this file.
  */
 
-/// How far from his spawn tile Wick's room may reach: the ordinary worker range. Walls and thresholds close it.
+/// How far from his counter Wick's room may reach: the ordinary worker range. Walls and thresholds close it.
 #define RIG_BAY_WICK_RANGE OUTPOST_WORK_RANGE
-/// A player this close to him (or to his counter, see below) is a customer
+/// A player this close to him (or to his counter) is a customer
 #define RIG_BAY_WICK_SERVE_RANGE 3
 /// No new job until this long after the last customer left
 #define RIG_BAY_WICK_RESUME (30 SECONDS)
@@ -32,107 +38,350 @@
 #define RIG_BAY_WICK_REST_HIGH (60 SECONDS)
 /// One step of his walk
 #define RIG_BAY_WICK_STEP_TIME (0.5 SECONDS)
-/// Beat of the work itself, as the base work loop
-#define RIG_BAY_WICK_WORK_BEAT (2 SECONDS)
 /// Failed steps in a row before he gives up on a walk
 #define RIG_BAY_WICK_STUCK_LIMIT 6
-/// Which of the outfit's people Wick is, so he looks the same every round
-#define RIG_BAY_WICK_LOOK_NUMBER 3
 /// Chance he mutters something when he starts on a mech
 #define RIG_BAY_WICK_WORK_LINE_CHANCE 25
 
-#define BB_RIG_BAY_WICK_CUSTOMER "rig_bay_wick_customer"
-/// Blackboard: failed steps in a row on the current walk
-#define BB_RIG_BAY_WICK_STUCK "rig_bay_wick_stuck"
-
 // =========================================================================
-// THE MOB
+// THE MAN
 // =========================================================================
 
-/mob/living/basic/outpost_trader/suit_fitter
-	ai_controller = /datum/ai_controller/basic_controller/rig_bay_wick
-	/// What he holds right now: "weld", "tool" or null
-	var/rig_bay_look
-	/// Bumped per look build, so a slow build never lands over a newer one
-	var/rig_bay_look_serial = 0
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter
+	/// world.time he may take his next job
+	var/rig_bay_next_job_at = 0
+	/// When a customer was last seen
+	var/rig_bay_last_customer_at = -RIG_BAY_WICK_RESUME
+	/// The customer seen last, so a new face gets a word
+	var/datum/weakref/rig_bay_customer_ref
+	/// The way he faces at his counter, as mapped
+	var/rig_bay_home_dir = SOUTH
 
-/**
- * As the parent, but dressed through the outpost worker looks (one person, three poses: idle,
- * welding, wrench), so his face doesn't change when he picks up a tool. The parent's
- * apply_dynamic_human_appearance() is async too and would race the work looks, so it is not called.
- */
-/mob/living/basic/outpost_trader/suit_fitter/setup_from_shop()
-	if(shop_setup_done || !shop)
-		return
-	shop_setup_done = TRUE
-	name = shop.trader_name
-	real_name = shop.trader_name
-	gender = shop.trader_gender
-	if(shop.trader_voice_pack)
-		set_bark_voice_pack(shop.trader_voice_pack)
-		var/datum/atom_voice/bark_voice = get_bark_voice()
-		if(bark_voice)
-			bark_voice.pitch = shop.trader_voice_pitch
-	show_rig_bay_look(null)
-	start_rig_bay_routine()
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter/Destroy()
+	rig_bay_customer_ref = null
+	return ..()
 
-/// Gives him the worker component. Home is the tile he stands on now (his mapped spot).
-/mob/living/basic/outpost_trader/suit_fitter/proc/start_rig_bay_routine()
-	if(GetComponent(/datum/component/outpost_ambient_worker))
+// His leash takes in the bay floor round his counter. His room (the worker component) keeps his own
+// steps off the stands and their lanes. He trades only while back within reach of the counter.
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter/leash_to(turf/counter)
+	if(!counter)
+		leash_bounds = null
 		return
-	AddComponent(/datum/component/outpost_ambient_worker/rig_bay_wick, list(
+	leash_bounds = list(counter.x - RIG_BAY_WICK_RANGE, counter.y - RIG_BAY_WICK_RANGE, counter.x + RIG_BAY_WICK_RANGE, counter.y + RIG_BAY_WICK_RANGE, counter.z)
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter/setup_from_shop()
+	. = ..()
+	if(shop_setup_done)
+		start_rig_bay_routine()
+
+/// Gives him the worker component, rooted at his counter. Safe to call again.
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter/proc/start_rig_bay_routine()
+	if(rig_bay_worker())
+		return
+	var/turf/counter = shop?.counter_turf || home || get_turf(src)
+	if(!counter)
+		return
+	rig_bay_home_dir = dir
+	var/datum/component/outpost_ambient_worker/rig_bay_wick/worker = AddComponent(/datum/component/outpost_ambient_worker/rig_bay_wick, list(
 		/datum/outpost_ambient_work/mech_service = 6,
 		/datum/outpost_ambient_work/weld = 1,
 		/datum/outpost_ambient_work/wrench = 1,
 		/datum/outpost_ambient_work/panel = 1,
-	), TRUE, CALLBACK(src, PROC_REF(show_rig_bay_look)))
+	), TRUE, CALLBACK(src, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc, show_work_look)))
+	if(worker)
+		worker.home = counter
+		worker.room = null
+	rig_bay_next_job_at = world.time + rand(5 SECONDS, 25 SECONDS)
 
-/// The worker component's look callback: "weld", "tool" or null for free hands
-/mob/living/basic/outpost_trader/suit_fitter/proc/show_rig_bay_look(look)
-	rig_bay_look = look
-	INVOKE_ASYNC(src, PROC_REF(build_rig_bay_look))
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter/proc/rig_bay_worker()
+	return GetComponent(/datum/component/outpost_ambient_worker/rig_bay_wick)
 
-/// Can sleep: the first build dresses a dummy
-/mob/living/basic/outpost_trader/suit_fitter/proc/build_rig_bay_look()
-	if(QDELETED(src) || !shop)
-		return
-	var/serial = ++rig_bay_look_serial
-	var/list/looks = get_outpost_worker_looks(shop.trader_outfit, shop.trader_gender, RIG_BAY_WICK_LOOK_NUMBER)
-	if(QDELETED(src) || serial != rig_bay_look_serial || !length(looks))
-		return
-	apply_outpost_npc_look(src, looks[rig_bay_look] || looks["idle"])
-	// Applying a look wipes every overlay, the welding sparks included
-	var/datum/component/outpost_ambient_worker/worker = GetComponent(/datum/component/outpost_ambient_worker)
-	if(worker?.work_overlay)
-		add_overlay(worker.work_overlay)
+/**
+ * Back to the counter when away from it, a job when one is due and nobody wants him, the counter
+ * otherwise. Without his routine (no worker yet) he is a plain trader.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter/pick_activity()
+	var/datum/component/outpost_ambient_worker/rig_bay_wick/worker = rig_bay_worker()
+	if(isnull(worker) || isnull(worker.home))
+		return ..()
+	if(get_turf(src) != worker.home)
+		if(start_activity(new /datum/ambient_activity/rig_bay_job/return_home(src)))
+			return activity
+	else if(world.time >= rig_bay_next_job_at && !rig_bay_check_customers())
+		if(start_activity(new /datum/ambient_activity/rig_bay_job(src)))
+			return activity
+		rig_bay_next_job_at = world.time + OUTPOST_WORK_RETRY
+	return start_activity(new /datum/ambient_activity/keep_counter/rig_bay(src))
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter/shift_times(delay)
+	. = ..()
+	rig_bay_next_job_at = ambient_shifted(rig_bay_next_job_at, delay)
+	rig_bay_last_customer_at = ambient_shifted(rig_bay_last_customer_at, delay)
+
+/// Whether `someone` is a player who could want serving
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter/proc/rig_bay_is_customer(mob/living/someone)
+	return someone != src && someone.stat != DEAD && !!GET_CLIENT(someone)
+
+/**
+ * A player within RIG_BAY_WICK_SERVE_RANGE of `center`, standing in the bay (so someone walking past
+ * outside the windows doesn't count), on foot or in a vehicle. Null if there is none.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter/proc/rig_bay_find_customer(atom/center)
+	var/datum/component/outpost_ambient_worker/rig_bay_wick/worker = rig_bay_worker()
+	if(isnull(worker) || isnull(get_turf(center)))
+		return null
+	for(var/atom/movable/thing in range(RIG_BAY_WICK_SERVE_RANGE, center))
+		if(thing == src || !worker.in_bay(get_turf(thing)))
+			continue
+		if(isliving(thing))
+			if(rig_bay_is_customer(thing))
+				return thing
+		else if(istype(thing, /obj/vehicle))
+			var/obj/vehicle/ride = thing
+			for(var/mob/living/rider in ride.occupants)
+				if(rig_bay_is_customer(rider))
+					return rider
+	return null
+
+/// Someone with his shop window open, wherever they stand
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter/proc/rig_bay_find_shopper()
+	if(!shop_ui)
+		return null
+	for(var/datum/tgui/window as anything in shop_ui.open_uis)
+		var/mob/living/viewer = window.user
+		if(istype(viewer) && rig_bay_is_customer(viewer))
+			return viewer
+	return null
+
+/**
+ * The customer who wants him now, if any: near him, near his counter or in his shop window. Notes the
+ * time (no job until RIG_BAY_WICK_RESUME after) and gives a new face a word.
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter/proc/rig_bay_check_customers()
+	var/datum/component/outpost_ambient_worker/rig_bay_wick/worker = rig_bay_worker()
+	if(isnull(worker))
+		return null
+	var/away = !isnull(worker.home) && get_turf(src) != worker.home
+	var/mob/living/customer = rig_bay_find_customer(src) || rig_bay_find_shopper()
+	if(isnull(customer) && away)
+		customer = rig_bay_find_customer(worker.home)
+	if(isnull(customer))
+		rig_bay_customer_ref = null
+		return null
+	var/mob/living/old_customer = rig_bay_customer_ref?.resolve()
+	var/greet = customer != old_customer && world.time > rig_bay_last_customer_at + RIG_BAY_WICK_RESUME
+	rig_bay_last_customer_at = world.time
+	rig_bay_next_job_at = max(rig_bay_next_job_at, world.time + RIG_BAY_WICK_RESUME)
+	rig_bay_customer_ref = WEAKREF(customer)
+	if(greet)
+		speak_line(TRADER_LINE_IDLE, rig_bay_wick_greeting(away))
+	return customer
+
+/// What he says to a new customer: on his way over, or face to face
+/proc/rig_bay_wick_greeting(calling)
+	if(calling)
+		return pick("Be right with you.", "Coming. Don't touch anything.", "One second.")
+	return pick("Yeah?", "What do you need?", "Help you?", "What can I get you?")
 
 // =========================================================================
-// THE WORKER
+// THE COUNTER
+// =========================================================================
+
+/// Minding the counter between jobs: facing whoever wants him, or the way he was set
+/datum/ambient_activity/keep_counter/rig_bay
+	duration_low = RIG_BAY_WICK_REST_LOW
+	duration_high = RIG_BAY_WICK_REST_HIGH
+
+/datum/ambient_activity/keep_counter/rig_bay/act(seconds)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter/wick = doer
+	if(!istype(wick))
+		return ..()
+	var/mob/living/customer = wick.rig_bay_check_customers()
+	if(wick.buckled)
+		return AMBIENT_STEP_CONTINUE
+	if(customer && get_turf(customer) != get_turf(wick))
+		wick.setDir(get_cardinal_dir(wick, customer))
+	else if(!customer && wick.dir != wick.rig_bay_home_dir && prob(20))
+		wick.setDir(wick.rig_bay_home_dir)
+	return AMBIENT_STEP_CONTINUE
+
+// =========================================================================
+// THE JOB
 // =========================================================================
 
 /**
- * The ambient worker with a bigger room, no stand or lane tiles in it, his own walk over it, a
- * longer rest and a way back to the counter.
+ * A job on the bay floor: his own walk to the spot, the work, and his own walk back to the counter. A
+ * customer turning up sends him straight back. Walks happen here, step by step over his room, rather
+ * than through the ambient runner's pathing, which would cut across the stands' lanes.
+ */
+/datum/ambient_activity/rig_bay_job
+	name = "working on a rig"
+	/// His worker component
+	var/datum/component/outpost_ambient_worker/rig_bay_wick/worker
+	var/datum/weakref/target_ref
+	var/datum/outpost_ambient_work/kind
+	/// Where he stands to work
+	var/turf/work_spot
+	/// Done here, or called back: on his way to the counter
+	var/going_home = FALSE
+	/// Failed steps in a row
+	var/stuck = 0
+
+/datum/ambient_activity/rig_bay_job/setup()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter/wick = doer
+	if(!istype(wick) || !isturf(wick.loc))
+		return FALSE
+	worker = wick.rig_bay_worker()
+	if(QDELETED(worker) || isnull(worker.home))
+		return FALSE
+	if(going_home)
+		return TRUE
+	var/list/job = worker.find_work()
+	if(length(job) != 3)
+		return FALSE
+	target_ref = WEAKREF(job[1])
+	work_spot = job[2]
+	kind = job[3]
+	return TRUE
+
+/datum/ambient_activity/rig_bay_job/Destroy()
+	worker = null
+	kind = null
+	work_spot = null
+	return ..()
+
+/datum/ambient_activity/rig_bay_job/act(seconds)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter/wick = doer
+	if(QDELETED(worker))
+		return AMBIENT_STEP_DONE
+	if(wick.rig_bay_check_customers() && !going_home)
+		head_home()
+	// A gun on him: he stands still
+	if(wick.has_status_effect(/datum/status_effect/grouped/heldup))
+		worker.stop_work()
+		return AMBIENT_STEP_CONTINUE
+	if(going_home)
+		return walk_home()
+	if(worker.work)
+		if(worker.continue_work())
+			return AMBIENT_STEP_CONTINUE
+		wick.rig_bay_next_job_at = world.time + rand(RIG_BAY_WICK_REST_LOW, RIG_BAY_WICK_REST_HIGH)
+		head_home()
+		return walk_home()
+	var/atom/target = target_ref?.resolve()
+	if(QDELETED(target))
+		head_home()
+		return walk_home()
+	if(get_turf(wick) == work_spot)
+		worker.planned_work = kind
+		if(!worker.start_work(target))
+			give_up()
+		return AMBIENT_STEP_CONTINUE
+	if(!worker.can_stand_at(work_spot) || !take_step(work_spot))
+		give_up()
+	return AMBIENT_STEP_CONTINUE
+
+/// Off the job, and back to the counter
+/datum/ambient_activity/rig_bay_job/proc/head_home()
+	going_home = TRUE
+	stuck = 0
+	if(!QDELETED(worker))
+		worker.planned_work = null
+		worker.stop_work()
+
+/// Couldn't get to it or start it: back to the counter, and a while before the next try
+/datum/ambient_activity/rig_bay_job/proc/give_up()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter/wick = doer
+	wick.rig_bay_next_job_at = max(wick.rig_bay_next_job_at, world.time + OUTPOST_WORK_RETRY)
+	head_home()
+
+/// One step back to the counter; done there, facing the way he was set
+/datum/ambient_activity/rig_bay_job/proc/walk_home()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/suit_fitter/wick = doer
+	if(get_turf(wick) == worker.home)
+		if(!wick.buckled)
+			wick.setDir(wick.rig_bay_home_dir)
+		return AMBIENT_STEP_DONE
+	// No way back over his room: the plain counter activity walks him back by the ordinary path
+	return take_step(worker.home) ? AMBIENT_STEP_CONTINUE : AMBIENT_STEP_DONE
+
+/// One step towards `goal` now and another half a beat later. FALSE once he has been stuck too long.
+/datum/ambient_activity/rig_bay_job/proc/take_step(turf/goal)
+	if(!step_toward(goal))
+		return ++stuck < RIG_BAY_WICK_STUCK_LIMIT
+	stuck = 0
+	if(get_turf(doer) != goal)
+		addtimer(CALLBACK(src, PROC_REF(half_step), goal), RIG_BAY_WICK_STEP_TIME)
+	return TRUE
+
+/// The second step of a beat, if he is still on the same walk
+/datum/ambient_activity/rig_bay_job/proc/half_step(turf/goal)
+	if(QDELETED(doer) || QDELETED(worker) || doer.activity != src || !doer.can_act())
+		return
+	if(worker.work || get_turf(doer) == goal || goal != (going_home ? worker.home : work_spot))
+		return
+	if(doer.has_status_effect(/datum/status_effect/grouped/heldup))
+		return
+	step_toward(goal)
+
+/datum/ambient_activity/rig_bay_job/proc/step_toward(turf/goal)
+	if(QDELETED(worker) || !isturf(doer.loc) || doer.pulledby || doer.buckled)
+		return FALSE
+	return worker.walk_toward(goal)
+
+/datum/ambient_activity/rig_bay_job/finish()
+	if(!QDELETED(worker))
+		worker.planned_work = null
+		worker.stop_work()
+	return ..()
+
+/datum/ambient_activity/rig_bay_job/shift_times(delay)
+	. = ..()
+	if(!QDELETED(worker))
+		worker.work_ends_at = ambient_shifted(worker.work_ends_at, delay)
+
+/// Just the walk back to the counter (after a fight, a shove or a quiet spell found him out on the floor)
+/datum/ambient_activity/rig_bay_job/return_home
+	name = "heading back to the counter"
+	going_home = TRUE
+
+// =========================================================================
+// THE ROOM
+// =========================================================================
+
+/**
+ * The ambient worker with a bigger room, no stand or lane tiles in it, the whole room searched for work
+ * and his own walk over it. It stays on him, but holds him in his room only while he takes a step of
+ * that walk; the base worker's teleport and polymorph guards are left off (the trader has its own).
  */
 /datum/component/outpost_ambient_worker/rig_bay_wick
-	/// The way he faces at his counter
-	var/home_dir = SOUTH
 	/// Stand tiles in reach of home, as an assoc list. Rebuilt with the room.
 	var/list/stand_tiles
 	/// The tile in front of each stand, as an assoc list. Rebuilt with the room.
 	var/list/lane_tiles
+	/// Set while he takes a step of his own walk
+	var/stepping = FALSE
 
-/datum/component/outpost_ambient_worker/rig_bay_wick/Initialize(list/work_weights, keep_off_doorways = FALSE, datum/callback/on_look)
-	. = ..()
-	if(. == COMPONENT_INCOMPATIBLE)
-		return
-	var/atom/movable/body = parent
-	home_dir = body.dir
+/datum/component/outpost_ambient_worker/rig_bay_wick/RegisterWithParent()
+	RegisterSignal(parent, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(on_pre_move))
 
 /datum/component/outpost_ambient_worker/rig_bay_wick/Destroy(force)
 	stand_tiles = null
 	lane_tiles = null
 	return ..()
+
+/datum/component/outpost_ambient_worker/rig_bay_wick/on_pre_move(atom/movable/source, atom/new_loc)
+	SIGNAL_HANDLER
+	if(!stepping)
+		return NONE
+	return ..()
+
+/datum/component/outpost_ambient_worker/rig_bay_wick/step_to_tile(turf/next)
+	var/atom/movable/body = parent
+	body.set_glide_size(DELAY_TO_GLIDE_SIZE(RIG_BAY_WICK_STEP_TIME))
+	stepping = TRUE
+	. = body.Move(next, get_dir(body, next))
+	stepping = FALSE
 
 /**
  * As the parent's room, out to RIG_BAY_WICK_RANGE, less every stand tile and every stand's front
@@ -244,12 +493,6 @@
 			return list(mech, spot, kind)
 	return null
 
-/datum/component/outpost_ambient_worker/rig_bay_wick/stop_work()
-	var/was_working = !isnull(work)
-	..()
-	if(was_working)
-		next_work_at = world.time + rand(RIG_BAY_WICK_REST_LOW, RIG_BAY_WICK_REST_HIGH)
-
 /**
  * The next tile on the shortest cardinal walk over his room to `goal`, or null. Tiles with
  * something solid on them (a customer included) are walked round.
@@ -291,232 +534,6 @@
 	return body.loc != before
 
 // =========================================================================
-// AI
-// =========================================================================
-
-/**
- * Passive, like the ambient NPCs: no targeting, so the outpost turrets read him as harmless, and
- * nothing at all while no player is near.
- */
-/datum/ai_controller/basic_controller/rig_bay_wick
-	blackboard = list()
-	ai_traits = PASSIVE_AI_FLAGS
-	ai_movement = /datum/ai_movement/basic_avoidance
-	idle_behavior = null
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/rig_bay_serve,
-		/datum/ai_planning_subtree/rig_bay_wick_work,
-	)
-	/// When a customer was last seen
-	var/last_customer_at = -RIG_BAY_WICK_RESUME
-	/// The customer being served now, if any
-	var/datum/weakref/customer_ref
-
-/datum/ai_controller/basic_controller/rig_bay_wick/TryPossessPawn(atom/new_pawn)
-	if(!istype(new_pawn, /mob/living/basic/outpost_trader))
-		return AI_CONTROLLER_INCOMPATIBLE
-	return ..()
-
-/datum/ai_controller/basic_controller/rig_bay_wick/proc/get_worker()
-	return pawn?.GetComponent(/datum/component/outpost_ambient_worker/rig_bay_wick)
-
-/**
- * A player within RIG_BAY_WICK_SERVE_RANGE of `center`, standing in the bay (so someone walking
- * past outside the windows doesn't count), on foot or in a vehicle. Null if there is none.
- */
-/datum/ai_controller/basic_controller/rig_bay_wick/proc/find_customer(atom/center)
-	var/datum/component/outpost_ambient_worker/rig_bay_wick/worker = get_worker()
-	if(isnull(worker) || isnull(get_turf(center)))
-		return null
-	for(var/atom/movable/thing in range(RIG_BAY_WICK_SERVE_RANGE, center))
-		if(thing == pawn || !worker.in_bay(get_turf(thing)))
-			continue
-		if(isliving(thing))
-			if(is_customer(thing))
-				return thing
-		else if(istype(thing, /obj/vehicle))
-			var/obj/vehicle/ride = thing
-			for(var/mob/living/rider in ride.occupants)
-				if(is_customer(rider))
-					return rider
-	return null
-
-/datum/ai_controller/basic_controller/rig_bay_wick/proc/is_customer(mob/living/someone)
-	return someone != pawn && someone.stat != DEAD && !!GET_CLIENT(someone)
-
-/// Someone with his shop window open, wherever they stand
-/datum/ai_controller/basic_controller/rig_bay_wick/proc/find_shopper()
-	var/mob/living/basic/outpost_trader/wick = pawn
-	if(!istype(wick) || !wick.shop_ui)
-		return null
-	for(var/datum/tgui/window as anything in wick.shop_ui.open_uis)
-		var/mob/living/viewer = window.user
-		if(istype(viewer) && is_customer(viewer))
-			return viewer
-	return null
-
-/// Whether a customer is at him right now. Checked by his jobs on every beat.
-/datum/ai_controller/basic_controller/rig_bay_wick/proc/customer_at_hand()
-	return find_customer(pawn) || find_shopper()
-
-/**
- * First in planning. With a customer at him: drop everything, face them and stay. With one
- * waiting at his counter while he is out on the floor: walk back. Either way no new job until
- * RIG_BAY_WICK_RESUME after the last of them has gone.
- */
-/datum/ai_planning_subtree/rig_bay_serve
-
-/datum/ai_planning_subtree/rig_bay_serve/SelectBehaviors(datum/ai_controller/basic_controller/rig_bay_wick/controller, seconds_per_tick)
-	var/datum/component/outpost_ambient_worker/rig_bay_wick/worker = controller.get_worker()
-	if(isnull(worker) || controller.ai_status != AI_STATUS_ON)
-		return
-	var/mob/living/customer = controller.customer_at_hand()
-	var/calling = FALSE
-	if(isnull(customer) && get_turf(controller.pawn) != worker.home)
-		customer = controller.find_customer(worker.home)
-		calling = !isnull(customer)
-	var/mob/living/old_customer = controller.customer_ref?.resolve()
-	if(isnull(customer))
-		controller.customer_ref = null
-		controller.clear_blackboard_key(BB_RIG_BAY_WICK_CUSTOMER)
-		return
-	// A new face, or someone back after he'd gone back to work, gets a word
-	var/greet = customer != old_customer && world.time > controller.last_customer_at + RIG_BAY_WICK_RESUME
-	controller.last_customer_at = world.time
-	worker.next_work_at = max(worker.next_work_at, world.time + RIG_BAY_WICK_RESUME)
-	controller.customer_ref = WEAKREF(customer)
-	controller.set_blackboard_key(BB_RIG_BAY_WICK_CUSTOMER, customer)
-	if(greet)
-		var/mob/living/basic/outpost_trader/wick = controller.pawn
-		wick.speak_line(TRADER_LINE_IDLE, rig_bay_wick_greeting(calling))
-	if(calling)
-		controller.queue_behavior(/datum/ai_behavior/rig_bay_wick_go_home)
-		return SUBTREE_RETURN_FINISH_PLANNING
-	controller.queue_behavior(/datum/ai_behavior/rig_bay_wick_serve, BB_RIG_BAY_WICK_CUSTOMER)
-	return SUBTREE_RETURN_FINISH_PLANNING
-
-/// What he says to a new customer: from across the bay, or face to face
-/proc/rig_bay_wick_greeting(calling)
-	if(calling)
-		return pick("Be right with you.", "Coming. Don't touch anything.", "One second.")
-	return pick("Yeah?", "What do you need?", "Help you?", "What can I get you?")
-
-/// Mech work when it's due, the walk back to the counter after it, and waiting there between jobs
-/datum/ai_planning_subtree/rig_bay_wick_work
-
-/datum/ai_planning_subtree/rig_bay_wick_work/SelectBehaviors(datum/ai_controller/basic_controller/rig_bay_wick/controller, seconds_per_tick)
-	var/datum/component/outpost_ambient_worker/rig_bay_wick/worker = controller.get_worker()
-	if(worker && controller.ai_status == AI_STATUS_ON && !worker.check_leash())
-		if(world.time >= worker.next_work_at)
-			var/list/job = worker.find_work()
-			if(job)
-				worker.planned_work = job[3]
-				controller.set_blackboard_key(BB_OUTPOST_WORK_TARGET, job[1])
-				controller.set_blackboard_key(BB_OUTPOST_WORK_SPOT, job[2])
-				controller.queue_behavior(/datum/ai_behavior/rig_bay_wick_job, BB_OUTPOST_WORK_TARGET, BB_OUTPOST_WORK_SPOT)
-				return SUBTREE_RETURN_FINISH_PLANNING
-			worker.next_work_at = world.time + OUTPOST_WORK_RETRY
-		if(get_turf(controller.pawn) != worker.home)
-			controller.queue_behavior(/datum/ai_behavior/rig_bay_wick_go_home)
-			return SUBTREE_RETURN_FINISH_PLANNING
-	// Queued even with nothing to do, so planning never fails and churns the controller
-	controller.queue_behavior(/datum/ai_behavior/rig_bay_wick_idle)
-	return SUBTREE_RETURN_FINISH_PLANNING
-
-/// Walks to the spot by his own path, then works until the job is done or a customer turns up
-/datum/ai_behavior/rig_bay_wick_job
-	action_cooldown = RIG_BAY_WICK_STEP_TIME
-
-/datum/ai_behavior/rig_bay_wick_job/get_cooldown(datum/ai_controller/basic_controller/rig_bay_wick/cooldown_for)
-	var/datum/component/outpost_ambient_worker/worker = cooldown_for.pawn?.GetComponent(/datum/component/outpost_ambient_worker)
-	return worker?.work ? RIG_BAY_WICK_WORK_BEAT : RIG_BAY_WICK_STEP_TIME
-
-/datum/ai_behavior/rig_bay_wick_job/setup(datum/ai_controller/controller, target_key, spot_key)
-	if(isnull(controller.blackboard[spot_key]) || isnull(controller.blackboard[target_key]))
-		return FALSE
-	controller.set_blackboard_key(BB_RIG_BAY_WICK_STUCK, 0)
-	return TRUE
-
-/datum/ai_behavior/rig_bay_wick_job/perform(seconds_per_tick, datum/ai_controller/basic_controller/rig_bay_wick/controller, target_key, spot_key)
-	var/datum/component/outpost_ambient_worker/rig_bay_wick/worker = controller.get_worker()
-	var/atom/target = controller.blackboard[target_key]
-	var/turf/spot = controller.blackboard[spot_key]
-	if(isnull(worker) || QDELETED(target) || controller.ai_status != AI_STATUS_ON || controller.customer_at_hand())
-		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
-	if(isnull(worker.work))
-		if(get_turf(controller.pawn) == spot)
-			return worker.start_work(target) ? AI_BEHAVIOR_DELAY : (AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED)
-		if(!worker.can_stand_at(spot) || !rig_bay_wick_step(controller, worker, spot))
-			return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
-		return AI_BEHAVIOR_DELAY
-	if(worker.continue_work())
-		return AI_BEHAVIOR_DELAY
-	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
-
-/datum/ai_behavior/rig_bay_wick_job/finish_action(datum/ai_controller/controller, succeeded, target_key, spot_key)
-	. = ..()
-	var/datum/component/outpost_ambient_worker/worker = controller.pawn?.GetComponent(/datum/component/outpost_ambient_worker)
-	if(worker)
-		worker.planned_work = null
-		worker.stop_work()
-		if(!succeeded)
-			worker.next_work_at = max(worker.next_work_at, world.time + OUTPOST_WORK_RETRY)
-	controller.clear_blackboard_key(target_key)
-	controller.clear_blackboard_key(spot_key)
-
-/// One step of a walk. FALSE once he has been stuck too long.
-/proc/rig_bay_wick_step(datum/ai_controller/controller, datum/component/outpost_ambient_worker/rig_bay_wick/worker, turf/goal)
-	if(worker.walk_toward(goal))
-		controller.set_blackboard_key(BB_RIG_BAY_WICK_STUCK, 0)
-		return TRUE
-	var/stuck = controller.blackboard[BB_RIG_BAY_WICK_STUCK] + 1
-	controller.set_blackboard_key(BB_RIG_BAY_WICK_STUCK, stuck)
-	return stuck < RIG_BAY_WICK_STUCK_LIMIT
-
-/// Back to the counter, then faces the way he was mapped
-/datum/ai_behavior/rig_bay_wick_go_home
-	action_cooldown = RIG_BAY_WICK_STEP_TIME
-
-/datum/ai_behavior/rig_bay_wick_go_home/setup(datum/ai_controller/controller)
-	controller.set_blackboard_key(BB_RIG_BAY_WICK_STUCK, 0)
-	return TRUE
-
-/datum/ai_behavior/rig_bay_wick_go_home/perform(seconds_per_tick, datum/ai_controller/basic_controller/rig_bay_wick/controller)
-	var/datum/component/outpost_ambient_worker/rig_bay_wick/worker = controller.get_worker()
-	if(isnull(worker) || controller.ai_status != AI_STATUS_ON)
-		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
-	var/atom/movable/body = controller.pawn
-	if(get_turf(body) == worker.home)
-		body.setDir(worker.home_dir)
-		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
-	// Someone came up to him on the way: stop here and serve them
-	if(controller.customer_at_hand())
-		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
-	if(!rig_bay_wick_step(controller, worker, worker.home))
-		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
-	return AI_BEHAVIOR_DELAY
-
-/// Faces the customer and stays put. Planning runs on, and replaces it once they've gone.
-/datum/ai_behavior/rig_bay_wick_serve
-	behavior_flags = AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
-	action_cooldown = 1 SECONDS
-
-/datum/ai_behavior/rig_bay_wick_serve/perform(seconds_per_tick, datum/ai_controller/controller, customer_key)
-	var/mob/living/customer = controller.blackboard[customer_key]
-	var/atom/movable/body = controller.pawn
-	if(!QDELETED(customer) && get_turf(customer) != get_turf(body))
-		body.setDir(get_cardinal_dir(body, customer))
-	return AI_BEHAVIOR_DELAY
-
-/// Nothing to do: stand there. Planning runs on and replaces it.
-/datum/ai_behavior/rig_bay_wick_idle
-	behavior_flags = AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
-	action_cooldown = 2 SECONDS
-
-/datum/ai_behavior/rig_bay_wick_idle/perform(seconds_per_tick, datum/ai_controller/controller)
-	return AI_BEHAVIOR_DELAY
-
-// =========================================================================
 // THE WORK
 // =========================================================================
 
@@ -552,8 +569,8 @@
 		sparks.pixel_y = direction & NORTH ? 12 : (direction & SOUTH ? -6 : 0)
 		worker.set_work_overlay(sparks)
 		playsound(body, 'sound/items/tools/welderactivate.ogg', 25, TRUE, OUTPOST_WORK_SOUND_RANGE)
-	if(prob(RIG_BAY_WICK_WORK_LINE_CHANCE) && istype(body, /mob/living/basic/outpost_trader))
-		var/mob/living/basic/outpost_trader/wick = body
+	if(prob(RIG_BAY_WICK_WORK_LINE_CHANCE) && istype(body, /mob/living/carbon/human/npc/ambient_npc/outpost/trader))
+		var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/wick = body
 		wick.speak_line(TRADER_LINE_IDLE, pick(
 			"Who torqued this? A child?",
 			"That's not a bolt. That's a suggestion.",
@@ -585,9 +602,5 @@
 #undef RIG_BAY_WICK_REST_LOW
 #undef RIG_BAY_WICK_REST_HIGH
 #undef RIG_BAY_WICK_STEP_TIME
-#undef RIG_BAY_WICK_WORK_BEAT
 #undef RIG_BAY_WICK_STUCK_LIMIT
-#undef RIG_BAY_WICK_LOOK_NUMBER
 #undef RIG_BAY_WICK_WORK_LINE_CHANCE
-#undef BB_RIG_BAY_WICK_CUSTOMER
-#undef BB_RIG_BAY_WICK_STUCK

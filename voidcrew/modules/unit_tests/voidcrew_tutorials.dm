@@ -1097,8 +1097,8 @@
 /// Guards and shopless traders are never pointed at for buying, selling or contracts.
 /datum/unit_test/voidcrew_tutorials/trader_filters/Run()
 	var/mob/living/carbon/human/player = make_player()
-	var/mob/living/basic/outpost_trader/checkpoint_guard/guard = allocate(/mob/living/basic/outpost_trader/checkpoint_guard, get_step(run_loc_floor_bottom_left, EAST))
-	var/mob/living/basic/outpost_trader/stall = allocate(/mob/living/basic/outpost_trader, get_step(run_loc_floor_bottom_left, NORTH))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard/guard = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader/checkpoint_guard, get_step(run_loc_floor_bottom_left, EAST))
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/stall = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader, get_step(run_loc_floor_bottom_left, NORTH))
 	SSvc_tutorials.build_catalog()
 	var/datum/vc_tutorial_step/buy = SSvc_tutorials.steps_by_key["vc/trade/buy"]
 	var/datum/vc_tutorial_step/take = SSvc_tutorials.steps_by_key["vc/contract/take"]

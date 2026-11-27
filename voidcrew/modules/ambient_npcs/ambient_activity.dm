@@ -357,7 +357,7 @@
 // =========================================================================
 
 /**
- * An ambient NPC's brain: passive (no targeting, so trader outpost turrets read it as harmless),
+ * An ambient NPC's brain: passive (no targeting, so trader outpost officers read it as harmless),
  * long paths for crossing a concourse, and nothing at all while idle (nobody near). First it gets
  * free of anything holding it, the way a person would.
  */

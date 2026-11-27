@@ -165,12 +165,13 @@
 	TEST_ASSERT_EQUAL(count_pickaxes(loot_turf), 1, "A revived NPC dropped its loot again")
 	TEST_ASSERT_EQUAL(ambient_test_cash_on(loot_turf), cash, "A revived NPC dropped cash again")
 
-	// A trader outpost's dead lie until nobody is near, then go sooner than other NPC bodies
+	// A trader outpost's dead are carried off by its morgue crew, not the corpse sweep (spec-rehydrate 2; recovery_core.dm note_death())
 	var/mob/living/carbon/human/npc/ambient_npc/core_test/patron = allocate(/mob/living/carbon/human/npc/ambient_npc/core_test, run_loc_floor_bottom_left)
 	patron.set_place(SSambient_npcs.outpost_place(outpost))
 	patron.death()
-	TEST_ASSERT_EQUAL(patron.npc_corpse_lifetime, 5 MINUTES, "An outpost's dead don't go with the outpost's body time") // AMBIENT_OUTPOST_BODY_TIME
-	TEST_ASSERT(patron in SShuman_npcs.corpses, "An outpost's dead are not left to the corpse sweep")
+	TEST_ASSERT_EQUAL(patron.npc_corpse_lifetime, 0, "An outpost's dead are still on the corpse sweep's clock")
+	TEST_ASSERT(!(patron in SShuman_npcs.corpses), "An outpost's dead are left to the corpse sweep")
+	TEST_ASSERT(outpost.recovery && (WEAKREF(patron) in outpost.recovery.npc_dead), "An outpost's dead are not left for its morgue crew")
 
 /datum/unit_test/voidcrew_ambient_npc_protections/proc/count_pickaxes(turf/where)
 	. = 0

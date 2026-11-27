@@ -131,26 +131,32 @@ GLOBAL_LIST_EMPTY(stealth_test_dark_turfs)
 /**
  * The living mobs a guard might notice within `range`, nearest first: not itself, not its own side, not the
  * dead, not critters (stealth_is_critter()), and not someone's captive (an NPC in cuffs or out cold, as the den
- * cameras judge it; a player counts whatever state they're in). Uses the spatial grid, never view() or hearers().
+ * cameras judge it; a player, or a body with a mind, counts whatever state they're in). Uses the spatial grid, never view() or hearers().
  * The caller caps how many it judges.
  */
 /proc/stealth_candidates(mob/living/guard, range)
 	var/turf/center = get_turf(guard)
 	if(isnull(center))
 		return list()
-	var/list/buckets = new /list(range + 1)
-	for(var/mob/living/found in SSspatial_grid.orthogonal_range_search(center, SPATIAL_GRID_CONTENTS_TYPE_HEARING, range))
+	// One bucket per whole tile of distance, 0 to range: a fractional, zero or negative range never overflows it
+	var/max_dist = max(0, round(range))
+	var/list/buckets = new /list(max_dist + 1)
+	for(var/mob/living/found in SSspatial_grid.orthogonal_range_search(center, SPATIAL_GRID_CONTENTS_TYPE_HEARING, max_dist))
 		if(found == guard || found.stat == DEAD)
 			continue
 		var/turf/found_turf = get_turf(found)
 		if(isnull(found_turf) || found_turf.z != center.z)
 			continue
-		var/dist = get_dist(center, found_turf)
-		if(dist > range)
+		// BYOND's get_dist() of a turf with itself is -1, not 0: someone sharing the guard's tile (lying under him,
+		// held, stepped over) is at distance 0
+		var/dist = (found_turf == center) ? 0 : get_dist(center, found_turf)
+		if(dist < 0 || dist > max_dist)
 			continue
 		if(guard.faction_check_atom(found) || stealth_is_critter(found))
 			continue
-		if(!found.ckey && (found.stat != CONSCIOUS || HAS_TRAIT(found, TRAIT_RESTRAINED)))
+		// A body with a mind is a person's whether or not their player is at the keys (ghosted, disconnected): a guard
+		// that finishes the downed was otherwise blind to them lying at its feet
+		if(!found.ckey && !found.mind && (found.stat != CONSCIOUS || HAS_TRAIT(found, TRAIT_RESTRAINED)))
 			continue
 		var/list/bucket = buckets[dist + 1]
 		if(isnull(bucket))

@@ -632,6 +632,11 @@
 	for(var/turf/spot as anything in block(corner.x, corner.y, corner.z, corner.x + width + 1, corner.y + height + 1, corner.z))
 		var/edge = spot.x == corner.x || spot.y == corner.y || spot.x == corner.x + width + 1 || spot.y == corner.y + height + 1
 		spot.ChangeTurf(edge ? /turf/closed/wall : /turf/open/floor/iron)
+		// A released reservation keeps its landmarks (/turf/proc/empty()), and an outpost an earlier test loaded here
+		// left its patrol points behind: with nobody having asked for a group there they were never handed to one, and
+		// would join this room's group as routes of their own
+		for(var/obj/effect/landmark/left_behind in spot)
+			qdel(left_behind)
 		GLOB.stealth_test_dark_turfs[spot] = FALSE
 		tidy.lit_turfs += spot
 	return TRUE

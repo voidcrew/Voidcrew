@@ -281,17 +281,17 @@ GLOBAL_LIST_INIT(loot_gun_spare_ammo, list(
 		new round_path(destination)
 
 // Stamp purchased caches before they can be opened, even when dispensed aboard a ship.
-/datum/shop_sku/general/rotating/freight_crate/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/general/rotating/freight_crate/dispense(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	. = ..()
 	var/obj/structure/closet/crate/zone_loot/cache = .
 	cache.freight_weapons = TRUE
 
-/datum/shop_sku/black_market/mystery_cache/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/black_market/mystery_cache/dispense(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	. = ..()
 	var/obj/structure/closet/crate/zone_loot/cache = .
 	cache.freight_weapons = TRUE
 
-/datum/shop_sku/black_market/mystery_cache_rare/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
+/datum/shop_sku/black_market/mystery_cache_rare/dispense(mob/living/user, mob/living/carbon/human/npc/ambient_npc/outpost/trader/vendor)
 	. = ..()
 	var/obj/structure/closet/crate/zone_loot/cache = .
 	cache.freight_weapons = TRUE

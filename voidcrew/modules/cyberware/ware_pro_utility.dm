@@ -238,9 +238,6 @@
 /datum/action/cooldown/cyberware/icepick/suppress/Activate(atom/target)
 	var/mob/living/carbon/bearer = organ.owner
 	if(istype(target, /obj/machinery/porta_turret))
-		if(istype(target, /obj/machinery/porta_turret/outpost))
-			bearer.balloon_alert(bearer, "hardened firmware!")
-			return FALSE
 		if(!spike_in_range(bearer, target, CYBERWARE_ICEPICK_TURRET_RANGE))
 			return FALSE
 		bearer.balloon_alert(bearer, "spiking turret...")
@@ -306,9 +303,6 @@
 	var/mob/living/carbon/bearer = organ.owner
 	if(!istype(target, /obj/machinery/porta_turret))
 		bearer.balloon_alert(bearer, "no targeting bus!")
-		return FALSE
-	if(istype(target, /obj/machinery/porta_turret/outpost))
-		bearer.balloon_alert(bearer, "hardened firmware!")
 		return FALSE
 	if(istype(target, /obj/machinery/porta_turret/ship_defense))
 		// Hull defense turrets can't be aimed at people at all, there is

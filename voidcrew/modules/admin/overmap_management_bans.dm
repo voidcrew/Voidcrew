@@ -4,11 +4,10 @@
  * One list of everyone an outpost is refusing, across every trader outpost and player outpost, so an
  * admin can lift a restriction or impose one without hunting through variables.
  *
- * Trader outposts (voidcrew/modules/trade/outpost.dm, outpost_trespass.dm):
- * - "embargo": a ship under trade embargo. Its crew are refused service and shot on sight.
- * - "aggressor": a person marked for violence. Refused service and shot on sight.
- * - "warning": a person with warning strikes who has not been marked yet.
- * - "trespass": a person refused service after armed trespass (turrets only for the shorter hostile window).
+ * Trader outposts (voidcrew/modules/trade/outpost.dm):
+ * - "embargo": a ship under trade embargo. Its crew are refused service.
+ * - "wanted": a person the outpost police have a warrant on, or have barred (voidcrew/modules/outpost_police/).
+ *   Lifting a prisoner's warrant opens their cell.
  * Player outposts (voidcrew/modules/player_outposts/):
  * - "ship_ban": a ship the owners denied docking.
  */
@@ -60,6 +59,47 @@
 		"seconds" = seconds,
 	)
 
+/// The cell `suspect` is held in at `police`, or null
+/datum/overmap_management/proc/ban_cell_of(datum/outpost_police/police, datum/mind/suspect)
+	for(var/datum/outpost_police_cell/cell in police.cells)
+		if(suspect in cell.prisoners)
+			return cell
+	return null
+
+/// Any prisoner held in `police`'s cells matching `target_ref`, or null
+/datum/overmap_management/proc/ban_held_mind(datum/outpost_police/police, target_ref)
+	if(!police || !target_ref)
+		return null
+	for(var/datum/outpost_police_cell/cell in police.cells)
+		var/datum/mind/held = locate(target_ref) in cell.prisoners
+		if(held)
+			return held
+	return null
+
+/// One row for everyone `trader`'s police have a warrant of a star or more on, or have barred
+/datum/overmap_management/proc/ban_wanted_entries(obj/structure/overmap/trader_outpost/trader)
+	var/list/rows = list()
+	var/datum/outpost_police/police = trader.police
+	if(!police)
+		return rows
+	// The wanted core prunes warrants as it goes, so walk a copy
+	for(var/datum/mind/suspect in police.warrants.Copy())
+		var/datum/outpost_warrant/warrant = police.warrants[suspect]
+		if(!suspect || !warrant)
+			continue
+		var/stars = police.get_stars(suspect)
+		var/barred = warrant.barred_until > world.time
+		if(stars < 1 && !barred)
+			continue
+		var/seconds
+		var/datum/outpost_police_cell/cell = ban_cell_of(police, suspect)
+		if(cell)
+			seconds = outpost_ban_seconds_left(cell.prisoners[suspect])
+		else if(barred)
+			seconds = outpost_ban_seconds_left(warrant.barred_until)
+		rows += list(ban_entry(trader, "wanted", suspect, outpost_ban_mind_label(suspect), stars >= 1 ? "[stars] star[stars == 1 ? "" : "s"]" : "barred", seconds))
+	return rows
+
 /datum/overmap_management/proc/ban_data()
 	var/list/entries = list()
 	var/list/outpost_options = list()
@@ -81,19 +121,7 @@
 				continue
 			if(trader.is_ship_embargoed(embargoed))
 				entries += list(ban_entry(trader, "embargo", embargoed, embargoed.name, "Trade embargo", outpost_ban_seconds_left(trader.embargoed_ships[embargoed])))
-		for(var/datum/mind/marked as anything in trader.aggressor_minds.Copy())
-			if(trader.is_marked_aggressor(marked))
-				entries += list(ban_entry(trader, "aggressor", marked, outpost_ban_mind_label(marked), "Marked for violence", outpost_ban_seconds_left(trader.aggressor_minds[marked])))
-		for(var/datum/mind/warned as anything in trader.aggressor_strikes.Copy())
-			var/last_strike = trader.aggressor_strike_times[warned]
-			if(trader.aggressor_minds[warned] || !last_strike || world.time >= last_strike + OUTPOST_AGGRESSION_MARK_DURATION)
-				continue
-			var/strikes = trader.aggressor_strikes[warned]
-			entries += list(ban_entry(trader, "warning", warned, outpost_ban_mind_label(warned), "[strikes] warning[strikes == 1 ? "" : "s"]", outpost_ban_seconds_left(last_strike + OUTPOST_AGGRESSION_MARK_DURATION)))
-		for(var/datum/mind/trespasser as anything in trader.trespass_bars.Copy())
-			if(trader.is_trespass_barred(trespasser))
-				var/label = trader.is_armed_trespasser(trespasser) ? "Armed trespass, turrets hostile" : "Armed trespass"
-				entries += list(ban_entry(trader, "trespass", trespasser, outpost_ban_mind_label(trespasser), label, outpost_ban_seconds_left(trader.trespass_bars[trespasser])))
+		entries += ban_wanted_entries(trader)
 
 	var/list/ships = list()
 	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
@@ -127,7 +155,9 @@
 			ban_lift(user, outpost, trader, home, kind, params["target"])
 		if("ban_add")
 			var/minutes = clamp(round(text2num("[params["minutes"]]") || 0), 1, OUTPOST_BAN_MAX_MINUTES)
-			ban_add(user, outpost, trader, home, kind, params["target"], minutes)
+			var/stars = text2num("[params["stars"]]")
+			stars = isnull(stars) ? 3 : clamp(round(stars), 1, 5)
+			ban_add(user, outpost, trader, home, kind, params["target"], minutes, stars)
 	return TRUE
 
 /datum/overmap_management/proc/ban_lift(mob/user, obj/structure/overmap/outpost, obj/structure/overmap/trader_outpost/trader, obj/structure/overmap/dynamic/player_outpost/home, kind, target_ref)
@@ -139,20 +169,12 @@
 				trader.embargoed_ships -= ship
 				target_name = ship.name
 				ship.ship_notify("[trader.admin_name()] has lifted the trade embargo on your vessel.", "TRADE EMBARGO", SHIP_NOTIFY_NOTICE)
-		if("aggressor", "warning")
-			var/datum/mind/marked = trader && (locate(target_ref) in (kind == "aggressor" ? trader.aggressor_minds : trader.aggressor_strikes))
-			if(marked)
-				trader.aggressor_minds -= marked
-				trader.aggressor_strikes -= marked
-				trader.aggressor_strike_times -= marked
-				target_name = outpost_ban_mind_label(marked)
-		if("trespass")
-			var/datum/mind/trespasser = trader && (locate(target_ref) in trader.trespass_bars)
-			if(trespasser)
-				trader.trespass_bars -= trespasser
-				trader.armed_trespassers -= trespasser
-				trader.armed_sightings -= trespasser
-				target_name = outpost_ban_mind_label(trespasser)
+		if("wanted")
+			var/datum/outpost_police/police = trader?.police
+			var/datum/mind/suspect = police && ((locate(target_ref) in police.warrants) || ban_held_mind(police, target_ref))
+			if(suspect)
+				target_name = outpost_ban_mind_label(suspect)
+				ban_lift_warrant(police, suspect)
 		if("ship_ban")
 			var/obj/structure/overmap/ship/ship = home && (locate(target_ref) in home.banned_ships)
 			if(ship)
@@ -165,7 +187,11 @@
 	log_admin("[key_name(user)] lifted [ban_kind_name(kind)] on [target_name] at [outpost.admin_name()].")
 	message_admins("[key_name_admin(user)] lifted [ban_kind_name(kind)] on [target_name] at [outpost.admin_name()] via Overmap Management.")
 
-/datum/overmap_management/proc/ban_add(mob/user, obj/structure/overmap/outpost, obj/structure/overmap/trader_outpost/trader, obj/structure/overmap/dynamic/player_outpost/home, kind, target_ref, minutes)
+/// Ends `suspect`'s warrant, prior and bar at `police`; a prisoner's cell lets them out on its next tick
+/datum/overmap_management/proc/ban_lift_warrant(datum/outpost_police/police, datum/mind/suspect)
+	police.admin_lift(suspect)
+
+/datum/overmap_management/proc/ban_add(mob/user, obj/structure/overmap/outpost, obj/structure/overmap/trader_outpost/trader, obj/structure/overmap/dynamic/player_outpost/home, kind, target_ref, minutes, stars = 3)
 	var/target_name
 	var/duration = minutes MINUTES
 	switch(kind)
@@ -182,42 +208,35 @@
 				home.approved_ships -= ship
 				if(ship in home.pending_dock_requests)
 					home.deny_dock_request(ship)
-		if("aggressor", "trespass")
-			var/datum/mind/target = locate(target_ref) in ban_candidate_minds()
-			if(!target || !trader)
+		if("wanted")
+			var/datum/mind/suspect = locate(target_ref) in ban_candidate_minds()
+			var/datum/outpost_police/police = trader?.ensure_police()
+			if(!suspect || !police)
 				error = "Choose a person and a trader outpost."
 				return
-			target_name = outpost_ban_mind_label(target)
-			var/mob/living/body = target.current
-			var/at_outpost = body && get_trader_outpost_for_turf(get_turf(body)) == trader
-			if(kind == "aggressor")
-				trader.aggressor_minds[target] = world.time + duration
-				trader.aggressor_strikes[target] = OUTPOST_AGGRESSION_STRIKES
-				trader.aggressor_strike_times[target] = world.time
-				if(at_outpost)
-					to_chat(body, span_userdanger("Outpost defense systems lock onto you."))
-			else
-				trader.trespass_bars[target] = world.time + duration
-				trader.weapon_permits -= target
-				trader.permit_lapse_told -= target
+			target_name = outpost_ban_mind_label(suspect)
+			police.admin_set_stars(suspect, stars)
 		else
 			error = "Unknown restriction."
 			return
-	var/length_text = kind == "ship_ban" ? "" : " for [minutes] minute[minutes == 1 ? "" : "s"]"
-	notice = "Added [ban_kind_name(kind)] on [target_name] at [outpost.admin_name()][length_text]."
-	log_admin("[key_name(user)] added [ban_kind_name(kind)] on [target_name] at [outpost.admin_name()][length_text].")
-	message_admins("[key_name_admin(user)] added [ban_kind_name(kind)] on [target_name] at [outpost.admin_name()][length_text] via Overmap Management.")
+	// A warrant has no length: its stars are the whole of it
+	var/what = ban_kind_name(kind)
+	var/length_text = ""
+	switch(kind)
+		if("embargo")
+			length_text = " for [minutes] minute[minutes == 1 ? "" : "s"]"
+		if("wanted")
+			what = "a [stars]-star warrant"
+	notice = "Added [what] on [target_name] at [outpost.admin_name()][length_text]."
+	log_admin("[key_name(user)] added [what] on [target_name] at [outpost.admin_name()][length_text].")
+	message_admins("[key_name_admin(user)] added [what] on [target_name] at [outpost.admin_name()][length_text] via Overmap Management.")
 
 /datum/overmap_management/proc/ban_kind_name(kind)
 	switch(kind)
 		if("embargo")
 			return "a trade embargo"
-		if("aggressor")
-			return "a violence mark"
-		if("warning")
-			return "the warnings"
-		if("trespass")
-			return "a refused-service bar"
+		if("wanted")
+			return "a warrant"
 		if("ship_ban")
 			return "a docking ban"
 	return "a restriction"

@@ -24,6 +24,12 @@
 /// REFs of fallen group members it has already reacted to
 #define BB_STEALTH_BODIES_SEEN "stealth_bodies_seen"
 
+// What a fallen friend is to whoever finds it (stealth_fallen())
+/// Dead or out cold: a body
+#define STEALTH_FALLEN_BODY "body"
+/// Awake, but on the floor or in cuffs
+#define STEALTH_FALLEN_HELPLESS "helpless"
+
 // Notice entry fields (the controller's notice_map)
 #define STEALTH_ENTRY_NOTICE 1
 #define STEALTH_ENTRY_TURF 2
@@ -36,6 +42,8 @@
 #define STEALTH_BARK_SEARCH "stealth_search"
 #define STEALTH_BARK_HIT_UNSEEN "stealth_hit_unseen"
 #define STEALTH_BARK_BODY "stealth_body"
+/// A friend it finds awake but helpless, on the floor or in cuffs: asked after, never called in as a body
+#define STEALTH_BARK_HELPLESS "stealth_helpless"
 #define STEALTH_BARK_CHATTER "stealth_chatter"
 /// It just put its target down
 #define STEALTH_BARK_DOWNED "stealth_target_downed"
@@ -58,8 +66,12 @@
 #define STEALTH_SCAN_INTERVAL (1 SECONDS)
 #define STEALTH_SIGHT_RANGE 8
 #define STEALTH_ALERT_MAX_RANGE 7
+/// Outpost police perception (outpost_police/police_perception.dm): how far an officer sees in the dark
+#define STEALTH_DARK_SIGHT_RANGE 4
 #define STEALTH_DARK_LUMCOUNT 0.2
 #define STEALTH_DARK_MULT 0.5
+/// Outpost police perception: someone this close is noticed at once
+#define STEALTH_CLOSE_RANGE 2
 /// Elbow to elbow: someone this close in its cone is seen whatever the light (decision 31)
 #define STEALTH_ADJACENT_RANGE 1
 /// Point-blank (decision 32): someone it can see in its cone this close is an alert on that look

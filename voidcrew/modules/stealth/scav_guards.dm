@@ -17,6 +17,7 @@
 		STEALTH_BARK_SEARCH = list("Come on out.", "I know you're here."),
 		STEALTH_BARK_HIT_UNSEEN = list("Contact!", "Where's that coming from?"),
 		STEALTH_BARK_BODY = list("Man down!", "Who did this?"),
+		STEALTH_BARK_HELPLESS = list("What happened to you?", "Who did that to you?", "Hey! What happened?"),
 		STEALTH_BARK_CHATTER = list("Shipment's late again.", "My feet are killing me.", "You hear that? No? Good.", "Radio check.", "Quiet tonight. I hate quiet."),
 		STEALTH_BARK_DOWNED = list("Got 'em.", "Stay down.", "That's handled."),
 		STEALTH_BARK_CLOSET_OPEN = list("Out you come.", "Thought so.", "Found you."),

@@ -157,9 +157,9 @@
 	return ..("Freight pod destroyed, contract void.")
 
 /datum/mission/outpost_courier/can_turn_in_at(atom/reward_anchor)
-	if(!istype(reward_anchor, /mob/living/basic/outpost_trader))
+	if(!istype(reward_anchor, /mob/living/carbon/human/npc/ambient_npc/outpost/trader))
 		return FALSE
-	var/mob/living/basic/outpost_trader/npc = reward_anchor
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/npc = reward_anchor
 	return npc.outpost == get_destination() && npc.outpost?.contains_site_turf(get_turf(npc))
 
 /datum/mission/outpost_courier/get_wrong_location_reason(atom/reward_anchor)

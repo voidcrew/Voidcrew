@@ -98,7 +98,7 @@
 		for(var/trait in list(TRAIT_NOBREATH, TRAIT_PIERCEIMMUNE, TRAIT_RESISTHEAT, TRAIT_NOFIRE, TRAIT_VIRUSIMMUNE))
 			TEST_ASSERT(!HAS_TRAIT_FROM(corpse, trait, GENETIC_MUTATION), "[mutation_path] left [trait] after failing")
 
-/// Shock Touch on another visitor earns the caster a strike like any other attack.
+/// Shock Touch on another visitor counts as an attack by the caster, like any other hit.
 /datum/unit_test/voidcrew_gene_injector_shock_touch_outpost
 
 /datum/unit_test/voidcrew_gene_injector_shock_touch_outpost/Run()
@@ -113,8 +113,8 @@
 	victim.mind_initialize()
 	var/datum/action/cooldown/spell/touch/shock/shock = allocate(/datum/action/cooldown/spell/touch/shock, attacker)
 	shock.cast_on_hand_hit(null, victim, attacker)
-	TEST_ASSERT_EQUAL(outpost.aggressor_strikes[attacker.mind], 1, "Shock Touch on a visitor did not count as an attack")
-	TEST_ASSERT_NULL(outpost.aggressor_strikes[victim.mind], "The shocked visitor was given a strike")
+	TEST_ASSERT(LAZYACCESS(outpost.self_defense_targets[victim.mind], attacker.mind), "Shock Touch on a visitor did not count as an attack")
+	TEST_ASSERT_NULL(outpost.self_defense_targets[attacker.mind], "The shocked visitor was counted as the attacker")
 
 /// Biotech Compatibility raises neural capacity while held and drops it when lost.
 /datum/unit_test/voidcrew_gene_injector_biotech_capacity

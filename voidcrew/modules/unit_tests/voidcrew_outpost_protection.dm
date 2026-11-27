@@ -133,26 +133,189 @@
 		SSexplosions.vars[queue] = saved_queues[queue]
 	return ..()
 
-/datum/unit_test/voidcrew_outpost_protection/explosions/Run()
-	var/obj/item/storage/backpack/bag = allocate(/obj/item/storage/backpack, protected_turf)
-	var/obj/item/pen/contents = allocate(/obj/item/pen, bag)
-	explosion(bag, devastation_range = 2, flame_range = 2, flash_range = 2, silent = TRUE, adminlog = FALSE)
-	TEST_ASSERT_EQUAL(length(SSexplosions.highturf), 0, "An inventory bomb propagated inside the outpost")
-	TEST_ASSERT_EQUAL(length(SSexplosions.flameturf), 0, "An outpost bomb produced fire")
-	TEST_ASSERT_EQUAL(length(SSexplosions.high_mov_atom), 0, "An outpost bomb triggered nested contents")
-	TEST_ASSERT_EQUAL(length(SSexplosions.held_throwturf), 0, "An outpost bomb threw objects")
+/// The whole 5x5 test room becomes outpost ground; returns its middle tile
+/datum/unit_test/voidcrew_outpost_protection/explosions/proc/claim_room()
+	outpost.outpost_template.width = run_loc_floor_top_right.x - run_loc_floor_bottom_left.x + 1
+	outpost.outpost_template.height = run_loc_floor_top_right.y - run_loc_floor_bottom_left.y + 1
+	return locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
 
-	explosion(outside_turf, devastation_range = 2, flame_range = 2, silent = TRUE, adminlog = FALSE)
-	TEST_ASSERT(outside_turf in SSexplosions.highturf, "An outside explosion lost its normal effects")
-	TEST_ASSERT(!(protected_turf in SSexplosions.highturf), "An outside explosion reached the outpost")
-	TEST_ASSERT(!(protected_turf in SSexplosions.flameturf), "An outside explosion ignited the outpost")
-	TEST_ASSERT(!(protected_turf in SSexplosions.held_throwturf), "An outside explosion threw outpost contents")
-	// Also exercise direct explosion calls and objects moved after a blast was queued.
-	EX_ACT(bag, EXPLODE_DEVASTATE)
-	TEST_ASSERT(!QDELETED(bag) && !QDELETED(contents), "Direct explosion handling bypassed inventory protection")
-	var/mob/living/carbon/human/consistent/visitor = allocate(/mob/living/carbon/human/consistent, protected_turf)
-	EX_ACT(visitor, EXPLODE_DEVASTATE)
-	TEST_ASSERT(!QDELETED(visitor), "Direct explosion handling gibbed an outpost visitor")
+/// Applies what the blast queued, turfs then movables, as SSexplosions.fire() does (throws are left out)
+/datum/unit_test/voidcrew_outpost_protection/explosions/proc/apply_blast()
+	for(var/list/pass in list(list("lowturf", EXPLODE_LIGHT), list("medturf", EXPLODE_HEAVY), list("highturf", EXPLODE_DEVASTATE)))
+		var/list/queued = SSexplosions.vars[pass[1]]
+		SSexplosions.vars[pass[1]] = list()
+		var/severity = pass[2]
+		for(var/turf/blasted as anything in queued)
+			EX_ACT(blasted, severity)
+	for(var/list/pass in list(list("high_mov_atom", EXPLODE_DEVASTATE), list("med_mov_atom", EXPLODE_HEAVY), list("low_mov_atom", EXPLODE_LIGHT)))
+		var/list/queued = SSexplosions.vars[pass[1]]
+		SSexplosions.vars[pass[1]] = list()
+		var/severity = pass[2]
+		for(var/atom/movable/blasted as anything in queued)
+			if(!QDELETED(blasted))
+				EX_ACT(blasted, severity)
+
+/// Everything a blast could change about a tile's own ground
+/datum/unit_test/voidcrew_outpost_protection/explosions/proc/ground_state(turf/ground)
+	. = "[ground.type] [islist(ground.baseturfs) ? jointext(ground.baseturfs, ",") : ground.baseturfs] [ground.icon_state]"
+	if(isopenturf(ground))
+		var/turf/open/floor = ground
+		. += " [floor.broken] [floor.burnt]"
+
+/// Decision 38: a blast at a trader outpost hurts people and placed things as anywhere, never the ground or the outpost's property
+/datum/unit_test/voidcrew_outpost_protection/explosions/Run()
+	var/turf/epicenter = claim_room()
+	TEST_ASSERT(is_trader_outpost_protected(epicenter) && is_trader_outpost_protected(run_loc_floor_top_right), "The test room is not outpost ground")
+	var/list/before = list()
+	for(var/turf/ground in range(2, epicenter))
+		before[ground] = ground_state(ground)
+
+	var/mob/living/carbon/human/consistent/visitor = allocate(/mob/living/carbon/human/consistent, get_step(epicenter, EAST))
+	var/obj/structure/chair/placed = allocate(/obj/structure/chair, get_step(epicenter, WEST))
+	var/obj/item/pen/loose = allocate(/obj/item/pen, epicenter)
+	// Property at ground zero: a tank that blows up from its own ex_act(), and a machine with parts inside
+	var/obj/structure/reagent_dispensers/fueltank/tank = allocate(/obj/structure/reagent_dispensers/fueltank, epicenter)
+	tank.AddElement(/datum/element/outpost_property)
+	var/obj/machinery/recharger/fixture = allocate(/obj/machinery/recharger, epicenter)
+	fixture.AddElement(/datum/element/outpost_property)
+	var/obj/item/circuitboard/fixture_board = fixture.circuit
+	var/fixture_integrity = fixture.get_integrity()
+	var/tank_integrity = tank.get_integrity()
+
+	explosion(epicenter, heavy_impact_range = 1, light_impact_range = 2, flame_range = 0, flash_range = 0, silent = TRUE, adminlog = FALSE)
+	TEST_ASSERT(epicenter in SSexplosions.medturf, "An outpost bomb did not go off")
+	TEST_ASSERT(get_turf(visitor) in SSexplosions.lowturf, "The blast did not travel across the outpost floor")
+	apply_blast()
+
+	TEST_ASSERT(visitor.getBruteLoss() + visitor.getFireLoss() > 0, "An outpost bomb did not hurt a visitor beside it")
+	TEST_ASSERT(QDELETED(placed) || placed.get_integrity() < placed.max_integrity, "A placed chair in the blast was unharmed")
+	TEST_ASSERT(QDELETED(loose) || loose.get_integrity() < loose.max_integrity, "A loose pen at ground zero was unharmed")
+	TEST_ASSERT(!QDELETED(tank) && tank.get_integrity() == tank_integrity, "A blast damaged or set off an outpost fuel tank")
+	TEST_ASSERT(!QDELETED(fixture) && fixture.get_integrity() == fixture_integrity, "A blast damaged an outpost machine")
+	TEST_ASSERT(!QDELETED(fixture_board) && fixture_board.loc == fixture, "A blast destroyed an outpost machine's parts")
+	TEST_ASSERT_EQUAL(length(SSexplosions.highturf) + length(SSexplosions.medturf) + length(SSexplosions.lowturf), 0, "Outpost property set off a second blast")
+	for(var/turf/ground as anything in before)
+		TEST_ASSERT_EQUAL(ground_state(ground), before[ground], "A blast changed the outpost's ground at [ground.x],[ground.y]")
+
+/// Decision 38: a bombing that catches a visitor at an outpost is an attack by the bomber, as a blow would be
+/datum/unit_test/voidcrew_outpost_protection/explosions/bombing_reported/Run()
+	var/turf/epicenter = claim_room()
+	var/mob/living/carbon/human/consistent/bomber = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/consistent/visitor = allocate(/mob/living/carbon/human/consistent, get_step(epicenter, EAST))
+	bomber.mind_initialize()
+	visitor.mind_initialize()
+	// A rocket's blast is blamed on whoever fired it
+	var/obj/projectile/rocket = allocate(/obj/projectile)
+	rocket.firer = bomber
+	TEST_ASSERT_EQUAL(outpost_bomber_of(rocket), bomber, "A rocket's blast was not blamed on its firer")
+	var/obj/item/pen/untouched = allocate(/obj/item/pen)
+	TEST_ASSERT_NULL(outpost_bomber_of(untouched), "A bomb nobody touched was blamed on someone")
+	// Review D1: the last hand on a bomb is never blame (whoever moved it), only whoever armed it
+	untouched.fingerprintslast = "[bomber.ckey || "bomber"]"
+	TEST_ASSERT_NULL(outpost_bomber_of(untouched), "A bomb nobody armed was blamed on the last hand to touch it")
+	outpost_note_armed_unless_armed(untouched, visitor)
+	TEST_ASSERT_EQUAL(outpost_bomber_of(untouched), visitor, "A bomb set off by hand was not blamed on that hand")
+	outpost_note_armed_unless_armed(untouched, bomber)
+	TEST_ASSERT_EQUAL(outpost_bomber_of(untouched), visitor, "Setting off a bomb someone else armed took the blame off the armer")
+	untouched.outpost_armed_by = null
+	// A grenade sewn into a plush is the sewer's bomb, not that of whoever pets the plush and sets it off
+	var/obj/item/toy/plush/carpplushie/plush = allocate(/obj/item/toy/plush/carpplushie, get_turf(bomber))
+	plush.stuffed = FALSE
+	var/obj/item/grenade/smokebomb/sewn = allocate(/obj/item/grenade/smokebomb, get_turf(bomber))
+	sewn.det_time = 1 HOURS
+	bomber.put_in_hands(sewn)
+	plush.attackby(sewn, bomber)
+	TEST_ASSERT_EQUAL(plush.grenade, sewn, "Setup: the grenade was not sewn into the plush")
+	plush.attack_self(visitor)
+	TEST_ASSERT(sewn.active, "Setup: petting the plush did not set the grenade off")
+	TEST_ASSERT_EQUAL(outpost_bomber_of(sewn), bomber, "A grenade sewn into a plush was blamed on [outpost_bomber_of(sewn)], not whoever sewed it in")
+	plush.grenade = null
+	qdel(sewn)
+	// Review D2: a rigged fuel tank stays its rigger's bomb when someone else knocks on it, and is nobody's once unrigged
+	var/obj/structure/reagent_dispensers/fueltank/fuel = allocate(/obj/structure/reagent_dispensers/fueltank, get_turf(bomber))
+	var/obj/item/assembly_holder/rig = allocate(/obj/item/assembly_holder, fuel)
+	fuel.rig = rig
+	fuel.outpost_armed_by = WEAKREF(bomber)
+	fuel.attackby(untouched, visitor)
+	TEST_ASSERT_EQUAL(outpost_bomber_of(fuel), bomber, "A rigged fuel tank was blamed on [outpost_bomber_of(fuel)], not whoever rigged it")
+	rig.forceMove(get_turf(bomber))
+	TEST_ASSERT_NULL(outpost_bomber_of(fuel), "A fuel tank with its rig taken off was still someone's bomb")
+	// A transfer valve's tank goes off, not the valve: it is the valve's armer's bomb
+	var/obj/item/transfer_valve/valve = allocate(/obj/item/transfer_valve, get_turf(bomber))
+	var/obj/item/tank/internals/oxygen/valve_tank = allocate(/obj/item/tank/internals/oxygen, valve)
+	valve.outpost_armed_by = WEAKREF(bomber)
+	TEST_ASSERT_EQUAL(outpost_bomber_of(valve_tank), bomber, "A transfer valve's tank was not blamed on whoever armed the valve")
+	// A pipe bomb is armed by whoever wires its trigger in, and by whoever starts that trigger
+	var/obj/item/sliced_pipe/pipe = allocate(/obj/item/sliced_pipe, get_turf(bomber))
+	pipe.wires_are_in = TRUE
+	var/obj/item/assembly/timer/fuse = allocate(/obj/item/assembly/timer, get_turf(bomber))
+	fuse.toggle_secure()
+	bomber.put_in_hands(fuse)
+	pipe.attackby(fuse, bomber)
+	var/obj/item/grenade/iedcasing/pipebomb = fuse.loc
+	TEST_ASSERT(istype(pipebomb), "Setup: no pipe bomb was made")
+	fuse.time = 3600
+	TEST_ASSERT_EQUAL(outpost_bomber_of(pipebomb), bomber, "A pipe bomb was not blamed on whoever wired its trigger in")
+	pipebomb.attack_self(visitor)
+	TEST_ASSERT_EQUAL(outpost_bomber_of(pipebomb), visitor, "A pipe bomb was not blamed on whoever started it")
+	qdel(pipebomb)
+	// A syndicate bomb's payload goes off, blamed on whoever activated the bomb; a failed defusal on a boom wire keeps that blame, and defusal clears it
+	var/obj/machinery/syndicatebomb/syn_bomb = allocate(/obj/machinery/syndicatebomb, get_turf(bomber))
+	var/datum/wires/syndicatebomb/syn_wires = syn_bomb.wires
+	syn_wires.on_pulse(WIRE_ACTIVATE, bomber)
+	TEST_ASSERT(syn_bomb.active, "Setup: pulsing WIRE_ACTIVATE did not arm the syndicate bomb")
+	TEST_ASSERT_EQUAL(outpost_bomber_of(syn_bomb.payload), bomber, "A syndicate bomb's payload was not blamed on whoever armed it")
+	syn_wires.on_pulse("[WIRE_BOOM] 1", visitor)
+	TEST_ASSERT_EQUAL(outpost_bomber_of(syn_bomb.payload), bomber, "A failed defusal on a boom wire shifted blame off the armer")
+	syn_bomb.explode_now = FALSE
+	syn_bomb.defuse()
+	TEST_ASSERT_NULL(outpost_bomber_of(syn_bomb.payload), "A defused syndicate bomb still carried blame")
+	qdel(syn_bomb)
+
+	// A clusterbang passes its armer to its segments and spawned payload grenades when it goes off
+	var/obj/item/grenade/clusterbuster/cluster = new(get_turf(bomber))
+	cluster.min_spawned = 2
+	cluster.max_spawned = 2
+	cluster.segment_chance = 50
+	cluster.outpost_armed_by = WEAKREF(bomber)
+	cluster.detonate()
+	var/found_child = FALSE
+	for(var/obj/item/grenade/child in range(5, get_turf(bomber)))
+		if(child == sewn)
+			continue
+		found_child = TRUE
+		TEST_ASSERT_EQUAL(outpost_bomber_of(child), bomber, "A clusterbang's child [child.type] lost its bomber attribution")
+		qdel(child)
+	TEST_ASSERT(found_child, "Clusterbang spawned no child grenades to check")
+
+	// A non-item bomb (or rocket) catching an officer is ASSAULT_OFFICER (3 stars), never bare-handed RESIST, and records a rocket's launcher
+	var/obj/item/crowbar/launcher_standin = allocate(/obj/item/crowbar)
+	rocket.fired_from = launcher_standin
+	var/datum/outpost_police/police = outpost.ensure_police()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, epicenter)
+	police.add_officer(officer)
+	police.perception.test_plain = TRUE
+	GLOB.outpost_pvp_enforcement.on_outpost_bombing(rocket, list(officer))
+	TEST_ASSERT_EQUAL(police.get_stars(bomber.mind), 3, "A rocket blast on an officer gave [police.get_stars(bomber.mind)] stars instead of three")
+	TEST_ASSERT(WEAKREF(launcher_standin) in police.get_warrant(bomber.mind)?.evidence, "A rocket blast did not record its launcher on the warrant")
+	police.admin_lift(bomber.mind)
+	police.recent_reports.Cut()
+	rocket.fired_from = null
+	qdel(officer)
+
+	explosion(epicenter, light_impact_range = 2, flame_range = 0, flash_range = 0, silent = TRUE, adminlog = FALSE, explosion_cause = rocket)
+	TEST_ASSERT(LAZYACCESS(outpost.self_defense_targets[visitor.mind], bomber.mind), "A bombing at the outpost did not count as an attack on the visitor")
+	TEST_ASSERT_NULL(outpost.self_defense_targets[bomber.mind], "The bombed visitor was counted as the attacker")
+	apply_blast()
+
+	// A visitor inside a blast-vulnerable closet on outpost ground is still counted among blast victims
+	var/mob/living/carbon/human/consistent/crated = allocate(/mob/living/carbon/human/consistent, get_step(epicenter, WEST))
+	crated.mind_initialize()
+	var/obj/structure/closet/crate/crate = allocate(/obj/structure/closet/crate, get_step(epicenter, WEST))
+	crated.forceMove(crate)
+	var/list/caught = note_outpost_blast_victims(get_step(epicenter, WEST), null)
+	TEST_ASSERT(crated in caught, "A living person inside a crate on blasted outpost ground was missed")
+	crated.forceMove(get_step(epicenter, WEST))
 
 /datum/unit_test/voidcrew_outpost_protection/fixtures/Run()
 	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, protected_turf)
@@ -162,3 +325,50 @@
 	TEST_ASSERT_EQUAL(door.get_integrity(), integrity, "Outpost property took ordinary damage")
 	TEST_ASSERT_EQUAL(door.emp_act(EMP_HEAVY), EMP_PROTECT_ALL, "Outpost property lacks full EMP protection")
 	TEST_ASSERT(!door.secondsElectrified, "An EMP electrified an outpost door")
+
+	var/datum/outpost_police/police = outpost.ensure_police()
+	police.perception.test_plain = TRUE
+	var/mob/living/carbon/human/consistent/pilot = allocate(/mob/living/carbon/human/consistent, protected_turf)
+	var/mob/living/carbon/human/consistent/bystander = allocate(/mob/living/carbon/human/consistent, protected_turf)
+	pilot.mind_initialize()
+	bystander.mind_initialize()
+
+	// Stamina hits and disabler beams on outpost amenities are not vandalism; damaging hits record the weapon
+	var/obj/machinery/sleeper/outpost/sleeper = allocate(/obj/machinery/sleeper/outpost, protected_turf)
+	var/obj/projectile/beam/disabler/stun_beam = allocate(/obj/projectile/beam/disabler)
+	stun_beam.firer = pilot
+	sleeper.bullet_act(stun_beam, BODY_ZONE_CHEST)
+	TEST_ASSERT_NULL(police.get_warrant(pilot.mind), "A disabler beam on an outpost sleeper counted as vandalism")
+	// Someone has to see the hit: a trader standing where they work
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/watcher = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/trader, get_step(protected_turf, EAST))
+	outpost.traders += watcher
+	var/obj/item/crowbar/bar = allocate(/obj/item/crowbar)
+	sleeper.attacked_by(bar, pilot)
+	outpost.traders -= watcher
+	qdel(watcher)
+	TEST_ASSERT(WEAKREF(bar) in police.get_warrant(pilot.mind)?.evidence, "Hitting an outpost sleeper did not record the weapon on the warrant")
+	police.admin_lift(pilot.mind)
+	police.recent_reports.Cut()
+
+	// A piloted mecha's gunfire and wall melee attribute crimes to the pilot
+	var/obj/vehicle/sealed/mecha/ripley/mech = allocate(/obj/vehicle/sealed/mecha/ripley, protected_turf)
+	pilot.forceMove(mech)
+	mech.add_occupant(pilot, VEHICLE_CONTROL_DRIVE, TRUE)
+	var/obj/projectile/beam/laser/mech_shot = allocate(/obj/projectile/beam/laser)
+	mech_shot.firer = mech
+	SEND_SIGNAL(bystander, COMSIG_PROJECTILE_PREHIT, mech_shot)
+	TEST_ASSERT(LAZYACCESS(outpost.self_defense_targets[bystander.mind], pilot.mind), "A mecha's shot on a visitor did not open self-defence against the pilot")
+	TEST_ASSERT_NOTNULL(police.get_warrant(pilot.mind), "A mecha's shot on a visitor gave the pilot no warrant")
+	police.admin_lift(pilot.mind)
+	police.recent_reports.Cut()
+
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat/officer = allocate(/mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, protected_turf)
+	police.add_officer(officer)
+	officer.bullet_act(mech_shot, BODY_ZONE_CHEST)
+	TEST_ASSERT_EQUAL(police.get_stars(pilot.mind), 3, "Shooting an officer from a mecha did not give the pilot 3 stars for assaulting an officer")
+	qdel(officer)
+	police.admin_lift(pilot.mind)
+	police.recent_reports.Cut()
+
+	mech.remove_occupant(pilot)
+	pilot.forceMove(protected_turf)

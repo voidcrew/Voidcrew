@@ -977,8 +977,8 @@
  * his coffee table, and no lounge table stands at any of his six goon posts either), six goon posts
  * and the refuge. SSbounty_kingpin seats him and his crew there on no posting, as it does at the start
  * of the round, his goons arriving through the human NPC spawn queue: the barkeep is the bar's own,
- * the crew's way out is the refuge, never the hangar lift (M3, M4, M5), and his posting is at that
- * outpost.
+ * the crew's way out is the refuge, never the hangar lift (M3, M4, M5), the station's officers leave
+ * his crew alone, and his posting is at that outpost.
  */
 /datum/unit_test/voidcrew_bounty_kingpin/map
 
@@ -1044,17 +1044,25 @@
 	TEST_ASSERT_EQUAL(length(crew.crew_tables), 0, "The crew minds [length(crew.crew_tables)] lounge tables, not none")
 	TEST_ASSERT_EQUAL(crew.crew_refuge, refuge, "The crew doesn't use the refuge")
 	TEST_ASSERT_EQUAL(crew.exit_turf(null), refuge, "The crew's way out isn't the refuge")
-	var/mob/living/basic/outpost_trader/barkeep = crew.crew_barkeep_ref?.resolve()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/barkeep = crew.crew_barkeep_ref?.resolve()
 	TEST_ASSERT_NOTNULL(barkeep, "No trader in sight of the sofa is the barkeep")
 	var/matrix/standing = matrix(barkeep.transform)
 
-	var/obj/machinery/porta_turret/outpost/turret = locate() in range(12, seat_turf)
-	TEST_ASSERT_NOTNULL(turret, "No lounge turret near the sofa")
+	// An officer on the floor beside the sofa leaves his crew alone: the goons carry the outpost staff's faction, and he is exempt by his own rule
+	var/turf/officer_spot
+	for(var/turf/open/candidate in oview(3, seat_turf))
+		if(!candidate.is_blocked_turf(TRUE))
+			officer_spot = candidate
+			break
+	TEST_ASSERT_NOTNULL(officer_spot, "No free floor beside the sofa for an officer")
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_officer(outpost, /mob/living/carbon/human/npc/ambient_npc/outpost/police/beat, officer_spot)
+	TEST_ASSERT(FACTION_TURRET in officer.faction, "An officer is not of the outpost staff's faction")
 	var/mob/living/carbon/human/hunter = kingpin_test_person(crew.talk_spot(), null)
 	crew.start_shootout(hunter, TRUE)
 	for(var/mob/living/carbon/human/npc/bounty_kingpin_goon/goon as anything in crew.goons())
-		TEST_ASSERT(turret.in_faction(goon), "The lounge turret doesn't count [goon] as its own")
-	TEST_ASSERT(bounty_turret_ignores(kingpin, TRUE), "The lounge turret doesn't leave the kingpin alone")
+		TEST_ASSERT(FACTION_TURRET in goon.faction, "[goon] isn't left alone by the officers")
+		TEST_ASSERT(!police_port_may_attack(officer, goon), "The station's officers would shoot [goon]")
+	TEST_ASSERT(bounty_turret_ignores(kingpin, TRUE), "The officers don't leave the kingpin alone")
 	TEST_ASSERT(barkeep.transform ~= standing, "The shootout changed how the barkeep looks")
 	// A shootout puts nobody on the board; the clock does, adopting him at this outpost
 	TEST_ASSERT_NULL(bounty_kingpin_open_posting(), "The shootout put him on the board")
@@ -1213,9 +1221,10 @@
 // ===== OUTPOST SECURITY =====
 
 /**
- * During the shootout a hunter's stray shot, just after firing at his crew, takes no outpost strike:
- * three of them leave the turret holding fire, where three strikes mark anyone else. Hits away from
- * the fight still count, PvP still counts, and strikes count again after it (L1, L11).
+ * During the shootout a hunter's stray shot, just after firing at his crew, is no crime at the outpost:
+ * three of them leave the police with nothing on him, where the same hit from anyone else is on record.
+ * Hits away from the fight still count, PvP still counts, and a hunter's hits count again after it
+ * (L1, L11). Nothing here waits: the goons' AI must not get a turn.
  */
 /datum/unit_test/voidcrew_bounty_kingpin/security
 
@@ -1225,8 +1234,10 @@
 	outpost.outpost_template.width = 5
 	outpost.outpost_template.height = 5
 	outpost.template_bottom_left = run_loc_floor_bottom_left
-	var/obj/machinery/porta_turret/outpost/turret = allocate(/obj/machinery/porta_turret/outpost, kingpin_test_spot(4, 4))
-	turret.outpost = outpost
+	var/datum/outpost_police/police = outpost.police
+	TEST_ASSERT_NOTNULL(police, "The test outpost has no police")
+	// An officer in the far corner: every crime below is in its sight, and it is the one the goons must be safe from
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/police/officer = police_port_witness(outpost, kingpin_test_spot(4, 4))
 
 	var/datum/criminal_bounty/kingpin/posting = kingpin_test_posting()
 	var/mob/living/carbon/human/npc/bounty_criminal/kingpin/kingpin = kingpin_test_lounge(posting, 2)
@@ -1249,37 +1260,33 @@
 	TEST_ASSERT(crew.engaged(hunter), "A hunter who just shot a goon isn't counted in the fight")
 	TEST_ASSERT(!crew.engaged(idle_hunter), "A hunter who fired at nobody is counted in the fight")
 
-	// Three stray hits into outpost property: no strike, and the turret holds fire (three would mark them)
+	// Three stray hits into outpost property: no crime, the hunter is nobody to the police and the officers leave him be
 	for(var/i in 1 to 3)
-		outpost.aggressor_strike_times -= hunter.mind
 		outpost.register_aggression(hunter)
-	TEST_ASSERT_NULL(outpost.aggressor_strikes[hunter.mind], "A hunter's stray shot during the shootout got a property strike")
-	TEST_ASSERT(!outpost.is_marked_aggressor(hunter.mind), "A hunter was marked for stray shots during the shootout")
-	TEST_ASSERT(!turret.valid_target(hunter), "The turret turned on a hunter during the shootout")
-	// The same three hits from someone not in the fight mark them, and the turret fires
-	for(var/i in 1 to 3)
-		outpost.aggressor_strike_times -= bystander.mind
-		outpost.register_aggression(bystander)
-	TEST_ASSERT(outpost.is_marked_aggressor(bystander.mind), "Three strikes didn't mark a bystander during the shootout")
-	TEST_ASSERT(turret.valid_target(bystander), "The turret held fire on a marked bystander")
-	// A hunter who hasn't been shooting at his crew gets their strike
+	TEST_ASSERT_NULL(police.get_warrant(hunter.mind), "A hunter's stray shot during the shootout was put on his record")
+	TEST_ASSERT(!outpost.is_user_barred(hunter), "A hunter was barred for stray shots during the shootout")
+	TEST_ASSERT_EQUAL(police.force_level(hunter), 0, "The police went for a hunter over stray shots during the shootout") // POLICE_FORCE_NONE
+	TEST_ASSERT(!police_port_may_attack(officer, hunter), "An officer turned on a hunter during the shootout")
+	// The same hit from someone not in the fight is on record
+	outpost.register_aggression(bystander)
+	TEST_ASSERT_NOTNULL(police.get_warrant(bystander.mind), "A bystander's hit on outpost property was excused during the shootout")
+	// A hunter who hasn't been shooting at his crew is on record too
 	outpost.register_aggression(idle_hunter)
-	TEST_ASSERT_EQUAL(outpost.aggressor_strikes[idle_hunter.mind], 1, "A hunter not firing at his crew was excused a strike")
-	// PvP enforcement stays: a hunter who hits a person gets the strike
+	TEST_ASSERT_NOTNULL(police.get_warrant(idle_hunter.mind), "A hunter not firing at his crew was excused a crime")
+	// PvP enforcement stays: a hunter who hits a person is on record
 	outpost.register_pvp_aggression(victim, brawler)
-	TEST_ASSERT_EQUAL(outpost.aggressor_strikes[brawler.mind], 1, "A hunter's PvP hit didn't count during the shootout")
+	TEST_ASSERT_NOTNULL(police.get_warrant(brawler.mind), "A hunter's PvP hit didn't count during the shootout")
 
-	// The turret leaves his crew alone: the goons share its faction, P2 exempts the kingpin
-	TEST_ASSERT(turret.in_faction(goon), "The goons don't share the turrets' faction")
-	TEST_ASSERT(!turret.valid_target(goon), "The turret would shoot a goon")
-	TEST_ASSERT(bounty_turret_ignores(kingpin, TRUE), "Trader-outpost turrets don't leave the kingpin alone")
+	// The officers leave his crew alone: the goons carry the outpost staff's faction, and he is exempt by his own rule
+	TEST_ASSERT(FACTION_TURRET in goon.faction, "The goons aren't of the outpost staff's faction")
+	TEST_ASSERT(!police_port_may_attack(officer, goon), "The officers would shoot a goon")
+	TEST_ASSERT(bounty_turret_ignores(kingpin, TRUE), "The officers don't leave the kingpin alone")
 
 	// After it, a hunter's property hit counts again
 	crew.stand_down()
 	TEST_ASSERT(!crew.is_fighting(), "The crew didn't stand down")
-	outpost.aggressor_strike_times -= hunter.mind
 	outpost.register_aggression(hunter)
-	TEST_ASSERT_EQUAL(outpost.aggressor_strikes[hunter.mind], 1, "A hunter's property strike didn't count outside the shootout")
+	TEST_ASSERT_NOTNULL(police.get_warrant(hunter.mind), "A hunter's property hit didn't count outside the shootout")
 
 // ===== THE LOW ONES =====
 

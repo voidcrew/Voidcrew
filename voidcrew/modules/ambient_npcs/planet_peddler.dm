@@ -23,7 +23,7 @@
  * visit.
  *
  * Deviations from the spec, and why:
- * - The peddler is an ambient NPC, not an /mob/living/basic/outpost_trader subtype: planet NPCs
+ * - The peddler is an ambient NPC, not an /mob/living/carbon/human/npc/ambient_npc/outpost/trader subtype: planet NPCs
  *   spawn through site.spawn_npc(), which takes only ambient NPCs, and the routine, leash, place and
  *   budget come with it. It owns its shop and opens the TraderShop window through the same facet
  *   datum the traders use (/datum/outpost_trader_ui/shop): the facet only asks its host for

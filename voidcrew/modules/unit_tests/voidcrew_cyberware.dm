@@ -631,13 +631,13 @@
 	var/list/docs = list()
 	var/list/cradles = list()
 	for(var/turf/interior as anything in block(bottom_left, top_right))
-		for(var/mob/living/basic/outpost_trader/ripperdoc/street_doc/doc in interior)
+		for(var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/ripperdoc/street_doc/doc in interior)
 			docs += doc
 		for(var/obj/machinery/chrome_cradle/cradle in interior)
 			cradles += cradle
 	TEST_ASSERT_EQUAL(length(docs), 1, "Quartermain has [length(docs)] street docs, not one")
 	TEST_ASSERT_EQUAL(length(cradles), 1, "Quartermain has [length(cradles)] chrome cradles, not one")
-	var/mob/living/basic/outpost_trader/ripperdoc/street_doc/ratchet = docs[1]
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/trader/ripperdoc/street_doc/ratchet = docs[1]
 	var/obj/machinery/chrome_cradle/rig = cradles[1]
 	TEST_ASSERT(istype(ratchet.shop, /datum/outpost_shop/vendor/street_doc), "The street doc is not running his own counter")
 	TEST_ASSERT(ratchet in view(7, rig), "The street doc can't see his cradle, so installs there run without him")

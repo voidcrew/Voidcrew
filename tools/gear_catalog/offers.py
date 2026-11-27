@@ -48,7 +48,7 @@ def contexts(dm):
         host=dm.val('/datum/outpost_shop/'+key,'outpost_name')
         map_text=(map_root/f'trader_outpost_{key}.dmm').read_text(encoding='utf-8')
         result['/datum/outpost_shop/'+key]=(host,zone)
-        for npc in re.findall(r'/mob/living/basic/outpost_trader(?:/\w+)*',map_text):
+        for npc in re.findall(r'/mob/living/carbon/human/npc/ambient_npc/outpost/trader(?:/\w+)*',map_text):
             shop=dm.val(npc,'shop_type')
             if shop: result[shop]=(host,zone)
     result['/datum/outpost_shop/vendor/peddler']=('Planet caravan (generated name)','green|yellow|red')

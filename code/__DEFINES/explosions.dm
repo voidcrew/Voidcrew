@@ -19,17 +19,15 @@
 #define GIBTONITE_DETONATE 3
 
 /// A wrapper for [/atom/proc/ex_act] to ensure that the explosion propagation and attendant signal are always handled.
-/// VOIDCREW: recheck outpost protection when queued or direct damage is applied.
-// VOIDCREW EDIT START: Block explosions on protected trader outposts before contents and signals fire (voidcrew/modules/trade/outpost_security.dm).
+/// VOIDCREW: a trader outpost's own floors and walls never react to a blast; whatever stands on them still does.
+// VOIDCREW EDIT START: Trader outpost turfs ignore explosions, their contents do not (voidcrew/modules/trade/outpost_security.dm).
 #define EX_ACT(target, args...)\
-	if(!is_trader_outpost_protected(target)) { \
-		if(!(target.flags_1 & PREVENT_CONTENTS_EXPLOSION_1)) { \
-			target.contents_explosion(##args);\
-		};\
-		if(!(SEND_SIGNAL(target, COMSIG_ATOM_PRE_EX_ACT, ##args) & COMPONENT_CANCEL_EX_ACT)) { \
-			SEND_SIGNAL(target, COMSIG_ATOM_EX_ACT, ##args);\
-			target.ex_act(##args);\
-		} \
+	if(!(target.flags_1 & PREVENT_CONTENTS_EXPLOSION_1)) { \
+		target.contents_explosion(##args);\
+	};\
+	if(!(isturf(target) && is_trader_outpost_protected(target)) && !(SEND_SIGNAL(target, COMSIG_ATOM_PRE_EX_ACT, ##args) & COMPONENT_CANCEL_EX_ACT)) { \
+		SEND_SIGNAL(target, COMSIG_ATOM_EX_ACT, ##args);\
+		target.ex_act(##args);\
 	}
 // VOIDCREW EDIT END
 

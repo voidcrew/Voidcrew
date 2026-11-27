@@ -155,9 +155,6 @@
 	if(machine.machine_stat & BROKEN)
 		return FALSE
 	if(istype(machine, /obj/machinery/porta_turret))
-		// Outpost sanctuary turrets are immune, as against the Icepick Jack.
-		if(istype(machine, /obj/machinery/porta_turret/outpost))
-			return FALSE
 		var/obj/machinery/porta_turret/turret = machine
 		if(!COOLDOWN_FINISHED(turret, disabled_time))
 			return FALSE

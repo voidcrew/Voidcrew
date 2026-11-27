@@ -217,13 +217,13 @@
 			"No credit. Not for you, not for anybody.",
 		),
 		TRADER_LINE_WARNING = list(
-			"Careful. The turrets outside cost more than your arms are worth.",
+			"Careful. The guards outside cost more than your arms are worth.",
 			"Swing again and Vex bills your whole crew. I've watched it happen.",
 			"This is the one room in the red zone with clean floors. Keep it that way.",
 		),
 		TRADER_LINE_AGGRESSION = list(
 			"Wrong room to try that in.",
-			"I fix bodies. The turrets outside keep me busy.",
+			"I fix bodies. The guards outside keep me busy.",
 			"Vex! One for the blacklist.",
 		),
 		TRADER_LINE_IDLE = list(
